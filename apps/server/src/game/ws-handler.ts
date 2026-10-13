@@ -32,6 +32,24 @@ interface ClientConnection {
 export class WebSocketHandler {
   // roomCode -> Set of ClientConnections
   private roomClients = new Map<string, Set<ClientConnection>>();
+  // playerId -> message timestamps in sliding window (REQ-12.4, REQ-16.4)
+  private messageRateLimits = new Map<string, number[]>();
+
+  /**
+   * Checks sliding window rate limit (max 5 messages per 10 seconds)
+   */
+  public checkRateLimit(playerId: string, maxMessages = 5, windowMs = 10000): boolean {
+    const now = Date.now();
+    const timestamps = this.messageRateLimits.get(playerId) || [];
+    const recent = timestamps.filter(t => now - t < windowMs);
+    if (recent.length >= maxMessages) {
+      this.messageRateLimits.set(playerId, recent);
+      return false;
+    }
+    recent.push(now);
+    this.messageRateLimits.set(playerId, recent);
+    return true;
+  }
 
   /**
    * Registers a new WebSocket connection to a room
@@ -237,6 +255,16 @@ export class WebSocketHandler {
         }
 
         case 'CHAT_MESSAGE': {
+          const allowed = this.checkRateLimit(client.playerId, 5, 10000);
+          if (!allowed) {
+            client.socket.send(
+              JSON.stringify({
+                type: 'RATE_LIMIT_EXCEEDED',
+                error: 'Límite de chat excedido: máximo 5 mensajes cada 10 segundos.',
+              }),
+            );
+            return;
+          }
           const valid = ChatMessageSchema.parse(payload);
           session.addChatMessage(client.playerId, valid.message);
           break;

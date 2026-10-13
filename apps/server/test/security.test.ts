@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert';
 import { GameStateSession } from '../src/game/game-state.js';
 import { filterRoomStateForPlayer } from '../src/game/visibility-filter.js';
-import { ActionEnvelopeSchema, AdjustLifeSchema } from '@mtgc/shared';
+import { ActionEnvelopeSchema, AdjustLifeSchema, ChatMessageSchema } from '@mtgc/shared';
 import { RoomState } from '@mtgc/shared';
+import { wsHandler } from '../src/game/ws-handler.js';
 
 function createSecurityMockState(): RoomState {
   return {
@@ -200,4 +201,25 @@ test('Security - Players cannot manipulate other players zones', () => {
 
   assert.strictEqual(state.playerZones['alice']?.battlefield.length, 0);
   assert.strictEqual(state.playerZones['alice']?.hand.length, 1);
+});
+
+test('Security - Rate limiting (max 5 messages per 10s) and message length (REQ-12.4, REQ-16.4)', () => {
+  const playerId = 'spammer_user';
+
+  // 1. First 5 messages within 10 seconds must be allowed
+  for (let i = 1; i <= 5; i++) {
+    const allowed = wsHandler.checkRateLimit(playerId, 5, 10000);
+    assert.strictEqual(allowed, true, `Mensaje #${i} debería permitirse`);
+  }
+
+  // 2. 6th message within 10 seconds must be rejected
+  const sixthAllowed = wsHandler.checkRateLimit(playerId, 5, 10000);
+  assert.strictEqual(sixthAllowed, false, 'El 6to mensaje debe ser bloqueado por rate limit');
+
+  // 3. Message length validation: max 500 characters
+  const validMessage = { message: 'Hola a todos en la mesa!' };
+  assert.strictEqual(ChatMessageSchema.safeParse(validMessage).success, true);
+
+  const tooLongMessage = { message: 'A'.repeat(501) };
+  assert.strictEqual(ChatMessageSchema.safeParse(tooLongMessage).success, false);
 });
