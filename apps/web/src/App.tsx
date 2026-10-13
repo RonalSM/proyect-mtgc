@@ -3,6 +3,7 @@ import { useGameSocket } from './hooks/useGameSocket';
 import { LobbyView } from './components/LobbyView';
 import { TableBoard } from './components/TableBoard';
 import { LobbyWaitingRoom } from './components/LobbyWaitingRoom';
+import { InitiativeOverlay } from './components/InitiativeOverlay';
 import { DeckImporter } from './components/DeckImporter';
 import { LegalModal } from './components/LegalModal';
 import { RefreshCw, Layers, Users } from 'lucide-react';
@@ -188,13 +189,22 @@ export default function App() {
               onLeaveRoom={handleLeaveRoom}
             />
           ) : (
-            <TableBoard
-              roomState={roomState}
-              localPlayerId={playerId}
-              connectionStatus={status}
-              onAction={sendAction}
-              onLeaveRoom={handleLeaveRoom}
-            />
+            <>
+              <TableBoard
+                roomState={roomState}
+                localPlayerId={playerId}
+                connectionStatus={status}
+                onAction={sendAction}
+                onLeaveRoom={handleLeaveRoom}
+              />
+              {roomState.status === 'initiative' && (
+                <InitiativeOverlay
+                  roomState={roomState}
+                  localPlayerId={playerId}
+                  onAction={sendAction}
+                />
+              )}
+            </>
           )
         ) : activeMainTab === 'importer' ? (
           <div className="py-4">
