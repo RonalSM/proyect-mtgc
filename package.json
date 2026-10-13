@@ -1,0 +1,29 @@
+{
+  "name": "mtgc-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mesa Virtual de Commander (MTG) - Monorepo",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run --workspaces --if-present build",
+    "dev": "concurrently -k -n \"shared,server,web\" -c \"cyan,green,magenta\" \"npm run --workspace=@mtgc/shared dev\" \"npm run --workspace=@mtgc/server dev\" \"npm run --workspace=@mtgc/web dev\"",
+    "dev:web": "npm run --workspace=@mtgc/web dev",
+    "dev:server": "npm run --workspace=@mtgc/server dev",
+    "test": "npm run --workspaces --if-present test",
+    "typecheck": "npm run --workspaces --if-present typecheck",
+    "lint": "npm run --workspaces --if-present lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@types/node": "^22.13.0",
+    "concurrently": "^10.0.6",
+    "eslint": "^9.20.0",
+    "prettier": "^3.5.1",
+    "typescript": "^5.7.3"
+  }
+}

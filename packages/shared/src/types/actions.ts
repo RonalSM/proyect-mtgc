@@ -1,0 +1,96 @@
+import { ZoneType } from './zone.js';
+import { CardDefinition } from './card.js';
+
+export type GameActionType =
+  // Life & Counters
+  | 'ADJUST_LIFE'
+  | 'COMMANDER_DAMAGE'
+  | 'SET_PLAYER_COUNTER'
+  | 'SET_CARD_COUNTER'
+  // Card Movements & State
+  | 'MOVE_CARD'
+  | 'TAP_CARD'
+  | 'UNTAP_ALL'
+  | 'FLIP_CARD'
+  | 'DRAW_CARDS'
+  | 'MULLIGAN'
+  | 'SHUFFLE_LIBRARY'
+  // Turn Management
+  | 'PASS_TURN'
+  | 'SET_TURN_ORDER'
+  // Utility & Social
+  | 'ROLL_DICE'
+  | 'UNDO_LAST'
+  | 'CHAT_MESSAGE'
+  // Deck Loading
+  | 'LOAD_DECK';
+
+export interface AdjustLifePayload {
+  playerId: string;
+  delta: number;
+}
+
+export interface CommanderDamagePayload {
+  targetPlayerId: string;
+  sourceCommanderInstanceId: string;
+  delta: number;
+}
+
+export interface SetPlayerCounterPayload {
+  playerId: string;
+  counterType: 'poison' | 'energy' | 'experience' | 'commanderTax' | string;
+  delta: number;
+}
+
+export interface SetCardCounterPayload {
+  cardInstanceId: string;
+  counterType: string; // e.g. '+1/+1', 'loyalty', 'charge'
+  delta: number;
+}
+
+export interface MoveCardPayload {
+  cardInstanceId: string;
+  fromZone: ZoneType;
+  toZone: ZoneType;
+  toPlayerId?: string; // If donating or transferring control
+  position?: {
+    x: number;
+    y: number;
+    zIndex?: number;
+  };
+  destinationIndex?: number; // e.g. 0 for top of library, -1 for bottom
+}
+
+export interface TapCardPayload {
+  cardInstanceId: string;
+  isTapped: boolean;
+}
+
+export interface FlipCardPayload {
+  cardInstanceId: string;
+  isFaceDown: boolean;
+}
+
+export interface DrawCardsPayload {
+  playerId: string;
+  count: number;
+}
+
+export interface RollDicePayload {
+  sides: number; // e.g. 20, 6, 2 (coin flip)
+}
+
+export interface ChatMessagePayload {
+  message: string;
+}
+
+export interface LoadDeckCardItem {
+  definition: CardDefinition;
+  isCommander: boolean;
+  quantity: number;
+}
+
+export interface LoadDeckPayload {
+  commanderCards: CardDefinition[];
+  maindeckCards: CardDefinition[];
+}

@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String       @id @default(uuid())
+  username     String       @unique
+  email        String?      @unique
+  passwordHash String?
+  isGuest      Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  decks        Deck[]
+  hostedTables Table[]      @relation("HostedTables")
+  gameRecords  GameRecord[] @relation("UserGames")
+
+  @@map("users")
+}
+
+model Card {
+  id              String      @id @default(uuid())
+  scryfallId      String      @unique
+  oracleId        String?
+  name            String
+  manaCost        String?
+  cmc             Float       @default(0)
+  typeLine        String
+  oracleText      String?
+  colors          String[]    @default([])
+  colorIdentity   String[]    @default([])
+  power           String?
+  toughness       String?
+  imageUrlSmall   String?
+  imageUrlNormal  String?
+  imageUrlArtCrop String?
+  layout          String?
+  legalities      Json?
+  isCommander     Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  deckCards       DeckCard[]
+
+  @@index([name])
+  @@map("cards")
+}
+
+model Deck {
+  id            String     @id @default(uuid())
+  userId        String?
+  name          String
+  format        String     @default("commander")
+  commanderName String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  user          User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cards         DeckCard[]
+
+  @@map("decks")
+}
+
+model DeckCard {
+  id          String   @id @default(uuid())
+  deckId      String
+  cardId      String
+  quantity    Int      @default(1)
+  isCommander Boolean  @default(false)
+  section     String   @default("main") // "commander", "main", "sideboard"
+
+  deck        Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([deckId, cardId, section])
+  @@map("deck_cards")
+}
+
+model Table {
+  id         String            @id @default(uuid())
+  code       String            @unique // 6 chars (ej. ABC123)
+  name       String
+  hostId     String?
+  status     String            @default("lobby") // lobby, in_progress, finished
+  settings   Json              @default("{}")
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  endedAt    DateTime?
+
+  host       User?             @relation("HostedTables", fields: [hostId], references: [id], onDelete: SetNull)
+  gameRecord GameRecord?
+  logs       ActionLogEntry[]
+
+  @@map("tables")
+}
+
+model GameRecord {
+  id          String    @id @default(uuid())
+  tableId     String    @unique
+  winnerId    String?
+  turnsCount  Int       @default(0)
+  durationSec Int       @default(0)
+  summary     Json?
+  endedAt     DateTime  @default(now())
+
+  table       Table     @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  winner      User?     @relation("UserGames", fields: [winnerId], references: [id], onDelete: SetNull)
+
+  @@map("game_records")
+}
+
+model ActionLogEntry {
+  id             String    @id @default(uuid())
+  tableId        String
+  sequenceNumber Int
+  playerId       String
+  actionType     String
+  payload        Json
+  createdAt      DateTime  @default(now())
+
+  table          Table     @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@index([tableId, sequenceNumber])
+  @@map("action_log_entries")
+}

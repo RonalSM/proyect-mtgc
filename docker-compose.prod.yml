@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mtgc-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mtgc_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mtgc_secret_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-mtgc_db}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mtgc_user} -d ${POSTGRES_DB:-mtgc_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: mtgc-redis
+    restart: always
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: mtgc-server
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mtgc_user}:${POSTGRES_PASSWORD:-mtgc_secret_pass}@postgres:5432/${POSTGRES_DB:-mtgc_db}?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-please_change_in_production_jwt_secret_min_32_chars}
+      SESSION_SECRET: ${SESSION_SECRET:-please_change_in_production_session_secret_32}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: mtgc-web
+    restart: always
+    ports:
+      - "${PORT:-80}:80"
+    depends_on:
+      - server
+
+volumes:
+  pgdata:
+  redisdata:
