@@ -78,8 +78,8 @@ export const TurnBar: React.FC<TurnBarProps> = ({
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl px-5 py-3 shadow-xl flex items-center justify-between">
-      {/* Turn Indicator */}
-      <div className="flex items-center space-x-4">
+      {/* Turn Indicator & Turn Order Sequence (REQ-21.7, REQ-21.8) */}
+      <div className="flex items-center space-x-3">
         <div className="flex items-center space-x-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
           <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
             Turno #{turnNumber}
@@ -88,12 +88,40 @@ export const TurnBar: React.FC<TurnBarProps> = ({
           <span className="text-xs font-semibold text-white">
             {activePlayer?.name || 'Esperando inicio'}
           </span>
+          {activePlayer?.initiativeOrder && (
+            <span className="text-[10px] text-amber-400 font-mono font-bold">
+              ({activePlayer.initiativeOrder}.º)
+            </span>
+          )}
           {isMyTurn && (
             <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.2 rounded-full font-bold animate-pulse">
               ¡Tu Turno!
             </span>
           )}
         </div>
+
+        {/* Turn Order Sequence Pills */}
+        {turnOrder && turnOrder.length > 0 && (
+          <div className="hidden md:flex items-center space-x-1.5 text-[11px]">
+            {turnOrder.map((pid, idx) => {
+              const p = players[pid];
+              const isCurrent = pid === activePlayerId;
+              return (
+                <span
+                  key={pid}
+                  className={`px-2 py-0.5 rounded-lg font-semibold flex items-center space-x-1 border ${
+                    isCurrent
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold'
+                      : 'bg-slate-950 text-slate-400 border-slate-800'
+                  }`}
+                >
+                  <span className="text-amber-400/80 font-mono text-[10px]">{idx + 1}.º</span>
+                  <span className="truncate max-w-[80px]">{p?.name || pid}</span>
+                </span>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Action Controls */}
