@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import type { PlayerState, GameActionType } from '@mtgc/shared';
-import { RotateCcw, Dices, ChevronRight, MessageSquare } from 'lucide-react';
+import {
+  RotateCcw,
+  Dices,
+  ChevronRight,
+  MessageSquare,
+  ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
+} from 'lucide-react';
 
 interface TurnBarProps {
   turnNumber: number;
@@ -10,6 +18,8 @@ interface TurnBarProps {
   onAction: (type: GameActionType, payload: unknown) => void;
   onToggleSidePanel?: () => void;
   isSidePanelOpen?: boolean;
+  turnOrder?: string[];
+  isHost?: boolean;
 }
 
 export const TurnBar: React.FC<TurnBarProps> = ({
@@ -20,10 +30,14 @@ export const TurnBar: React.FC<TurnBarProps> = ({
   onAction,
   onToggleSidePanel,
   isSidePanelOpen,
+  turnOrder,
+  isHost,
 }) => {
   const activePlayer = activePlayerId ? players[activePlayerId] : null;
   const isMyTurn = activePlayerId === localPlayerId;
   const [showDiceMenu, setShowDiceMenu] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [customOrder, setCustomOrder] = useState<string[]>([]);
 
   const handlePassTurn = () => {
     onAction('PASS_TURN', {});
@@ -36,6 +50,30 @@ export const TurnBar: React.FC<TurnBarProps> = ({
   const handleRoll = (sides: number) => {
     onAction('ROLL_DICE', { sides });
     setShowDiceMenu(false);
+  };
+
+  const openOrderEditor = () => {
+    const initialOrder =
+      turnOrder && turnOrder.length > 0
+        ? [...turnOrder]
+        : Object.keys(players).filter(id => !players[id]?.isSpectator);
+    setCustomOrder(initialOrder);
+    setShowOrderModal(true);
+  };
+
+  const movePlayer = (index: number, direction: 'up' | 'down') => {
+    const newOrder = [...customOrder];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newOrder.length) return;
+    const temp = newOrder[index]!;
+    newOrder[index] = newOrder[targetIndex]!;
+    newOrder[targetIndex] = temp;
+    setCustomOrder(newOrder);
+  };
+
+  const handleSaveTurnOrder = () => {
+    onAction('SET_TURN_ORDER', { turnOrder: customOrder });
+    setShowOrderModal(false);
   };
 
   return (
@@ -113,6 +151,18 @@ export const TurnBar: React.FC<TurnBarProps> = ({
           <ChevronRight className="w-4 h-4" />
         </button>
 
+        {/* Turn Order Adjustment for Host before turn 1 (REQ-6.4) */}
+        {turnNumber <= 1 && isHost && (
+          <button
+            onClick={openOrderEditor}
+            className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs font-medium border border-slate-700 transition-colors"
+            title="Corregir orden de turnos (REQ-6.4)"
+          >
+            <ArrowUpDown className="w-4 h-4 text-amber-400" />
+            <span>Orden</span>
+          </button>
+        )}
+
         {/* Toggle Log & Chat Drawer */}
         {onToggleSidePanel && (
           <button
@@ -128,6 +178,69 @@ export const TurnBar: React.FC<TurnBarProps> = ({
           </button>
         )}
       </div>
+
+      {/* Turn Order Modal (REQ-6.4) */}
+      {showOrderModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-sm w-full shadow-2xl">
+            <h3 className="text-sm font-bold text-white flex items-center space-x-2 mb-2">
+              <ArrowUpDown className="w-4 h-4 text-amber-400" />
+              <span>Corregir Orden de Turnos (REQ-6.4)</span>
+            </h3>
+            <p className="text-xs text-slate-400 mb-4">
+              Reordena la secuencia de turnos antes de que avance la partida.
+            </p>
+            <div className="space-y-2 mb-4">
+              {customOrder.map((pid, idx) => (
+                <div
+                  key={pid}
+                  className="flex items-center justify-between bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl text-xs text-white"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-amber-400 w-5">{idx + 1}.º</span>
+                    <span className="font-medium">{players[pid]?.name || 'Jugador'}</span>
+                    {players[pid]?.isHost && (
+                      <span className="text-[10px] text-amber-500 font-semibold">(Anfitrión)</span>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <button
+                      disabled={idx === 0}
+                      onClick={() => movePlayer(idx, 'up')}
+                      className="p-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-800 text-slate-200"
+                      title="Subir"
+                    >
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      disabled={idx === customOrder.length - 1}
+                      onClick={() => movePlayer(idx, 'down')}
+                      className="p-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-800 text-slate-200"
+                      title="Bajar"
+                    >
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end space-x-2 text-xs">
+              <button
+                onClick={() => setShowOrderModal(false)}
+                className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveTurnOrder}
+                className="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold shadow"
+              >
+                Guardar Orden
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

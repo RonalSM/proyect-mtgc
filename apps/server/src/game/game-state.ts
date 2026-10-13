@@ -669,6 +669,41 @@ export class GameStateSession {
   }
 
   /**
+   * Allows the host to adjust turn order before the first turn (REQ-6.4).
+   */
+  public setTurnOrder(hostPlayerId: string, newTurnOrder: string[]): void {
+    const caller = this.state.players[hostPlayerId];
+    if (!caller || (!caller.isHost && this.state.hostId !== hostPlayerId)) {
+      throw new Error('Solo el anfitrión puede corregir el orden de turnos.');
+    }
+
+    if (this.state.turnNumber > 1) {
+      throw new Error('El orden de turnos solo puede corregirse antes o durante el primer turno.');
+    }
+
+    // Ensure all seated non-spectator players are included
+    const validPlayers = Object.keys(this.state.players).filter(
+      id => !this.state.players[id]?.isSpectator,
+    );
+
+    const hasAllPlayers =
+      newTurnOrder.length === validPlayers.length &&
+      validPlayers.every(id => newTurnOrder.includes(id));
+
+    if (!hasAllPlayers) {
+      throw new Error('El nuevo orden de turnos debe incluir a todos los jugadores de la mesa.');
+    }
+
+    this.state.turnOrder = [...newTurnOrder];
+    if (this.state.turnOrder.length > 0) {
+      this.state.activePlayerId = this.state.turnOrder[0]!;
+    }
+
+    this.addLog(hostPlayerId, 'corrigió el orden de turnos de la mesa');
+    this.incrementVersion();
+  }
+
+  /**
    * Rolls a die with N sides using CSPRNG
    */
   public rollDice(playerId: string, sides: number): number {

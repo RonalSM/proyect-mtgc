@@ -79,7 +79,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 1. THE sistema SHALL mostrar el jugador activo y el sentido de turno.
 2. WHEN el jugador activo pulsa "Terminar turno", THE sistema SHALL pasar al siguiente jugador vivo.
 3. WHERE el temporizador esté activado, THE sistema SHALL mostrar cuenta regresiva configurable por turno.
-4. THE sistema SHALL permitir ajustar manualmente el orden de turnos antes de iniciar.
+4. THE sistema SHALL permitir que el anfitrión pueda corregir el orden de turnos antes del primer turno.
 
 ### REQ-7 Importar mazos y buscar cartas
 **Historia:** Como jugador, quiero cargar mi mazo de Commander, para jugarlo en la mesa.

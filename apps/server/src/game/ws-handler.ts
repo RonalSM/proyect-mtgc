@@ -18,6 +18,7 @@ import {
   KickPlayerSchema,
   TransferHostSchema,
   UpdateRoomSettingsSchema,
+  SetTurnOrderSchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -235,6 +236,12 @@ export class WebSocketHandler {
 
         case 'PASS_TURN': {
           session.passTurn(client.playerId);
+          break;
+        }
+
+        case 'SET_TURN_ORDER': {
+          const valid = SetTurnOrderSchema.parse(payload);
+          session.setTurnOrder(client.playerId, valid.turnOrder);
           break;
         }
 

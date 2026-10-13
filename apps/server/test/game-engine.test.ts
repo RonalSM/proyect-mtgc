@@ -605,3 +605,35 @@ test('RoomManager - updates room settings including external video call link (RE
   const lastLog = session.state.logs[session.state.logs.length - 1];
   assert.ok(lastLog?.actionText.includes('ajustes'));
 });
+
+test('GameStateSession - host can adjust turn order before/at turn 1 (REQ-6.4 / Paso 2B.7)', () => {
+  const session = new GameStateSession(createMockRoomState());
+  // Mock has p1 (host) and p2, turnNumber = 1, turnOrder = ['p1', 'p2'], activePlayerId = 'p1'
+  assert.strictEqual(session.state.turnOrder[0], 'p1');
+  assert.strictEqual(session.state.turnOrder[1], 'p2');
+  assert.strictEqual(session.state.activePlayerId, 'p1');
+
+  // Non-host (p2) tries to set turn order -> should throw
+  assert.throws(() => {
+    session.setTurnOrder('p2', ['p2', 'p1']);
+  }, /Solo el anfitrión/);
+
+  // Incomplete list of players -> should throw
+  assert.throws(() => {
+    session.setTurnOrder('p1', ['p2']);
+  }, /debe incluir a todos los jugadores/);
+
+  // Host (p1) inverts turn order before turn 1 advances
+  session.setTurnOrder('p1', ['p2', 'p1']);
+  assert.deepStrictEqual(session.state.turnOrder, ['p2', 'p1']);
+  assert.strictEqual(session.state.activePlayerId, 'p2');
+
+  const log = session.state.logs[session.state.logs.length - 1];
+  assert.ok(log?.actionText.includes('corrigió el orden de turnos'));
+
+  // Once game advances past turn 1, host can no longer alter turn order
+  session.state.turnNumber = 2;
+  assert.throws(() => {
+    session.setTurnOrder('p1', ['p1', 'p2']);
+  }, /solo puede corregirse antes o durante el primer turno/);
+});

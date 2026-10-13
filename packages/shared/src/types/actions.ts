@@ -140,3 +140,7 @@ export interface UpdateRoomSettingsPayload {
   allowSpectators?: boolean;
 }
 
+export interface SetTurnOrderPayload {
+  turnOrder: string[];
+}
+

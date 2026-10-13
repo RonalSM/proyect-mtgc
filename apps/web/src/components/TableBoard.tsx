@@ -255,6 +255,8 @@ export const TableBoard: React.FC<TableBoardProps> = ({
               onAction={onAction}
               onToggleSidePanel={() => setIsSidePanelOpen(prev => !prev)}
               isSidePanelOpen={isSidePanelOpen}
+              turnOrder={roomState.turnOrder}
+              isHost={localPlayer?.isHost}
             />
 
             {/* Battlefield Canvas and Local Player Zone */}

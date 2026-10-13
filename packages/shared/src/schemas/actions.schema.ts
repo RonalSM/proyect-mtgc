@@ -107,6 +107,10 @@ export const UpdateRoomSettingsSchema = z.object({
   allowSpectators: z.boolean().optional(),
 });
 
+export const SetTurnOrderSchema = z.object({
+  turnOrder: z.array(z.string().min(1)).min(2).max(6),
+});
+
 export const ActionEnvelopeSchema = z.object({
   type: z.enum([
     'ADJUST_LIFE',
