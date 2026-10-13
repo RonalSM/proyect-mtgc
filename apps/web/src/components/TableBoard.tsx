@@ -127,6 +127,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     row: 0 | 1,
     col: number,
     isLocal: boolean,
+    isTwoPlayer?: boolean,
   ) => {
     const zones = roomState.playerZones[player.id] || emptyZones;
     const isActiveTurn = roomState.activePlayerId === player.id;
@@ -138,6 +139,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         row={row}
         col={col}
         isLocalPlayer={isLocal}
+        isTwoPlayer={isTwoPlayer}
         isActiveTurn={isActiveTurn}
         onAction={onAction}
         onExpandCell={() => setExpandedPlayerId(player.id)}

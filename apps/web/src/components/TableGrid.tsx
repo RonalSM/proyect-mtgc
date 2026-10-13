@@ -12,6 +12,7 @@ interface TableGridProps {
     row: 0 | 1,
     col: number,
     isLocal: boolean,
+    isTwoPlayer?: boolean,
   ) => React.ReactNode;
   onLeaveRoom?: () => void;
 }
@@ -36,23 +37,15 @@ export const TableGrid: React.FC<TableGridProps> = ({
   // Seated players (non-spectators)
   const allSeated = Object.values(roomState.players).filter(p => !p.isSpectator);
   const totalPlayers = Math.max(2, allSeated.length);
+  const isTwoPlayerMode = totalPlayers === 2;
 
-  // --cols = ceil(jugadores / 2), clamp between 1 and 3 (REQ-22.2)
-  const cols = Math.min(3, Math.max(1, Math.ceil(totalPlayers / 2)));
+  // --cols = 2 en 1v1, o ceil(jugadores / 2) entre 2 y 3 para >= 3 jugadores (REQ-22.2)
+  const cols = isTwoPlayerMode ? 2 : Math.min(3, Math.max(2, Math.ceil(totalPlayers / 2)));
 
   // Separate local player and opponents
   const localPlayer = roomState.players[localPlayerId] || allSeated[0]!;
   const opponents = allSeated.filter(p => p.id !== localPlayer.id);
 
-  /**
-   * Layout Grid Assignment:
-   * Grid has 2 rows and `cols` columns.
-   * Total slots = 2 * cols (2, 4, or 6).
-   * Local player is ALWAYS at bottom-left: row 1, col 0 (REQ-22.2.1).
-   * Slots ordering:
-   * Row 0: (0, 0), (0, 1), (0, 2)
-   * Row 1: (1, 0) [LOCAL], (1, 1), (1, 2)
-   */
   interface CellSlot {
     row: 0 | 1;
     col: number;
@@ -62,33 +55,42 @@ export const TableGrid: React.FC<TableGridProps> = ({
 
   const gridSlots: CellSlot[] = [];
 
-  // Top Row (Row 0): col 0 to cols - 1
-  for (let c = 0; c < cols; c++) {
-    gridSlots.push({ row: 0, col: c });
-  }
-  // Bottom Row (Row 1): col 0 (LOCAL), then col 1 to cols - 1
-  for (let c = 0; c < cols; c++) {
-    gridSlots.push({ row: 1, col: c });
-  }
-
-  // Assign local player to (row: 1, col: 0)
-  const localSlot = gridSlots.find(s => s.row === 1 && s.col === 0);
-  if (localSlot) {
-    localSlot.player = localPlayer;
-  }
-
-  // Assign opponents to remaining slots in seat order
-  const remainingSlots = gridSlots.filter(s => !(s.row === 1 && s.col === 0));
-  opponents.forEach((opp, i) => {
-    if (remainingSlots[i]) {
-      remainingSlots[i]!.player = opp;
+  if (isTwoPlayerMode) {
+    // 2 jugadores: 2 columnas verticales (izquierda y derecha), no filas (Punto 4)
+    gridSlots.push({ row: 1, col: 0, player: localPlayer });
+    if (opponents[0]) {
+      gridSlots.push({ row: 1, col: 1, player: opponents[0] });
     }
-  });
+  } else {
+    // 3 o más jugadores: cuadrícula REQ-22 de 2 filas y hasta 3 columnas
+    // Top Row (Row 0): col 0 to cols - 1
+    for (let c = 0; c < cols; c++) {
+      gridSlots.push({ row: 0, col: c });
+    }
+    // Bottom Row (Row 1): col 0 (LOCAL), then col 1 to cols - 1
+    for (let c = 0; c < cols; c++) {
+      gridSlots.push({ row: 1, col: c });
+    }
 
-  // If 3 or 5 players, the extra unused slot becomes free cell for log/chat (REQ-22.10)
-  const unusedSlot = remainingSlots.find(s => !s.player);
-  if (unusedSlot && (totalPlayers === 3 || totalPlayers === 5)) {
-    unusedSlot.isFreeCellForChat = true;
+    // Assign local player to (row: 1, col: 0)
+    const localSlot = gridSlots.find(s => s.row === 1 && s.col === 0);
+    if (localSlot) {
+      localSlot.player = localPlayer;
+    }
+
+    // Assign opponents to remaining slots in seat order
+    const remainingSlots = gridSlots.filter(s => !(s.row === 1 && s.col === 0));
+    opponents.forEach((opp, i) => {
+      if (remainingSlots[i]) {
+        remainingSlots[i]!.player = opp;
+      }
+    });
+
+    // If 3 or 5 players, the extra unused slot becomes free cell for log/chat (REQ-22.10)
+    const unusedSlot = remainingSlots.find(s => !s.player);
+    if (unusedSlot && (totalPlayers === 3 || totalPlayers === 5)) {
+      unusedSlot.isFreeCellForChat = true;
+    }
   }
 
   return (
@@ -113,11 +115,11 @@ export const TableGrid: React.FC<TableGridProps> = ({
         onLeaveRoom={onLeaveRoom}
       />
 
-      {/* Full-bleed 2-row Grid (REQ-22.1, 22.2) */}
+      {/* Grid: 1 fila x 2 columnas en 1v1; 2 filas x hasta 3 cols para >= 3 jugadores (Punto 4, REQ-22.1, 22.2) */}
       <div
         className="w-full h-full grid gap-[1px] bg-black"
         style={{
-          gridTemplateRows: '1fr 1fr',
+          gridTemplateRows: isTwoPlayerMode ? '1fr' : '1fr 1fr',
           gridTemplateColumns: `repeat(${cols}, 1fr)`,
         }}
       >
@@ -151,7 +153,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
                 key={slot.player.id}
                 className="h-full w-full relative bg-slate-950"
               >
-                {renderPlayerCell(slot.player, slot.row, slot.col, isLocal)}
+                {renderPlayerCell(slot.player, slot.row, slot.col, isLocal, isTwoPlayerMode)}
               </div>
             );
           }

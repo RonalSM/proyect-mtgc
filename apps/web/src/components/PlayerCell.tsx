@@ -12,12 +12,18 @@ import { HandFan } from './HandFan';
 import { CardDisplay } from './CardDisplay';
 import { Portal } from './Portal';
 
-export function getLifeCornerClasses(row: 0 | 1, col: number): string {
-  // Inner corner: nearest to center of screen (REQ-22.5)
-  // Row 0 (top) -> bottom border of cell. Row 1 (bottom) -> top border of cell.
-  // Col 0 (left) -> right edge. Col >= 1 -> left edge.
-  const v = row === 0 ? 'bottom-3' : 'top-3';
-  const h = col === 0 ? 'right-3' : 'left-3';
+export function getLifeCornerClasses(row: 0 | 1, col: number, isTwoPlayer?: boolean): string {
+  if (isTwoPlayer) {
+    // 2 jugadores: 2 columnas verticales (izquierda y derecha).
+    // Borde interior hacia la división central (col 0 derecha, col 1 izquierda)
+    const h = col === 0 ? 'right-6' : 'left-6';
+    return `bottom-24 ${h}`;
+  }
+  // 3 o más jugadores: Esquina interior más cercana al centro de la mesa (REQ-22.5)
+  // Row 0 (superior) -> borde inferior. Row 1 (inferior) -> borde superior.
+  // Col 0 (izquierda) -> borde derecho. Col >= 1 -> borde izquierdo.
+  const v = row === 0 ? 'bottom-6' : 'top-6';
+  const h = col === 0 ? 'right-6' : 'left-6';
   return `${v} ${h}`;
 }
 
@@ -35,6 +41,7 @@ interface PlayerCellProps {
   col: number;
   isLocalPlayer: boolean;
   isActiveTurn: boolean;
+  isTwoPlayer?: boolean;
   reduceBackgrounds?: boolean;
   onAction: (type: GameActionType, payload: unknown) => void;
   onExpandCell?: () => void;
@@ -48,6 +55,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   col,
   isLocalPlayer,
   isActiveTurn,
+  isTwoPlayer = false,
   reduceBackgrounds = false,
   onAction,
   onExpandCell,
@@ -85,7 +93,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
     }
   };
 
-  const cornerClasses = getLifeCornerClasses(row, col);
+  const cornerClasses = getLifeCornerClasses(row, col, isTwoPlayer);
 
   // Fallback playmat
   const playmatImage =
