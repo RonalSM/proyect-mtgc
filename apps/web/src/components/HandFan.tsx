@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import type { CardInstance, GameActionType } from '@mtgc/shared';
+import type { CardInstance, GameActionType, CardDefinition } from '@mtgc/shared';
+import { useDraggable } from '@dnd-kit/core';
 import { CardDisplay } from './CardDisplay';
 import { Play, Trash2, Sparkles, Maximize2 } from 'lucide-react';
 import { useCardPreview } from '../context/CardPreviewContext';
@@ -11,6 +12,122 @@ interface HandFanProps {
   onAction: (type: GameActionType, payload: unknown) => void;
   onZoomCard?: (card: CardInstance) => void;
 }
+
+interface HandCardItemProps {
+  card: CardInstance;
+  index: number;
+  totalCards: number;
+  isSelected: boolean;
+  onSelect: () => void;
+  onZoom: () => void;
+  onPlay: (e: React.MouseEvent) => void;
+  onDiscard: (e: React.MouseEvent) => void;
+  onExile: (e: React.MouseEvent) => void;
+  showPreview: (card: CardDefinition) => void;
+  hidePreview: () => void;
+}
+
+const HandCardItem: React.FC<HandCardItemProps> = ({
+  card,
+  index,
+  totalCards,
+  isSelected,
+  onSelect,
+  onZoom,
+  onPlay,
+  onDiscard,
+  onExile,
+  showPreview,
+  hidePreview,
+}) => {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: card.instanceId,
+    data: { card, fromZone: 'hand' },
+  });
+
+  const offset = index - (totalCards - 1) / 2;
+  const rot = Math.max(-15, Math.min(15, offset * 3.5));
+  const transY = Math.abs(offset) * 2;
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      onClick={onSelect}
+      onDoubleClick={onZoom}
+      onMouseEnter={() => !isDragging && showPreview(card.definition)}
+      onMouseLeave={hidePreview}
+      style={{
+        transform: isSelected
+          ? 'translateY(-2.5rem) scale(1.25) rotate(0deg)'
+          : undefined,
+        zIndex: isSelected ? 60 : index + 5,
+      }}
+      className={`group relative w-16 sm:w-20 md:w-22 aspect-[2.5/3.5] rounded-lg transition-all duration-200 ease-out cursor-grab active:cursor-grabbing origin-bottom ${
+        isDragging ? 'opacity-30' : ''
+      } ${
+        !isSelected && !isDragging
+          ? 'hover:-translate-y-8 hover:scale-125 hover:rotate-0 hover:z-50 hover:shadow-2xl'
+          : ''
+      }`}
+    >
+      {/* Card Face & Frame */}
+      <div
+        style={{
+          transform: !isSelected
+            ? `rotate(${rot}deg) translateY(${transY}px)`
+            : 'none',
+        }}
+        className={`w-full h-full rounded-lg overflow-hidden border shadow-lg transition-transform duration-200 ${
+          isSelected
+            ? 'border-amber-400 ring-2 ring-amber-400/60 shadow-amber-500/20'
+            : 'border-slate-700/80 group-hover:border-amber-400/90'
+        }`}
+      >
+        <CardDisplay card={card.definition} isFaceDown={false} allowFaceToggle={false} />
+      </div>
+
+      {/* Action Toolbar on selection (accessible button alternative: REQ-9.2) */}
+      {isSelected && (
+        <div
+          onClick={e => e.stopPropagation()}
+          className="absolute -top-9 left-1/2 -translate-x-1/2 flex items-center space-x-1 bg-slate-900/95 border border-slate-700 rounded-xl p-1 shadow-2xl z-50 text-[10px] whitespace-nowrap"
+        >
+          <button
+            onClick={onPlay}
+            className="flex items-center space-x-1 px-2 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg shadow cursor-pointer"
+            title="Lanzar al campo de batalla"
+          >
+            <Play className="w-2.5 h-2.5 fill-current" />
+            <span>Jugar</span>
+          </button>
+          <button
+            onClick={onZoom}
+            className="p-1 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg cursor-pointer"
+            title="Ver en grande"
+          >
+            <Maximize2 className="w-3 h-3" />
+          </button>
+          <button
+            onClick={onDiscard}
+            className="p-1 hover:bg-slate-800 text-rose-400 hover:text-rose-300 rounded-lg cursor-pointer"
+            title="Descartar al cementerio"
+          >
+            <Trash2 className="w-3 h-3" />
+          </button>
+          <button
+            onClick={onExile}
+            className="p-1 hover:bg-slate-800 text-purple-400 hover:text-purple-300 rounded-lg cursor-pointer"
+            title="Exiliar carta"
+          >
+            <Sparkles className="w-3 h-3" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const HandFan: React.FC<HandFanProps> = ({
   cards,
@@ -136,89 +253,22 @@ export const HandFan: React.FC<HandFanProps> = ({
 
       {/* Fan Container */}
       <div className="flex items-end justify-center -space-x-7 sm:-space-x-8 md:-space-x-9 hover:-space-x-4 transition-all duration-200">
-        {cards.map((card, i) => {
-          const offset = i - (numCards - 1) / 2;
-          const rot = Math.max(-15, Math.min(15, offset * 3.5));
-          const transY = Math.abs(offset) * 2;
-          const isSelected = selectedCardId === card.instanceId;
-
-          return (
-            <div
-              key={card.instanceId}
-              onClick={() => setSelectedCardId(isSelected ? null : card.instanceId)}
-              onDoubleClick={() => onZoomCard && onZoomCard(card)}
-              onMouseEnter={() => showPreview(card.definition)}
-              onMouseLeave={hidePreview}
-              style={{
-                transform: isSelected
-                  ? 'translateY(-2.5rem) scale(1.25) rotate(0deg)'
-                  : undefined,
-                zIndex: isSelected ? 60 : i + 5,
-              }}
-              className={`group relative w-16 sm:w-20 md:w-22 aspect-[2.5/3.5] rounded-lg transition-all duration-200 ease-out cursor-pointer origin-bottom ${
-                !isSelected
-                  ? 'hover:-translate-y-8 hover:scale-125 hover:rotate-0 hover:z-50 hover:shadow-2xl'
-                  : ''
-              }`}
-            >
-              {/* Card Face & Frame */}
-              <div
-                style={{
-                  transform: !isSelected
-                    ? `rotate(${rot}deg) translateY(${transY}px)`
-                    : 'none',
-                }}
-                className={`w-full h-full rounded-lg overflow-hidden border shadow-lg transition-transform duration-200 ${
-                  isSelected
-                    ? 'border-amber-400 ring-2 ring-amber-400/60 shadow-amber-500/20'
-                    : 'border-slate-700/80 group-hover:border-amber-400/90'
-                }`}
-              >
-                <CardDisplay card={card.definition} isFaceDown={false} allowFaceToggle={false} />
-              </div>
-
-              {/* Action Toolbar on selection or hover */}
-              {isSelected && (
-                <div
-                  onClick={e => e.stopPropagation()}
-                  className="absolute -top-9 left-1/2 -translate-x-1/2 flex items-center space-x-1 bg-slate-900/95 border border-slate-700 rounded-xl p-1 shadow-2xl z-50 text-[10px] whitespace-nowrap"
-                >
-                  <button
-                    onClick={e => handlePlayToBattlefield(card, e)}
-                    className="flex items-center space-x-1 px-2 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg shadow"
-                    title="Lanzar al campo de batalla"
-                  >
-                    <Play className="w-2.5 h-2.5 fill-current" />
-                    <span>Jugar</span>
-                  </button>
-                  {onZoomCard && (
-                    <button
-                      onClick={() => onZoomCard(card)}
-                      className="p-1 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg"
-                      title="Ver en grande"
-                    >
-                      <Maximize2 className="w-3 h-3" />
-                    </button>
-                  )}
-                  <button
-                    onClick={e => handleDiscardToGraveyard(card, e)}
-                    className="p-1 hover:bg-slate-800 text-rose-400 hover:text-rose-300 rounded-lg"
-                    title="Descartar al cementerio"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                  <button
-                    onClick={e => handleExile(card, e)}
-                    className="p-1 hover:bg-slate-800 text-purple-400 hover:text-purple-300 rounded-lg"
-                    title="Exiliar carta"
-                  >
-                    <Sparkles className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {cards.map((card, i) => (
+          <HandCardItem
+            key={card.instanceId}
+            card={card}
+            index={i}
+            totalCards={numCards}
+            isSelected={selectedCardId === card.instanceId}
+            onSelect={() => setSelectedCardId(selectedCardId === card.instanceId ? null : card.instanceId)}
+            onZoom={() => onZoomCard && onZoomCard(card)}
+            onPlay={e => handlePlayToBattlefield(card, e)}
+            onDiscard={e => handleDiscardToGraveyard(card, e)}
+            onExile={e => handleExile(card, e)}
+            showPreview={showPreview}
+            hidePreview={hidePreview}
+          />
+        ))}
       </div>
     </div>
   );
