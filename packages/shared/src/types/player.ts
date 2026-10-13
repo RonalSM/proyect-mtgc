@@ -6,6 +6,15 @@ export interface PlayerCounters {
   custom: Record<string, number>;
 }
 
+export interface PlayerSelectedDeck {
+  id?: string;
+  name: string;
+  commanderName: string;
+  commanderImageUrl?: string;
+  cardCount?: number;
+  warnings?: string[];
+}
+
 export interface PlayerState {
   id: string;
   name: string;
@@ -21,6 +30,11 @@ export interface PlayerState {
   isAtRisk?: boolean;
   riskReason?: 'life' | 'commander_damage' | 'poison';
   deckLoaded: boolean;
+  isReady?: boolean;
+  selectedDeck?: PlayerSelectedDeck;
+  initiativeRoll?: number;
+  initiativeOrder?: number;
+  playmatUrl?: string;
   handCount: number;
   libraryCount: number;
   graveyardCount: number;

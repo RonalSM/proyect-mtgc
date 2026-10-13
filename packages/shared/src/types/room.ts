@@ -1,7 +1,15 @@
 import { PlayerState } from './player.js';
 import { CardInstance } from './card.js';
 
-export type RoomStatus = 'lobby' | 'in_progress' | 'ended';
+export type RoomStatus = 'lobby' | 'initiative' | 'playing' | 'finished' | 'in_progress' | 'ended';
+
+export interface InitiativeState {
+  round: number; // 1 to 5
+  deadlineTimestamp: number; // 15s timeout
+  rolls: Record<string, number>; // playerId -> roll (1..20)
+  activeTiedPlayerIds?: string[]; // players involved in current tie round
+  resolvedOrder?: string[]; // final sorted playerIds (1st, 2nd...)
+}
 
 export interface RoomSettings {
   startingLife: number; // Default 40
@@ -53,4 +61,5 @@ export interface RoomState {
   version: number; // Monotonically increasing event/state version
   logs: GameLogEntry[];
   pendingUndoProposal?: UndoProposal;
+  initiative?: InitiativeState;
 }

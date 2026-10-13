@@ -110,6 +110,28 @@ export const SetTurnOrderSchema = z.object({
   turnOrder: z.array(z.string().min(1)).min(2).max(6),
 });
 
+export const SelectDeckSchema = z.object({
+  deckId: z.string().optional(),
+  deckName: z.string().min(1).max(100),
+  commanderName: z.string().min(1).max(100),
+  commanderImageUrl: z.string().url().optional().or(z.literal('')),
+  commanderCards: z.array(z.any()).min(1),
+  maindeckCards: z.array(z.any()).min(1),
+  warnings: z.array(z.string()).optional(),
+});
+
+export const SetReadySchema = z.object({
+  isReady: z.boolean(),
+});
+
+export const StartGameSchema = z.object({}).passthrough();
+
+export const RollD20InitiativeSchema = z.object({}).passthrough();
+
+export const SetPlaymatSchema = z.object({
+  playmatUrl: z.string().max(1000),
+});
+
 export const ActionEnvelopeSchema = z.object({
   type: z.enum([
     'ADJUST_LIFE',
@@ -136,7 +158,13 @@ export const ActionEnvelopeSchema = z.object({
     'KICK_PLAYER',
     'TRANSFER_HOST',
     'UPDATE_ROOM_SETTINGS',
+    'SELECT_DECK',
+    'SET_READY',
+    'START_GAME',
+    'ROLL_D20_INITIATIVE',
+    'SET_PLAYMAT',
   ]),
   payload: z.unknown(),
   clientTimestamp: z.number().optional(),
 });
+

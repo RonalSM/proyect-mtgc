@@ -31,7 +31,15 @@ export type GameActionType =
   // Host Moderation & Room Settings (REQ-12.3, REQ-13)
   | 'KICK_PLAYER'
   | 'TRANSFER_HOST'
-  | 'UPDATE_ROOM_SETTINGS';
+  | 'UPDATE_ROOM_SETTINGS'
+  // Lobby & Preparation (REQ-20)
+  | 'SELECT_DECK'
+  | 'SET_READY'
+  | 'START_GAME'
+  // Initiative (REQ-21)
+  | 'ROLL_D20_INITIATIVE'
+  // Customization (REQ-22)
+  | 'SET_PLAYMAT';
 
 export interface AdjustLifePayload {
   playerId: string;
@@ -142,4 +150,27 @@ export interface UpdateRoomSettingsPayload {
 export interface SetTurnOrderPayload {
   turnOrder: string[];
 }
+
+export interface SelectDeckPayload {
+  deckId?: string;
+  deckName: string;
+  commanderName: string;
+  commanderImageUrl?: string;
+  commanderCards: CardDefinition[];
+  maindeckCards: CardDefinition[];
+  warnings?: string[];
+}
+
+export interface SetReadyPayload {
+  isReady: boolean;
+}
+
+export interface StartGamePayload {}
+
+export interface RollD20InitiativePayload {}
+
+export interface SetPlaymatPayload {
+  playmatUrl: string;
+}
+
 
