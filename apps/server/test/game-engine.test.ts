@@ -748,6 +748,91 @@ test('GameStarter - starts game, deals 7 cards, commanders to command zone and t
   assert.strictEqual(p2Zones.command.length, 1);
   assert.strictEqual(p2Zones.hand.length, 7);
   assert.strictEqual(p2Zones.library.length, 92);
+  session.cleanup();
 });
+
+test('InitiativeService - authoritative D20 roll, descending order and tie breaking (REQ-21 / 8.4)', () => {
+  const room = createMockRoomState();
+  room.status = 'initiative';
+  room.initiative = {
+    round: 1,
+    deadlineTimestamp: Date.now() + 15000,
+    rolls: {},
+  };
+  const session = new GameStateSession(room);
+  const initiativeSvc = session.initiativeService;
+
+  // 1. Rolls are within 1..20
+  const roll1 = session.rollD20Initiative('p1');
+  assert.ok(roll1 >= 1 && roll1 <= 20);
+  assert.strictEqual(session.state.initiative?.rolls['p1'], roll1);
+  assert.strictEqual(session.state.players['p1']?.initiativeRoll, roll1);
+
+  // Repeat roll returns same value
+  const repeatRoll = session.rollD20Initiative('p1');
+  assert.strictEqual(repeatRoll, roll1);
+
+  // 2. Mock a tie: both players roll 18
+  session.state.initiative!.rolls['p1'] = 18;
+  session.state.players['p1']!.initiativeRoll = 18;
+  session.state.initiative!.rolls['p2'] = 18;
+  session.state.players['p2']!.initiativeRoll = 18;
+
+  // Resolving round with tie should trigger round 2
+  initiativeSvc.resolveRound();
+  assert.strictEqual(session.state.status, 'initiative');
+  assert.strictEqual(session.state.initiative?.round, 2);
+  assert.deepStrictEqual(session.state.initiative?.activeTiedPlayerIds, ['p1', 'p2']);
+
+  // 3. Round 2: P1 rolls 15, P2 rolls 10 -> P1 plays first!
+  session.state.initiative!.rolls['p1'] = 15;
+  session.state.players['p1']!.initiativeRoll = 15;
+  session.state.initiative!.rolls['p2'] = 10;
+  session.state.players['p2']!.initiativeRoll = 10;
+
+  initiativeSvc.resolveRound();
+  assert.strictEqual(session.state.status, 'playing');
+  assert.deepStrictEqual(session.state.turnOrder, ['p1', 'p2']);
+  assert.strictEqual(session.state.activePlayerId, 'p1');
+  assert.strictEqual(session.state.players['p1']?.initiativeOrder, 1);
+  assert.strictEqual(session.state.players['p2']?.initiativeOrder, 2);
+
+  // 4. Test tie persistence up to round 5 breaking by seat number ascending (REQ-21.6)
+  room.status = 'initiative';
+  room.initiative = {
+    round: 5, // 5th round!
+    deadlineTimestamp: Date.now() + 15000,
+    rolls: { p1: 17, p2: 17 },
+    activeTiedPlayerIds: ['p1', 'p2'],
+  };
+  session.state.players['p1']!.seatNumber = 0;
+  session.state.players['p2']!.seatNumber = 1;
+  session.state.players['p1']!.initiativeRoll = 17;
+  session.state.players['p2']!.initiativeRoll = 17;
+
+  initiativeSvc.resolveRound();
+  assert.strictEqual(session.state.status, 'playing');
+  assert.strictEqual(session.state.turnOrder[0], 'p1'); // Seat 0 plays before Seat 1
+  assert.strictEqual(session.state.turnOrder[1], 'p2');
+
+  // 5. Auto-roll on timeout / unrolled players (REQ-21.4)
+  room.status = 'initiative';
+  room.initiative = {
+    round: 1,
+    deadlineTimestamp: Date.now() - 1000,
+    rolls: {},
+  };
+  session.state.players['p1']!.initiativeRoll = undefined;
+  session.state.players['p2']!.initiativeRoll = undefined;
+
+  initiativeSvc.resolveCurrentRoundWithAutoRolls();
+  assert.strictEqual(session.state.status, 'playing');
+  assert.ok(session.state.players['p1']?.initiativeRoll !== undefined);
+  assert.ok(session.state.players['p2']?.initiativeRoll !== undefined);
+  assert.strictEqual(session.state.turnOrder.length, 2);
+
+  session.cleanup();
+});
+
 
 

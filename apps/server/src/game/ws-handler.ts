@@ -22,6 +22,7 @@ import {
   SelectDeckSchema,
   SetReadySchema,
   StartGameSchema,
+  RollD20InitiativeSchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -336,7 +337,15 @@ export class WebSocketHandler {
 
         case 'START_GAME': {
           StartGameSchema.parse(payload);
+          session.initiativeService.onStateChanged = () => this.broadcastRoomState(client.roomCode);
           session.startGame(client.playerId);
+          break;
+        }
+
+        case 'ROLL_D20_INITIATIVE': {
+          RollD20InitiativeSchema.parse(payload);
+          session.initiativeService.onStateChanged = () => this.broadcastRoomState(client.roomCode);
+          session.rollD20Initiative(client.playerId);
           break;
         }
 

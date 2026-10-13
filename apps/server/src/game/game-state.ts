@@ -21,6 +21,7 @@ import { randomUUID } from 'crypto';
 import { redisSnapshotService } from '../services/redis-snapshot.service.js';
 import { LobbyManager } from './lobby-manager.js';
 import { GameStarter } from './game-starter.js';
+import { InitiativeService } from './initiative-service.js';
 
 interface UndoRecord {
   playerId: string;
@@ -33,18 +34,32 @@ interface UndoRecord {
 export class GameStateSession {
   public state: RoomState;
   public lobbyManager: LobbyManager;
+  public initiativeService: InitiativeService;
   private undoStack: UndoRecord[] = [];
 
   constructor(initialState: RoomState) {
     this.state = initialState;
     this.lobbyManager = new LobbyManager(this.state);
+    this.initiativeService = new InitiativeService(this);
   }
 
   /**
-   * Starts the game from the lobby (REQ-20.11)
+   * Starts the game from the lobby (REQ-20.11) and triggers initiative phase (REQ-21)
    */
   public startGame(hostPlayerId: string): void {
     GameStarter.startGame(this, hostPlayerId);
+    this.initiativeService.startInitiativeTimer();
+  }
+
+  /**
+   * Rolls D20 for initiative (REQ-21.2)
+   */
+  public rollD20Initiative(playerId: string): number {
+    return this.initiativeService.rollD20(playerId);
+  }
+
+  public cleanup(): void {
+    this.initiativeService.cleanup();
   }
 
   /**
