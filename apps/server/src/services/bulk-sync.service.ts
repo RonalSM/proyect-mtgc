@@ -14,6 +14,8 @@ interface BulkDataResponse {
 export class BulkSyncService {
   private isSyncing = false;
   private lastSyncTime: Date | null = null;
+  private cronTimer: NodeJS.Timeout | null = null;
+  private isNightlyCronActive = false;
 
   /**
    * Triggers synchronization of Scryfall Oracle Cards bulk data
@@ -105,8 +107,8 @@ export class BulkSyncService {
                 },
               });
               syncedCount++;
-            } catch (cardErr) {
-              // Si la base de datos no está conectada o hay error puntual, continuar
+            } catch {
+              // Gracefully continue if DB is offline or item error
             }
           }),
         );
@@ -123,10 +125,70 @@ export class BulkSyncService {
     }
   }
 
+  /**
+   * Starts the automated nightly cron synchronization job (COMP-6 / REQ-18 / Paso 2A.5)
+   * Runs daily at the specified UTC hour (default: 03:00 UTC).
+   */
+  public startNightlyCron(targetHourUtc: number = 3): void {
+    if (this.isNightlyCronActive) return;
+
+    this.isNightlyCronActive = true;
+
+    const scheduleNext = () => {
+      const now = new Date();
+      const nextRun = new Date(now);
+      nextRun.setUTCHours(targetHourUtc, 0, 0, 0);
+
+      // If already passed today, schedule for tomorrow
+      if (nextRun.getTime() <= now.getTime()) {
+        nextRun.setUTCDate(nextRun.getUTCDate() + 1);
+      }
+
+      const msUntilNext = nextRun.getTime() - now.getTime();
+      console.log(
+        `⏰ [BulkSync Cron] Próxima sincronización nocturna programada para: ${nextRun.toISOString()} (en ${Math.round(
+          msUntilNext / 1000 / 60,
+        )} min)`,
+      );
+
+      this.cronTimer = setTimeout(async () => {
+        try {
+          console.log('🌙 [BulkSync Cron] Ejecutando sincronización nocturna de Scryfall...');
+          await this.syncOracleCards();
+        } catch (err: any) {
+          console.error('❌ [BulkSync Cron] Error en sincronización nocturna:', err?.message || err);
+        } finally {
+          if (this.isNightlyCronActive) {
+            scheduleNext();
+          }
+        }
+      }, msUntilNext);
+    };
+
+    scheduleNext();
+  }
+
+  /**
+   * Stops the automated nightly cron job
+   */
+  public stopNightlyCron(): void {
+    if (this.cronTimer) {
+      clearTimeout(this.cronTimer);
+      this.cronTimer = null;
+    }
+    this.isNightlyCronActive = false;
+    console.log('⏹️ [BulkSync Cron] Tarea cron nocturna detenida.');
+  }
+
+  public isCronActive(): boolean {
+    return this.isNightlyCronActive;
+  }
+
   public getStatus() {
     return {
       isSyncing: this.isSyncing,
       lastSyncTime: this.lastSyncTime,
+      nightlyCronActive: this.isNightlyCronActive,
     };
   }
 }
