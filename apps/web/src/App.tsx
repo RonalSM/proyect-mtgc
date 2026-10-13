@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useGameSocket } from './hooks/useGameSocket';
 import { LobbyView } from './components/LobbyView';
 import { TableBoard } from './components/TableBoard';
+import { LobbyWaitingRoom } from './components/LobbyWaitingRoom';
 import { DeckImporter } from './components/DeckImporter';
 import { LegalModal } from './components/LegalModal';
 import { RefreshCw, Layers, Users } from 'lucide-react';
@@ -179,13 +180,22 @@ export default function App() {
       {/* Main Container */}
       <main className="flex-1 p-4 max-w-7xl w-full mx-auto overflow-hidden">
         {roomCode && roomState ? (
-          <TableBoard
-            roomState={roomState}
-            localPlayerId={playerId}
-            connectionStatus={status}
-            onAction={sendAction}
-            onLeaveRoom={handleLeaveRoom}
-          />
+          roomState.status === 'lobby' ? (
+            <LobbyWaitingRoom
+              roomState={roomState}
+              localPlayerId={playerId}
+              onAction={sendAction}
+              onLeaveRoom={handleLeaveRoom}
+            />
+          ) : (
+            <TableBoard
+              roomState={roomState}
+              localPlayerId={playerId}
+              connectionStatus={status}
+              onAction={sendAction}
+              onLeaveRoom={handleLeaveRoom}
+            />
+          )
         ) : activeMainTab === 'importer' ? (
           <div className="py-4">
             <DeckImporter />
