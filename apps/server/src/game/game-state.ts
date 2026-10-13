@@ -13,10 +13,13 @@ import {
   FlipCardPayload,
   CloneTokenPayload,
   ConfirmUndoPayload,
+  SelectDeckPayload,
+  SetReadyPayload,
 } from '@mtgc/shared';
 import { secureShuffle, secureRoll } from './csprng.js';
 import { randomUUID } from 'crypto';
 import { redisSnapshotService } from '../services/redis-snapshot.service.js';
+import { LobbyManager } from './lobby-manager.js';
 
 interface UndoRecord {
   playerId: string;
@@ -28,10 +31,30 @@ interface UndoRecord {
 
 export class GameStateSession {
   public state: RoomState;
+  public lobbyManager: LobbyManager;
   private undoStack: UndoRecord[] = [];
 
   constructor(initialState: RoomState) {
     this.state = initialState;
+    this.lobbyManager = new LobbyManager(this.state);
+  }
+
+  /**
+   * Selects a deck for a player in the lobby (REQ-20.2, REQ-20.9)
+   */
+  public selectDeck(playerId: string, payload: SelectDeckPayload): void {
+    const selected = this.lobbyManager.selectDeck(playerId, payload);
+    this.addLog(playerId, `eligió el mazo "${selected.name}" (Comandante: ${selected.commanderName})`);
+    this.incrementVersion();
+  }
+
+  /**
+   * Toggles ready state in the lobby (REQ-20.8)
+   */
+  public setReady(playerId: string, payload: SetReadyPayload): void {
+    const isReady = this.lobbyManager.setReady(playerId, payload.isReady);
+    this.addLog(playerId, `está ${isReady ? 'Listo' : 'No listo'}`);
+    this.incrementVersion();
   }
 
   public incrementVersion() {

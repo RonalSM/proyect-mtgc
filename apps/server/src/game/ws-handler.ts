@@ -19,6 +19,8 @@ import {
   TransferHostSchema,
   UpdateRoomSettingsSchema,
   SetTurnOrderSchema,
+  SelectDeckSchema,
+  SetReadySchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -316,6 +318,18 @@ export class WebSocketHandler {
         case 'UPDATE_ROOM_SETTINGS': {
           const valid = UpdateRoomSettingsSchema.parse(payload);
           roomManager.updateRoomSettings(client.roomCode, client.playerId, valid);
+          break;
+        }
+
+        case 'SELECT_DECK': {
+          const valid = SelectDeckSchema.parse(payload);
+          session.selectDeck(client.playerId, valid as any);
+          break;
+        }
+
+        case 'SET_READY': {
+          const valid = SetReadySchema.parse(payload);
+          session.setReady(client.playerId, valid);
           break;
         }
 

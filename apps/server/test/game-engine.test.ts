@@ -603,3 +603,82 @@ test('GameStateSession - host can adjust turn order before/at turn 1 (REQ-6.4 / 
     session.setTurnOrder('p1', ['p1', 'p2']);
   }, /solo puede corregirse antes o durante el primer turno/);
 });
+
+test('LobbyManager - deck selection, privacy, ready toggle and start validation (REQ-20 / Paso 3 / 8.2)', () => {
+  const room = createMockRoomState();
+  room.status = 'lobby';
+  const session = new GameStateSession(room);
+  const lobby = session.lobbyManager;
+
+  // 1. Ready without deck throws
+  assert.throws(() => {
+    lobby.setReady('p1', true);
+  }, /Debes seleccionar un mazo/);
+
+  // 2. Select deck stores full list in private pendingDecks and only public metadata on player (REQ-20.9)
+  const dummyCommander = {
+    scryfallId: 'scry_cmd',
+    name: 'Atraxa, Praetors Voice',
+    cmc: 4,
+    typeLine: 'Legendary Creature',
+    colors: ['W', 'U', 'B', 'G'] as any,
+    colorIdentity: ['W', 'U', 'B', 'G'] as any,
+    imageUrlNormal: 'https://cards.scryfall.io/cmd.jpg',
+  };
+  const dummyCard = {
+    scryfallId: 'scry_sol',
+    name: 'Sol Ring',
+    cmc: 1,
+    typeLine: 'Artifact',
+    colors: [] as any,
+    colorIdentity: [] as any,
+  };
+
+  session.selectDeck('p1', {
+    deckName: 'Atraxa Proliferate',
+    commanderName: 'Atraxa, Praetors Voice',
+    commanderImageUrl: 'https://cards.scryfall.io/cmd.jpg',
+    commanderCards: [dummyCommander],
+    maindeckCards: [dummyCard],
+  });
+
+  // Verify public state has only metadata (no cards)
+  const p1PublicDeck = session.state.players['p1']?.selectedDeck;
+  assert.ok(p1PublicDeck);
+  assert.strictEqual(p1PublicDeck.name, 'Atraxa Proliferate');
+  assert.strictEqual(p1PublicDeck.commanderName, 'Atraxa, Praetors Voice');
+  assert.strictEqual((p1PublicDeck as any).maindeckCards, undefined); // Cards are NOT exposed publicly!
+
+  // Verify private pending deck exists
+  const privateDeck = lobby.getPendingDeck('p1');
+  assert.ok(privateDeck);
+  assert.strictEqual(privateDeck.maindeckCards.length, 1);
+  assert.strictEqual(privateDeck.maindeckCards[0]?.name, 'Sol Ring');
+
+  // 3. Mark P1 ready
+  session.setReady('p1', { isReady: true });
+  assert.strictEqual(session.state.players['p1']?.isReady, true);
+
+  // 4. Can start game is false because P2 is not ready yet
+  const canStart1 = lobby.canStartGame('p1');
+  assert.strictEqual(canStart1.canStart, false);
+  assert.ok(canStart1.reason?.includes('Pendientes:'));
+
+  // 5. Select deck and ready for P2
+  session.selectDeck('p2', {
+    deckName: 'Urza Artifacts',
+    commanderName: 'Urza, Lord High Artificer',
+    commanderCards: [dummyCommander],
+    maindeckCards: [dummyCard],
+  });
+  session.setReady('p2', { isReady: true });
+
+  // 6. Non-host cannot start
+  const canStartNonHost = lobby.canStartGame('p2');
+  assert.strictEqual(canStartNonHost.canStart, false);
+
+  // 7. Host can now start game
+  const canStartHost = lobby.canStartGame('p1');
+  assert.strictEqual(canStartHost.canStart, true);
+});
+
