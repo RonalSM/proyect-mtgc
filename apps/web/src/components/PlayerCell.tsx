@@ -8,6 +8,8 @@ import {
   Image as ImageIcon,
   AlertTriangle,
 } from 'lucide-react';
+import { HandFan } from './HandFan';
+import { CardDisplay } from './CardDisplay';
 
 export function getLifeCornerClasses(row: 0 | 1, col: number): string {
   // Inner corner: nearest to center of screen (REQ-22.5)
@@ -56,6 +58,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const [activePileModal, setActivePileModal] = useState<'graveyard' | 'exile' | 'command' | null>(null);
   const [isPlaymatModalOpen, setIsPlaymatModalOpen] = useState(false);
   const [customPlaymatInput, setCustomPlaymatInput] = useState('');
+  const [zoomedCard, setZoomedCard] = useState<CardInstance | null>(null);
 
   const cornerClasses = getLifeCornerClasses(row, col);
 
@@ -297,24 +300,15 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
 
       {/* 5. Bottom Docks: HandFan (Left) & PileSlots (Right) (REQ-22.7, REQ-22.8) */}
       <div className="relative z-20 flex items-end justify-between px-3 pb-2 pointer-events-auto">
-        {/* Hand Fan (Bottom-Left) */}
-        <div className="flex items-center space-x-1">
-          {isLocalPlayer ? (
-            <div className="flex items-center space-x-1 bg-slate-950/80 border border-slate-800 rounded-xl px-2.5 py-1 text-xs backdrop-blur-md">
-              <span className="font-bold text-amber-400">{zones.hand.length}</span>
-              <span className="text-[11px] text-slate-400">cartas en mano</span>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-1.5 bg-slate-950/80 border border-slate-800 rounded-xl px-2.5 py-1 text-xs backdrop-blur-md">
-              {/* Opponent hand rendered as card back without content (REQ-16.3, REQ-22.7.2) */}
-              <div className="w-4 h-6 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-[8px] text-slate-500 font-bold">
-                🂠
-              </div>
-              <span className="text-[11px] text-slate-400">
-                <strong className="text-slate-200">{player.handCount}</strong> en mano
-              </span>
-            </div>
-          )}
+        {/* Hand Fan (Bottom-Left / Center) (REQ-22.7) */}
+        <div className="flex-1 max-w-[65%] sm:max-w-[70%] overflow-visible">
+          <HandFan
+            cards={zones.hand}
+            handCount={player.handCount}
+            isLocalPlayer={isLocalPlayer}
+            onAction={onAction}
+            onZoomCard={card => setZoomedCard(card)}
+          />
         </div>
 
         {/* Pile Slots (Bottom-Right) (REQ-22.8) */}
@@ -404,11 +398,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               {zones[activePileModal].map((card, i) => (
                 <div key={card.instanceId || i} className="space-y-1">
                   <div className="aspect-[2.5/3.5] rounded-lg overflow-hidden border border-slate-700 bg-slate-950">
-                    <img
-                      src={card.definition.imageUrlNormal || card.definition.imageUrlSmall}
-                      alt={card.definition.name}
-                      className="w-full h-full object-cover"
-                    />
+                    <CardDisplay card={card.definition} />
                   </div>
                   <div className="text-[10px] font-bold text-slate-300 truncate">
                     {card.definition.name}
@@ -474,6 +464,37 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Zoom Card HD Modal (REQ-9.6) */}
+      {zoomedCard && (
+        <div
+          onClick={() => setZoomedCard(null)}
+          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-4 flex flex-col space-y-3 shadow-2xl overflow-hidden cursor-default"
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <span className="font-bold text-sm text-white truncate">
+                {zoomedCard.definition.name}
+              </span>
+              <button
+                onClick={() => setZoomedCard(null)}
+                className="text-slate-400 hover:text-white font-bold text-lg"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="aspect-[2.5/3.5] rounded-2xl overflow-hidden border border-slate-800 shadow-xl">
+              <CardDisplay card={zoomedCard.definition} allowFaceToggle={true} />
+            </div>
+            <div className="text-center text-xs text-slate-400">
+              {zoomedCard.definition.typeLine}
+            </div>
+          </div>
         </div>
       )}
     </div>
