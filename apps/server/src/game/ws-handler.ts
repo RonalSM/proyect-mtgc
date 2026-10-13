@@ -23,6 +23,7 @@ import {
   SetReadySchema,
   StartGameSchema,
   RollD20InitiativeSchema,
+  SetPlaymatSchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -346,6 +347,12 @@ export class WebSocketHandler {
           RollD20InitiativeSchema.parse(payload);
           session.initiativeService.onStateChanged = () => this.broadcastRoomState(client.roomCode);
           session.rollD20Initiative(client.playerId);
+          break;
+        }
+
+        case 'SET_PLAYMAT': {
+          const valid = SetPlaymatSchema.parse(payload);
+          session.setPlaymat(client.playerId, valid.playmatUrl);
           break;
         }
 

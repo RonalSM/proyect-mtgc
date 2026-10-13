@@ -63,6 +63,17 @@ export class GameStateSession {
   }
 
   /**
+   * Sets custom playmat image URL (REQ-22.3)
+   */
+  public setPlaymat(playerId: string, playmatUrl: string): void {
+    const player = this.state.players[playerId];
+    if (!player) return;
+    player.playmatUrl = playmatUrl;
+    this.addLog(playerId, 'actualizó su playmat de fondo');
+    this.incrementVersion();
+  }
+
+  /**
    * Selects a deck for a player in the lobby (REQ-20.2, REQ-20.9)
    */
   public selectDeck(playerId: string, payload: SelectDeckPayload): void {
