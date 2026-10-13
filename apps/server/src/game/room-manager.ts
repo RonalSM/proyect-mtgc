@@ -316,6 +316,110 @@ export class RoomManager {
   }
 
   /**
+   * Kicks a player from the room (REQ-13.2). Only host can kick.
+   */
+  public kickPlayer(
+    roomCode: string,
+    hostPlayerId: string,
+    payload: { seat?: number; playerId?: string; reason?: string },
+  ): { kickedPlayerId: string; kickedPlayerName: string } {
+    const session = this.getSession(roomCode);
+    if (!session) {
+      throw new Error('Sala no encontrada.');
+    }
+
+    const host = session.state.players[hostPlayerId];
+    if (!host || !host.isHost) {
+      throw new Error('Solo el anfitrión puede expulsar jugadores.');
+    }
+
+    let targetPlayer: PlayerState | undefined;
+    if (payload.playerId) {
+      targetPlayer = session.state.players[payload.playerId];
+    } else if (payload.seat !== undefined) {
+      targetPlayer = Object.values(session.state.players).find(p => p.seatNumber === payload.seat);
+    }
+
+    if (!targetPlayer) {
+      throw new Error('Jugador a expulsar no encontrado.');
+    }
+
+    if (targetPlayer.id === hostPlayerId) {
+      throw new Error('El anfitrión no puede expulsarse a sí mismo.');
+    }
+
+    const targetId = targetPlayer.id;
+    const targetName = targetPlayer.name;
+
+    const timer = this.disconnectTimers.get(targetId);
+    if (timer) {
+      clearTimeout(timer);
+      this.disconnectTimers.delete(targetId);
+    }
+
+    delete session.state.players[targetId];
+    delete session.state.playerZones[targetId];
+    session.state.turnOrder = session.state.turnOrder.filter(id => id !== targetId);
+
+    session.addLog(
+      hostPlayerId,
+      `expulsó a "${targetName}" de la mesa${payload.reason ? `: ${payload.reason}` : ''}`,
+    );
+    session.incrementVersion();
+
+    return { kickedPlayerId: targetId, kickedPlayerName: targetName };
+  }
+
+  /**
+   * Transfers the host role to another seated player (REQ-13.3).
+   */
+  public transferHost(
+    roomCode: string,
+    currentHostPlayerId: string,
+    payload: { newHostSeat?: number; newHostId?: string },
+  ): { newHostId: string; newHostName: string } {
+    const session = this.getSession(roomCode);
+    if (!session) {
+      throw new Error('Sala no encontrada.');
+    }
+
+    const currentHost = session.state.players[currentHostPlayerId];
+    if (!currentHost || !currentHost.isHost) {
+      throw new Error('Solo el anfitrión actual puede transferir el rol de anfitrión.');
+    }
+
+    let targetPlayer: PlayerState | undefined;
+    if (payload.newHostId) {
+      targetPlayer = session.state.players[payload.newHostId];
+    } else if (payload.newHostSeat !== undefined) {
+      targetPlayer = Object.values(session.state.players).find(
+        p => p.seatNumber === payload.newHostSeat,
+      );
+    }
+
+    if (!targetPlayer) {
+      throw new Error('Nuevo anfitrión no encontrado.');
+    }
+
+    if (targetPlayer.isSpectator) {
+      throw new Error('No se puede transferir el rol de anfitrión a un espectador.');
+    }
+
+    if (targetPlayer.id === currentHostPlayerId) {
+      return { newHostId: currentHost.id, newHostName: currentHost.name };
+    }
+
+    currentHost.isHost = false;
+    targetPlayer.isHost = true;
+    session.state.hostId = targetPlayer.id;
+
+    session.addLog(currentHostPlayerId, `transfirió el rol de anfitrión a "${targetPlayer.name}"`);
+    session.incrementVersion();
+
+    return { newHostId: targetPlayer.id, newHostName: targetPlayer.name };
+  }
+
+  /**
    * Returns count of all players in active rooms
    */
   public getActivePlayersCount(): number {

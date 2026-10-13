@@ -70,6 +70,17 @@ export const ChatMessageSchema = z.object({
   message: z.string().min(1).max(500).trim(),
 });
 
+export const KickPlayerSchema = z.object({
+  seat: z.number().int().min(0).max(5).optional(),
+  playerId: z.string().optional(),
+  reason: z.string().max(200).optional(),
+});
+
+export const TransferHostSchema = z.object({
+  newHostSeat: z.number().int().min(0).max(5).optional(),
+  newHostId: z.string().optional(),
+});
+
 export const ActionEnvelopeSchema = z.object({
   type: z.enum([
     'ADJUST_LIFE',
@@ -89,6 +100,8 @@ export const ActionEnvelopeSchema = z.object({
     'UNDO_LAST',
     'CHAT_MESSAGE',
     'LOAD_DECK',
+    'KICK_PLAYER',
+    'TRANSFER_HOST',
   ]),
   payload: z.unknown(),
   clientTimestamp: z.number().optional(),

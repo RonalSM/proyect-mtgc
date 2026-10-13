@@ -23,7 +23,10 @@ export type GameActionType =
   | 'UNDO_LAST'
   | 'CHAT_MESSAGE'
   // Deck Loading
-  | 'LOAD_DECK';
+  | 'LOAD_DECK'
+  // Host Moderation (REQ-13)
+  | 'KICK_PLAYER'
+  | 'TRANSFER_HOST';
 
 export interface AdjustLifePayload {
   playerId: string;
@@ -94,3 +97,15 @@ export interface LoadDeckPayload {
   commanderCards: CardDefinition[];
   maindeckCards: CardDefinition[];
 }
+
+export interface KickPlayerPayload {
+  seat?: number;
+  playerId?: string;
+  reason?: string;
+}
+
+export interface TransferHostPayload {
+  newHostSeat?: number;
+  newHostId?: string;
+}
+

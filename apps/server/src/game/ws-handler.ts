@@ -11,6 +11,8 @@ import {
   DrawCardsSchema,
   RollDiceSchema,
   ChatMessageSchema,
+  KickPlayerSchema,
+  TransferHostSchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -217,6 +219,33 @@ export class WebSocketHandler {
           if (Array.isArray(deckData.commanderCards) && Array.isArray(deckData.maindeckCards)) {
             session.loadDeck(client.playerId, deckData.commanderCards, deckData.maindeckCards);
           }
+          break;
+        }
+
+        case 'KICK_PLAYER': {
+          const valid = KickPlayerSchema.parse(payload);
+          const kicked = roomManager.kickPlayer(client.roomCode, client.playerId, valid);
+
+          const clientsInRoom = this.roomClients.get(client.roomCode);
+          if (clientsInRoom) {
+            for (const c of clientsInRoom) {
+              if (c.playerId === kicked.kickedPlayerId && c.socket.readyState === WebSocket.OPEN) {
+                c.socket.send(
+                  JSON.stringify({
+                    type: 'PLAYER_KICKED',
+                    message: 'Has sido expulsado de la mesa por el anfitrión.',
+                  }),
+                );
+                c.socket.close(4001, 'Kicked by host');
+              }
+            }
+          }
+          break;
+        }
+
+        case 'TRANSFER_HOST': {
+          const valid = TransferHostSchema.parse(payload);
+          roomManager.transferHost(client.roomCode, client.playerId, valid);
           break;
         }
 
