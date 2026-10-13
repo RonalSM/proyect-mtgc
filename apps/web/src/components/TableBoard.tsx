@@ -4,6 +4,7 @@ import { TableGrid } from './TableGrid';
 import { PlayerCell } from './PlayerCell';
 import { BattlefieldCanvas } from './BattlefieldCanvas';
 import { ExpandedCellView } from './ExpandedCellView';
+import { CardPreviewProvider } from '../context/CardPreviewContext';
 
 interface TableBoardProps {
   roomState: RoomState;
@@ -64,27 +65,29 @@ export const TableBoard: React.FC<TableBoardProps> = ({
   };
 
   return (
-    <div className="relative w-screen h-[100dvh] overflow-hidden bg-black">
-      {/* Full-bleed 2-row Table Grid (REQ-22.1, 22.2) */}
-      <TableGrid
-        roomState={roomState}
-        localPlayerId={localPlayerId}
-        onAction={onAction}
-        onLeaveRoom={onLeaveRoom}
-        renderPlayerCell={renderPlayerCell}
-      />
-
-      {/* Expanded Cell View Modal (REQ-22.11) */}
-      {expandedPlayer && (
-        <ExpandedCellView
-          player={expandedPlayer}
-          zones={roomState.playerZones[expandedPlayer.id] || emptyZones}
-          isLocal={expandedPlayer.id === localPlayerId}
-          isActiveTurn={roomState.activePlayerId === expandedPlayer.id}
-          onClose={() => setExpandedPlayerId(null)}
+    <CardPreviewProvider>
+      <div className="relative w-screen h-[100dvh] overflow-hidden bg-black">
+        {/* Full-bleed 2-row Table Grid (REQ-22.1, 22.2) */}
+        <TableGrid
+          roomState={roomState}
+          localPlayerId={localPlayerId}
           onAction={onAction}
+          onLeaveRoom={onLeaveRoom}
+          renderPlayerCell={renderPlayerCell}
         />
-      )}
-    </div>
+
+        {/* Expanded Cell View Modal (REQ-22.11) */}
+        {expandedPlayer && (
+          <ExpandedCellView
+            player={expandedPlayer}
+            zones={roomState.playerZones[expandedPlayer.id] || emptyZones}
+            isLocal={expandedPlayer.id === localPlayerId}
+            isActiveTurn={roomState.activePlayerId === expandedPlayer.id}
+            onClose={() => setExpandedPlayerId(null)}
+            onAction={onAction}
+          />
+        )}
+      </div>
+    </CardPreviewProvider>
   );
 };

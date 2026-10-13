@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { CardInstance, GameActionType } from '@mtgc/shared';
 import { CardDisplay } from './CardDisplay';
 import { Play, Trash2, Sparkles, Maximize2 } from 'lucide-react';
+import { useCardPreview } from '../context/CardPreviewContext';
 
 interface HandFanProps {
   cards: CardInstance[];
@@ -18,6 +19,7 @@ export const HandFan: React.FC<HandFanProps> = ({
   onAction,
   onZoomCard,
 }) => {
+  const { showPreview, hidePreview } = useCardPreview();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   // Play card from hand to battlefield
@@ -145,6 +147,8 @@ export const HandFan: React.FC<HandFanProps> = ({
               key={card.instanceId}
               onClick={() => setSelectedCardId(isSelected ? null : card.instanceId)}
               onDoubleClick={() => onZoomCard && onZoomCard(card)}
+              onMouseEnter={() => showPreview(card.definition)}
+              onMouseLeave={hidePreview}
               style={{
                 transform: isSelected
                   ? 'translateY(-2.5rem) scale(1.25) rotate(0deg)'

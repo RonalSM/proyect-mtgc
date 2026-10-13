@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { CardInstance, GameActionType } from '@mtgc/shared';
 import { RotateCw, Eye, Plus, Copy } from 'lucide-react';
 import { CardDisplay } from './CardDisplay';
+import { useCardPreview } from '../context/CardPreviewContext';
 
 interface BattlefieldCanvasProps {
   cards: CardInstance[];
@@ -14,7 +15,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   isLocalPlayer,
   onAction,
 }) => {
-  const [hoveredCard, setHoveredCard] = useState<CardInstance | null>(null);
+  const { showPreview, hidePreview } = useCardPreview();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   const handleCardClick = (card: CardInstance) => {
@@ -68,8 +69,8 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
           <div
             key={card.instanceId}
             onClick={() => handleCardClick(card)}
-            onMouseEnter={() => setHoveredCard(card)}
-            onMouseLeave={() => setHoveredCard(null)}
+            onMouseEnter={() => !card.isFaceDown && showPreview(card.definition)}
+            onMouseLeave={hidePreview}
             className={`absolute cursor-pointer transition-transform duration-150 group select-none ${
               card.isTapped ? 'rotate-90' : ''
             }`}
@@ -149,25 +150,6 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
           </div>
         );
       })}
-
-      {/* Card Hover Zoom Preview (REQ-9.6, REQ-22.6.4) */}
-      {hoveredCard && !hoveredCard.isFaceDown && (
-        <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-150 animate-in fade-in zoom-in-95">
-          <div className="w-52 bg-slate-950/95 border border-slate-700 rounded-2xl shadow-2xl p-2.5 space-y-2 backdrop-blur-md">
-            <div className="aspect-[2.5/3.5] rounded-xl overflow-hidden border border-slate-800">
-              <CardDisplay card={hoveredCard.definition} allowFaceToggle={false} />
-            </div>
-            <div className="px-1 text-center">
-              <div className="font-bold text-xs text-white truncate">
-                {hoveredCard.definition.name}
-              </div>
-              <div className="text-[10px] text-slate-400 truncate">
-                {hoveredCard.definition.typeLine}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
