@@ -127,10 +127,17 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
 
   return (
     <div
-      className={`relative w-full h-full flex flex-col justify-between transition-all select-none ${
-        isActiveTurn ? 'ring-2 ring-amber-400/80 shadow-[inset_0_0_40px_rgba(251,191,36,0.12)]' : ''
+      className={`relative w-full h-full flex flex-col justify-between transition-all duration-200 select-none ${
+        isActiveTurn
+          ? 'ring-2 ring-inset ring-amber-400 shadow-[inset_0_0_50px_rgba(245,158,11,0.22)]'
+          : 'ring-1 ring-inset ring-slate-800/40'
       }`}
     >
+      {/* Indicador de acento superior para el turno activo */}
+      {isActiveTurn && (
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 shadow-md shadow-amber-400/50 z-30 pointer-events-none" />
+      )}
+
       {/* 1. PlaymatBackground (REQ-22.3) - overflow-hidden estricto solo aquí */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         {!reduceBackgrounds ? (
