@@ -231,16 +231,76 @@
     - README completo, manual de usuario ("cómo jugar una mesa"), guía de despliegue con Docker y avisos legales
     - _Dependencias: 7.1_
 
-  - [x] 7.3 Documentación
-    - README, guía de usuario ("cómo jugar una mesa"), guía de despliegue
-    - _Dependencias: 7.1_
+- [ ] **8. Sala de espera, iniciativa y mesa inmersiva**
+
+  - [ ] 8.0 Prerrequisitos (si siguen pendientes)
+    - Guardar mazos en la cuenta (REQ-7.5) y expulsar/transferir anfitrión (REQ-13)
+    - _Requisitos: REQ-7.5, REQ-13_
+
+  - [ ] 8.1 Máquina de estados de mesa y mensajes compartidos
+    - Estados `lobby | initiative | playing | finished`; tipos en `packages/shared`
+    - _Requisitos: REQ-20, REQ-21_
+    - _Dependencias: 3.2_
+
+  - [ ] 8.2 LobbyManager en el servidor
+    - Selección de mazo, "Listo", habilitar inicio, expulsar, transferir anfitrión, privacidad de la lista de cartas
+    - _Requisitos: REQ-20_
+    - _Dependencias: 8.0, 8.1_
+
+  - [ ] 8.3 GameStarter
+    - Barajar con CSPRNG, comandante a zona de comando, mano de 7
+    - _Requisitos: REQ-20.11_
+    - _Dependencias: 8.2_
+
+  - [ ] 8.4 InitiativeService
+    - d20 en servidor, empates por rondas, tiempo límite de 15 s, orden final de turnos
+    - _Requisitos: REQ-21_
+    - _Dependencias: 8.1, 8.3_
+
+  - [ ] 8.5 Pantalla de sala de espera
+    - Asientos, selector de mazos, modal de importación, "Listo", "Iniciar partida", expulsar
+    - _Requisitos: REQ-20, REQ-22.12_
+    - _Dependencias: 8.2, 4.4_
+
+  - [ ] 8.6 Superposición de iniciativa
+    - Animación de d20, resultados por jugador, empates y orden final
+    - _Requisitos: REQ-21, REQ-22.12_
+    - _Dependencias: 8.4_
+
+  - [ ] 8.7 Cuadrícula a sangre y barra flotante
+    - `TableGrid` de 2 filas y hasta 3 columnas (`--cols = ceil(jugadores/2)`), 100dvh sin scroll, celdas separadas por 1 px
+    - `FloatingToolbar` (ronda, temporizador, historial, espectadores, compartir, dados, ayuda, ajustes, plegable) y celda libre con `LogChatPanel`
+    - _Requisitos: REQ-22.1, 22.2, 22.9, 22.10_
+    - _Dependencias: 4.1_
+
+  - [ ] 8.8 Celda de jugador
+    - `PlayerCell` con `PlaymatBackground` (art_crop de Scryfall con degradado oscuro), `NameTag` (turno activo, iniciativa, conexión), `LifePill` en la esquina interior, insignias de contadores, `HandFan` y `PileSlots`
+    - Selector de playmat (`SET_PLAYMAT`) y atribución de Scryfall en el pie
+    - _Requisitos: REQ-22.3, 22.4, 22.5, 22.7, 22.8, REQ-3, REQ-4, REQ-5_
+    - _Dependencias: 8.7, 3.3_
+
+  - [ ] 8.9 Campo de batalla libre y ampliación de celda
+    - `BattlefieldCanvas` con posiciones normalizadas (x, y de 0 a 1) y orden `z`; arrastrar y soltar con dnd-kit (ratón, táctil y teclado)
+    - Vista ampliada de carta, `ExpandedCellView` (botón y doble clic, cerrar con Esc)
+    - _Requisitos: REQ-22.6, 22.11, 22.17, REQ-9_
+    - _Dependencias: 8.8, 3.4_
+
+  - [ ] 8.10 Orden de turnos en el juego
+    - `PASS_TURN` usa `turnOrder`; indicadores 1.º, 2.º… en la barra de turnos y zonas
+    - _Requisitos: REQ-21.7, REQ-21.8, REQ-22.4, REQ-6_
+    - _Dependencias: 8.4, 8.7_
+
+  - [ ] 8.11 Pruebas
+    - Unitarias del d20 y desempates; E2E de 4 clientes (lobby → d20 → partida); fuga de mazo privado; rendimiento 60 fps con 6 jugadores; posiciones normalizadas iguales en dos tamaños de ventana; contraste del texto sobre playmats
+    - _Requisitos: REQ-20, REQ-21, REQ-22_
+    - _Dependencias: 8.5 a 8.10_
 
 ## Fases posteriores (post-MVP)
 
-- [ ] **8. Video integrado** (LiveKit/WebRTC) — _REQ-12.3_
-- [ ] **9. Historial y estadísticas** por mazo y jugador — _REQ-14_
-- [ ] **10. Importadores** Moxfield/Archidekt — _REQ-7.2_
-- [ ] **11. Modos de juego** (Brawl, Two-Headed Giant) y tokens personalizados
+- [ ] **9. Video integrado** (LiveKit/WebRTC) — _REQ-12.3_
+- [ ] **10. Historial y estadísticas** por mazo y jugador — _REQ-14_
+- [ ] **11. Importadores** Moxfield/Archidekt — _REQ-7.2_
+- [ ] **12. Modos de juego** (Brawl, Two-Headed Giant) y tokens personalizados
 
 ## Grafo de dependencias (resumen)
 
