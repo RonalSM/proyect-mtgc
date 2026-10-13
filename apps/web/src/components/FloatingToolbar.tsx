@@ -13,6 +13,7 @@ import {
   HelpCircle,
   SkipForward,
   Coins,
+  LogOut,
 } from 'lucide-react';
 
 interface FloatingToolbarProps {
@@ -22,6 +23,7 @@ interface FloatingToolbarProps {
   onToggleChat: () => void;
   reduceBackgrounds: boolean;
   onToggleReduceBackgrounds: (val: boolean) => void;
+  onLeaveRoom?: () => void;
 }
 
 export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
@@ -31,6 +33,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   onToggleChat,
   reduceBackgrounds,
   onToggleReduceBackgrounds,
+  onLeaveRoom,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -212,6 +215,17 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               >
                 <HelpCircle className="w-3.5 h-3.5" />
               </button>
+
+              {/* Leave Room button */}
+              {onLeaveRoom && (
+                <button
+                  onClick={onLeaveRoom}
+                  className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors"
+                  title="Salir de la mesa"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           )}
 

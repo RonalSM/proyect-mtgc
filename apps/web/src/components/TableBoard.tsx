@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import type { RoomState, GameActionType, PlayerState } from '@mtgc/shared';
 import { TableGrid } from './TableGrid';
 import { PlayerCell } from './PlayerCell';
-import { Battlefield } from './Battlefield';
 import { BattlefieldCanvas } from './BattlefieldCanvas';
 import { ExpandedCellView } from './ExpandedCellView';
 
@@ -18,6 +17,7 @@ export const TableBoard: React.FC<TableBoardProps> = ({
   roomState,
   localPlayerId,
   onAction,
+  onLeaveRoom,
 }) => {
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
 
@@ -54,19 +54,11 @@ export const TableBoard: React.FC<TableBoardProps> = ({
         onAction={onAction}
         onExpandCell={() => setExpandedPlayerId(player.id)}
       >
-        {isLocal ? (
-          <Battlefield
-            localPlayerId={player.id}
-            zones={zones}
-            onAction={onAction}
-          />
-        ) : (
-          <BattlefieldCanvas
-            cards={zones.battlefield}
-            isLocalPlayer={false}
-            onAction={onAction}
-          />
-        )}
+        <BattlefieldCanvas
+          cards={zones.battlefield}
+          isLocalPlayer={isLocal}
+          onAction={onAction}
+        />
       </PlayerCell>
     );
   };
@@ -78,6 +70,7 @@ export const TableBoard: React.FC<TableBoardProps> = ({
         roomState={roomState}
         localPlayerId={localPlayerId}
         onAction={onAction}
+        onLeaveRoom={onLeaveRoom}
         renderPlayerCell={renderPlayerCell}
       />
 

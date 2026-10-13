@@ -104,6 +104,29 @@ export default function App() {
     setRoomCode(null);
   };
 
+  // Full-bleed game table view (REQ-22.1, REQ-22.2) — no page scroll, exactly 100dvh
+  if (roomCode && roomState && roomState.status !== 'lobby') {
+    return (
+      <div className="fixed inset-0 w-screen h-[100dvh] overflow-hidden bg-black select-none">
+        <TableBoard
+          roomState={roomState}
+          localPlayerId={playerId}
+          connectionStatus={status}
+          onAction={sendAction}
+          onLeaveRoom={handleLeaveRoom}
+        />
+        {roomState.status === 'initiative' && (
+          <InitiativeOverlay
+            roomState={roomState}
+            localPlayerId={playerId}
+            onAction={sendAction}
+          />
+        )}
+        <LegalModal isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none">
       {/* Top Header */}
@@ -181,31 +204,12 @@ export default function App() {
       {/* Main Container */}
       <main className="flex-1 p-4 max-w-7xl w-full mx-auto overflow-hidden">
         {roomCode && roomState ? (
-          roomState.status === 'lobby' ? (
-            <LobbyWaitingRoom
-              roomState={roomState}
-              localPlayerId={playerId}
-              onAction={sendAction}
-              onLeaveRoom={handleLeaveRoom}
-            />
-          ) : (
-            <>
-              <TableBoard
-                roomState={roomState}
-                localPlayerId={playerId}
-                connectionStatus={status}
-                onAction={sendAction}
-                onLeaveRoom={handleLeaveRoom}
-              />
-              {roomState.status === 'initiative' && (
-                <InitiativeOverlay
-                  roomState={roomState}
-                  localPlayerId={playerId}
-                  onAction={sendAction}
-                />
-              )}
-            </>
-          )
+          <LobbyWaitingRoom
+            roomState={roomState}
+            localPlayerId={playerId}
+            onAction={sendAction}
+            onLeaveRoom={handleLeaveRoom}
+          />
         ) : activeMainTab === 'importer' ? (
           <div className="py-4">
             <DeckImporter />

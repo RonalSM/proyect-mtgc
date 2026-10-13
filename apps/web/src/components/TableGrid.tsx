@@ -13,6 +13,7 @@ interface TableGridProps {
     col: number,
     isLocal: boolean,
   ) => React.ReactNode;
+  onLeaveRoom?: () => void;
 }
 
 export const TableGrid: React.FC<TableGridProps> = ({
@@ -20,6 +21,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
   localPlayerId,
   onAction,
   renderPlayerCell,
+  onLeaveRoom,
 }) => {
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
   const [reduceBackgrounds, setReduceBackgrounds] = useState<boolean>(() => {
@@ -108,6 +110,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
         onToggleChat={() => setIsChatDrawerOpen(!isChatDrawerOpen)}
         reduceBackgrounds={reduceBackgrounds}
         onToggleReduceBackgrounds={handleToggleReduceBackgrounds}
+        onLeaveRoom={onLeaveRoom}
       />
 
       {/* Full-bleed 2-row Grid (REQ-22.1, 22.2) */}
