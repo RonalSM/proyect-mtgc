@@ -22,6 +22,7 @@ export interface CardDefinition {
   oracleText?: string;
   colors: CardColor[];
   colorIdentity: CardColor[];
+  legalities?: Record<string, string>;
   power?: string;
   toughness?: string;
   imageUrlSmall?: string;

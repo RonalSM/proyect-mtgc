@@ -37,6 +37,7 @@ export interface ValidationResult {
   commanderColorIdentity: CardColor[];
   errors: string[];
   warnings: string[];
+  bannedCards: string[];
 }
 
 /**
@@ -48,6 +49,7 @@ export function validateCommanderDeck(
 ): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
+  const bannedCards: string[] = [];
 
   const commanderTotal = commanderCards.reduce((sum, c) => sum + c.quantity, 0);
   const maindeckTotal = maindeckCards.reduce((sum, c) => sum + c.quantity, 0);
@@ -76,7 +78,7 @@ export function validateCommanderDeck(
   }
   const commanderColorIdentity = Array.from(commanderColorSet);
 
-  // 4. Singleton and Color Identity checks
+  // 4. Singleton, Color Identity, and Banned checks
   const cardCounts = new Map<string, number>();
 
   const allCards = [...commanderCards, ...maindeckCards];
@@ -91,6 +93,14 @@ export function validateCommanderDeck(
       errors.push(
         `"${card.name}" contiene identidad de color [${invalidColors.join(', ')}] no permitida por el comandante [${commanderColorIdentity.join(', ') || 'Incoloro'}].`,
       );
+    }
+
+    // Banned and legality check (REQ-8.3, REQ-8.4)
+    if (card.legalities?.commander === 'banned') {
+      bannedCards.push(card.name);
+      warnings.push(`Carta prohibida (banned) en Commander según Scryfall: "${card.name}".`);
+    } else if (card.legalities?.commander === 'not_legal') {
+      warnings.push(`Carta no legal en Commander según Scryfall: "${card.name}".`);
     }
   }
 
@@ -116,5 +126,6 @@ export function validateCommanderDeck(
     commanderColorIdentity,
     errors,
     warnings,
+    bannedCards,
   };
 }

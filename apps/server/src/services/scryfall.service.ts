@@ -137,6 +137,7 @@ export class ScryfallService {
       oracleText: raw.oracle_text || primaryFace?.oracle_text,
       colors: (raw.colors || []) as CardColor[],
       colorIdentity: (raw.color_identity || []) as CardColor[],
+      legalities: raw.legalities,
       power: raw.power || primaryFace?.power,
       toughness: raw.toughness || primaryFace?.toughness,
       imageUrlSmall,

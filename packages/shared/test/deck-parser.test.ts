@@ -208,3 +208,53 @@ test('validateCommanderDeck validates a complete 100-card Commander deck', () =>
   assert.strictEqual(result.errors.length, 0);
   assert.deepStrictEqual(result.commanderColorIdentity.sort(), ['B', 'G', 'U', 'W']);
 });
+
+test('validateCommanderDeck flags banned cards with warnings according to legalities.commander (REQ-8.3)', () => {
+  const commander: CardDefinition = {
+    scryfallId: 'cmd-golos',
+    name: 'Golos, Tireless Pilgrim',
+    cmc: 5,
+    typeLine: 'Legendary Artifact Creature',
+    colors: [],
+    colorIdentity: ['W', 'U', 'B', 'R', 'G'],
+    legalities: { commander: 'banned' },
+  };
+
+  const blackLotus: CardDefinition = {
+    scryfallId: 'black-lotus',
+    name: 'Black Lotus',
+    cmc: 0,
+    typeLine: 'Artifact',
+    colors: [],
+    colorIdentity: [],
+    legalities: { commander: 'banned' },
+  };
+
+  const forest: CardDefinition = {
+    scryfallId: 'forest-1',
+    name: 'Forest',
+    cmc: 0,
+    typeLine: 'Basic Land — Forest',
+    colors: [],
+    colorIdentity: ['G'],
+    legalities: { commander: 'legal' },
+  };
+
+  const commanderEntry: DeckCardWithQuantity[] = [
+    { card: commander, quantity: 1, isCommander: true },
+  ];
+  const maindeck: DeckCardWithQuantity[] = [
+    { card: blackLotus, quantity: 1, isCommander: false },
+    { card: forest, quantity: 98, isCommander: false },
+  ];
+
+  const result = validateCommanderDeck(commanderEntry, maindeck);
+
+  // REQ-8.4: Doesn't block valid structure, but reports warnings
+  assert.strictEqual(result.totalCards, 100);
+  assert.strictEqual(result.isValid, true);
+  assert.strictEqual(result.bannedCards.length, 2);
+  assert.ok(result.bannedCards.includes('Golos, Tireless Pilgrim'));
+  assert.ok(result.bannedCards.includes('Black Lotus'));
+  assert.strictEqual(result.warnings.length, 2);
+});
