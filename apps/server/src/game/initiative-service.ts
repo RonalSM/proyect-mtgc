@@ -4,6 +4,7 @@ import type { GameStateSession } from './game-state.js';
 export class InitiativeService {
   private session: GameStateSession;
   private timeoutTimer: NodeJS.Timeout | null = null;
+  private roundRollsHistory = new Map<number, Record<string, number>>();
   // Callback when state transitions or completes (e.g., to broadcast over WS)
   public onStateChanged?: () => void;
 
@@ -137,6 +138,14 @@ export class InitiativeService {
       groups.set(val, [...(groups.get(val) ?? []), pid]);
     }
 
+    // Record current round rolls into history
+    const currentRound = initiative.round;
+    const currentRoundRolls: Record<string, number> = {};
+    for (const pid of currentPool) {
+      currentRoundRolls[pid] = initiative.rolls[pid] ?? state.players[pid]?.initiativeRoll ?? 1;
+    }
+    this.roundRollsHistory.set(currentRound, currentRoundRolls);
+
     const sortedVals = [...groups.keys()].sort((a, b) => b - a);
     const tiedPlayerIds: string[] = [];
     for (const val of sortedVals) {
@@ -164,14 +173,21 @@ export class InitiativeService {
     }
 
     // All ties resolved or round >= 5: Determine final turn order
-    // Order all seated players by their final effective roll
+    // Order all seated players hierarchically by round-by-round rolls (REQ-21.5, REQ-21.6)
     const finalOrder = [...seatedPlayerIds].sort((a, b) => {
-      const rollA = state.players[a]?.initiativeRoll ?? 0;
-      const rollB = state.players[b]?.initiativeRoll ?? 0;
-      if (rollB !== rollA) {
-        return rollB - rollA; // Highest roll plays first (REQ-21.5)
+      for (let r = 1; r <= initiative.round; r++) {
+        const rollsForR = this.roundRollsHistory.get(r);
+        const rollA =
+          rollsForR?.[a] ?? (r === initiative.round ? state.players[a]?.initiativeRoll : undefined);
+        const rollB =
+          rollsForR?.[b] ?? (r === initiative.round ? state.players[b]?.initiativeRoll : undefined);
+
+        if (rollA !== undefined && rollB !== undefined && rollB !== rollA) {
+          return rollB - rollA; // Mayor tirada en la ronda r juega primero
+        }
       }
-      // Persistent tie after 5 rounds: break by seatNumber ascending (REQ-21.6)
+
+      // Desempate persistente tras 5 rondas: por número de asiento ascendente (REQ-21.6)
       const seatA = state.players[a]?.seatNumber ?? 0;
       const seatB = state.players[b]?.seatNumber ?? 0;
       return seatA - seatB;

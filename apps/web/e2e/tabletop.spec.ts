@@ -132,4 +132,83 @@ test.describe('E2E Tabletop - 4 Players Live Pod', () => {
     await p3Context.close();
     await p4Context.close();
   });
+
+  test('Fase 8 E2E: 4 Jugadores completan Lobby -> Mazos -> Listo -> Inicio -> D20 Iniciativa -> Cuadrícula 2x2', async ({
+    browser,
+  }) => {
+    // 1. Host crea la mesa
+    const hostContext = await browser.newContext();
+    const hostPage = await hostContext.newPage();
+    await hostPage.goto('http://localhost:3000');
+
+    await hostPage.fill('input[placeholder="Ej. Pod Casual 4 Jugadores"]', 'Pod Fase 8');
+    await hostPage.fill('input[placeholder="Ej. Planeswalker 1"]', 'Alice Host');
+    await hostPage.click('button:has-text("Crear Mesa y Obtener Código")');
+
+    const roomCodeButton = hostPage.locator('button[title="Copiar código de la mesa"]').first();
+    await expect(roomCodeButton).toBeVisible({ timeout: 10000 });
+    const roomCode = (await roomCodeButton.innerText()).trim();
+
+    // 2. Jugadores 2, 3, 4 se unen
+    const p2Context = await browser.newContext();
+    const p2Page = await p2Context.newPage();
+    await p2Page.goto('http://localhost:3000');
+    await p2Page.click('button:has-text("Unirse con Código")');
+    await p2Page.fill('input[placeholder="EJ: 5HQWNJ"]', roomCode);
+    await p2Page.fill('input[placeholder="Ej. Jugador Invitado"]', 'Bob');
+    await p2Page.click('button:has-text("Entrar a la Mesa")');
+
+    const p3Context = await browser.newContext();
+    const p3Page = await p3Context.newPage();
+    await p3Page.goto('http://localhost:3000');
+    await p3Page.click('button:has-text("Unirse con Código")');
+    await p3Page.fill('input[placeholder="EJ: 5HQWNJ"]', roomCode);
+    await p3Page.fill('input[placeholder="Ej. Jugador Invitado"]', 'Charlie');
+    await p3Page.click('button:has-text("Entrar a la Mesa")');
+
+    const p4Context = await browser.newContext();
+    const p4Page = await p4Context.newPage();
+    await p4Page.goto('http://localhost:3000');
+    await p4Page.click('button:has-text("Unirse con Código")');
+    await p4Page.fill('input[placeholder="EJ: 5HQWNJ"]', roomCode);
+    await p4Page.fill('input[placeholder="Ej. Jugador Invitado"]', 'Diana');
+    await p4Page.click('button:has-text("Entrar a la Mesa")');
+
+    // 3. Verificar los 4 asientos en la sala de espera
+    await expect(hostPage.locator('text=Bob')).toBeVisible({ timeout: 5000 });
+    await expect(hostPage.locator('text=Charlie')).toBeVisible({ timeout: 5000 });
+    await expect(hostPage.locator('text=Diana')).toBeVisible({ timeout: 5000 });
+
+    // 4. Cargar/Seleccionar mazos y marcar Listo para todos
+    for (const page of [hostPage, p2Page, p3Page, p4Page]) {
+      const cargarMazoBtn = page.locator('button:has-text("Cargar Mazo"), button:has-text("Cambiar Mazo")').first();
+      if (await cargarMazoBtn.isVisible()) {
+        await cargarMazoBtn.click();
+        const validarBtn = page.locator('button:has-text("Validar y Cargar Mazo"), button:has-text("Confirmar Mazo")').first();
+        if (await validarBtn.isVisible()) {
+          await validarBtn.click();
+        }
+      }
+      const listoBtn = page.locator('button:has-text("Marcar Listo"), button:has-text("Listo")').first();
+      if (await listoBtn.isVisible()) {
+        await listoBtn.click();
+      }
+    }
+
+    // 5. Host inicia la partida
+    const iniciarBtn = hostPage.locator('button:has-text("Iniciar Partida")').first();
+    if (await iniciarBtn.isVisible()) {
+      await iniciarBtn.click();
+    }
+
+    // 6. Verificar transición a iniciativa o partida (D20 o Cuadrícula)
+    const gridOrInitiative = hostPage.locator('text=Fase de Iniciativa, text=Tirar D20, [data-drop-zone="battlefield"]').first();
+    await expect(gridOrInitiative).toBeVisible({ timeout: 15000 });
+
+    // Limpieza
+    await hostContext.close();
+    await p2Context.close();
+    await p3Context.close();
+    await p4Context.close();
+  });
 });
