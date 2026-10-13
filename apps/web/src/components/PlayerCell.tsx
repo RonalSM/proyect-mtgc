@@ -342,10 +342,38 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         </div>
       </div>
 
-      {/* 5. Bottom Docks: HandFan (Left) & PileSlots (Right) (REQ-22.7, REQ-22.8) */}
-      <div className="relative z-20 flex items-end justify-between px-3 pb-2 pointer-events-auto">
-        {/* Hand Fan (Bottom-Left / Center) (REQ-22.7) */}
-        <div className="flex-1 max-w-[65%] sm:max-w-[70%] overflow-visible">
+      {/* 5. Zona Inferior de cada Celda (Punto 5, REQ-22.7, REQ-22.8) */}
+      <div className="relative z-20 flex items-end justify-between px-3 pb-2 w-full gap-2 pointer-events-auto select-none">
+        {/* 1. Zona de Comandante (Izquierda) - Mismo ancho y alto que una carta */}
+        <div
+          onClick={() => setActivePileModal('command')}
+          className="w-14 sm:w-16 md:w-20 aspect-[2.5/3.5] rounded-lg overflow-hidden border shadow-lg cursor-pointer transition-transform hover:scale-105 active:scale-95 bg-slate-950 flex flex-col items-center justify-center relative flex-shrink-0"
+          title={`Zona de Comando (${zones.command.length} cartas)`}
+        >
+          {zones.command.length > 0 ? (
+            <div className="w-full h-full relative">
+              <CardDisplay card={zones.command[0].definition} allowFaceToggle={false} />
+              {player.counters.commanderTax > 0 && (
+                <div className="absolute top-1 right-1 bg-amber-500 text-slate-950 font-black text-[9px] px-1 rounded shadow">
+                  +{player.counters.commanderTax}
+                </div>
+              )}
+              <div className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[8px] font-black text-amber-300 text-center py-0.5 tracking-wider uppercase backdrop-blur-xs">
+                COMANDANTE
+              </div>
+            </div>
+          ) : (
+            <div className="w-full h-full border-2 border-dashed border-amber-600/40 rounded-lg flex flex-col items-center justify-center p-1 text-center bg-amber-950/10">
+              <span className="text-[9px] font-black text-amber-500/80 uppercase tracking-tight leading-tight">
+                ZONA COMANDO
+              </span>
+              <span className="text-[8px] text-slate-500 mt-0.5">(En campo)</span>
+            </div>
+          )}
+        </div>
+
+        {/* 2. Mano en Abanico (Centrada en la celda y completamente visible) */}
+        <div className="flex-1 flex justify-center items-end overflow-visible min-w-0">
           <HandFan
             cards={zones.hand}
             handCount={player.handCount}
@@ -355,66 +383,62 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           />
         </div>
 
-        {/* Pile Slots (Bottom-Right) (REQ-22.8) */}
-        <div className="flex items-center space-x-1.5">
-          {/* Library Slot */}
-          <div
-            className="w-8 h-11 rounded-lg bg-slate-950/90 border border-slate-700/80 flex flex-col items-center justify-center cursor-pointer shadow-md"
-            title={`Biblioteca: ${zones.library.length || player.libraryCount} cartas`}
-            onClick={() => isLocalPlayer && onAction('DRAW_CARDS', { count: 1 })}
-          >
-            <span className="text-[10px] font-mono font-black text-amber-300">
+        {/* 3. Biblioteca - Dorso del tamaño de una carta con contador encima */}
+        <div
+          onClick={() => isLocalPlayer && onAction('DRAW_CARDS', { count: 1 })}
+          className={`w-14 sm:w-16 md:w-20 aspect-[2.5/3.5] rounded-lg overflow-hidden border shadow-lg relative flex flex-col items-center justify-center flex-shrink-0 ${
+            isLocalPlayer ? 'cursor-pointer hover:scale-105 active:scale-95 border-amber-500/50' : 'border-slate-800'
+          }`}
+          title={isLocalPlayer ? 'Click para robar carta de la Biblioteca' : 'Biblioteca'}
+        >
+          <img
+            src="https://cards.scryfall.io/back.png"
+            alt="Biblioteca"
+            className="w-full h-full object-cover pointer-events-none"
+          />
+          {/* Contador superpuesto encima */}
+          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 pointer-events-none">
+            <span className="text-sm sm:text-base font-black font-mono text-white drop-shadow-md">
               {zones.library.length || player.libraryCount}
             </span>
-            <span className="text-[7px] text-slate-500 uppercase font-bold">Bib</span>
+            <span className="text-[8px] font-black tracking-wider text-amber-300 uppercase drop-shadow">
+              BIBLIOTECA
+            </span>
           </div>
+        </div>
 
-          {/* Graveyard Slot */}
+        {/* 4. Cementerio y Exilio Apilados (Mismo ancho que una carta, mitad de alto cada uno) */}
+        <div className="w-14 sm:w-16 md:w-20 aspect-[2.5/3.5] flex flex-col gap-1 flex-shrink-0">
+          {/* Cementerio (Mitad Superior) */}
           <div
             onClick={() => setActivePileModal('graveyard')}
-            className={`w-8 h-11 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors shadow-md ${
-              zones.graveyard.length > 0
-                ? 'bg-slate-900 border border-slate-700'
-                : 'border border-dashed border-slate-700/60 bg-slate-950/40 text-slate-600'
+            className={`flex-1 rounded-md overflow-hidden border border-slate-700 bg-slate-900/90 shadow flex flex-col items-center justify-center cursor-pointer hover:border-slate-500 active:scale-95 transition-all p-0.5 ${
+              zones.graveyard.length > 0 ? 'bg-slate-800/90' : 'opacity-70'
             }`}
             title={`Cementerio: ${zones.graveyard.length} cartas`}
           >
-            <span className="text-[10px] font-mono font-bold text-slate-300">
+            <span className="text-[7px] font-extrabold text-slate-300 uppercase tracking-tight">
+              CEMENTERIO
+            </span>
+            <span className="text-[11px] font-mono font-black text-amber-300 leading-tight">
               {zones.graveyard.length}
             </span>
-            <span className="text-[7px] text-slate-500 uppercase font-bold">Cem</span>
           </div>
 
-          {/* Exile Slot */}
+          {/* Exilio (Mitad Inferior) */}
           <div
             onClick={() => setActivePileModal('exile')}
-            className={`w-8 h-11 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors shadow-md ${
-              zones.exile.length > 0
-                ? 'bg-slate-900 border border-slate-700'
-                : 'border border-dashed border-slate-700/60 bg-slate-950/40 text-slate-600'
+            className={`flex-1 rounded-md overflow-hidden border border-slate-700 bg-slate-900/90 shadow flex flex-col items-center justify-center cursor-pointer hover:border-purple-500/50 active:scale-95 transition-all p-0.5 ${
+              zones.exile.length > 0 ? 'bg-purple-950/40 border-purple-700/60' : 'opacity-70'
             }`}
             title={`Exilio: ${zones.exile.length} cartas`}
           >
-            <span className="text-[10px] font-mono font-bold text-slate-300">
+            <span className="text-[7px] font-extrabold text-purple-300 uppercase tracking-tight">
+              EXILIO
+            </span>
+            <span className="text-[11px] font-mono font-black text-purple-200 leading-tight">
               {zones.exile.length}
             </span>
-            <span className="text-[7px] text-slate-500 uppercase font-bold">Exi</span>
-          </div>
-
-          {/* Command Zone Slot */}
-          <div
-            onClick={() => setActivePileModal('command')}
-            className={`w-8 h-11 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors shadow-md ${
-              zones.command.length > 0
-                ? 'bg-amber-950/40 border border-amber-600/80 text-amber-300'
-                : 'border border-dashed border-slate-700/60 bg-slate-950/40 text-slate-600'
-            }`}
-            title={`Zona de Comando: ${zones.command.length} comandante(s)`}
-          >
-            <span className="text-[10px] font-mono font-bold">
-              {zones.command.length}
-            </span>
-            <span className="text-[7px] text-amber-500 uppercase font-bold">Cmd</span>
           </div>
         </div>
       </div>
