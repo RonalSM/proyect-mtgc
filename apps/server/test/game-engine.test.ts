@@ -26,6 +26,7 @@ function createMockRoomState(): RoomState {
         commanderDamage: {},
         counters: { poison: 0, energy: 0, experience: 0, commanderTax: 0, custom: {} },
         isEliminated: false,
+        isAtRisk: false,
         deckLoaded: true,
         handCount: 7,
         libraryCount: 92,
@@ -43,6 +44,7 @@ function createMockRoomState(): RoomState {
         commanderDamage: {},
         counters: { poison: 0, energy: 0, experience: 0, commanderTax: 0, custom: {} },
         isEliminated: false,
+        isAtRisk: false,
         deckLoaded: true,
         handCount: 7,
         libraryCount: 92,
@@ -95,25 +97,39 @@ function createMockRoomState(): RoomState {
   };
 }
 
-test('GameStateSession - adjustLife modifies life and flags defeat at 0', () => {
+test('GameStateSession - adjustLife & setLife flag defeat risk without automatic elimination (REQ-3.3, 3.4)', () => {
   const session = new GameStateSession(createMockRoomState());
 
   session.adjustLife({ playerId: 'p1', delta: -10 });
   assert.strictEqual(session.state.players['p1']?.life, 30);
   assert.strictEqual(session.state.players['p1']?.isEliminated, false);
+  assert.strictEqual(session.state.players['p1']?.isAtRisk, false);
 
   session.adjustLife({ playerId: 'p1', delta: -30 });
   assert.strictEqual(session.state.players['p1']?.life, 0);
-  assert.strictEqual(session.state.players['p1']?.isEliminated, true);
-  assert.strictEqual(session.state.players['p1']?.eliminationReason, 'life');
-
-  // Test Undo
-  session.undoLast('p1');
-  assert.strictEqual(session.state.players['p1']?.life, 30);
+  // No se elimina automáticamente: queda en riesgo de derrota
   assert.strictEqual(session.state.players['p1']?.isEliminated, false);
+  assert.strictEqual(session.state.players['p1']?.isAtRisk, true);
+  assert.strictEqual(session.state.players['p1']?.riskReason, 'life');
+
+  // Test manual elimination and revival
+  session.setPlayerStatus({ playerId: 'p1', isEliminated: true, reason: 'life' });
+  assert.strictEqual(session.state.players['p1']?.isEliminated, true);
+  session.setPlayerStatus({ playerId: 'p1', isEliminated: false });
+  assert.strictEqual(session.state.players['p1']?.isEliminated, false);
+
+  // Test setLife (REQ-3.4)
+  session.setLife({ playerId: 'p1', life: 25 });
+  assert.strictEqual(session.state.players['p1']?.life, 25);
+  assert.strictEqual(session.state.players['p1']?.isAtRisk, false);
+
+  // Test Undo on setLife
+  session.undoLast('p1');
+  assert.strictEqual(session.state.players['p1']?.life, 0);
+  assert.strictEqual(session.state.players['p1']?.isAtRisk, true);
 });
 
-test('GameStateSession - commanderDamage triggers defeat at 21 damage', () => {
+test('GameStateSession - commanderDamage triggers defeat risk at 21 damage without auto eliminate (REQ-4.2)', () => {
   const session = new GameStateSession(createMockRoomState());
 
   session.adjustCommanderDamage({
@@ -123,6 +139,7 @@ test('GameStateSession - commanderDamage triggers defeat at 21 damage', () => {
   });
   assert.strictEqual(session.state.players['p1']?.commanderDamage['cmdr_opponent'], 15);
   assert.strictEqual(session.state.players['p1']?.isEliminated, false);
+  assert.strictEqual(session.state.players['p1']?.isAtRisk, false);
 
   session.adjustCommanderDamage({
     targetPlayerId: 'p1',
@@ -130,8 +147,10 @@ test('GameStateSession - commanderDamage triggers defeat at 21 damage', () => {
     delta: 6,
   });
   assert.strictEqual(session.state.players['p1']?.commanderDamage['cmdr_opponent'], 21);
-  assert.strictEqual(session.state.players['p1']?.isEliminated, true);
-  assert.strictEqual(session.state.players['p1']?.eliminationReason, 'commander_damage');
+  // En riesgo de derrota, no eliminado automáticamente
+  assert.strictEqual(session.state.players['p1']?.isEliminated, false);
+  assert.strictEqual(session.state.players['p1']?.isAtRisk, true);
+  assert.strictEqual(session.state.players['p1']?.riskReason, 'commander_damage');
 });
 
 test('VisibilityFilter - masks opponent hand while leaving owner hand intact', () => {

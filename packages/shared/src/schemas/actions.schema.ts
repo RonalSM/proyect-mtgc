@@ -81,11 +81,24 @@ export const TransferHostSchema = z.object({
   newHostId: z.string().optional(),
 });
 
+export const SetLifeSchema = z.object({
+  playerId: z.string().min(1),
+  life: z.number().int(),
+});
+
+export const SetPlayerStatusSchema = z.object({
+  playerId: z.string().min(1),
+  isEliminated: z.boolean(),
+  reason: z.string().max(200).optional(),
+});
+
 export const ActionEnvelopeSchema = z.object({
   type: z.enum([
     'ADJUST_LIFE',
+    'SET_LIFE',
     'COMMANDER_DAMAGE',
     'SET_PLAYER_COUNTER',
+    'SET_PLAYER_STATUS',
     'SET_CARD_COUNTER',
     'MOVE_CARD',
     'TAP_CARD',

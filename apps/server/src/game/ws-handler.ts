@@ -2,6 +2,8 @@ import { WebSocket } from 'ws';
 import {
   ActionEnvelopeSchema,
   AdjustLifeSchema,
+  SetLifeSchema,
+  SetPlayerStatusSchema,
   CommanderDamageSchema,
   SetPlayerCounterSchema,
   SetCardCounterSchema,
@@ -132,6 +134,18 @@ export class WebSocketHandler {
         case 'ADJUST_LIFE': {
           const valid = AdjustLifeSchema.parse(payload);
           session.adjustLife(valid);
+          break;
+        }
+
+        case 'SET_LIFE': {
+          const valid = SetLifeSchema.parse(payload);
+          session.setLife(valid);
+          break;
+        }
+
+        case 'SET_PLAYER_STATUS': {
+          const valid = SetPlayerStatusSchema.parse(payload);
+          session.setPlayerStatus(valid);
           break;
         }
 

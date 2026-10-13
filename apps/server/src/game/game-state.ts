@@ -3,6 +3,8 @@ import {
   CardDefinition,
   GameLogEntry,
   AdjustLifePayload,
+  SetLifePayload,
+  SetPlayerStatusPayload,
   CommanderDamagePayload,
   SetPlayerCounterPayload,
   SetCardCounterPayload,
@@ -63,19 +65,24 @@ export class GameStateSession {
   }
 
   /**
-   * Adjusts life total and checks defeat condition (life <= 0)
+   * Adjusts life total and checks defeat risk condition (life <= 0) without automatic elimination (REQ-3.3)
    */
   public adjustLife(payload: AdjustLifePayload): void {
     const player = this.state.players[payload.playerId];
     if (!player) return;
 
     const previousLife = player.life;
+    const previousIsAtRisk = player.isAtRisk;
+    const previousRiskReason = player.riskReason;
     player.life += payload.delta;
 
-    if (player.life <= 0 && !player.isEliminated) {
-      player.isEliminated = true;
-      player.eliminationReason = 'life';
-      this.addLog(payload.playerId, `ha sido derrotado por llegar a 0 vidas`);
+    if (player.life <= 0) {
+      player.isAtRisk = true;
+      player.riskReason = 'life';
+      this.addLog(payload.playerId, `está en riesgo de derrota (0 o menos vidas)`);
+    } else if (player.riskReason === 'life') {
+      player.isAtRisk = false;
+      player.riskReason = undefined;
     }
 
     const sign = payload.delta > 0 ? `+${payload.delta}` : `${payload.delta}`;
@@ -86,10 +93,8 @@ export class GameStateSession {
       description: `Revertir cambio de vida ${sign}`,
       revert: () => {
         player.life = previousLife;
-        if (player.life > 0 && player.eliminationReason === 'life') {
-          player.isEliminated = false;
-          player.eliminationReason = undefined;
-        }
+        player.isAtRisk = previousIsAtRisk;
+        player.riskReason = previousRiskReason;
       },
     });
 
@@ -97,7 +102,43 @@ export class GameStateSession {
   }
 
   /**
-   * Records commander combat damage and checks 21 damage rule
+   * Sets exact life total (REQ-3.4) and flags defeat risk if <= 0
+   */
+  public setLife(payload: SetLifePayload): void {
+    const player = this.state.players[payload.playerId];
+    if (!player) return;
+
+    const previousLife = player.life;
+    const previousIsAtRisk = player.isAtRisk;
+    const previousRiskReason = player.riskReason;
+
+    player.life = payload.life;
+    if (player.life <= 0) {
+      player.isAtRisk = true;
+      player.riskReason = 'life';
+      this.addLog(payload.playerId, `está en riesgo de derrota (0 o menos vidas)`);
+    } else if (player.riskReason === 'life') {
+      player.isAtRisk = false;
+      player.riskReason = undefined;
+    }
+
+    this.addLog(payload.playerId, `fijó su total de vidas en ${player.life}`, true);
+
+    this.undoStack.push({
+      playerId: payload.playerId,
+      description: `Revertir fijar vida a ${player.life}`,
+      revert: () => {
+        player.life = previousLife;
+        player.isAtRisk = previousIsAtRisk;
+        player.riskReason = previousRiskReason;
+      },
+    });
+
+    this.incrementVersion();
+  }
+
+  /**
+   * Records commander combat damage and checks 21 damage rule for defeat risk (REQ-4.2)
    */
   public adjustCommanderDamage(payload: CommanderDamagePayload): void {
     const target = this.state.players[payload.targetPlayerId];
@@ -105,16 +146,25 @@ export class GameStateSession {
 
     const current = target.commanderDamage[payload.sourceCommanderInstanceId] ?? 0;
     const previous = current;
+    const previousIsAtRisk = target.isAtRisk;
+    const previousRiskReason = target.riskReason;
+
     const newDamage = Math.max(0, current + payload.delta);
     target.commanderDamage[payload.sourceCommanderInstanceId] = newDamage;
 
-    if (newDamage >= 21 && !target.isEliminated) {
-      target.isEliminated = true;
-      target.eliminationReason = 'commander_damage';
+    if (newDamage >= 21) {
+      target.isAtRisk = true;
+      target.riskReason = 'commander_damage';
       this.addLog(
         payload.targetPlayerId,
-        `ha sido derrotado por recibir 21 o más daño de comandante`,
+        `está en riesgo de derrota (21 o más daño de comandante acumulado)`,
       );
+    } else if (target.riskReason === 'commander_damage') {
+      const any21 = Object.values(target.commanderDamage).some(v => v >= 21);
+      if (!any21) {
+        target.isAtRisk = false;
+        target.riskReason = undefined;
+      }
     }
 
     const sign = payload.delta > 0 ? `+${payload.delta}` : `${payload.delta}`;
@@ -129,10 +179,43 @@ export class GameStateSession {
       description: `Revertir daño de comandante`,
       revert: () => {
         target.commanderDamage[payload.sourceCommanderInstanceId] = previous;
-        if (previous < 21 && target.eliminationReason === 'commander_damage') {
-          target.isEliminated = false;
-          target.eliminationReason = undefined;
-        }
+        target.isAtRisk = previousIsAtRisk;
+        target.riskReason = previousRiskReason;
+      },
+    });
+
+    this.incrementVersion();
+  }
+
+  /**
+   * Manually sets player elimination/revival status (REQ-3.3, REQ-4.2)
+   */
+  public setPlayerStatus(payload: SetPlayerStatusPayload): void {
+    const player = this.state.players[payload.playerId];
+    if (!player) return;
+
+    const prevEliminated = player.isEliminated;
+    const prevReason = player.eliminationReason;
+
+    player.isEliminated = payload.isEliminated;
+    player.eliminationReason = payload.isEliminated
+      ? ((payload.reason as any) || (player.riskReason ? player.riskReason : 'manual'))
+      : undefined;
+
+    this.addLog(
+      payload.playerId,
+      payload.isEliminated
+        ? `fue eliminado de la mesa${player.eliminationReason ? ` (${player.eliminationReason})` : ''}`
+        : `fue revivido en la mesa`,
+      true,
+    );
+
+    this.undoStack.push({
+      playerId: payload.playerId,
+      description: `Revertir eliminación/revivisión de ${player.name}`,
+      revert: () => {
+        player.isEliminated = prevEliminated;
+        player.eliminationReason = prevReason;
       },
     });
 
@@ -149,21 +232,26 @@ export class GameStateSession {
     const cType = payload.counterType as keyof typeof player.counters;
     if (cType === 'poison') {
       const prev = player.counters.poison;
+      const prevIsAtRisk = player.isAtRisk;
+      const prevRiskReason = player.riskReason;
       player.counters.poison = Math.max(0, player.counters.poison + payload.delta);
-      if (player.counters.poison >= 10 && !player.isEliminated) {
-        player.isEliminated = true;
-        player.eliminationReason = 'poison';
-        this.addLog(payload.playerId, `ha sido derrotado por acumular 10 contadores de veneno`);
+
+      if (player.counters.poison >= 10) {
+        player.isAtRisk = true;
+        player.riskReason = 'poison';
+        this.addLog(payload.playerId, `está en riesgo de derrota (10 o más contadores de veneno)`);
+      } else if (player.riskReason === 'poison') {
+        player.isAtRisk = false;
+        player.riskReason = undefined;
       }
+
       this.undoStack.push({
         playerId: payload.playerId,
         description: 'Revertir veneno',
         revert: () => {
           player.counters.poison = prev;
-          if (prev < 10 && player.eliminationReason === 'poison') {
-            player.isEliminated = false;
-            player.eliminationReason = undefined;
-          }
+          player.isAtRisk = prevIsAtRisk;
+          player.riskReason = prevRiskReason;
         },
       });
     } else if (cType === 'energy' || cType === 'experience' || cType === 'commanderTax') {

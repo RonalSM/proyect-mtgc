@@ -17,7 +17,9 @@ export interface PlayerState {
   commanderDamage: Record<string, number>; // sourceCommanderCardId -> damage dealt
   counters: PlayerCounters;
   isEliminated: boolean;
-  eliminationReason?: 'life' | 'commander_damage' | 'poison' | 'conceded' | 'other';
+  eliminationReason?: 'life' | 'commander_damage' | 'poison' | 'conceded' | 'other' | string;
+  isAtRisk?: boolean;
+  riskReason?: 'life' | 'commander_damage' | 'poison';
   deckLoaded: boolean;
   handCount: number;
   libraryCount: number;

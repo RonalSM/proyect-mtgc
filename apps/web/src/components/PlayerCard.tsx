@@ -18,6 +18,8 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   onAction,
 }) => {
   const [showCommanderDamage, setShowCommanderDamage] = useState(false);
+  const [isEditingLife, setIsEditingLife] = useState(false);
+  const [customLife, setCustomLife] = useState(player.life.toString());
 
   const adjustLife = (delta: number) => {
     onAction('ADJUST_LIFE', {
@@ -53,7 +55,9 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
   return (
     <div
       className={`relative bg-slate-900 border rounded-2xl p-4 shadow-xl transition-all ${
-        isActiveTurn
+        player.isAtRisk && !player.isEliminated
+          ? 'border-rose-500/80 ring-2 ring-rose-500/30'
+          : isActiveTurn
           ? 'border-amber-400 ring-2 ring-amber-400/20 shadow-amber-500/10'
           : 'border-slate-800'
       } ${player.isEliminated ? 'opacity-60 saturate-50' : ''}`}
@@ -84,11 +88,49 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           </div>
         </div>
 
-        {player.isEliminated && (
-          <span className="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-full font-bold animate-pulse">
-            Derrotado ({player.eliminationReason})
-          </span>
-        )}
+        {/* Risk / Elimination Badges & Controls */}
+        <div className="flex items-center space-x-1.5">
+          {player.isAtRisk && !player.isEliminated && (
+            <>
+              <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full font-bold animate-pulse">
+                ⚠️ En riesgo ({player.riskReason || 'derrota'})
+              </span>
+              <button
+                onClick={() =>
+                  onAction('SET_PLAYER_STATUS', {
+                    playerId: player.id,
+                    isEliminated: true,
+                    reason: player.riskReason || 'derrota',
+                  })
+                }
+                className="text-[10px] bg-rose-600 hover:bg-rose-500 text-white px-2 py-0.5 rounded font-bold transition-colors"
+                title="Eliminar jugador manualmente"
+              >
+                Eliminar
+              </button>
+            </>
+          )}
+
+          {player.isEliminated && (
+            <>
+              <span className="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-full font-bold">
+                Derrotado ({player.eliminationReason || 'manual'})
+              </span>
+              <button
+                onClick={() =>
+                  onAction('SET_PLAYER_STATUS', {
+                    playerId: player.id,
+                    isEliminated: false,
+                  })
+                }
+                className="text-[10px] bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-0.5 rounded font-bold transition-colors"
+                title="Revivir jugador"
+              >
+                Revivir
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Main Life Box */}
@@ -98,7 +140,51 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           <span className="text-[11px] uppercase tracking-wider font-semibold">Vida</span>
         </div>
 
-        <div className="text-5xl font-black tracking-tight text-white my-1">{player.life}</div>
+        {isEditingLife ? (
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              const val = parseInt(customLife, 10);
+              if (!isNaN(val)) {
+                onAction('SET_LIFE', { playerId: player.id, life: val });
+              }
+              setIsEditingLife(false);
+            }}
+            className="flex items-center space-x-1 my-1"
+          >
+            <input
+              type="number"
+              value={customLife}
+              onChange={e => setCustomLife(e.target.value)}
+              autoFocus
+              className="w-20 px-2 py-1 text-2xl font-black text-center bg-slate-900 border border-amber-400 rounded text-white focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="px-2 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded text-xs"
+            >
+              OK
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsEditingLife(false)}
+              className="px-2 py-1 bg-slate-800 text-slate-300 rounded text-xs"
+            >
+              ✕
+            </button>
+          </form>
+        ) : (
+          <div
+            onClick={() => {
+              setCustomLife(player.life.toString());
+              setIsEditingLife(true);
+            }}
+            title="Clic para fijar vida directamente (SET_LIFE)"
+            className="text-5xl font-black tracking-tight text-white my-1 cursor-pointer hover:text-amber-300 transition-colors"
+          >
+            {player.life}
+          </div>
+        )}
 
         {/* Life Controls */}
         <div className="flex items-center space-x-2 mt-2">

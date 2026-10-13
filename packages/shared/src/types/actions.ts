@@ -4,8 +4,10 @@ import { CardDefinition } from './card.js';
 export type GameActionType =
   // Life & Counters
   | 'ADJUST_LIFE'
+  | 'SET_LIFE'
   | 'COMMANDER_DAMAGE'
   | 'SET_PLAYER_COUNTER'
+  | 'SET_PLAYER_STATUS'
   | 'SET_CARD_COUNTER'
   // Card Movements & State
   | 'MOVE_CARD'
@@ -31,6 +33,17 @@ export type GameActionType =
 export interface AdjustLifePayload {
   playerId: string;
   delta: number;
+}
+
+export interface SetLifePayload {
+  playerId: string;
+  life: number;
+}
+
+export interface SetPlayerStatusPayload {
+  playerId: string;
+  isEliminated: boolean;
+  reason?: 'life' | 'commander_damage' | 'poison' | 'conceded' | 'manual' | string;
 }
 
 export interface CommanderDamagePayload {
