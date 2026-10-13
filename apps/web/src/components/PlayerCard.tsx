@@ -260,6 +260,67 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         </div>
       </div>
 
+      {/* Custom Named Counters (REQ-5.3) */}
+      <div className="mt-2.5 pt-2 border-t border-slate-800/60">
+        <div className="flex items-center justify-between text-[11px] mb-1">
+          <span className="text-slate-400 font-semibold">Contadores personalizados</span>
+          <button
+            onClick={() => {
+              const name = prompt('Nombre del contador (ej. Rads, Boleto, etc.):');
+              if (name && name.trim()) {
+                onAction('SET_PLAYER_COUNTER', {
+                  playerId: player.id,
+                  counterType: name.trim(),
+                  delta: 1,
+                });
+              }
+            }}
+            className="text-[10px] bg-slate-800 hover:bg-slate-700 text-amber-300 px-1.5 py-0.5 rounded border border-slate-700 transition-colors"
+          >
+            + Añadir
+          </button>
+        </div>
+
+        {player.counters?.custom && Object.keys(player.counters.custom).length > 0 ? (
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {Object.entries(player.counters.custom).map(([name, count]) => (
+              <div
+                key={name}
+                className="flex items-center space-x-1 bg-slate-950 border border-slate-800 text-xs px-2 py-0.5 rounded-md"
+              >
+                <span className="text-slate-300 font-medium">
+                  {name}: {count}
+                </span>
+                <button
+                  onClick={() =>
+                    onAction('SET_PLAYER_COUNTER', {
+                      playerId: player.id,
+                      counterType: name,
+                      delta: -1,
+                    })
+                  }
+                  className="text-[10px] text-slate-500 hover:text-white px-0.5"
+                >
+                  -
+                </button>
+                <button
+                  onClick={() =>
+                    onAction('SET_PLAYER_COUNTER', {
+                      playerId: player.id,
+                      counterType: name,
+                      delta: 1,
+                    })
+                  }
+                  className="text-[10px] text-slate-500 hover:text-white px-0.5"
+                >
+                  +
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
       {/* Commander Damage Collapsible */}
       <div className="mt-3 border-t border-slate-800/80 pt-2">
         <button

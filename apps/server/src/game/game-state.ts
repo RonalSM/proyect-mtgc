@@ -11,6 +11,7 @@ import {
   MoveCardPayload,
   TapCardPayload,
   FlipCardPayload,
+  CloneTokenPayload,
 } from '@mtgc/shared';
 import { secureShuffle, secureRoll } from './csprng.js';
 import { randomUUID } from 'crypto';
@@ -262,6 +263,29 @@ export class GameStateSession {
         description: `Revertir contador ${cType}`,
         revert: () => {
           player.counters[cType] = prev;
+        },
+      });
+    } else {
+      // Custom named counters (REQ-5.3)
+      if (!player.counters.custom) {
+        player.counters.custom = {};
+      }
+      const prev = player.counters.custom[payload.counterType] ?? 0;
+      const next = Math.max(0, prev + payload.delta);
+      if (next === 0) {
+        delete player.counters.custom[payload.counterType];
+      } else {
+        player.counters.custom[payload.counterType] = next;
+      }
+      this.undoStack.push({
+        playerId: payload.playerId,
+        description: `Revertir contador personalizado ${payload.counterType}`,
+        revert: () => {
+          if (prev === 0) {
+            delete player.counters.custom[payload.counterType];
+          } else {
+            player.counters.custom[payload.counterType] = prev;
+          }
         },
       });
     }
@@ -523,6 +547,55 @@ export class GameStateSession {
       playerId,
       `puso "${card.definition.name}" boca ${payload.isFaceDown ? 'abajo' : 'arriba'}`,
     );
+    this.incrementVersion();
+  }
+
+  /**
+   * Clones a token or permanent on the battlefield (REQ-9.4)
+   */
+  public cloneToken(playerId: string, payload: CloneTokenPayload): void {
+    const zones = this.state.playerZones[playerId];
+    if (!zones) return;
+
+    const sourceCard = zones.battlefield.find(c => c.instanceId === payload.cardInstanceId);
+    if (!sourceCard) return;
+
+    const clonedInstance = {
+      instanceId: randomUUID(),
+      definition: {
+        ...sourceCard.definition,
+        name: sourceCard.definition.name.includes('(Token)')
+          ? sourceCard.definition.name
+          : `${sourceCard.definition.name} (Token)`,
+      },
+      ownerId: playerId,
+      controllerId: playerId,
+      isCommander: false,
+      isTapped: false,
+      isFaceDown: false,
+      rotation: 0,
+      counters: { ...sourceCard.counters },
+      position: {
+        x: Math.min(0.9, (sourceCard.position?.x ?? 0.5) + 0.03),
+        y: Math.min(0.9, (sourceCard.position?.y ?? 0.5) + 0.03),
+        zIndex: (sourceCard.position?.zIndex ?? 1) + 1,
+      },
+    };
+
+    zones.battlefield.push(clonedInstance);
+    this.addLog(playerId, `clonó el token/permanente "${sourceCard.definition.name}"`, true);
+
+    this.undoStack.push({
+      playerId,
+      description: `Revertir clon de ${sourceCard.definition.name}`,
+      revert: () => {
+        const idx = zones.battlefield.findIndex(c => c.instanceId === clonedInstance.instanceId);
+        if (idx !== -1) {
+          zones.battlefield.splice(idx, 1);
+        }
+      },
+    });
+
     this.incrementVersion();
   }
 

@@ -254,6 +254,42 @@ test('GameStateSession - moveCard, tap, counters, flip, untapAll, and undo', () 
   assert.strictEqual(zones.hand.length, 1);
 });
 
+test('GameStateSession - custom named player counters and token cloning (REQ-5.3, REQ-9.4)', () => {
+  const session = new GameStateSession(createMockRoomState());
+  const zones = session.state.playerZones['p1'];
+
+  // REQ-5.3: Custom named player counters
+  session.setPlayerCounter({ playerId: 'p1', counterType: 'rads', delta: 3 });
+  assert.strictEqual(session.state.players['p1']?.counters.custom['rads'], 3);
+
+  session.setPlayerCounter({ playerId: 'p1', counterType: 'rads', delta: -1 });
+  assert.strictEqual(session.state.players['p1']?.counters.custom['rads'], 2);
+
+  // Undo custom counter
+  session.undoLast('p1');
+  assert.strictEqual(session.state.players['p1']?.counters.custom['rads'], 3);
+
+  // REQ-9.4: Token cloning on battlefield
+  session.moveCard('p1', {
+    cardInstanceId: 'c1',
+    fromZone: 'hand',
+    toZone: 'battlefield',
+    position: { x: 0.3, y: 0.4 },
+  });
+  assert.strictEqual(zones.battlefield.length, 1);
+
+  session.cloneToken('p1', { cardInstanceId: 'c1' });
+  assert.strictEqual(zones.battlefield.length, 2);
+  const cloned = zones.battlefield[1];
+  assert.ok(cloned.instanceId !== 'c1');
+  assert.ok(cloned.definition.name.includes('(Token)'));
+  assert.strictEqual(cloned.ownerId, 'p1');
+
+  // Undo clone
+  session.undoLast('p1');
+  assert.strictEqual(zones.battlefield.length, 1);
+});
+
 test('GameStateSession - drag & drop repositioning and zone transfers', () => {
   const session = new GameStateSession(createMockRoomState());
   const zones = session.state.playerZones['p1'];

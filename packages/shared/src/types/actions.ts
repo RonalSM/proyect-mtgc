@@ -14,6 +14,7 @@ export type GameActionType =
   | 'TAP_CARD'
   | 'UNTAP_ALL'
   | 'FLIP_CARD'
+  | 'CLONE_TOKEN'
   | 'DRAW_CARDS'
   | 'MULLIGAN'
   | 'SHUFFLE_LIBRARY'
@@ -85,6 +86,10 @@ export interface TapCardPayload {
 export interface FlipCardPayload {
   cardInstanceId: string;
   isFaceDown: boolean;
+}
+
+export interface CloneTokenPayload {
+  cardInstanceId: string;
 }
 
 export interface DrawCardsPayload {

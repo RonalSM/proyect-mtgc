@@ -57,6 +57,10 @@ export const FlipCardSchema = z.object({
   isFaceDown: z.boolean(),
 });
 
+export const CloneTokenSchema = z.object({
+  cardInstanceId: z.string().min(1),
+});
+
 export const DrawCardsSchema = z.object({
   playerId: z.string().min(1),
   count: z.number().int().positive().max(100),
@@ -104,6 +108,7 @@ export const ActionEnvelopeSchema = z.object({
     'TAP_CARD',
     'UNTAP_ALL',
     'FLIP_CARD',
+    'CLONE_TOKEN',
     'DRAW_CARDS',
     'MULLIGAN',
     'SHUFFLE_LIBRARY',

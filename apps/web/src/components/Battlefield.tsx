@@ -33,6 +33,7 @@ import {
   Minus,
   MoreHorizontal,
   ArrowUpRight,
+  Copy,
 } from 'lucide-react';
 
 interface BattlefieldProps {
@@ -524,6 +525,16 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
                         <button
                           onClick={e => {
                             e.stopPropagation();
+                            onAction('CLONE_TOKEN', { cardInstanceId: card.instanceId });
+                          }}
+                          title="Clonar Token / Permanente (REQ-9.4)"
+                          className="p-1 hover:bg-slate-800 text-sky-400 rounded transition-colors"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
                             setZoomedCard(card);
                           }}
                           title="Ver en grande"
@@ -557,8 +568,17 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
                     {isMenuOpen && (
                       <div
                         onClick={e => e.stopPropagation()}
-                        className="absolute -bottom-24 left-0 right-0 bg-slate-900 border border-amber-500/50 rounded-xl p-1.5 shadow-2xl flex flex-col space-y-1 z-50 text-[11px]"
+                        className="absolute -bottom-32 left-0 right-0 bg-slate-900 border border-amber-500/50 rounded-xl p-1.5 shadow-2xl flex flex-col space-y-1 z-50 text-[11px]"
                       >
+                        <button
+                          onClick={() => {
+                            onAction('CLONE_TOKEN', { cardInstanceId: card.instanceId });
+                            setOpenCardMenuId(null);
+                          }}
+                          className="w-full text-left px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 font-semibold"
+                        >
+                          Clonar Token
+                        </button>
                         <button
                           onClick={() => {
                             executeMoveCard(card.instanceId, 'battlefield', 'hand');

@@ -10,6 +10,7 @@ import {
   MoveCardSchema,
   TapCardSchema,
   FlipCardSchema,
+  CloneTokenSchema,
   DrawCardsSchema,
   RollDiceSchema,
   ChatMessageSchema,
@@ -203,6 +204,12 @@ export class WebSocketHandler {
         case 'FLIP_CARD': {
           const valid = FlipCardSchema.parse(payload);
           session.flipCard(client.playerId, valid);
+          break;
+        }
+
+        case 'CLONE_TOKEN': {
+          const valid = CloneTokenSchema.parse(payload);
+          session.cloneToken(client.playerId, valid);
           break;
         }
 
