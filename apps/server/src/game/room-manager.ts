@@ -444,6 +444,38 @@ export class RoomManager {
   }
 
   /**
+   * Updates room settings (REQ-12.3) such as external video call URL, turn timer, etc.
+   */
+  public updateRoomSettings(
+    roomCode: string,
+    hostPlayerId: string,
+    payload: { videoCallUrl?: string; turnTimerSeconds?: number; allowSpectators?: boolean },
+  ): void {
+    const session = this.getSession(roomCode);
+    if (!session) {
+      throw new Error('Sala no encontrada.');
+    }
+
+    const host = session.state.players[hostPlayerId];
+    if (!host || !host.isHost) {
+      throw new Error('Solo el anfitrión puede actualizar los ajustes de la mesa.');
+    }
+
+    if (payload.videoCallUrl !== undefined) {
+      session.state.settings.videoCallUrl = payload.videoCallUrl;
+    }
+    if (payload.turnTimerSeconds !== undefined) {
+      session.state.settings.turnTimerSeconds = payload.turnTimerSeconds;
+    }
+    if (payload.allowSpectators !== undefined) {
+      session.state.settings.allowSpectators = payload.allowSpectators;
+    }
+
+    session.addLog(hostPlayerId, 'actualizó los ajustes de la mesa');
+    session.incrementVersion();
+  }
+
+  /**
    * Returns count of all players in active rooms
    */
   public getActivePlayersCount(): number {

@@ -17,6 +17,7 @@ import {
   ConfirmUndoSchema,
   KickPlayerSchema,
   TransferHostSchema,
+  UpdateRoomSettingsSchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -302,6 +303,12 @@ export class WebSocketHandler {
         case 'TRANSFER_HOST': {
           const valid = TransferHostSchema.parse(payload);
           roomManager.transferHost(client.roomCode, client.playerId, valid);
+          break;
+        }
+
+        case 'UPDATE_ROOM_SETTINGS': {
+          const valid = UpdateRoomSettingsSchema.parse(payload);
+          roomManager.updateRoomSettings(client.roomCode, client.playerId, valid);
           break;
         }
 

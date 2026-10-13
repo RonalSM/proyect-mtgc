@@ -8,6 +8,7 @@ export interface RoomSettings {
   maxPlayers: number; // 2 to 6
   turnTimerSeconds?: number;
   allowSpectators: boolean;
+  videoCallUrl?: string;
 }
 
 export interface PlayerZones {

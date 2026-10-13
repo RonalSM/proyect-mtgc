@@ -5,7 +5,7 @@ import { Battlefield } from './Battlefield';
 import { TurnBar } from './TurnBar';
 import { GameLogAndChat } from './GameLogAndChat';
 import { DeckImporter } from './DeckImporter';
-import { Copy, Check, LogOut, Layers, Layout } from 'lucide-react';
+import { Copy, Check, LogOut, Layers, Layout, Video, ExternalLink } from 'lucide-react';
 
 interface TableBoardProps {
   roomState: RoomState;
@@ -25,6 +25,8 @@ export const TableBoard: React.FC<TableBoardProps> = ({
   const [isCopied, setIsCopied] = useState(false);
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [boardView, setBoardView] = useState<'board' | 'importer'>('board');
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [videoInput, setVideoInput] = useState(roomState.settings.videoCallUrl || '');
 
   const localPlayer = roomState.players[localPlayerId];
   const allPlayersList = Object.values(roomState.players).filter(p => !p.isSpectator);
@@ -112,6 +114,34 @@ export const TableBoard: React.FC<TableBoardProps> = ({
         </div>
 
         <div className="flex items-center space-x-3">
+          {roomState.settings.videoCallUrl ? (
+            <a
+              href={roomState.settings.videoCallUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-1.5 px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition-all shadow active:scale-95"
+              title="Abrir enlace de videollamada externa"
+            >
+              <Video className="w-3.5 h-3.5" />
+              <span>Videollamada</span>
+              <ExternalLink className="w-3 h-3 opacity-70" />
+            </a>
+          ) : null}
+
+          {localPlayer?.isHost && (
+            <button
+              onClick={() => {
+                setVideoInput(roomState.settings.videoCallUrl || '');
+                setShowVideoModal(true);
+              }}
+              className="flex items-center space-x-1 text-xs text-slate-400 hover:text-white bg-slate-950 hover:bg-slate-800 border border-slate-800 px-2.5 py-1 rounded-xl transition-colors"
+              title="Configurar videollamada externa"
+            >
+              <Video className="w-3.5 h-3.5" />
+              <span>{roomState.settings.videoCallUrl ? 'Editar Video' : '+ Videollamada'}</span>
+            </button>
+          )}
+
           <div className="flex items-center space-x-2 text-xs px-2.5 py-1 rounded-full bg-slate-950 border border-slate-800">
             <span
               className={`w-2 h-2 rounded-full ${
@@ -259,6 +289,45 @@ export const TableBoard: React.FC<TableBoardProps> = ({
               />
             </div>
           )}
+        </div>
+      )}
+
+      {/* Video Call Modal (REQ-12.3) */}
+      {showVideoModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-md w-full shadow-2xl">
+            <h3 className="text-sm font-bold text-white flex items-center space-x-2 mb-2">
+              <Video className="w-4 h-4 text-indigo-400" />
+              <span>Configurar Enlace de Videollamada (REQ-12.3)</span>
+            </h3>
+            <p className="text-xs text-slate-400 mb-4">
+              Ingresa el enlace de Google Meet, Discord, Jitsi o Zoom para que los jugadores puedan unirse con un clic.
+            </p>
+            <input
+              type="text"
+              value={videoInput}
+              onChange={e => setVideoInput(e.target.value)}
+              placeholder="https://meet.google.com/xyz-abcd-efg"
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-400 mb-4"
+            />
+            <div className="flex justify-end space-x-2 text-xs">
+              <button
+                onClick={() => setShowVideoModal(false)}
+                className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  onAction('UPDATE_ROOM_SETTINGS', { videoCallUrl: videoInput.trim() });
+                  setShowVideoModal(false);
+                }}
+                className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow"
+              >
+                Guardar Enlace
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

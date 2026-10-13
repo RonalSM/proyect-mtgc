@@ -28,9 +28,10 @@ export type GameActionType =
   | 'CHAT_MESSAGE'
   // Deck Loading
   | 'LOAD_DECK'
-  // Host Moderation (REQ-13)
+  // Host Moderation & Room Settings (REQ-12.3, REQ-13)
   | 'KICK_PLAYER'
-  | 'TRANSFER_HOST';
+  | 'TRANSFER_HOST'
+  | 'UPDATE_ROOM_SETTINGS';
 
 export interface AdjustLifePayload {
   playerId: string;
@@ -131,5 +132,11 @@ export interface TransferHostPayload {
 export interface ConfirmUndoPayload {
   proposalId: string;
   approved: boolean;
+}
+
+export interface UpdateRoomSettingsPayload {
+  videoCallUrl?: string;
+  turnTimerSeconds?: number;
+  allowSpectators?: boolean;
 }
 

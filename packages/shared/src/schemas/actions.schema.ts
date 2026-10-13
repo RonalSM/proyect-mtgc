@@ -101,6 +101,12 @@ export const ConfirmUndoSchema = z.object({
   approved: z.boolean(),
 });
 
+export const UpdateRoomSettingsSchema = z.object({
+  videoCallUrl: z.string().max(500).optional().or(z.literal('')),
+  turnTimerSeconds: z.number().int().min(10).max(3600).optional(),
+  allowSpectators: z.boolean().optional(),
+});
+
 export const ActionEnvelopeSchema = z.object({
   type: z.enum([
     'ADJUST_LIFE',
@@ -126,6 +132,7 @@ export const ActionEnvelopeSchema = z.object({
     'LOAD_DECK',
     'KICK_PLAYER',
     'TRANSFER_HOST',
+    'UPDATE_ROOM_SETTINGS',
   ]),
   payload: z.unknown(),
   clientTimestamp: z.number().optional(),

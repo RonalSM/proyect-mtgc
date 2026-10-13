@@ -571,3 +571,37 @@ test('GameStateSession - table confirmation when undoing actions affecting oppon
   assert.strictEqual(session.state.players['p2']?.commanderDamage['cmdr_p1'], 7); // Not reverted!
   assert.strictEqual(session.state.pendingUndoProposal, undefined);
 });
+
+test('RoomManager - updates room settings including external video call link (REQ-12.3 / Paso 2B.6)', () => {
+  const session = roomManager.createRoom({
+    name: 'Mesa con Video',
+    hostName: 'Alice',
+    maxPlayers: 4,
+    startingLife: 40,
+    allowSpectators: true,
+  });
+
+  const hostId = session.state.hostId;
+
+  // Non-host cannot update settings
+  assert.throws(() => {
+    roomManager.updateRoomSettings(session.state.code, 'fake_player', {
+      videoCallUrl: 'https://meet.google.com/abc-defg-hij',
+    });
+  }, /Solo el anfitrión/);
+
+  // Host updates video call URL
+  roomManager.updateRoomSettings(session.state.code, hostId, {
+    videoCallUrl: 'https://meet.google.com/abc-defg-hij',
+    turnTimerSeconds: 120,
+  });
+
+  assert.strictEqual(
+    session.state.settings.videoCallUrl,
+    'https://meet.google.com/abc-defg-hij',
+  );
+  assert.strictEqual(session.state.settings.turnTimerSeconds, 120);
+
+  const lastLog = session.state.logs[session.state.logs.length - 1];
+  assert.ok(lastLog?.actionText.includes('ajustes'));
+});
