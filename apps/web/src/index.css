@@ -13,3 +13,53 @@ body {
   user-select: none;
   overflow-x: hidden;
 }
+
+/* Scrollbars personalizadas con tema oscuro (REQ-22) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.7);
+  border-radius: 9999px;
+  border: 1px solid rgba(30, 41, 59, 0.5);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.7);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(71, 85, 105, 0.7) rgba(15, 23, 42, 0.6);
+}
+
+.dark-custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #090d16;
+}
+
+.dark-custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.dark-custom-scrollbar::-webkit-scrollbar-track {
+  background: #090d16;
+  border-radius: 6px;
+}
+
+.dark-custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 6px;
+}
+
+.dark-custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}

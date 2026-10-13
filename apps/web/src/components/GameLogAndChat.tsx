@@ -70,7 +70,7 @@ export const GameLogAndChat: React.FC<GameLogAndChatProps> = ({ logs, onAction, 
       </div>
 
       {/* Scrollable Logs / Chat Feed */}
-      <div className="flex-1 p-3 overflow-y-auto space-y-2 text-xs font-sans">
+      <div className="flex-1 p-3 overflow-y-auto space-y-2 text-xs font-sans dark-custom-scrollbar">
         {filteredLogs.length === 0 ? (
           <div className="text-center py-8 text-slate-500 text-xs">Sin actividad reciente</div>
         ) : (
