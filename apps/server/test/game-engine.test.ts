@@ -682,3 +682,72 @@ test('LobbyManager - deck selection, privacy, ready toggle and start validation 
   assert.strictEqual(canStartHost.canStart, true);
 });
 
+test('GameStarter - starts game, deals 7 cards, commanders to command zone and transitions to initiative (REQ-20.11 / 8.3)', () => {
+  const room = createMockRoomState();
+  room.status = 'lobby';
+  const session = new GameStateSession(room);
+
+  const dummyCommander = {
+    scryfallId: 'scry_cmd',
+    name: 'Atraxa, Praetors Voice',
+    cmc: 4,
+    typeLine: 'Legendary Creature',
+    colors: ['W', 'U', 'B', 'G'] as any,
+    colorIdentity: ['W', 'U', 'B', 'G'] as any,
+  };
+
+  // Build a dummy 99-card maindeck
+  const dummyMaindeck = Array.from({ length: 99 }, (_, i) => ({
+    scryfallId: `scry_${i}`,
+    name: `Card ${i}`,
+    cmc: (i % 6) + 1,
+    typeLine: 'Spell',
+    colors: ['U'] as any,
+    colorIdentity: ['U'] as any,
+  }));
+
+  session.selectDeck('p1', {
+    deckName: 'P1 EDH',
+    commanderName: 'Atraxa',
+    commanderCards: [dummyCommander],
+    maindeckCards: dummyMaindeck,
+  });
+  session.setReady('p1', { isReady: true });
+
+  session.selectDeck('p2', {
+    deckName: 'P2 EDH',
+    commanderName: 'Atraxa',
+    commanderCards: [dummyCommander],
+    maindeckCards: dummyMaindeck,
+  });
+  session.setReady('p2', { isReady: true });
+
+  // Host starts the game
+  session.startGame('p1');
+
+  // Verify room status transitioned to initiative
+  assert.strictEqual(session.state.status, 'initiative');
+  assert.ok(session.state.initiative);
+  assert.strictEqual(session.state.initiative?.round, 1);
+  assert.ok(session.state.initiative?.deadlineTimestamp > Date.now());
+
+  // Verify zones for P1
+  const p1Zones = session.state.playerZones['p1'];
+  assert.ok(p1Zones);
+  assert.strictEqual(p1Zones.command.length, 1);
+  assert.strictEqual(p1Zones.command[0]?.definition.name, 'Atraxa, Praetors Voice');
+  assert.strictEqual(p1Zones.command[0]?.isCommander, true);
+  assert.strictEqual(p1Zones.hand.length, 7); // Exactly 7 opening cards
+  assert.strictEqual(p1Zones.library.length, 92); // 99 - 7 = 92
+  assert.strictEqual(session.state.players['p1']?.handCount, 7);
+  assert.strictEqual(session.state.players['p1']?.libraryCount, 92);
+
+  // Verify zones for P2
+  const p2Zones = session.state.playerZones['p2'];
+  assert.ok(p2Zones);
+  assert.strictEqual(p2Zones.command.length, 1);
+  assert.strictEqual(p2Zones.hand.length, 7);
+  assert.strictEqual(p2Zones.library.length, 92);
+});
+
+

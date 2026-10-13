@@ -20,6 +20,7 @@ import { secureShuffle, secureRoll } from './csprng.js';
 import { randomUUID } from 'crypto';
 import { redisSnapshotService } from '../services/redis-snapshot.service.js';
 import { LobbyManager } from './lobby-manager.js';
+import { GameStarter } from './game-starter.js';
 
 interface UndoRecord {
   playerId: string;
@@ -37,6 +38,13 @@ export class GameStateSession {
   constructor(initialState: RoomState) {
     this.state = initialState;
     this.lobbyManager = new LobbyManager(this.state);
+  }
+
+  /**
+   * Starts the game from the lobby (REQ-20.11)
+   */
+  public startGame(hostPlayerId: string): void {
+    GameStarter.startGame(this, hostPlayerId);
   }
 
   /**
@@ -80,7 +88,7 @@ export class GameStateSession {
     return logEntry;
   }
 
-  private syncPlayerCounts(playerId: string) {
+  public syncPlayerCounts(playerId: string) {
     const player = this.state.players[playerId];
     const zones = this.state.playerZones[playerId];
     if (player && zones) {

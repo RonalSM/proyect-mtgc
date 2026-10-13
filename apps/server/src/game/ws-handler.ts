@@ -21,6 +21,7 @@ import {
   SetTurnOrderSchema,
   SelectDeckSchema,
   SetReadySchema,
+  StartGameSchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -330,6 +331,12 @@ export class WebSocketHandler {
         case 'SET_READY': {
           const valid = SetReadySchema.parse(payload);
           session.setReady(client.playerId, valid);
+          break;
+        }
+
+        case 'START_GAME': {
+          StartGameSchema.parse(payload);
+          session.startGame(client.playerId);
           break;
         }
 
