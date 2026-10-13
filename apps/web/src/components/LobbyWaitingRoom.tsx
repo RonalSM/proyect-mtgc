@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { RoomState, GameActionType, CardDefinition, DeckCardWithQuantity } from '@mtgc/shared';
-import { parseDecklist, validateCommanderDeck } from '@mtgc/shared';
+import { parseDecklist, validateCommanderDeck, toArtCropUrl } from '@mtgc/shared';
 import {
   Users,
   Copy,
@@ -295,7 +295,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
               {deck?.commanderImageUrl && (
                 <div
                   className="absolute inset-0 opacity-15 bg-cover bg-center pointer-events-none"
-                  style={{ backgroundImage: `url(${deck.commanderImageUrl})` }}
+                  style={{ backgroundImage: `url(${toArtCropUrl(deck.commanderImageUrl)})` }}
                 />
               )}
 
@@ -689,7 +689,8 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                             commanderName:
                               validationResult.commanderCards[0]?.name || 'Comandante',
                             commanderImageUrl:
-                              validationResult.commanderCards[0]?.imageUrlNormal,
+                              validationResult.commanderCards[0]?.imageUrlArtCrop ||
+                              toArtCropUrl(validationResult.commanderCards[0]?.imageUrlNormal),
                             commanderCards: validationResult.commanderCards,
                             maindeckCards: validationResult.maindeckCards,
                             warnings: validationResult.warnings,

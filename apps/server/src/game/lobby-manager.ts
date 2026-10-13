@@ -3,6 +3,7 @@ import {
   PlayerSelectedDeck,
   RoomState,
   SelectDeckPayload,
+  toArtCropUrl,
 } from '@mtgc/shared';
 
 export interface PendingPlayerDeck {
@@ -71,9 +72,9 @@ export class LobbyManager {
     player.selectedDeck = publicSelectedDeck;
     player.deckLoaded = true;
 
-    // Default playmat to commander art if available and not custom set
+    // Default playmat to commander art_crop if available and not custom set (REQ-22.3)
     if (payload.commanderImageUrl && !player.playmatUrl) {
-      player.playmatUrl = payload.commanderImageUrl;
+      player.playmatUrl = toArtCropUrl(payload.commanderImageUrl);
     }
 
     return publicSelectedDeck;

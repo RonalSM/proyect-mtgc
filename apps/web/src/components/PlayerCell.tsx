@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { toArtCropUrl } from '@mtgc/shared';
 import type { PlayerState, GameActionType, CardInstance } from '@mtgc/shared';
 import {
   Heart,
@@ -94,11 +95,11 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
 
   const cornerClasses = getLifeCornerClasses(row, col, isTwoPlayer);
 
-  // Fallback playmat
-  const playmatImage =
+  // Fallback playmat (REQ-22.3: art_crop de Scryfall, no la carta completa)
+  const playmatImage = toArtCropUrl(
     player.playmatUrl ||
-    player.selectedDeck?.commanderImageUrl ||
-    'https://cards.scryfall.io/art_crop/front/8/b/8ba9f61b-9964-4214-b31f-0e0a446a00ab.jpg';
+    player.selectedDeck?.commanderImageUrl
+  );
 
   const adjustLife = (delta: number) => {
     onAction('ADJUST_LIFE', { playerId: player.id, delta });
@@ -120,7 +121,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const handleSavePlaymat = (e: React.FormEvent) => {
     e.preventDefault();
     if (customPlaymatInput.trim()) {
-      onAction('SET_PLAYMAT', { playmatUrl: customPlaymatInput.trim() });
+      onAction('SET_PLAYMAT', { playmatUrl: toArtCropUrl(customPlaymatInput.trim()) });
       setIsPlaymatModalOpen(false);
     }
   };

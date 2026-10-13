@@ -15,6 +15,7 @@ import {
   ConfirmUndoPayload,
   SelectDeckPayload,
   SetReadyPayload,
+  toArtCropUrl,
 } from '@mtgc/shared';
 import { secureShuffle, secureRoll } from './csprng.js';
 import { randomUUID } from 'crypto';
@@ -68,7 +69,7 @@ export class GameStateSession {
   public setPlaymat(playerId: string, playmatUrl: string): void {
     const player = this.state.players[playerId];
     if (!player) return;
-    player.playmatUrl = playmatUrl;
+    player.playmatUrl = toArtCropUrl(playmatUrl);
     this.addLog(playerId, 'actualizó su playmat de fondo');
     this.incrementVersion();
   }
