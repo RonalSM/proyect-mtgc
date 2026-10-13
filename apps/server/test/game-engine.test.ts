@@ -826,6 +826,10 @@ test('InitiativeService - authoritative D20 roll, descending order and tie break
   session.state.players['p2']!.initiativeRoll = undefined;
 
   initiativeSvc.resolveCurrentRoundWithAutoRolls();
+  // If random roll resulted in a tie, resolve subsequent tiebreak rounds up to completion (REQ-21.6)
+  while (session.state.status === 'initiative') {
+    initiativeSvc.resolveCurrentRoundWithAutoRolls();
+  }
   assert.strictEqual(session.state.status, 'playing');
   assert.ok(session.state.players['p1']?.initiativeRoll !== undefined);
   assert.ok(session.state.players['p2']?.initiativeRoll !== undefined);
