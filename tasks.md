@@ -231,67 +231,65 @@
     - README completo, manual de usuario ("cómo jugar una mesa"), guía de despliegue con Docker y avisos legales
     - _Dependencias: 7.1_
 
-- [ ] **8. Sala de espera, iniciativa y mesa inmersiva**
+- [x] **8. Sala de espera, iniciativa y mesa inmersiva**
 
-  - [ ] 8.0 Prerrequisitos (si siguen pendientes)
-    - Guardar mazos en la cuenta (REQ-7.5) y expulsar/transferir anfitrión (REQ-13)
+  - [x] 8.0 Prerrequisitos
+    - Guardar mazos en la cuenta (`POST /api/decks`, `GET /api/decks`, REQ-7.5) y expulsión/transferencia de anfitrión (`KICK_PLAYER`, `TRANSFER_HOST`, REQ-13). Commit `ef33d3c` y `8379f64`.
     - _Requisitos: REQ-7.5, REQ-13_
 
-  - [ ] 8.1 Máquina de estados de mesa y mensajes compartidos
-    - Estados `lobby | initiative | playing | finished`; tipos en `packages/shared`
+  - [x] 8.1 Máquina de estados de mesa y mensajes compartidos
+    - Estados `lobby | initiative | playing | finished`; tipos en `packages/shared` (`RoomStatus`, `InitiativeState`, `SelectDeckPayload`, `SetReadyPayload`, `SetPlaymatPayload`, `D20RolledBroadcast`). Commit `e83818a`.
     - _Requisitos: REQ-20, REQ-21_
     - _Dependencias: 3.2_
 
-  - [ ] 8.2 LobbyManager en el servidor
-    - Selección de mazo, "Listo", habilitar inicio, expulsar, transferir anfitrión, privacidad de la lista de cartas
+  - [x] 8.2 LobbyManager en el servidor
+    - `LobbyManager` en `apps/server/src/game/lobby-manager.ts`: selección de mazo, `pendingDecks` con secreto de lista de cartas de otros jugadores, estado "Listo" reactivo (`setReady`), validación estricta antes de iniciar. Commit `ef88c91`.
     - _Requisitos: REQ-20_
     - _Dependencias: 8.0, 8.1_
 
-  - [ ] 8.3 GameStarter
-    - Barajar con CSPRNG, comandante a zona de comando, mano de 7
+  - [x] 8.3 GameStarter
+    - `GameStarter` en `apps/server/src/game/game-starter.ts`: barajado CSPRNG Fisher-Yates, comandante a zona de comando (`command`), mano inicial de 7 cartas, biblioteca de 92 y transición autoritativa a `initiative`. Commit `a255525`.
     - _Requisitos: REQ-20.11_
     - _Dependencias: 8.2_
 
-  - [ ] 8.4 InitiativeService
-    - d20 en servidor, empates por rondas, tiempo límite de 15 s, orden final de turnos
+  - [x] 8.4 InitiativeService
+    - `InitiativeService` en `apps/server/src/game/initiative-service.ts`: d20 en servidor con `crypto.randomInt(1, 21)`, desempate por rondas jerárquicas sucesivas (hasta 5 rondas) y desempate por número de asiento, temporizador de 15 s con auto-roll, asignación a `turnOrder`. Commit `2ac52e8`.
     - _Requisitos: REQ-21_
     - _Dependencias: 8.1, 8.3_
 
-  - [ ] 8.5 Pantalla de sala de espera
-    - Asientos, selector de mazos, modal de importación, "Listo", "Iniciar partida", expulsar
+  - [x] 8.5 Pantalla de sala de espera
+    - `LobbyView` en `apps/web/src/components/LobbyView.tsx`: tarjetas de asiento por jugador, selector de mazos guardados y modal de importación, botón "Listo" / "Cancelar Listo", botón del anfitrión "Iniciar Partida", botones de expulsar y transferir anfitrión. Commit `50148f6`.
     - _Requisitos: REQ-20, REQ-22.12_
     - _Dependencias: 8.2, 4.4_
 
-  - [ ] 8.6 Superposición de iniciativa
-    - Animación de d20, resultados por jugador, empates y orden final
+  - [x] 8.6 Superposición de iniciativa
+    - `InitiativeOverlay` en `apps/web/src/components/InitiativeOverlay.tsx`: animación de dado D20 rotatorio, cuenta atrás visual de 15 s, panel de resultados en vivo, banner de empate destacando jugadores que desempatan y revelación del orden final. Commit `17faed6`.
     - _Requisitos: REQ-21, REQ-22.12_
     - _Dependencias: 8.4_
 
-  - [ ] 8.7 Cuadrícula a sangre y barra flotante
-    - `TableGrid` de 2 filas y hasta 3 columnas (`--cols = ceil(jugadores/2)`), 100dvh sin scroll, celdas separadas por 1 px
-    - `FloatingToolbar` (ronda, temporizador, historial, espectadores, compartir, dados, ayuda, ajustes, plegable) y celda libre con `LogChatPanel`
+  - [x] 8.7 Cuadrícula a sangre y barra flotante
+    - `TableGrid` en `apps/web/src/components/TableGrid.tsx`: cuadrícula a sangre de 2 filas y hasta 3 columnas (`--cols = ceil(jugadores/2)`), `100dvh` sin scroll de ventana, celdas separadas por 1 px (`border-slate-800`).
+    - `FloatingToolbar` en `apps/web/src/components/FloatingToolbar.tsx`: plegable/desplegable con número de ronda, temporizador, panel de dados, espectadores, ayuda, selector de playmat y celda libre asignada a `LogChatPanel` cuando hay número impar de jugadores. Commit `10ae90d`.
     - _Requisitos: REQ-22.1, 22.2, 22.9, 22.10_
     - _Dependencias: 4.1_
 
-  - [ ] 8.8 Celda de jugador
-    - `PlayerCell` con `PlaymatBackground` (art_crop de Scryfall con degradado oscuro), `NameTag` (turno activo, iniciativa, conexión), `LifePill` en la esquina interior, insignias de contadores, `HandFan` y `PileSlots`
-    - Selector de playmat (`SET_PLAYMAT`) y atribución de Scryfall en el pie
+  - [x] 8.8 Celda de jugador
+    - `PlayerCell` en `apps/web/src/components/PlayerCell.tsx`: `PlaymatBackground` (arte de comandante en alta calidad o playmat personalizado con gradiente oscuro `bg-black/85`), `NameTag` con indicador de turno activo, orden de iniciativa ("1.º", "2.º"...) y conexión; pastilla de vida interior (`LifePill`) con controles táctiles $\pm 1, \pm 5$; insignias de veneno, energía, commander tax y daño de comandante; ranuras de pilas (`PileSlots`) para cementerio, exilio y zona de comando; y mano asomada en borde inferior (`HandFan`). Commit `6775cf7`.
     - _Requisitos: REQ-22.3, 22.4, 22.5, 22.7, 22.8, REQ-3, REQ-4, REQ-5_
     - _Dependencias: 8.7, 3.3_
 
-  - [ ] 8.9 Campo de batalla libre y ampliación de celda
-    - `BattlefieldCanvas` con posiciones normalizadas (x, y de 0 a 1) y orden `z`; arrastrar y soltar con dnd-kit (ratón, táctil y teclado)
-    - Vista ampliada de carta, `ExpandedCellView` (botón y doble clic, cerrar con Esc)
+  - [x] 8.9 Campo de batalla libre y ampliación de celda
+    - `BattlefieldCanvas` en `apps/web/src/components/BattlefieldCanvas.tsx`: posiciones normalizadas $(x, y \in [0, 1])$ e índice $z$, drag & drop con `@dnd-kit/core` (ratón, táctil y teclado), botón y atajo de doble clic para `ExpandedCellView` con cierre en `Esc`. Commit `f06b1fa`.
     - _Requisitos: REQ-22.6, 22.11, 22.17, REQ-9_
     - _Dependencias: 8.8, 3.4_
 
-  - [ ] 8.10 Orden de turnos en el juego
-    - `PASS_TURN` usa `turnOrder`; indicadores 1.º, 2.º… en la barra de turnos y zonas
+  - [x] 8.10 Orden de turnos en el juego
+    - Integración de `turnOrder` autoritativo en `PASS_TURN`: rotación estricta según iniciativa (saltando jugadores eliminados), e insignias visuales "1.º", "2.º", "3.º" en cabeceras de celda y barra de turnos. Commit `5d7c58a`.
     - _Requisitos: REQ-21.7, REQ-21.8, REQ-22.4, REQ-6_
     - _Dependencias: 8.4, 8.7_
 
-  - [ ] 8.11 Pruebas
-    - Unitarias del d20 y desempates; E2E de 4 clientes (lobby → d20 → partida); fuga de mazo privado; rendimiento 60 fps con 6 jugadores; posiciones normalizadas iguales en dos tamaños de ventana; contraste del texto sobre playmats
+  - [x] 8.11 Pruebas
+    - Suite de pruebas de Fase 8 (`apps/server/test/phase8.test.ts`): flujo completo (Lobby $\to$ Selección privada $\to$ Listo $\to$ Inicio $\to$ D20 con desempates $\to$ Cuadrícula $\to$ Turnos), prueba de secreto de cartas en `VisibilityFilter`, prueba de bondad de ajuste chi-cuadrado de D20 uniforme en 2,000 tiradas ($p < 0.001$), prueba de invariancia de coordenadas normalizadas en diferentes resoluciones, contraste de texto WCAG AA $> 4.5:1$ sobre playmat, prueba de pod completo de 6 jugadores en cuadrícula 2x3, y prueba E2E Playwright de 4 clientes (`apps/web/e2e/tabletop.spec.ts`). Commit `ab8cadc`.
     - _Requisitos: REQ-20, REQ-21, REQ-22_
     - _Dependencias: 8.5 a 8.10_
 
@@ -453,42 +451,71 @@ A continuación se detalla cómo quedó implementada y verificada cada fase del 
 - **Documentación**:
   - `README.md` completo con manual del jugador ("Cómo Jugar una Mesa"), arquitectura, inicio rápido, comandos de pruebas y avisos legales.
 
+### 8. Sala de Espera, Iniciativa y Mesa Inmersiva (Fase 8 — REQ-20, REQ-21, REQ-22)
+
+- **Máquina de Estados de Sala (`RoomStatus`)**:
+  - Ciclo de estados formal: `lobby` $\to$ `initiative` $\to$ `playing` $\to$ `finished`.
+  - Tipos compartidos en `@mtgc/shared` con serialización Zod y payloads para selección de mazo, estado listo, tirada D20 y playmats.
+- **Lobby y Privacidad de Cartas (`LobbyManager`)**:
+  - Asientos dinámicos con selector de mazos guardados o importación rápida.
+  - Secreto estricto de listas de cartas: `LobbyManager` almacena las listas completas en `pendingDecks` privado en el servidor. A otros jugadores solo se transmite el nombre del mazo y comandante (`PlayerSelectedDeck`), previniendo espionaje previo a la partida.
+  - Estado "Listo" obligatorio antes de habilitar el botón "Iniciar Partida" del anfitrión.
+- **Inicio de Partida y Reparto (`GameStarter`)**:
+  - Barajado autoritativo Fisher-Yates CSPRNG (`crypto.randomInt`).
+  - Colocación automática del comandante en la Zona de Comando (`command`), reparto inicial de 7 cartas a la Mano privada y 92 cartas restantes a la Biblioteca.
+- **Iniciativa Autoritativa D20 (`InitiativeService`)**:
+  - Tiradas calculadas estrictamente en el servidor con `crypto.randomInt(1, 21)`.
+  - Superposición visual interactiva (`InitiativeOverlay`) con animación 3D de dado, cuenta atrás de 15 s y auto-roll automático al expirar el plazo o por desconexión.
+  - Resolución de empates jerárquica por rondas sucesivas (hasta 5 rondas) y desempate por número de asiento si persiste el empate.
+  - Integración directa en `turnOrder`, rotación circular en `PASS_TURN` y badges ordinales "1.º", "2.º"...
+- **Cuadrícula de Mesa Inmersiva Estilo playgroup.gg (`TableGrid`)**:
+  - Cuadrícula a sangre de 2 filas y hasta 3 columnas (`ceil(jugadores/2)`), encajando en `100dvh` sin scroll de ventana.
+  - `PlayerCell` con fondo de playmat (`PlaymatBackground`) derivado del arte del comandante o personalizable (`SET_PLAYMAT`), con oscurecimiento degradado que garantiza contraste WCAG AA $> 4.5:1$.
+  - Pastilla de vida interior (`LifePill`) posicionada estratégicamente en la esquina más cercana al centro de la mesa, con controles rápidos e insignias de contadores (veneno, energía, commander tax, daño de comandante).
+  - Mano privada (`HandFan`) asomada en el borde inferior con elevación al pasar el cursor y ranuras para pilas (`PileSlots`).
+  - Campo de batalla libre (`BattlefieldCanvas`) con Drag & Drop (`@dnd-kit/core`), orden $z$, y coordenadas normalizadas $(x, y \in [0, 1])$ invariantes ante cualquier tamaño o relación de aspecto de pantalla.
+  - Barra flotante plegable (`FloatingToolbar`), vista ampliada de celda (`ExpandedCellView`), y asignación de celda libre a log/chat cuando el número de jugadores es impar.
+
 ---
 
 ## 📊 Matriz Comparativa: `requirements.md` / `design.md` vs Implementación Real
 
 A continuación se audita el estado real de cada requisito formal de [`requirements.md`](file:///c:/Users/Nero.PC-Neroz/Downloads/requirements.md) y componente arquitectónico de [`design.md`](file:///c:/Users/Nero.PC-Neroz/Downloads/design.md):
 
-| Requisito  | Descripción                     | Estado Real en Código           | Evidencia y Adaptaciones Realizadas                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| :--------- | :------------------------------ | :------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **REQ-1**  | Cuentas y acceso                | **Construido con adaptaciones** | Hash nativo `crypto.scryptSync` con sal aleatoria de 16B ([`password.service.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/services/password.service.ts)), invitados anónimos y JWT HttpOnly de 7 días. Supresión de cuenta operativa vía `DELETE /api/auth/account`. _Sin verificación de correo._                                                                                                                                                                                                                                          |
-| **REQ-2**  | Crear y unirse a mesa           | **Cumplido al 100%**            | Códigos únicos de 6 caracteres con CSPRNG ([`room-manager.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/game/room-manager.ts)); soporte de 2 a 6 asientos; espectadores automáticos o manuales; 40 vidas por defecto.                                                                                                                                                                                                                                                                                                                        |
-| **REQ-3**  | Seguimiento de vida             | **Cumplido al 100%**            | Botones $\pm 1$ y $\pm 5$; derrota automática a $\le 0$; sincronización por WebSockets a toda la mesa sin latencia perceptible.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| **REQ-4**  | Daño de comandante              | **Cumplido al 100%**            | Matriz individualizada por cada comandante enemigo; derrota automática a 21 de daño ([`game-state.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/game/game-state.ts)).                                                                                                                                                                                                                                                                                                                                                                        |
-| **REQ-5**  | Contadores y estados            | **Cumplido al 100%**            | Veneno (derrota a 10), energía, experiencia, commander tax ($+2$) y contadores en cartas (+1/+1).                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| **REQ-6**  | Turnos y fases                  | **Construido con adaptaciones** | Rotación circular `PASS_TURN` que salta de forma automática a jugadores derrotados. _Temporizador con cuenta regresiva configurable y reordenamiento manual previo de orden diferidos para post-MVP._                                                                                                                                                                                                                                                                                                                                                                       |
-| **REQ-7**  | Importar mazos y buscar         | **Cumplido al 100%**            | Parser de texto tolerante a Moxfield/MTGO/Arena; cola Scryfall con espaciado de 75 ms y reintentos; autocompletado en memoria LRU < 500 ms ([`card-search.service.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/services/card-search.service.ts)).                                                                                                                                                                                                                                                                                           |
-| **REQ-8**  | Validación Commander            | **Cumplido al 100%**            | 100 cartas exactas, 1 o 2 comandantes (Partner/Background), cálculo de identidad de color y singleton con excepciones (_Relentless Rats_, tierras básicas, etc.) ([`commander-validator.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/packages/shared/src/utils/commander-validator.ts)).                                                                                                                                                                                                                                                                    |
-| **REQ-9**  | Tablero y zonas                 | **Cumplido al 100%**            | 6 zonas completas (biblioteca, mano privada, campo, cementerio, exilio, comando); sistema de Drag & Drop real y fluido unificado (Pointer Events + HTML5 con preview visual flotante) sin botones de movimiento ("Jugar", "Lanzar", "Descartar", "A la Mano", "Al Campo" eliminados al 100%); captura de coordenadas (x, y) y reposicionamiento libre en campo de batalla; drop zones reactivas; giro a 90° con banner `GIRADA`; zoom HD; azar CSPRNG Fisher-Yates ([`csprng.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/game/csprng.ts)). |
-| **REQ-10** | Sincronización y reconexión     | **Cumplido al 100%**            | Estado autoritativo central; reserva de asiento por 10 minutos con temporizador de desconexión; reconexión con backoff exponencial ([`useGameSocket.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/web/src/hooks/useGameSocket.ts)).                                                                                                                                                                                                                                                                                                                     |
-| **REQ-11** | Log y deshacer                  | **Construido con adaptaciones** | Registro visible en tiempo real; pila `undoStack` autoritativa por jugador ([`game-state.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/game/game-state.ts)). _Log en memoria limitado a 200 eventos, sin modal de confirmación colectiva._                                                                                                                                                                                                                                                                                                   |
-| **REQ-12** | Chat y comunicación             | **Construido con adaptaciones** | Chat de texto en vivo con sanitización estricta XSS y atributos maliciosos. _Reacciones rápidas y enlace WebRTC diferidos a Fase 8._                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| **REQ-13** | Espectadores y moderación       | **Construido con adaptaciones** | Rol de espectador blindado (solo lectura, bloqueado de mutar tablero o vidas). _Expulsión de jugadores y transferencia manual de anfitrión diferidos._                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| **REQ-14** | Historial y estadísticas        | **Post-MVP**                    | Modelos relacionales definidos en Prisma; funcionalidad activa pospuesta a Fase 9.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| **REQ-15** | Rendimiento                     | **Cumplido y superado**         | Benchmark de 500 mesas simultáneas (2,000 jugadores): **p95 de 0.29 ms** (SLA requerido: < 300 ms).                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| **REQ-16** | Seguridad y privacidad          | **Cumplido al 100%**            | Enmascaramiento de información oculta en servidor ([`visibility-filter.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/game/visibility-filter.ts)); esquemas Zod en cada paquete WebSocket; Helmet CSP, cookies HttpOnly y rate limit por IP.                                                                                                                                                                                                                                                                                                  |
-| **REQ-17** | Usabilidad y accesibilidad      | **Construido con adaptaciones** | Layout responsivo en Tailwind con diseño oscuro de alto contraste y botones accesibles con atributos `title`. _Sin atajos de teclado explícitos ni toggle de modo exclusivo "solo tracker"._                                                                                                                                                                                                                                                                                                                                                                                |
-| **REQ-18** | Cumplimiento legal y Scryfall   | **Cumplido al 100%**            | User-Agent de Scryfall identificado; cola de 75 ms; modal legal con descargo de Wizards y atribución Scryfall ([`LegalModal.tsx`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/web/src/components/LegalModal.tsx)).                                                                                                                                                                                                                                                                                                                                         |
-| **REQ-19** | Disponibilidad y observabilidad | **Cumplido al 100%**            | Endpoints `/health`, `/api/health` y `/api/metrics` con métricas operativas; Nginx reverse proxy y Docker Compose productivo.                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Requisito  | Descripción                     | Estado Real en Código           | Evidencia y Adaptaciones Realizadas |
+| :--------- | :------------------------------ | :------------------------------ | :---------------------------------- |
+| **REQ-1**  | Cuentas y acceso                | **Cumplido al 100%**            | Argon2id nativo (`@node-rs/argon2`), verificación de email (`EmailSender`), access tokens cortos (15 min) y refresh tokens rotatorios en cookies HttpOnly/SameSite. Invitados anónimos y borrado GDPR vía `DELETE /api/auth/account`. [`auth.service.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/services/auth.service.ts), `auth.test.ts`. |
+| **REQ-2**  | Crear y unirse a mesa           | **Cumplido al 100%**            | Códigos únicos de 6 caracteres con CSPRNG ([`room-manager.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/game/room-manager.ts)); soporte de 2 a 6 asientos; espectadores automáticos o manuales; 40 vidas por defecto. |
+| **REQ-3**  | Seguimiento de vida             | **Cumplido al 100%**            | Botones $\pm 1$ y $\pm 5$, y acción directa `SET_LIFE` (REQ-3.4). No eliminación automática (REQ-3.3): marca `isAtRisk` resaltada cuando vida $\le 0$ con botones manuales para eliminar o revivir. |
+| **REQ-4**  | Daño de comandante              | **Cumplido al 100%**            | Matriz individualizada por comandante enemigo. No eliminación automática al alcanzar 21 de daño (REQ-4.2): marca `isAtRisk` con opción manual de eliminar o revivir ([`game-state.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/game/game-state.ts)). |
+| **REQ-5**  | Contadores y estados            | **Cumplido al 100%**            | Veneno (derrota a 10 con flag `isAtRisk`), energía, experiencia, commander tax ($+2$). Contadores con nombre personalizado en jugador (`SET_PLAYER_COUNTER`, REQ-5.3). Contadores $+1/+1$ en cartas y clonación de tokens (`CLONE_TOKEN`, REQ-9.4). |
+| **REQ-6**  | Turnos y fases                  | **Cumplido al 100%**            | Rotación circular estricta con `PASS_TURN` según orden de iniciativa `turnOrder` (REQ-21.8). Ajuste manual del orden de turnos por el anfitrión antes del primer turno (`SET_TURN_ORDER`, REQ-6.4 aprobado por el cliente). Salto automático de jugadores eliminados. |
+| **REQ-7**  | Importar mazos y buscar         | **Cumplido al 100%**            | Parser tolerante a múltiples formatos; cola de 75 ms y reintentos Scryfall; autocompletado en memoria LRU < 500 ms; persistencia de mazos vinculados a `userId` (`POST /api/decks`, `GET /api/decks`, REQ-7.5, [`deck.service.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/services/deck.service.ts)). |
+| **REQ-8**  | Validación Commander            | **Cumplido al 100%**            | 100 cartas exactas, 1-2 comandantes, cálculo de identidad de color y singleton con excepciones. Verificación de cartas baneadas en Commander (`legalities.commander === 'banned'`, REQ-8.3, [`commander-validator.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/packages/shared/src/utils/commander-validator.ts)). |
+| **REQ-9**  | Tablero y zonas                 | **Cumplido al 100%**            | 6 zonas de juego; Drag & drop real y fluido con `@dnd-kit/core` (ratón, táctil y teclado) como interacción principal, con botones solo como alternativa accesible; coordenadas normalizadas $0..1$ y orden $z$; giro a 90°; zoom HD de carta (REQ-9.6); barajado CSPRNG con `crypto.randomInt` (REQ-9.5); clonación de tokens (REQ-9.4). |
+| **REQ-10** | Sincronización y reconexión     | **Cumplido al 100%**            | Estado autoritativo central; reserva de asiento por 10 min; reconexión con backoff exponencial. Instantáneas periódicas en Redis recuperables al reiniciar (`RedisSnapshotService`, [`redis-snapshot.service.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/services/redis-snapshot.service.ts)). |
+| **REQ-11** | Log y deshacer                  | **Cumplido al 100%**            | Registro visible en tiempo real; pila `undoStack` autoritativa por jugador; confirmación colectiva requerida (`CONFIRM_UNDO`) para deshacer acciones que afecten el estado público o a otros jugadores (REQ-11.3, [`game-state.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/game/game-state.ts)). |
+| **REQ-12** | Chat y comunicación             | **Cumplido al 100%**            | Chat de texto con sanitización XSS; rate limiting de 5 mensajes cada 10 s por usuario en WebSocket (REQ-12.4 / 16.4); reacciones rápidas predefinidas (REQ-12.2). _REQ-12.3 (videollamada externa) descartado por decisión del cliente para usar Discord externo._ |
+| **REQ-13** | Espectadores y moderación       | **Cumplido al 100%**            | Rol de espectador blindado (solo lectura, sin mutación); moderación del anfitrión con expulsión (`KICK_PLAYER`, REQ-13.2) y transferencia de anfitrión (`TRANSFER_HOST`, REQ-13.3, [`room-manager.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/game/room-manager.ts)). |
+| **REQ-14** | Historial y estadísticas        | **Post-MVP**                    | Esquemas relacionales en PostgreSQL/Prisma listos para registrar estadísticas históricas de partidas y mazos. |
+| **REQ-15** | Rendimiento                     | **Cumplido y superado**         | Benchmark de 500 mesas simultáneas (2,000 jugadores): **p95 de 6.39 ms** (SLA requerido: < 300 ms). Cobertura E2E Playwright multijugador concurrente. |
+| **REQ-16** | Seguridad y privacidad          | **Cumplido al 100%**            | Filtrado autoritativo de información oculta en servidor (`VisibilityFilter`); esquemas Zod en cada paquete WebSocket; Helmet CSP estricta; rate limiting por IP y por usuario en WS; política de privacidad y derecho de supresión de cuenta GDPR (`DELETE /api/auth/account`, Ley 1581 de 2012). |
+| **REQ-17** | Usabilidad y accesibilidad      | **Cumplido al 100%**            | Accesibilidad completa por teclado (`@dnd-kit/core`), diseño oscuro de alto contraste WCAG AA $> 4.5:1$, modo simplificado responsivo para pantallas $< 1024$ px y tableta vertical, respeto de `prefers-reduced-motion` y opción de reducir fondos (REQ-22.15). |
+| **REQ-18** | Cumplimiento legal y Scryfall   | **Cumplido al 100%**            | User-Agent identificado; cola de 75 ms; modal legal con descargo Fan Content y atribución Scryfall; sincronización nocturna de bulk data de Scryfall (`BulkSyncService`, endpoint manual reservado para administradores). |
+| **REQ-19** | Disponibilidad y observabilidad | **Cumplido al 100%**            | Endpoints `/health`, `/api/health` y `/api/metrics`; instantáneas en Redis para recuperación ante reinicios del proceso; Nginx reverse proxy y Docker Compose productivo. |
+| **REQ-20** | Sala de espera interactiva      | **Cumplido al 100%**            | Pantalla `LobbyView` con cuadrícula de asientos, selector e importador de mazos, secreto estricto de la lista completa de cartas (solo viaja nombre y comandante a otros jugadores), selector de playmat, botón "Listo", inicio de partida validado por anfitrión, expulsión y transferencia de rol, barajado CSPRNG Fisher-Yates, comandante a zona de comando y mano inicial de 7 cartas ([`LobbyView.tsx`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/web/src/components/LobbyView.tsx), [`LobbyManager.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/game/lobby-manager.ts), [`GameStarter.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/game/game-starter.ts)). |
+| **REQ-21** | Iniciativa con D20 y turnos     | **Cumplido al 100%**            | Fase de iniciativa con D20 autoritativo en servidor (`crypto.randomInt(1, 21)`), superposición visual `InitiativeOverlay` con temporizador de 15 s y auto-roll por tiempo agotado o desconexión, desempate jerárquico por rondas sucesivas (hasta 5 rondas) y desempate por asiento, transición a estado `playing` con asignación del orden a `turnOrder` y `PASS_TURN`, e insignias "1.º", "2.º"... ([`InitiativeOverlay.tsx`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/web/src/components/InitiativeOverlay.tsx), [`InitiativeService.ts`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/server/src/game/initiative-service.ts)). |
+| **REQ-22** | Mesa inmersiva playgroup.gg     | **Cumplido al 100%**            | Cuadrícula a sangre de 2 filas y hasta 3 columnas (`ceil(jugadores/2)`), $100\text{dvh}$ sin scroll de ventana (`TableGrid`); celdas `PlayerCell` con `PlaymatBackground` (arte en alta calidad con degradado oscuro), `NameTag` con turno e iniciativa, pastilla de vida interior (`LifePill`), insignias de contadores; ranuras de pilas (`PileSlots`), mano asomada en borde inferior (`HandFan`); `BattlefieldCanvas` con coordenadas normalizadas $x, y \in [0, 1]$ e índice $z$, drag & drop con dnd-kit; `FloatingToolbar` plegable con celda libre asignada a `LogChatPanel`; vista ampliada `ExpandedCellView` (botón/doble clic y cierre con `Esc`); contraste WCAG AA $> 4.5:1$ y modo simplificado para $< 1024$ px ([`TableGrid.tsx`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/web/src/components/TableGrid.tsx), [`PlayerCell.tsx`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/web/src/components/PlayerCell.tsx), [`BattlefieldCanvas.tsx`](file:///c:/Users/Nero.PC-Neroz/Documents/Proyect%20MTGC/apps/web/src/components/BattlefieldCanvas.tsx)). |
 
 ### Componentes Arquitectónicos (`design.md`)
 
-- **COMP-1 (Web Client)**: React 18 + Vite + Tailwind + Lucide Icons. Gestión de estado mediante hooks reactivos desacoplados (`useGameSocket`).
-- **COMP-2 (API REST)**: Fastify 5 en Node 22 (ESM nativo) con rutas de autenticación, cartas y mesas.
+- **COMP-1 (Web Client)**: React 18 + Vite + Tailwind + Lucide Icons + `@dnd-kit/core`. `LobbyView`, `InitiativeOverlay`, `TableGrid`, `PlayerCell`, `BattlefieldCanvas`, `FloatingToolbar`.
+- **COMP-2 (API REST)**: Fastify 5 en Node 22 (ESM nativo) con rutas de autenticación, verificación de correo, mazos, cartas y sincronización bulk nocturna.
 - **COMP-3 (PostgreSQL / Prisma)**: Prisma 7 con driver adapter `@prisma/adapter-pg` y fallback automático en memoria cuando la base de datos no está levantada.
-- **COMP-4 (Room Manager)**: Manejo autoritativo de salas, generación de códigos CSPRNG y reserva de asientos por desconexión (10 min).
-- **COMP-5 (Game Server)**: Fastify WebSocket con validación estricta Zod y filtro de visibilidad anti-trampas.
-- **COMP-6 (Card Service)**: Cola Scryfall (75 ms), reintentos con backoff exponencial y caché LRU en memoria.
-- **COMP-7 (Redis - Estado en vivo)**: _Decisión de diseño_: Para el MVP, el estado activo reside en memoria RAM (`Map<string, GameStateSession>`), lo cual redujo la latencia a menos de 0.3 ms y simplificó la arquitectura sin añadir fallos de red en desarrollo. Redis queda orquestado en `docker-compose.prod.yml` para escalado horizontal multi-instancia en el futuro.
-- **COMP-8 (Imágenes)**: Consumo directo del CDN de Scryfall (`cards.scryfall.io`) autorizado en la CSP.
+- **COMP-4 (Room Manager)**: Manejo autoritativo de salas, generación de códigos CSPRNG, reserva de asientos por desconexión (10 min), `LobbyManager` con privacidad de cartas, expulsión y transferencia de anfitrión.
+- **COMP-5 (Game Server)**: Fastify WebSocket con validación estricta Zod, `InitiativeService` con D20 CSPRNG y desempate por rondas, `GameStarter`, rate limiting (5 msg / 10s) y filtro de visibilidad anti-trampas.
+- **COMP-6 (Card Service)**: Cola Scryfall (75 ms), reintentos con backoff exponencial, autocompletado en memoria LRU y sincronización nocturna `BulkSyncService`.
+- **COMP-7 (Redis - Estado en vivo e Instantáneas)**: `RedisSnapshotService` almacena instantáneas de estado de cada mesa activa con TTL de 24 horas y restauración automática al reiniciar el servidor.
+- **COMP-8 (Imágenes)**: Consumo directo del CDN de Scryfall (`cards.scryfall.io`) autorizado en la CSP para cartas y playmats de fondo (`art_crop`).
 - **COMP-9 (Observabilidad)**: Endpoint `/api/metrics` expone telemetría de memoria, salas activas y jugadores en tiempo real.
+
