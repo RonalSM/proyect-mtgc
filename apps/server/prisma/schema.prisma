@@ -7,13 +7,16 @@ datasource db {
 }
 
 model User {
-  id           String       @id @default(uuid())
-  username     String       @unique
-  email        String?      @unique
-  passwordHash String?
-  isGuest      Boolean      @default(false)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id                      String       @id @default(uuid())
+  username                String       @unique
+  email                   String?      @unique
+  passwordHash            String?
+  isGuest                 Boolean      @default(false)
+  isEmailVerified         Boolean      @default(false)
+  emailVerificationToken  String?
+  refreshTokenHash        String?
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
 
   decks        Deck[]
   hostedTables Table[]      @relation("HostedTables")

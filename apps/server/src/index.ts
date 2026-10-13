@@ -98,7 +98,7 @@ server.get('/api/metrics', async () => {
 
 // --- Authentication & User Accounts (Fase 5.1) ---
 
-// Register
+// Register with email verification and Argon2id
 server.post('/api/auth/register', async (request, reply) => {
   const body = request.body as { username?: string; email?: string; password?: string };
   if (!body.username || !body.password) {
@@ -106,28 +106,81 @@ server.post('/api/auth/register', async (request, reply) => {
   }
 
   try {
-    const user = await authService.register({
-      username: body.username,
-      email: body.email,
-      password: body.password,
+    const protocol = request.protocol || 'http';
+    const host = request.headers.host || 'localhost:3000';
+    const baseUrl = `${protocol}://${host}`;
+
+    const user = await authService.register(
+      {
+        username: body.username,
+        email: body.email,
+        password: body.password,
+      },
+      baseUrl,
+    );
+
+    // Short-lived access token (15m)
+    const accessToken = server.jwt.sign(
+      { id: user.id, username: user.username, isGuest: false, isEmailVerified: user.isEmailVerified },
+      { expiresIn: '15m' },
+    );
+
+    // Rotating refresh token (7 days)
+    const refreshToken = await authService.createRefreshToken(user.id);
+
+    reply.setCookie('token', accessToken, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60, // 15 minutes
     });
 
-    const token = server.jwt.sign({ id: user.id, username: user.username, isGuest: false });
-    reply.setCookie('token', token, {
+    reply.setCookie('mtgc_access_token', accessToken, {
       path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60,
+    });
+
+    reply.setCookie('mtgc_refresh_token', `${user.id}:${refreshToken}`, {
+      path: '/api/auth',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60, // 7 days
     });
 
-    return reply.status(201).send({ user, token });
+    return reply.status(201).send({
+      user,
+      accessToken,
+      expiresIn: 900,
+      message: user.email
+        ? 'Usuario creado. Revisa tu correo para verificar tu cuenta.'
+        : 'Usuario creado exitosamente',
+    });
   } catch (err: any) {
     return reply.status(400).send({ error: err.message || 'Error al registrar usuario' });
   }
 });
 
-// Login
+// Verify Email
+server.get('/api/auth/verify-email', async (request, reply) => {
+  const query = request.query as { token?: string };
+  if (!query.token) {
+    return reply.status(400).send({ error: 'Token de verificación no proporcionado' });
+  }
+
+  const verified = await authService.verifyEmail(query.token);
+  if (!verified) {
+    return reply.status(400).send({ error: 'Token de verificación inválido o expirado' });
+  }
+
+  return reply.send({ verified: true, message: 'Correo verificado exitosamente' });
+});
+
+// Login with Argon2id and token rotation
 server.post('/api/auth/login', async (request, reply) => {
   const body = request.body as { identifier?: string; password?: string };
   if (!body.identifier || !body.password) {
@@ -140,19 +193,91 @@ server.post('/api/auth/login', async (request, reply) => {
       password: body.password,
     });
 
-    const token = server.jwt.sign({ id: user.id, username: user.username, isGuest: user.isGuest });
-    reply.setCookie('token', token, {
+    const accessToken = server.jwt.sign(
+      { id: user.id, username: user.username, isGuest: user.isGuest, isEmailVerified: user.isEmailVerified },
+      { expiresIn: '15m' },
+    );
+
+    const refreshToken = await authService.createRefreshToken(user.id);
+
+    reply.setCookie('token', accessToken, {
       path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60,
+    });
+
+    reply.setCookie('mtgc_access_token', accessToken, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60,
+    });
+
+    reply.setCookie('mtgc_refresh_token', `${user.id}:${refreshToken}`, {
+      path: '/api/auth',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60,
     });
 
-    return reply.send({ user, token });
+    return reply.send({ user, accessToken, expiresIn: 900 });
   } catch (err: any) {
     return reply.status(401).send({ error: err.message || 'Credenciales incorrectas' });
   }
+});
+
+// Refresh Access Token with Rotating Refresh Token
+server.post('/api/auth/refresh', async (request, reply) => {
+  const cookieVal = request.cookies.mtgc_refresh_token;
+  if (!cookieVal) {
+    return reply.status(401).send({ error: 'No se encontró refresh token' });
+  }
+
+  const [userId, rawToken] = cookieVal.split(':');
+  if (!userId || !rawToken) {
+    return reply.status(401).send({ error: 'Refresh token con formato inválido' });
+  }
+
+  const newRefreshToken = await authService.rotateRefreshToken(userId, rawToken);
+  if (!newRefreshToken) {
+    reply.clearCookie('mtgc_refresh_token', { path: '/api/auth' });
+    return reply.status(401).send({ error: 'Refresh token inválido o expirado' });
+  }
+
+  const newAccessToken = server.jwt.sign(
+    { id: userId, isGuest: false },
+    { expiresIn: '15m' },
+  );
+
+  reply.setCookie('token', newAccessToken, {
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 15 * 60,
+  });
+
+  reply.setCookie('mtgc_access_token', newAccessToken, {
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 15 * 60,
+  });
+
+  reply.setCookie('mtgc_refresh_token', `${userId}:${newRefreshToken}`, {
+    path: '/api/auth',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60,
+  });
+
+  return reply.send({ accessToken: newAccessToken, expiresIn: 900 });
 });
 
 // Anonymous Guest Login
@@ -169,13 +294,23 @@ server.post('/api/auth/guest', async (request, reply) => {
     maxAge: 24 * 60 * 60, // 24 hours
   });
 
+  reply.setCookie('mtgc_access_token', token, {
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60,
+  });
+
   return reply.send({ user, token });
 });
 
 // Get Current User Profile
 server.get('/api/auth/me', async (request, reply) => {
   try {
-    const token = request.cookies.token;
+    const authHeader = request.headers.authorization;
+    const bearer = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    const token = bearer || request.cookies.mtgc_access_token || request.cookies.token;
     if (!token) {
       return reply.status(401).send({ error: 'No autenticado' });
     }
@@ -186,22 +321,36 @@ server.get('/api/auth/me', async (request, reply) => {
   }
 });
 
-// Logout
-server.post('/api/auth/logout', async (_request, reply) => {
+// Logout (Revoke refresh tokens and clear cookies)
+server.post('/api/auth/logout', async (request, reply) => {
+  const cookieVal = request.cookies.mtgc_refresh_token;
+  if (cookieVal) {
+    const [userId] = cookieVal.split(':');
+    if (userId) {
+      await authService.revokeRefreshToken(userId);
+    }
+  }
+
   reply.clearCookie('token', { path: '/' });
+  reply.clearCookie('mtgc_access_token', { path: '/' });
+  reply.clearCookie('mtgc_refresh_token', { path: '/api/auth' });
   return reply.send({ message: 'Sesión cerrada exitosamente' });
 });
 
 // Delete Account (GDPR / Privacy)
 server.delete('/api/auth/account', async (request, reply) => {
   try {
-    const token = request.cookies.token;
+    const authHeader = request.headers.authorization;
+    const bearer = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    const token = bearer || request.cookies.mtgc_access_token || request.cookies.token;
     if (!token) {
       return reply.status(401).send({ error: 'No autenticado' });
     }
     const decoded = server.jwt.verify<{ id: string }>(token);
     await authService.deleteAccount(decoded.id);
     reply.clearCookie('token', { path: '/' });
+    reply.clearCookie('mtgc_access_token', { path: '/' });
+    reply.clearCookie('mtgc_refresh_token', { path: '/api/auth' });
     return reply.send({ message: 'Cuenta eliminada exitosamente' });
   } catch {
     return reply.status(500).send({ error: 'Error al eliminar la cuenta' });
