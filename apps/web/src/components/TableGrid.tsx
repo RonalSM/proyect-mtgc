@@ -149,7 +149,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
             return (
               <div
                 key={slot.player.id}
-                className="h-full w-full relative overflow-hidden bg-slate-950"
+                className="h-full w-full relative bg-slate-950"
               >
                 {renderPlayerCell(slot.player, slot.row, slot.col, isLocal)}
               </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import type { PlayerState, GameActionType, CardInstance } from '@mtgc/shared';
 import {
   Heart,
@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { HandFan } from './HandFan';
 import { CardDisplay } from './CardDisplay';
+import { Portal } from './Portal';
 
 export function getLifeCornerClasses(row: 0 | 1, col: number): string {
   // Inner corner: nearest to center of screen (REQ-22.5)
@@ -60,6 +61,30 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const [customPlaymatInput, setCustomPlaymatInput] = useState('');
   const [zoomedCard, setZoomedCard] = useState<CardInstance | null>(null);
 
+  const lifeButtonRef = useRef<HTMLButtonElement>(null);
+  const [lifePopoverPos, setLifePopoverPos] = useState<{ top: number; left: number } | null>(null);
+
+  const toggleLifeControls = () => {
+    if (!showLifeControls && lifeButtonRef.current) {
+      const rect = lifeButtonRef.current.getBoundingClientRect();
+      const popoverWidth = 208;
+      const popoverHeight = 170;
+
+      let top = rect.top - popoverHeight - 8;
+      if (top < 10) {
+        top = rect.bottom + 8;
+      }
+      let left = rect.left + rect.width / 2 - popoverWidth / 2;
+      left = Math.max(12, Math.min(window.innerWidth - popoverWidth - 12, left));
+      top = Math.max(12, Math.min(window.innerHeight - popoverHeight - 12, top));
+
+      setLifePopoverPos({ top, left });
+      setShowLifeControls(true);
+    } else {
+      setShowLifeControls(false);
+    }
+  };
+
   const cornerClasses = getLifeCornerClasses(row, col);
 
   // Fallback playmat
@@ -95,13 +120,12 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
 
   return (
     <div
-      className={`relative w-full h-full overflow-hidden flex flex-col justify-between transition-all select-none ${
+      className={`relative w-full h-full flex flex-col justify-between transition-all select-none ${
         isActiveTurn ? 'ring-2 ring-amber-400/80 shadow-[inset_0_0_40px_rgba(251,191,36,0.12)]' : ''
       }`}
-      style={{ contain: 'layout paint' }}
     >
-      {/* 1. PlaymatBackground (REQ-22.3) */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      {/* 1. PlaymatBackground (REQ-22.3) - overflow-hidden estricto solo aquí */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         {!reduceBackgrounds ? (
           <>
             <img
@@ -194,7 +218,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       <div className={`absolute z-30 ${cornerClasses}`}>
         <div className="relative group">
           <button
-            onClick={() => setShowLifeControls(!showLifeControls)}
+            ref={lifeButtonRef}
+            onClick={toggleLifeControls}
             className={`flex items-center space-x-2 px-3 py-1.5 rounded-2xl backdrop-blur-md border shadow-2xl transition-all cursor-pointer ${
               player.life <= 0
                 ? 'bg-rose-950/90 border-rose-600 text-rose-300 ring-2 ring-rose-500/30'
@@ -213,87 +238,98 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             </span>
           </button>
 
-          {/* Quick Life Modifiers Popover */}
-          {showLifeControls && (
-            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900/95 border border-slate-700 rounded-2xl shadow-2xl p-2.5 flex flex-col space-y-2 z-50 w-48">
-              <div className="grid grid-cols-4 gap-1 text-xs font-bold font-mono">
-                <button
-                  onClick={() => adjustLife(-5)}
-                  className="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-200 py-1 rounded-lg"
-                >
-                  -5
-                </button>
-                <button
-                  onClick={() => adjustLife(-1)}
-                  className="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-200 py-1 rounded-lg"
-                >
-                  -1
-                </button>
-                <button
-                  onClick={() => adjustLife(1)}
-                  className="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 py-1 rounded-lg"
-                >
-                  +1
-                </button>
-                <button
-                  onClick={() => adjustLife(5)}
-                  className="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 py-1 rounded-lg"
-                >
-                  +5
-                </button>
-              </div>
-
-              {/* Direct SET_LIFE input */}
-              {showCustomLifeInput ? (
-                <form onSubmit={handleSetLifeSubmit} className="flex space-x-1">
-                  <input
-                    type="number"
-                    value={customLifeValue}
-                    onChange={e => setCustomLifeValue(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-0.5 text-xs text-white font-mono"
-                    autoFocus
-                  />
+          {/* Quick Life Modifiers Popover via Portal (REQ-22.5) */}
+          {showLifeControls && lifePopoverPos && (
+            <Portal>
+              {/* Invisible overlay for click-outside */}
+              <div
+                className="fixed inset-0 z-50 bg-black/10 backdrop-blur-[0.5px]"
+                onClick={() => setShowLifeControls(false)}
+              />
+              <div
+                style={{ top: `${lifePopoverPos.top}px`, left: `${lifePopoverPos.left}px` }}
+                className="fixed z-50 bg-slate-900/95 border border-slate-700 rounded-2xl shadow-2xl p-2.5 flex flex-col space-y-2 w-52 backdrop-blur-md animate-in fade-in zoom-in-95"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="grid grid-cols-4 gap-1 text-xs font-bold font-mono">
                   <button
-                    type="submit"
-                    className="bg-amber-500 text-slate-950 font-bold text-xs px-2 rounded-lg"
+                    onClick={() => adjustLife(-5)}
+                    className="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-200 py-1 rounded-lg"
                   >
-                    OK
+                    -5
                   </button>
-                </form>
-              ) : (
-                <button
-                  onClick={() => setShowCustomLifeInput(true)}
-                  className="w-full text-center text-[10px] text-slate-400 hover:text-white py-0.5"
-                >
-                  Escribir vida exacta
-                </button>
-              )}
-
-              {/* Counter Badges Menu */}
-              <div className="pt-1.5 border-t border-slate-800 grid grid-cols-2 gap-1 text-[10px]">
-                <div className="flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg">
-                  <span className="text-emerald-400 flex items-center space-x-1">
-                    <Skull className="w-2.5 h-2.5" />
-                    <span>{player.counters.poison}</span>
-                  </span>
-                  <div className="flex space-x-1">
-                    <button onClick={() => adjustCounter('poison', -1)} className="hover:text-white">-</button>
-                    <button onClick={() => adjustCounter('poison', 1)} className="hover:text-white">+</button>
-                  </div>
+                  <button
+                    onClick={() => adjustLife(-1)}
+                    className="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-200 py-1 rounded-lg"
+                  >
+                    -1
+                  </button>
+                  <button
+                    onClick={() => adjustLife(1)}
+                    className="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 py-1 rounded-lg"
+                  >
+                    +1
+                  </button>
+                  <button
+                    onClick={() => adjustLife(5)}
+                    className="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 py-1 rounded-lg"
+                  >
+                    +5
+                  </button>
                 </div>
 
-                <div className="flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg">
-                  <span className="text-amber-400 flex items-center space-x-1">
-                    <Shield className="w-2.5 h-2.5" />
-                    <span>{player.counters.commanderTax}</span>
-                  </span>
-                  <div className="flex space-x-1">
-                    <button onClick={() => adjustCounter('commanderTax', -2)} className="hover:text-white">-2</button>
-                    <button onClick={() => adjustCounter('commanderTax', 2)} className="hover:text-white">+2</button>
+                {/* Direct SET_LIFE input */}
+                {showCustomLifeInput ? (
+                  <form onSubmit={handleSetLifeSubmit} className="flex space-x-1">
+                    <input
+                      type="number"
+                      value={customLifeValue}
+                      onChange={e => setCustomLifeValue(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-0.5 text-xs text-white font-mono"
+                      autoFocus
+                    />
+                    <button
+                      type="submit"
+                      className="bg-amber-500 text-slate-950 font-bold text-xs px-2 rounded-lg"
+                    >
+                      OK
+                    </button>
+                  </form>
+                ) : (
+                  <button
+                    onClick={() => setShowCustomLifeInput(true)}
+                    className="w-full text-center text-[10px] text-slate-400 hover:text-white py-0.5"
+                  >
+                    Escribir vida exacta
+                  </button>
+                )}
+
+                {/* Counter Badges Menu */}
+                <div className="pt-1.5 border-t border-slate-800 grid grid-cols-2 gap-1 text-[10px]">
+                  <div className="flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg">
+                    <span className="text-emerald-400 flex items-center space-x-1">
+                      <Skull className="w-2.5 h-2.5" />
+                      <span>{player.counters.poison}</span>
+                    </span>
+                    <div className="flex space-x-1">
+                      <button onClick={() => adjustCounter('poison', -1)} className="hover:text-white">-</button>
+                      <button onClick={() => adjustCounter('poison', 1)} className="hover:text-white">+</button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg">
+                    <span className="text-amber-400 flex items-center space-x-1">
+                      <Shield className="w-2.5 h-2.5" />
+                      <span>{player.counters.commanderTax}</span>
+                    </span>
+                    <div className="flex space-x-1">
+                      <button onClick={() => adjustCounter('commanderTax', -2)} className="hover:text-white">-2</button>
+                      <button onClick={() => adjustCounter('commanderTax', 2)} className="hover:text-white">+2</button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </Portal>
           )}
         </div>
       </div>
@@ -377,125 +413,131 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
 
       {/* Pile Modal Inspector */}
       {activePileModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[75vh] flex flex-col shadow-2xl overflow-hidden">
-            <div className="px-5 py-3 border-b border-slate-800 flex items-center justify-between">
-              <h3 className="font-bold text-sm text-white capitalize">
-                {activePileModal === 'command'
-                  ? 'Zona de Comando'
-                  : activePileModal === 'graveyard'
-                  ? 'Cementerio'
-                  : 'Exilio'} ({zones[activePileModal].length})
-              </h3>
-              <button
-                onClick={() => setActivePileModal(null)}
-                className="text-slate-400 hover:text-white font-bold"
-              >
-                &times;
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-3 gap-2">
-              {zones[activePileModal].map((card, i) => (
-                <div key={card.instanceId || i} className="space-y-1">
-                  <div className="aspect-[2.5/3.5] rounded-lg overflow-hidden border border-slate-700 bg-slate-950">
-                    <CardDisplay card={card.definition} />
+        <Portal>
+          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[75vh] flex flex-col shadow-2xl overflow-hidden">
+              <div className="px-5 py-3 border-b border-slate-800 flex items-center justify-between">
+                <h3 className="font-bold text-sm text-white capitalize">
+                  {activePileModal === 'command'
+                    ? 'Zona de Comando'
+                    : activePileModal === 'graveyard'
+                    ? 'Cementerio'
+                    : 'Exilio'} ({zones[activePileModal].length})
+                </h3>
+                <button
+                  onClick={() => setActivePileModal(null)}
+                  className="text-slate-400 hover:text-white font-bold"
+                >
+                  &times;
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 grid grid-cols-3 gap-2">
+                {zones[activePileModal].map((card, i) => (
+                  <div key={card.instanceId || i} className="space-y-1">
+                    <div className="aspect-[2.5/3.5] rounded-lg overflow-hidden border border-slate-700 bg-slate-950">
+                      <CardDisplay card={card.definition} />
+                    </div>
+                    <div className="text-[10px] font-bold text-slate-300 truncate">
+                      {card.definition.name}
+                    </div>
                   </div>
-                  <div className="text-[10px] font-bold text-slate-300 truncate">
-                    {card.definition.name}
+                ))}
+                {zones[activePileModal].length === 0 && (
+                  <div className="col-span-3 text-center py-6 text-slate-500 text-xs italic">
+                    Esta zona está vacía
                   </div>
-                </div>
-              ))}
-              {zones[activePileModal].length === 0 && (
-                <div className="col-span-3 text-center py-6 text-slate-500 text-xs italic">
-                  Esta zona está vacía
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </Portal>
       )}
 
       {/* Playmat Selector Modal (REQ-22.3) */}
       {isPlaymatModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <form
-            onSubmit={handleSavePlaymat}
-            className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl"
-          >
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h3 className="font-bold text-sm text-white flex items-center space-x-2">
-                <ImageIcon className="w-4 h-4 text-amber-400" />
-                <span>Personalizar Playmat</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsPlaymatModalOpen(false)}
-                className="text-slate-400 hover:text-white font-bold"
-              >
-                &times;
-              </button>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">
-                URL de imagen / Art Crop (Scryfall o enlace directo)
-              </label>
-              <input
-                type="url"
-                value={customPlaymatInput}
-                onChange={e => setCustomPlaymatInput(e.target.value)}
-                placeholder="https://cards.scryfall.io/art_crop/..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
-                autoFocus
-              />
-            </div>
-            <div className="flex space-x-2">
-              <button
-                type="button"
-                onClick={() => setIsPlaymatModalOpen(false)}
-                className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-2 rounded-xl"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2 rounded-xl"
-              >
-                Guardar Playmat
-              </button>
-            </div>
-          </form>
-        </div>
+        <Portal>
+          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <form
+              onSubmit={handleSavePlaymat}
+              className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                <h3 className="font-bold text-sm text-white flex items-center space-x-2">
+                  <ImageIcon className="w-4 h-4 text-amber-400" />
+                  <span>Personalizar Playmat</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsPlaymatModalOpen(false)}
+                  className="text-slate-400 hover:text-white font-bold"
+                >
+                  &times;
+                </button>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">
+                  URL de imagen / Art Crop (Scryfall o enlace directo)
+                </label>
+                <input
+                  type="url"
+                  value={customPlaymatInput}
+                  onChange={e => setCustomPlaymatInput(e.target.value)}
+                  placeholder="https://cards.scryfall.io/art_crop/..."
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
+                  autoFocus
+                />
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setIsPlaymatModalOpen(false)}
+                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-2 rounded-xl"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2 rounded-xl"
+                >
+                  Guardar Playmat
+                </button>
+              </div>
+            </form>
+          </div>
+        </Portal>
       )}
 
       {/* Zoom Card HD Modal (REQ-9.6) */}
       {zoomedCard && (
-        <div
-          onClick={() => setZoomedCard(null)}
-          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
-        >
+        <Portal>
           <div
-            onClick={e => e.stopPropagation()}
-            className="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-4 flex flex-col space-y-3 shadow-2xl overflow-hidden cursor-default"
+            onClick={() => setZoomedCard(null)}
+            className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
           >
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <span className="font-bold text-sm text-white truncate">
-                {zoomedCard.definition.name}
-              </span>
-              <button
-                onClick={() => setZoomedCard(null)}
-                className="text-slate-400 hover:text-white font-bold text-lg"
-              >
-                &times;
-              </button>
-            </div>
-            <div className="aspect-[2.5/3.5] rounded-2xl overflow-hidden border border-slate-800 shadow-xl">
-              <CardDisplay card={zoomedCard.definition} allowFaceToggle={true} />
-            </div>
-            <div className="text-center text-xs text-slate-400">
-              {zoomedCard.definition.typeLine}
+            <div
+              onClick={e => e.stopPropagation()}
+              className="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-4 flex flex-col space-y-3 shadow-2xl overflow-hidden cursor-default"
+            >
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                <span className="font-bold text-sm text-white truncate">
+                  {zoomedCard.definition.name}
+                </span>
+                <button
+                  onClick={() => setZoomedCard(null)}
+                  className="text-slate-400 hover:text-white font-bold text-lg"
+                >
+                  &times;
+                </button>
+              </div>
+              <div className="aspect-[2.5/3.5] rounded-2xl overflow-hidden border border-slate-800 shadow-xl">
+                <CardDisplay card={zoomedCard.definition} allowFaceToggle={true} />
+              </div>
+              <div className="text-center text-xs text-slate-400">
+                {zoomedCard.definition.typeLine}
+              </div>
             </div>
           </div>
-        </div>
+        </Portal>
       )}
     </div>
   );
