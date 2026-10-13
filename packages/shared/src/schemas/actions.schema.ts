@@ -96,6 +96,11 @@ export const SetPlayerStatusSchema = z.object({
   reason: z.string().max(200).optional(),
 });
 
+export const ConfirmUndoSchema = z.object({
+  proposalId: z.string().min(1),
+  approved: z.boolean(),
+});
+
 export const ActionEnvelopeSchema = z.object({
   type: z.enum([
     'ADJUST_LIFE',
@@ -116,6 +121,7 @@ export const ActionEnvelopeSchema = z.object({
     'SET_TURN_ORDER',
     'ROLL_DICE',
     'UNDO_LAST',
+    'CONFIRM_UNDO',
     'CHAT_MESSAGE',
     'LOAD_DECK',
     'KICK_PLAYER',

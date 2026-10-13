@@ -28,6 +28,16 @@ export interface GameLogEntry {
   isUndoable: boolean;
 }
 
+export interface UndoProposal {
+  id: string;
+  proposerId: string;
+  proposerName: string;
+  description: string;
+  targetPlayerIds: string[];
+  approvals: Record<string, boolean>;
+  createdAt: number;
+}
+
 export interface RoomState {
   id: string;
   code: string;
@@ -42,4 +52,5 @@ export interface RoomState {
   turnNumber: number;
   version: number; // Monotonically increasing event/state version
   logs: GameLogEntry[];
+  pendingUndoProposal?: UndoProposal;
 }

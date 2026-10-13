@@ -12,6 +12,7 @@ import {
   TapCardPayload,
   FlipCardPayload,
   CloneTokenPayload,
+  ConfirmUndoPayload,
 } from '@mtgc/shared';
 import { secureShuffle, secureRoll } from './csprng.js';
 import { randomUUID } from 'crypto';
@@ -21,6 +22,8 @@ interface UndoRecord {
   playerId: string;
   revert: () => void;
   description: string;
+  affectsOpponents?: boolean;
+  affectedPlayerIds?: string[];
 }
 
 export class GameStateSession {
@@ -141,7 +144,7 @@ export class GameStateSession {
   /**
    * Records commander combat damage and checks 21 damage rule for defeat risk (REQ-4.2)
    */
-  public adjustCommanderDamage(payload: CommanderDamagePayload): void {
+  public adjustCommanderDamage(payload: CommanderDamagePayload, actorPlayerId?: string): void {
     const target = this.state.players[payload.targetPlayerId];
     if (!target) return;
 
@@ -175,9 +178,14 @@ export class GameStateSession {
       true,
     );
 
+    const effectiveActor = actorPlayerId || payload.targetPlayerId;
+    const affectsOther = actorPlayerId !== undefined && actorPlayerId !== payload.targetPlayerId;
+
     this.undoStack.push({
-      playerId: payload.targetPlayerId,
+      playerId: effectiveActor,
       description: `Revertir daño de comandante`,
+      affectsOpponents: affectsOther,
+      affectedPlayerIds: [payload.targetPlayerId],
       revert: () => {
         target.commanderDamage[payload.sourceCommanderInstanceId] = previous;
         target.isAtRisk = previousIsAtRisk;
@@ -671,7 +679,8 @@ export class GameStateSession {
   }
 
   /**
-   * Reverts the last undoable action by this player
+   * Reverts the last undoable action by this player.
+   * If the action affects other players (REQ-11.3), creates a table confirmation proposal.
    */
   public undoLast(playerId: string): boolean {
     let index = -1;
@@ -684,14 +693,95 @@ export class GameStateSession {
     }
     if (index === -1) return false;
 
-    const [undoRecord] = this.undoStack.splice(index, 1);
-    if (undoRecord) {
-      undoRecord.revert();
-      this.addLog(playerId, `deshizo su última acción: ${undoRecord.description}`);
+    const undoRecord = this.undoStack[index];
+    if (!undoRecord) return false;
+
+    // REQ-11.3: WHERE la acción afecta a otros jugadores, THE sistema SHALL pedir confirmación de la mesa.
+    if (undoRecord.affectsOpponents) {
+      const targetIds =
+        undoRecord.affectedPlayerIds && undoRecord.affectedPlayerIds.length > 0
+          ? undoRecord.affectedPlayerIds
+          : Object.keys(this.state.players).filter(
+              id => id !== playerId && !this.state.players[id]?.isSpectator,
+            );
+
+      const proposalId = randomUUID();
+      this.state.pendingUndoProposal = {
+        id: proposalId,
+        proposerId: playerId,
+        proposerName: this.state.players[playerId]?.name || 'Jugador',
+        description: undoRecord.description,
+        targetPlayerIds: targetIds,
+        approvals: {},
+        createdAt: Date.now(),
+      };
+
+      this.addLog(
+        playerId,
+        `solicitó deshacer "${undoRecord.description}" (afecta a otros jugadores; requiere confirmación de la mesa)`,
+      );
+      this.incrementVersion();
+      return false; // Pending table confirmation
+    }
+
+    // Direct revert if it only affected the player themselves
+    this.undoStack.splice(index, 1);
+    undoRecord.revert();
+    this.addLog(playerId, `deshizo su última acción: ${undoRecord.description}`);
+    this.incrementVersion();
+    return true;
+  }
+
+  /**
+   * Responds to an undo proposal that affects opponents (REQ-11.3)
+   */
+  public confirmUndo(responderId: string, payload: ConfirmUndoPayload): boolean {
+    if (!this.state.pendingUndoProposal || this.state.pendingUndoProposal.id !== payload.proposalId) {
+      return false;
+    }
+
+    const proposal = this.state.pendingUndoProposal;
+    const responderName = this.state.players[responderId]?.name || 'Jugador';
+
+    if (!payload.approved) {
+      this.addLog(responderId, `${responderName} rechazó la solicitud de deshacer "${proposal.description}"`);
+      this.state.pendingUndoProposal = undefined;
+      this.incrementVersion();
+      return false;
+    }
+
+    proposal.approvals[responderId] = true;
+
+    // Check if all targeted players have approved
+    const allApproved = proposal.targetPlayerIds.every(
+      targetId => proposal.approvals[targetId] === true || !this.state.players[targetId]?.isConnected,
+    );
+
+    if (allApproved) {
+      let index = -1;
+      for (let i = this.undoStack.length - 1; i >= 0; i--) {
+        const entry = this.undoStack[i];
+        if (entry && entry.playerId === proposal.proposerId) {
+          index = i;
+          break;
+        }
+      }
+      if (index !== -1) {
+        const [record] = this.undoStack.splice(index, 1);
+        record?.revert();
+        this.addLog(
+          proposal.proposerId,
+          `deshizo con confirmación de la mesa: ${proposal.description}`,
+        );
+      }
+      this.state.pendingUndoProposal = undefined;
       this.incrementVersion();
       return true;
+    } else {
+      this.addLog(responderId, `aprobó la solicitud de deshacer de "${proposal.proposerName}"`);
+      this.incrementVersion();
+      return false;
     }
-    return false;
   }
 
   /**

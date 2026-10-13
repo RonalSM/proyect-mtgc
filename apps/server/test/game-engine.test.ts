@@ -522,3 +522,52 @@ test('GameStateSession - rollDice produces valid bounds and logs results', () =>
   const lastLog = session.state.logs[session.state.logs.length - 1];
   assert.ok(lastLog?.actionText.includes('🎲'));
 });
+
+test('GameStateSession - table confirmation when undoing actions affecting opponents (REQ-11.3)', () => {
+  const session = new GameStateSession(createMockRoomState());
+
+  // P1 inflicts commander damage to P2 (affects opponent)
+  session.adjustCommanderDamage(
+    {
+      targetPlayerId: 'p2',
+      sourceCommanderInstanceId: 'cmdr_p1',
+      delta: 5,
+    },
+    'p1',
+  );
+  assert.strictEqual(session.state.players['p2']?.commanderDamage['cmdr_p1'], 5);
+
+  // P1 requests undo: requires table confirmation
+  const undoneDirect = session.undoLast('p1');
+  assert.strictEqual(undoneDirect, false, 'No debe deshacer inmediatamente');
+  assert.ok(session.state.pendingUndoProposal !== undefined);
+  assert.strictEqual(session.state.pendingUndoProposal?.proposerId, 'p1');
+  assert.deepStrictEqual(session.state.pendingUndoProposal?.targetPlayerIds, ['p2']);
+  assert.strictEqual(session.state.players['p2']?.commanderDamage['cmdr_p1'], 5); // Still not reverted
+
+  // P2 confirms and approves
+  const proposalId = session.state.pendingUndoProposal!.id;
+  const approved = session.confirmUndo('p2', { proposalId, approved: true });
+  assert.strictEqual(approved, true);
+  assert.strictEqual(session.state.players['p2']?.commanderDamage['cmdr_p1'], 0); // Reverted!
+  assert.strictEqual(session.state.pendingUndoProposal, undefined);
+
+  // Test rejection:
+  session.adjustCommanderDamage(
+    {
+      targetPlayerId: 'p2',
+      sourceCommanderInstanceId: 'cmdr_p1',
+      delta: 7,
+    },
+    'p1',
+  );
+  session.undoLast('p1');
+  assert.ok(session.state.pendingUndoProposal !== undefined);
+
+  // P2 rejects the proposal
+  const proposalId2 = session.state.pendingUndoProposal!.id;
+  const rejected = session.confirmUndo('p2', { proposalId: proposalId2, approved: false });
+  assert.strictEqual(rejected, false);
+  assert.strictEqual(session.state.players['p2']?.commanderDamage['cmdr_p1'], 7); // Not reverted!
+  assert.strictEqual(session.state.pendingUndoProposal, undefined);
+});

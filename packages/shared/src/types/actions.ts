@@ -24,6 +24,7 @@ export type GameActionType =
   // Utility & Social
   | 'ROLL_DICE'
   | 'UNDO_LAST'
+  | 'CONFIRM_UNDO'
   | 'CHAT_MESSAGE'
   // Deck Loading
   | 'LOAD_DECK'
@@ -125,5 +126,10 @@ export interface KickPlayerPayload {
 export interface TransferHostPayload {
   newHostSeat?: number;
   newHostId?: string;
+}
+
+export interface ConfirmUndoPayload {
+  proposalId: string;
+  approved: boolean;
 }
 

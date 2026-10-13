@@ -14,6 +14,7 @@ import {
   DrawCardsSchema,
   RollDiceSchema,
   ChatMessageSchema,
+  ConfirmUndoSchema,
   KickPlayerSchema,
   TransferHostSchema,
 } from '@mtgc/shared';
@@ -152,7 +153,7 @@ export class WebSocketHandler {
 
         case 'COMMANDER_DAMAGE': {
           const valid = CommanderDamageSchema.parse(payload);
-          session.adjustCommanderDamage(valid);
+          session.adjustCommanderDamage(valid, client.playerId);
           break;
         }
 
@@ -226,6 +227,12 @@ export class WebSocketHandler {
 
         case 'UNDO_LAST': {
           session.undoLast(client.playerId);
+          break;
+        }
+
+        case 'CONFIRM_UNDO': {
+          const valid = ConfirmUndoSchema.parse(payload);
+          session.confirmUndo(client.playerId, valid);
           break;
         }
 

@@ -146,6 +146,50 @@ export const TableBoard: React.FC<TableBoardProps> = ({
           <div
             className={`${isSidePanelOpen ? 'lg:col-span-3' : 'lg:col-span-4'} flex flex-col space-y-3 h-full overflow-hidden`}
           >
+            {/* Table Undo Confirmation Banner (REQ-11.3) */}
+            {roomState.pendingUndoProposal && (
+              <div className="bg-amber-950/70 border border-amber-500/80 rounded-xl p-3 flex items-center justify-between shadow-2xl backdrop-blur animate-pulse z-30">
+                <div className="flex items-center space-x-2 text-xs">
+                  <span className="text-amber-400 font-bold">⚠️ Solicitud de Deshacer:</span>
+                  <span className="text-white">
+                    <strong>{roomState.pendingUndoProposal.proposerName}</strong> solicita deshacer:{' '}
+                    <em>"{roomState.pendingUndoProposal.description}"</em>
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  {roomState.pendingUndoProposal.proposerId === localPlayerId ? (
+                    <span className="text-xs text-amber-300 italic">Esperando confirmación de la mesa...</span>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() =>
+                          onAction('CONFIRM_UNDO', {
+                            proposalId: roomState.pendingUndoProposal!.id,
+                            approved: true,
+                          })
+                        }
+                        className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-colors"
+                      >
+                        Aprobar
+                      </button>
+                      <button
+                        onClick={() =>
+                          onAction('CONFIRM_UNDO', {
+                            proposalId: roomState.pendingUndoProposal!.id,
+                            approved: false,
+                          })
+                        }
+                        className="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold transition-colors"
+                      >
+                        Rechazar
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Opponents Row at the Top (2 to 5 opponents) */}
             {opponentsList.length > 0 && (
               <div
