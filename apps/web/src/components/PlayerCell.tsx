@@ -14,16 +14,15 @@ import { Portal } from './Portal';
 
 export function getLifeCornerClasses(row: 0 | 1, col: number, isTwoPlayer?: boolean): string {
   if (isTwoPlayer) {
-    // 2 jugadores: 2 columnas verticales (izquierda y derecha).
-    // Borde interior hacia la división central (col 0 derecha, col 1 izquierda)
-    const h = col === 0 ? 'right-6' : 'left-6';
-    return `bottom-24 ${h}`;
+    // 2 jugadores (2 columnas): colocamos la vida en el tercio interior
+    const h = col === 0 ? 'right-10' : 'left-10';
+    return `bottom-28 ${h}`;
   }
-  // 3 o más jugadores: Esquina interior más cercana al centro de la mesa (REQ-22.5)
-  // Row 0 (superior) -> borde inferior. Row 1 (inferior) -> borde superior.
-  // Col 0 (izquierda) -> borde derecho. Col >= 1 -> borde izquierdo.
-  const v = row === 0 ? 'bottom-6' : 'top-6';
-  const h = col === 0 ? 'right-6' : 'left-6';
+  // 3 o más jugadores: separación amplia del centro para que los 4 bloques no se toquen entre sí (Punto 6)
+  // Row 0 (superior) -> bottom-10. Row 1 (inferior) -> top-10.
+  // Col 0 (izquierda) -> right-10. Col >= 1 -> left-10.
+  const v = row === 0 ? 'bottom-10' : 'top-10';
+  const h = col === 0 ? 'right-10' : 'left-10';
   return `${v} ${h}`;
 }
 
@@ -150,71 +149,27 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         )}
       </div>
 
-      {/* 2. Top Bar: NameTag & Expand Button (REQ-22.4) */}
-      <div className="relative z-20 flex items-center justify-between px-3 pt-2">
-        <div className="flex items-center space-x-2">
-          {/* Active Turn Halo / Initiative Tag */}
-          <div
-            className={`flex items-center space-x-1.5 px-3 py-1 rounded-xl backdrop-blur-md border text-xs font-bold transition-all ${
-              isActiveTurn
-                ? 'bg-amber-500/20 text-amber-300 border-amber-400 shadow-md shadow-amber-500/20'
-                : 'bg-slate-900/80 text-slate-200 border-slate-800'
-            }`}
+      {/* 2. Top Bar: Expand & Playmat Buttons (REQ-22.4) */}
+      <div className="relative z-20 flex items-center justify-end px-3 pt-2 space-x-1.5 pointer-events-auto">
+        {isLocalPlayer && (
+          <button
+            onClick={() => setIsPlaymatModalOpen(true)}
+            className="p-1 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer shadow-sm"
+            title="Cambiar imagen de Playmat"
           >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                player.isConnected ? 'bg-emerald-400' : 'bg-slate-600'
-              }`}
-            />
-            {player.initiativeOrder && (
-              <span className="font-mono text-[10px] text-amber-400">
-                {player.initiativeOrder}.º
-              </span>
-            )}
-            <span className="truncate max-w-[120px]">{player.name}</span>
-            {isLocalPlayer && (
-              <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded">Tú</span>
-            )}
-            {player.isHost && <span className="text-[10px] text-amber-400">👑</span>}
-          </div>
+            <ImageIcon className="w-3.5 h-3.5" />
+          </button>
+        )}
 
-          {/* At Risk Pill (REQ-3.3, 4.2) */}
-          {player.isAtRisk && !player.isEliminated && (
-            <span className="bg-rose-950/80 border border-rose-500/80 text-rose-300 px-2 py-0.5 rounded-lg text-[10px] font-bold animate-pulse flex items-center space-x-1">
-              <AlertTriangle className="w-3 h-3" />
-              <span>En riesgo ({player.riskReason})</span>
-            </span>
-          )}
-
-          {player.isEliminated && (
-            <span className="bg-rose-950 text-rose-400 border border-rose-800 px-2 py-0.5 rounded-lg text-[10px] font-bold">
-              Eliminado
-            </span>
-          )}
-        </div>
-
-        {/* Right Header Buttons */}
-        <div className="flex items-center space-x-1.5">
-          {isLocalPlayer && (
-            <button
-              onClick={() => setIsPlaymatModalOpen(true)}
-              className="p-1 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"
-              title="Cambiar imagen de Playmat"
-            >
-              <ImageIcon className="w-3 h-3" />
-            </button>
-          )}
-
-          {onExpandCell && (
-            <button
-              onClick={onExpandCell}
-              className="p-1 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"
-              title="Ampliar esta celda a pantalla completa"
-            >
-              <Maximize2 className="w-3 h-3" />
-            </button>
-          )}
-        </div>
+        {onExpandCell && (
+          <button
+            onClick={onExpandCell}
+            className="p-1 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer shadow-sm"
+            title="Ampliar esta celda a pantalla completa"
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
       {/* 3. Middle Area: Battlefield Canvas (Layer 2) */}
@@ -222,8 +177,50 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         {children}
       </div>
 
-      {/* 4. Interior-Corner Life Pill (REQ-22.5) */}
-      <div className={`absolute z-30 ${cornerClasses}`}>
+      {/* 4. Bloque de Vida con Nombre del Jugador Encima (Punto 6, REQ-22.5) */}
+      <div className={`absolute z-30 flex flex-col items-center space-y-1 ${cornerClasses} pointer-events-auto`}>
+        {/* Nombre del jugador encima de su vida */}
+        <div
+          className={`flex items-center space-x-1.5 px-3 py-1 rounded-xl backdrop-blur-md border text-xs font-bold transition-all shadow-md select-none max-w-[170px] ${
+            isActiveTurn
+              ? 'bg-amber-500/20 text-amber-300 border-amber-400 shadow-amber-500/15'
+              : 'bg-slate-900/90 text-slate-200 border-slate-700/80'
+          }`}
+        >
+          <span
+            className={`w-2 h-2 rounded-full flex-shrink-0 ${
+              player.isConnected ? 'bg-emerald-400' : 'bg-slate-600'
+            }`}
+          />
+          {player.initiativeOrder && (
+            <span className="font-mono text-[10px] text-amber-400 flex-shrink-0">
+              {player.initiativeOrder}.º
+            </span>
+          )}
+          <span className="truncate">{player.name}</span>
+          {isLocalPlayer && (
+            <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded flex-shrink-0">
+              Tú
+            </span>
+          )}
+          {player.isHost && <span className="text-[10px] text-amber-400 flex-shrink-0">👑</span>}
+        </div>
+
+        {/* At Risk Pill si aplica */}
+        {player.isAtRisk && !player.isEliminated && (
+          <span className="bg-rose-950/90 border border-rose-500 text-rose-300 px-2 py-0.5 rounded-lg text-[9px] font-bold animate-pulse flex items-center space-x-1 shadow">
+            <AlertTriangle className="w-2.5 h-2.5" />
+            <span>En riesgo ({player.riskReason})</span>
+          </span>
+        )}
+
+        {player.isEliminated && (
+          <span className="bg-rose-950 text-rose-400 border border-rose-800 px-2 py-0.5 rounded-lg text-[9px] font-bold shadow">
+            Eliminado
+          </span>
+        )}
+
+        {/* Botón de Vida */}
         <div className="relative group">
           <button
             ref={lifeButtonRef}
