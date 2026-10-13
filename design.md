@@ -396,9 +396,9 @@ TABLE_IDLE_TIMEOUT_MIN=120
 - Rendimiento visual: 60 fps con 6 jugadores y 60 cartas en el campo.
 - Uso de memoria: < 200 KB de estado por mesa activa.
 
-## Decisiones abiertas (a confirmar)
+## Decisiones resueltas y abiertas
 
-1. ¿Video integrado en el MVP o solo enlace externo?
-2. ¿Imágenes servidas desde Scryfall directamente o con caché propia (revisar sus pautas)?
-3. ¿Registro obligatorio o invitados permitidos desde el inicio?
+1. **Audio y Video:** Descartado por decisión del cliente. El grupo jugará mediante Discord externo; la web no incluirá funcionalidades de voz ni videollamada (REQ-12.3 descartado).
+2. **Imágenes:** Servidas directamente desde la CDN de Scryfall (respetando sus pautas de uso y atribución legal).
+3. **Invitados:** Permitidos sin registro previo mediante sesiones anónimas.
 4. ¿Presupuesto de infraestructura mensual objetivo?

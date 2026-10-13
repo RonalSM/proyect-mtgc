@@ -297,7 +297,7 @@
 
 ## Fases posteriores (post-MVP)
 
-- [ ] **9. Video integrado** (LiveKit/WebRTC) — _REQ-12.3_
+- [ ] ~~**9. Video integrado** (LiveKit/WebRTC)~~ — _Descartado por decisión del cliente (Discord externo)_
 - [ ] **10. Historial y estadísticas** por mazo y jugador — _REQ-14_
 - [ ] **11. Importadores** Moxfield/Archidekt — _REQ-7.2_
 - [ ] **12. Modos de juego** (Brawl, Two-Headed Giant) y tokens personalizados

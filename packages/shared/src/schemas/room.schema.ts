@@ -14,7 +14,6 @@ export const CreateRoomInputSchema = z.object({
   maxPlayers: z.number().int().min(2).max(6).default(4),
   turnTimerSeconds: z.number().int().min(10).max(3600).optional(),
   allowSpectators: z.boolean().default(true),
-  videoCallUrl: z.string().max(500).optional(),
 });
 
 export const JoinRoomInputSchema = z.object({

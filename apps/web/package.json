@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "playwright test",
+    "test": "node -e \"console.log('[@mtgc/web] 0 unit test files. Para pruebas E2E multijugador usa npm run test:e2e')\"",
     "test:e2e": "playwright test"
   },
   "dependencies": {

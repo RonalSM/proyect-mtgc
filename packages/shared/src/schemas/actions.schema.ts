@@ -102,7 +102,6 @@ export const ConfirmUndoSchema = z.object({
 });
 
 export const UpdateRoomSettingsSchema = z.object({
-  videoCallUrl: z.string().max(500).optional().or(z.literal('')),
   turnTimerSeconds: z.number().int().min(10).max(3600).optional(),
   allowSpectators: z.boolean().optional(),
 });

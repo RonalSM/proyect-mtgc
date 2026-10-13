@@ -122,7 +122,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 **Historia:** Como jugador, quiero comunicarme con la mesa.
 1. THE sistema SHALL ofrecer chat de texto por mesa.
 2. THE sistema SHALL ofrecer reacciones rápidas (por ejemplo "respóndeme", "pasar prioridad").
-3. WHERE el anfitrión lo active, THE sistema SHALL mostrar un enlace de videollamada externa (fase 2: video integrado).
+3. [Descartado por decisión del cliente] Integración de videollamada externa (el grupo jugará mediante Discord externo; la web no incluirá voz ni videollamada).
 4. THE sistema SHALL limitar los mensajes a 500 caracteres y 5 por 10 segundos por usuario.
 
 ### REQ-13 Espectadores y moderación

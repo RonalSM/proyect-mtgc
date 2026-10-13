@@ -135,7 +135,6 @@ export interface ConfirmUndoPayload {
 }
 
 export interface UpdateRoomSettingsPayload {
-  videoCallUrl?: string;
   turnTimerSeconds?: number;
   allowSpectators?: boolean;
 }

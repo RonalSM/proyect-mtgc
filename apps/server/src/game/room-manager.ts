@@ -444,12 +444,12 @@ export class RoomManager {
   }
 
   /**
-   * Updates room settings (REQ-12.3) such as external video call URL, turn timer, etc.
+   * Updates room settings such as turn timer and spectator permission.
    */
   public updateRoomSettings(
     roomCode: string,
     hostPlayerId: string,
-    payload: { videoCallUrl?: string; turnTimerSeconds?: number; allowSpectators?: boolean },
+    payload: { turnTimerSeconds?: number; allowSpectators?: boolean },
   ): void {
     const session = this.getSession(roomCode);
     if (!session) {
@@ -461,9 +461,6 @@ export class RoomManager {
       throw new Error('Solo el anfitrión puede actualizar los ajustes de la mesa.');
     }
 
-    if (payload.videoCallUrl !== undefined) {
-      session.state.settings.videoCallUrl = payload.videoCallUrl;
-    }
     if (payload.turnTimerSeconds !== undefined) {
       session.state.settings.turnTimerSeconds = payload.turnTimerSeconds;
     }
