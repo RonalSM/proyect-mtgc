@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import type { PlayerState, PlayerZones, GameActionType } from '@mtgc/shared';
 import { X, Maximize2 } from 'lucide-react';
 import { PlayerCell } from './PlayerCell';
-import { Battlefield } from './Battlefield';
+import { CardDisplay } from './CardDisplay';
+import { BattlefieldCanvas } from './BattlefieldCanvas';
 
 interface ExpandedCellViewProps {
   player: PlayerState;
@@ -68,9 +69,9 @@ export const ExpandedCellView: React.FC<ExpandedCellViewProps> = ({
           onExpandCell={onClose}
         >
           {isLocal ? (
-            <Battlefield
-              localPlayerId={player.id}
-              zones={zones}
+            <BattlefieldCanvas
+              cards={zones.battlefield}
+              isLocalPlayer={true}
               onAction={onAction}
             />
           ) : (
@@ -81,10 +82,10 @@ export const ExpandedCellView: React.FC<ExpandedCellViewProps> = ({
                     key={card.instanceId}
                     className="w-24 h-34 rounded-lg overflow-hidden border border-slate-700 shadow-md bg-slate-900"
                   >
-                    <img
-                      src={card.definition.imageUrlNormal || card.definition.imageUrlSmall}
-                      alt={card.definition.name}
-                      className="w-full h-full object-cover"
+                    <CardDisplay
+                      card={card.definition}
+                      isFaceDown={card.isFaceDown}
+                      isTapped={card.isTapped}
                     />
                   </div>
                 ))}

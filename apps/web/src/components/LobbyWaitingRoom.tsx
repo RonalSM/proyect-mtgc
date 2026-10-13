@@ -114,7 +114,9 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
       typeLine: 'Legendary Creature',
       colors: ['W', 'U', 'B', 'R', 'G'] as any,
       colorIdentity: ['W', 'U', 'B', 'R', 'G'] as any,
-      imageUrlNormal: 'https://cards.scryfall.io/art_crop/front/8/b/8ba9f61b-9964-4214-b31f-0e0a446a00ab.jpg',
+      imageUrlNormal: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.cardName)}&format=image`,
+      imageUrlSmall: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.cardName)}&format=image&version=small`,
+      imageUrlArtCrop: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.cardName)}&format=image&version=art_crop`,
     }));
 
     const mockMaindeckCards: CardDefinition[] = parsed.maindeckEntries.flatMap((c, i) =>
@@ -125,6 +127,8 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         typeLine: 'Spell',
         colors: [] as any,
         colorIdentity: [] as any,
+        imageUrlNormal: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.cardName)}&format=image`,
+        imageUrlSmall: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.cardName)}&format=image&version=small`,
       })),
     );
 
@@ -521,17 +525,61 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                                 typeLine: 'Legendary Creature',
                                 colors: d.colorIdentity || [],
                                 colorIdentity: d.colorIdentity || [],
-                                imageUrlNormal: d.commanderImageUrl,
+                                imageUrlNormal:
+                                  d.commanderImageUrl ||
+                                  `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(d.commanderName)}&format=image`,
+                                imageUrlArtCrop:
+                                  d.commanderImageUrl ||
+                                  `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(d.commanderName)}&format=image&version=art_crop`,
                               },
                             ],
-                            maindeckCards: Array.from({ length: 99 }, (_, i) => ({
-                              scryfallId: `card_${i}`,
-                              name: `Carta #${i + 1}`,
-                              cmc: (i % 6) + 1,
-                              typeLine: 'Spell',
-                              colors: [],
-                              colorIdentity: [],
-                            })),
+                            maindeckCards: d.maindeckCards?.length
+                              ? d.maindeckCards
+                              : Array.from({ length: 99 }, (_, i) => {
+                                  const staples = [
+                                    'Sol Ring',
+                                    'Arcane Signet',
+                                    'Command Tower',
+                                    'Cultivate',
+                                    "Kodama's Reach",
+                                    'Swords to Plowshares',
+                                    'Counterspell',
+                                    'Demonic Tutor',
+                                    'Rhystic Study',
+                                    'Lightning Bolt',
+                                    'Beast Within',
+                                    'Heroic Intervention',
+                                    'Cyclonic Rift',
+                                    'Path to Exile',
+                                    'Chaos Warp',
+                                    'Brainstorm',
+                                    'Ponder',
+                                    'Dark Ritual',
+                                    'Forest',
+                                    'Island',
+                                    'Mountain',
+                                    'Plains',
+                                    'Swamp',
+                                  ];
+                                  const stapleName = staples[i % staples.length]!;
+                                  const isLand =
+                                    stapleName.includes('Forest') ||
+                                    stapleName.includes('Island') ||
+                                    stapleName.includes('Mountain') ||
+                                    stapleName.includes('Plains') ||
+                                    stapleName.includes('Swamp') ||
+                                    stapleName.includes('Tower');
+                                  return {
+                                    scryfallId: `card_${i}`,
+                                    name: stapleName,
+                                    cmc: (i % 6) + 1,
+                                    typeLine: isLand ? 'Land' : 'Spell',
+                                    colors: [],
+                                    colorIdentity: [],
+                                    imageUrlNormal: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(stapleName)}&format=image`,
+                                    imageUrlSmall: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(stapleName)}&format=image&version=small`,
+                                  };
+                                }),
                           })
                         }
                         className="bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-amber-500/50 rounded-xl p-3.5 flex items-center justify-between cursor-pointer transition-all"

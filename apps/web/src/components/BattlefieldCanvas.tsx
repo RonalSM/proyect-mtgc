@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { CardInstance, GameActionType } from '@mtgc/shared';
 import { RotateCw, Eye, Plus, Copy } from 'lucide-react';
+import { CardDisplay } from './CardDisplay';
 
 interface BattlefieldCanvasProps {
   cards: CardInstance[];
@@ -88,23 +89,15 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
                   : 'border-slate-800 hover:border-slate-600'
               }`}
             >
-              {!card.isFaceDown ? (
-                <img
-                  src={card.definition.imageUrlSmall || card.definition.imageUrlNormal}
-                  alt={card.definition.name}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover pointer-events-none"
-                />
-              ) : (
-                <div className="w-full h-full bg-slate-950 border border-slate-700 flex items-center justify-center text-slate-500 text-[10px] font-bold">
-                  Boca Abajo
-                </div>
-              )}
+              <CardDisplay
+                card={card.definition}
+                isFaceDown={card.isFaceDown}
+                isTapped={card.isTapped}
+              />
 
               {/* Counter Badges (REQ-5.3) */}
               {card.counters && Object.entries(card.counters).length > 0 && (
-                <div className="absolute top-0.5 right-0.5 flex flex-col space-y-0.5 pointer-events-none">
+                <div className="absolute top-0.5 right-0.5 flex flex-col space-y-0.5 pointer-events-none z-10">
                   {Object.entries(card.counters).map(([type, count]) => (
                     <span
                       key={type}
@@ -160,13 +153,9 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
       {/* Card Hover Zoom Preview (REQ-9.6, REQ-22.6.4) */}
       {hoveredCard && !hoveredCard.isFaceDown && (
         <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-150 animate-in fade-in zoom-in-95">
-          <div className="w-48 bg-slate-950/95 border border-slate-700 rounded-2xl shadow-2xl p-2 space-y-2 backdrop-blur-md">
-            <div className="aspect-[2.5/3.5] rounded-xl overflow-hidden border border-slate-850">
-              <img
-                src={hoveredCard.definition.imageUrlNormal || hoveredCard.definition.imageUrlSmall}
-                alt={hoveredCard.definition.name}
-                className="w-full h-full object-cover"
-              />
+          <div className="w-52 bg-slate-950/95 border border-slate-700 rounded-2xl shadow-2xl p-2.5 space-y-2 backdrop-blur-md">
+            <div className="aspect-[2.5/3.5] rounded-xl overflow-hidden border border-slate-800">
+              <CardDisplay card={hoveredCard.definition} allowFaceToggle={false} />
             </div>
             <div className="px-1 text-center">
               <div className="font-bold text-xs text-white truncate">

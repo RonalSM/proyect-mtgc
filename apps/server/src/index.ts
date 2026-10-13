@@ -31,7 +31,7 @@ await server.register(helmet, {
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      imgSrc: ["'self'", 'data:', 'https://cards.scryfall.io', 'https://svgs.scryfall.io'],
+      imgSrc: ["'self'", 'data:', 'https://cards.scryfall.io', 'https://svgs.scryfall.io', 'https://api.scryfall.com'],
       connectSrc: ["'self'", 'https://api.scryfall.com', 'ws:', 'wss:'],
     },
   },
@@ -420,6 +420,8 @@ server.post('/api/decks/parse', async (request, reply) => {
         typeLine: 'Legendary Creature',
         colors: [],
         colorIdentity: [],
+        imageUrlNormal: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(entry.cardName)}&format=image`,
+        imageUrlArtCrop: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(entry.cardName)}&format=image&version=art_crop`,
       },
       quantity: entry.quantity,
       isCommander: true,
@@ -438,6 +440,7 @@ server.post('/api/decks/parse', async (request, reply) => {
         typeLine: 'Card',
         colors: [],
         colorIdentity: [],
+        imageUrlNormal: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(entry.cardName)}&format=image`,
       },
       quantity: entry.quantity,
       isCommander: false,

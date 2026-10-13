@@ -35,6 +35,7 @@ import {
   ArrowUpRight,
   Copy,
 } from 'lucide-react';
+import { CardDisplay } from './CardDisplay';
 
 interface BattlefieldProps {
   localPlayerId: string;
@@ -469,25 +470,11 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
                       className="relative w-full h-full bg-slate-950 rounded-xl overflow-hidden cursor-pointer"
                       title="Clic: Girar/Enderezar. Doble clic: Ampliar. Arrastra para mover o usa el menú alternativo."
                     >
-                      {card.definition.imageUrlNormal ? (
-                        <img
-                          src={card.definition.imageUrlNormal}
-                          alt={card.definition.name}
-                          className={`w-full h-full object-cover pointer-events-none transition-transform duration-200 ${
-                            card.isTapped ? 'rotate-90 scale-90' : ''
-                          }`}
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="p-2.5 h-full flex flex-col justify-between text-xs pointer-events-none">
-                          <span className="font-bold text-white leading-tight">
-                            {card.definition.name}
-                          </span>
-                          <span className="text-[10px] text-slate-400">
-                            {card.definition.typeLine}
-                          </span>
-                        </div>
-                      )}
+                      <CardDisplay
+                        card={card.definition}
+                        isFaceDown={card.isFaceDown}
+                        isTapped={card.isTapped}
+                      />
 
                       {/* Tapped Indicator */}
                       {card.isTapped && (
@@ -702,23 +689,10 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
                     onDoubleClick={() => setZoomedCard(card)}
                     className="w-32 sm:w-36 aspect-[5/7] bg-slate-950 border border-slate-800 hover:border-amber-400/80 rounded-xl overflow-hidden shadow-lg group transition-transform hover:-translate-y-2 cursor-grab active:cursor-grabbing select-none touch-none relative"
                   >
-                    {card.definition.imageUrlNormal ? (
-                      <img
-                        src={card.definition.imageUrlNormal}
-                        alt={card.definition.name}
-                        className="w-full h-full object-cover pointer-events-none"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="p-2.5 h-full flex flex-col justify-between text-xs pointer-events-none">
-                        <span className="font-bold text-white leading-tight">
-                          {card.definition.name}
-                        </span>
-                        <span className="text-[10px] text-slate-400">
-                          {card.definition.typeLine}
-                        </span>
-                      </div>
-                    )}
+                    <CardDisplay
+                      card={card.definition}
+                      isFaceDown={false}
+                    />
                   </DraggableCard>
 
                   {/* Alternative Action Buttons for each hand card */}
