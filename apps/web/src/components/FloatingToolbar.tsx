@@ -79,7 +79,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
 
   return (
     <>
-      <div className="fixed top-2 left-1/2 -translate-x-1/2 z-40 transition-all duration-300">
+      <div data-floating-toolbar="true" className="fixed top-2 left-1/2 -translate-x-1/2 z-40 transition-all duration-300">
         <div className="bg-slate-900/90 hover:bg-slate-900 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-2xl px-4 py-1.5 flex items-center space-x-3 text-xs text-slate-200 select-none">
           {/* Round & Active Player */}
           <div className="flex items-center space-x-2 pr-2 border-r border-slate-700/60">

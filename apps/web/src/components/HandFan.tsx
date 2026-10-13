@@ -54,6 +54,8 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
       ref={setNodeRef}
       {...attributes}
       {...listeners}
+      data-hand-card="true"
+      data-card-name={card.definition.name}
       onClick={onSelect}
       onDoubleClick={onZoom}
       onMouseEnter={() => !isDragging && showPreview(card.definition)}

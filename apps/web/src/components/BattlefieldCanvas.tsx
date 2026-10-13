@@ -52,6 +52,8 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       ref={setNodeRef}
       {...attributes}
       {...listeners}
+      data-battlefield-card="true"
+      data-card-name={card.definition.name}
       onClick={onCardClick}
       onMouseEnter={() => !card.isFaceDown && !isDragging && showPreview(card.definition)}
       onMouseLeave={hidePreview}

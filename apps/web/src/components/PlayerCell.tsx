@@ -128,6 +128,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
 
   return (
     <div
+      data-player-cell={player.id}
       className={`relative w-full h-full flex flex-col justify-between transition-all duration-200 select-none ${
         isActiveTurn
           ? 'ring-2 ring-inset ring-amber-400 shadow-[inset_0_0_50px_rgba(245,158,11,0.22)]'
@@ -189,6 +190,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       <div className={`absolute z-30 flex flex-col items-center space-y-1 ${cornerClasses} pointer-events-auto`}>
         {/* Nombre del jugador encima de su vida */}
         <div
+          data-name-tag={player.id}
           className={`flex items-center space-x-1.5 px-3 py-1 rounded-xl backdrop-blur-md border text-xs font-bold transition-all shadow-md select-none max-w-[170px] ${
             isActiveTurn
               ? 'bg-amber-500/20 text-amber-300 border-amber-400 shadow-amber-500/15'
@@ -232,6 +234,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         <div className="relative group">
           <button
             ref={lifeButtonRef}
+            data-life-button={player.id}
             onClick={toggleLifeControls}
             className={`flex items-center space-x-2 px-3 py-1.5 rounded-2xl backdrop-blur-md border shadow-2xl transition-all cursor-pointer ${
               player.life <= 0
@@ -256,6 +259,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             <Portal>
               {/* Invisible overlay for click-outside */}
               <div
+                data-life-backdrop="true"
                 className="fixed inset-0 z-50 bg-black/10 backdrop-blur-[0.5px]"
                 onClick={() => setShowLifeControls(false)}
               />
@@ -351,6 +355,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       <div className="relative z-20 flex items-end justify-between px-3 pb-2 w-full gap-2 pointer-events-auto select-none">
         {/* 1. Zona de Comandante (Izquierda) - Mismo ancho y alto que una carta */}
         <div
+          data-dock-zone="command"
           onClick={() => setActivePileModal('command')}
           className="w-14 sm:w-16 md:w-20 aspect-[2.5/3.5] rounded-lg overflow-hidden border shadow-lg cursor-pointer transition-transform hover:scale-105 active:scale-95 bg-slate-950 flex flex-col items-center justify-center relative flex-shrink-0"
           title={`Zona de Comando (${zones.command.length} cartas)`}
@@ -378,7 +383,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         </div>
 
         {/* 2. Mano en Abanico (Centrada en la celda y completamente visible) */}
-        <div className="flex-1 flex justify-center items-end overflow-visible min-w-0">
+        <div data-dock-zone="hand" className="flex-1 flex justify-center items-end overflow-visible min-w-0">
           <HandFan
             cards={zones.hand}
             handCount={player.handCount}
@@ -390,6 +395,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
 
         {/* 3. Biblioteca - Dorso del tamaño de una carta con contador encima */}
         <div
+          data-dock-zone="library"
           onClick={() => isLocalPlayer && onAction('DRAW_CARDS', { count: 1 })}
           className={`w-14 sm:w-16 md:w-20 aspect-[2.5/3.5] rounded-lg overflow-hidden border shadow-lg relative flex flex-col items-center justify-center flex-shrink-0 ${
             isLocalPlayer ? 'cursor-pointer hover:scale-105 active:scale-95 border-amber-500/50' : 'border-slate-800'
@@ -413,7 +419,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         </div>
 
         {/* 4. Cementerio y Exilio Apilados (Mismo ancho que una carta, mitad de alto cada uno) */}
-        <div className="w-14 sm:w-16 md:w-20 aspect-[2.5/3.5] flex flex-col gap-1 flex-shrink-0">
+        <div data-dock-zone="graveyard-exile" className="w-14 sm:w-16 md:w-20 aspect-[2.5/3.5] flex flex-col gap-1 flex-shrink-0">
           {/* Cementerio (Mitad Superior) */}
           <div
             onClick={() => setActivePileModal('graveyard')}
