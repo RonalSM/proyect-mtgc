@@ -14,6 +14,7 @@ import cookie from '@fastify/cookie';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import { authService } from './services/auth.service.js';
+import { deckService } from './services/deck.service.js';
 
 const server = fastify({
   logger: {
@@ -451,6 +452,97 @@ server.post('/api/decks/parse', async (request, reply) => {
     commanderCards,
     maindeckCards,
   });
+});
+
+// Helper to authenticate user from token or cookies
+function extractUserId(request: any): string | null {
+  try {
+    const authHeader = request.headers.authorization;
+    const bearer = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    const token = bearer || request.cookies.mtgc_access_token || request.cookies.token;
+    if (!token) return null;
+    const decoded = server.jwt.verify<{ id: string }>(token);
+    return decoded.id;
+  } catch {
+    return null;
+  }
+}
+
+// Save Deck to User Account (REQ-7.5 / Paso 2A.3)
+server.post('/api/decks', async (request, reply) => {
+  const userId = extractUserId(request);
+  if (!userId) {
+    return reply.status(401).send({ error: 'Debes iniciar sesión para guardar mazos en tu cuenta' });
+  }
+
+  const body = request.body as {
+    name?: string;
+    format?: string;
+    rawDecklist?: string;
+    commanderCards?: any[];
+    maindeckCards?: any[];
+  };
+
+  if (!body.name || !body.commanderCards || !body.maindeckCards) {
+    return reply.status(400).send({
+      error: 'Nombre del mazo, cartas de comandante y mazo principal son obligatorios',
+    });
+  }
+
+  try {
+    const saved = await deckService.saveDeck(userId, {
+      name: body.name,
+      format: body.format || 'commander',
+      rawDecklist: body.rawDecklist,
+      commanderCards: body.commanderCards,
+      maindeckCards: body.maindeckCards,
+    });
+
+    return reply.status(201).send(saved);
+  } catch (err: any) {
+    return reply.status(400).send({ error: err.message || 'Error al guardar el mazo' });
+  }
+});
+
+// List User Saved Decks (REQ-7.5 / Paso 2A.3)
+server.get('/api/decks', async (request, reply) => {
+  const userId = extractUserId(request);
+  if (!userId) {
+    return reply.status(401).send({ error: 'Debes iniciar sesión para consultar tus mazos' });
+  }
+
+  const decks = await deckService.getUserDecks(userId);
+  return reply.send({ decks });
+});
+
+// Get Specific Deck
+server.get('/api/decks/:id', async (request, reply) => {
+  const userId = extractUserId(request);
+  const params = request.params as { id: string };
+  const deck = await deckService.getDeckById(params.id, userId || undefined);
+
+  if (!deck) {
+    return reply.status(404).send({ error: 'Mazo no encontrado' });
+  }
+
+  return reply.send(deck);
+});
+
+// Delete User Deck
+server.delete('/api/decks/:id', async (request, reply) => {
+  const userId = extractUserId(request);
+  if (!userId) {
+    return reply.status(401).send({ error: 'No autenticado' });
+  }
+
+  const params = request.params as { id: string };
+  const deleted = await deckService.deleteDeck(params.id, userId);
+
+  if (!deleted) {
+    return reply.status(404).send({ error: 'Mazo no encontrado o no pertenece a tu cuenta' });
+  }
+
+  return reply.send({ message: 'Mazo eliminado exitosamente' });
 });
 
 // Trigger bulk sync

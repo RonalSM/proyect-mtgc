@@ -59,6 +59,10 @@ model Deck {
   name          String
   format        String     @default("commander")
   commanderName String?
+  colorIdentity String[]   @default([])
+  cardCount     Int        @default(0)
+  rawDecklist   String?
+  deckData      Json?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
