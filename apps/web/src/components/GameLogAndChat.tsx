@@ -12,6 +12,13 @@ export const GameLogAndChat: React.FC<GameLogAndChatProps> = ({ logs, onAction, 
   const [activeTab, setActiveTab] = useState<'all' | 'chat'>('all');
   const [chatInput, setChatInput] = useState('');
   const logEndRef = useRef<HTMLDivElement>(null);
+  const reactionsRef = useRef<HTMLDivElement>(null);
+
+  const handleReactionsWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (reactionsRef.current && e.deltaY !== 0) {
+      reactionsRef.current.scrollLeft += e.deltaY;
+    }
+  };
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -102,8 +109,12 @@ export const GameLogAndChat: React.FC<GameLogAndChatProps> = ({ logs, onAction, 
         <div ref={logEndRef} />
       </div>
 
-      {/* Quick Reactions Bar (REQ-12.2) */}
-      <div className="px-2.5 py-1.5 border-t border-slate-800/80 bg-slate-950/90 flex items-center space-x-1.5 overflow-x-auto no-scrollbar">
+      {/* Quick Reactions Bar / Grid (REQ-12.2: cuadrícula o desplazable por rueda) */}
+      <div
+        ref={reactionsRef}
+        onWheel={handleReactionsWheel}
+        className="px-2.5 py-1.5 border-t border-slate-800/80 bg-slate-950/90 grid grid-cols-3 gap-1 overflow-x-auto dark-custom-scrollbar"
+      >
         {[
           '⚡ Respóndeme',
           '⏭️ Pasar prioridad',
@@ -116,7 +127,8 @@ export const GameLogAndChat: React.FC<GameLogAndChatProps> = ({ logs, onAction, 
             key={reaction}
             type="button"
             onClick={() => onAction('CHAT_MESSAGE', { message: reaction })}
-            className="flex-shrink-0 px-2 py-0.5 rounded-full bg-slate-900 hover:bg-amber-500/20 hover:border-amber-500/50 border border-slate-800 text-[11px] text-slate-300 hover:text-amber-300 transition-all active:scale-95 whitespace-nowrap"
+            className="px-2 py-1 rounded-lg bg-slate-900 hover:bg-amber-500/20 hover:border-amber-500/50 border border-slate-800 text-[10px] text-slate-300 hover:text-amber-300 transition-all active:scale-95 text-center truncate flex items-center justify-center font-medium"
+            title={reaction}
           >
             {reaction}
           </button>
