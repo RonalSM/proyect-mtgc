@@ -629,6 +629,7 @@ const HOST = process.env.HOST || '0.0.0.0';
 
 try {
   await connectDatabase();
+  await roomManager.restoreFromSnapshots();
   await server.listen({ port: PORT, host: HOST });
   server.log.info(`🚀 Servidor MTGC activo en http://localhost:${PORT}`);
 

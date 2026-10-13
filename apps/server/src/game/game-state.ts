@@ -12,6 +12,7 @@ import {
 } from '@mtgc/shared';
 import { secureShuffle, secureRoll } from './csprng.js';
 import { randomUUID } from 'crypto';
+import { redisSnapshotService } from '../services/redis-snapshot.service.js';
 
 interface UndoRecord {
   playerId: string;
@@ -27,11 +28,12 @@ export class GameStateSession {
     this.state = initialState;
   }
 
-  private incrementVersion() {
+  public incrementVersion() {
     this.state.version++;
+    redisSnapshotService.save(this.state.code, this.state).catch(() => {});
   }
 
-  private addLog(playerId: string, actionText: string, isUndoable = false): GameLogEntry {
+  public addLog(playerId: string, actionText: string, isUndoable = false): GameLogEntry {
     const player = this.state.players[playerId];
     const logEntry: GameLogEntry = {
       id: randomUUID(),

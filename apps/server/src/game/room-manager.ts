@@ -2,6 +2,7 @@ import { RoomState, PlayerState } from '@mtgc/shared';
 import { GameStateSession } from './game-state.js';
 import { prisma } from '../db.js';
 import { randomBytes } from 'crypto';
+import { redisSnapshotService } from '../services/redis-snapshot.service.js';
 
 export class RoomManager {
   private sessions = new Map<string, GameStateSession>(); // roomCode -> GameStateSession
@@ -105,6 +106,9 @@ export class RoomManager {
 
     const session = new GameStateSession(initialRoomState);
     this.sessions.set(code, session);
+
+    // Save initial snapshot in Redis
+    redisSnapshotService.save(code, initialRoomState).catch(() => {});
 
     // Save to PostgreSQL asynchronously if DB is available
     prisma.table
@@ -297,6 +301,8 @@ export class RoomManager {
     const session = this.getSession(code);
     if (!session) return false;
 
+    redisSnapshotService.delete(code).catch(() => {});
+
     prisma.table
       .update({
         where: { code: code.toUpperCase() },
@@ -306,6 +312,21 @@ export class RoomManager {
 
     this.sessions.delete(code.toUpperCase());
     return true;
+  }
+
+  /**
+   * Restores active room sessions from Redis snapshots
+   */
+  public async restoreFromSnapshots(): Promise<number> {
+    const restoredRooms = await redisSnapshotService.restoreAllActiveRooms();
+    let restoredCount = 0;
+    for (const [code, state] of restoredRooms.entries()) {
+      if (!this.sessions.has(code)) {
+        this.sessions.set(code, new GameStateSession(state));
+        restoredCount++;
+      }
+    }
+    return restoredCount;
   }
 
   /**
