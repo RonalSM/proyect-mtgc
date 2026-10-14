@@ -686,4 +686,78 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       }
     }
   });
+
+  test('Punto 8: Movimiento en vivo para rivales durante el arrastre multicontexto', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'LiveDrag');
+    const pageA = pages[0];
+    const pageB = pages[1];
+
+    try {
+      await expect(pageA.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+      await expect(pageB.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // 1. Contexto A arrastra la carta sin soltarla (se queda a mitad de camino)
+      const handCardA = pageA.locator('[data-hand-card="true"]').first();
+      await expect(handCardA).toBeVisible({ timeout: 10000 });
+
+      const grabOffsetX = 30;
+      const grabOffsetY = 35;
+      await handCardA.hover({ position: { x: grabOffsetX, y: grabOffsetY } });
+      await pageA.mouse.down();
+
+      // Mover hacia una posición intermedia (ej. x: 960, y: 400)
+      const targetMidX = 960;
+      const targetMidY = 400;
+      await pageA.mouse.move(targetMidX, targetMidY, { steps: 25 });
+      await pageA.waitForTimeout(300);
+
+      // Contexto A mantiene el ratón presionado (sin soltar)
+
+      // 2. Contexto B comprueba que ve la carta en movimiento en una posición intermedia
+      const remoteDragCardB = pageB.locator('[data-remote-drag="true"]');
+      await expect(remoteDragCardB).toBeVisible({ timeout: 10000 });
+
+      const remoteBoxB = await remoteDragCardB.boundingBox();
+      expect(remoteBoxB).not.toBeNull();
+
+      if (remoteBoxB) {
+        // La posición del fantasma remoto en Contexto B debe contener el punto intermedio de arrastre
+        expect(remoteBoxB.x).toBeLessThanOrEqual(targetMidX + 10);
+        expect(remoteBoxB.x + remoteBoxB.width).toBeGreaterThanOrEqual(targetMidX - 10);
+        expect(remoteBoxB.y).toBeLessThanOrEqual(targetMidY + 10);
+        expect(remoteBoxB.y + remoteBoxB.height).toBeGreaterThanOrEqual(targetMidY - 10);
+      }
+
+      // 3. Contexto A suelta la carta
+      await pageA.mouse.up();
+      await pageA.waitForTimeout(1000);
+
+      // 4. Ambos comprueban la posición final
+      // El fantasma efímero desaparece de Contexto B
+      await expect(remoteDragCardB).not.toBeVisible({ timeout: 5000 });
+
+      // La carta colocada autoritativa es visible en ambos contextos
+      const placedCardsA = pageA.locator('[data-battlefield-card="true"]');
+      const placedCardsB = pageB.locator('[data-battlefield-card="true"]');
+      await expect(placedCardsA.first()).toBeVisible({ timeout: 10000 });
+      await expect(placedCardsB.first()).toBeVisible({ timeout: 10000 });
+
+      const finalBoxA = await placedCardsA.first().boundingBox();
+      const finalBoxB = await placedCardsB.first().boundingBox();
+      expect(finalBoxA).not.toBeNull();
+      expect(finalBoxB).not.toBeNull();
+
+      if (finalBoxA && finalBoxB) {
+        expect(Math.abs(finalBoxA.x - finalBoxB.x)).toBeLessThanOrEqual(5);
+        expect(Math.abs(finalBoxA.y - finalBoxB.y)).toBeLessThanOrEqual(5);
+        expect(Math.abs(finalBoxA.width - finalBoxB.width)).toBeLessThanOrEqual(5);
+        expect(Math.abs(finalBoxA.height - finalBoxB.height)).toBeLessThanOrEqual(5);
+      }
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
 });
