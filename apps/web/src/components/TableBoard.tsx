@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { RoomState, GameActionType, PlayerState, CardInstance } from '@mtgc/shared';
 import {
   DndContext,
@@ -11,7 +11,9 @@ import {
   pointerWithin,
   type CollisionDetection,
   type DragStartEvent,
+  type DragMoveEvent,
   type DragEndEvent,
+  type DragCancelEvent,
 } from '@dnd-kit/core';
 import { TableGrid } from './TableGrid';
 import { PlayerCell } from './PlayerCell';
@@ -20,11 +22,13 @@ import { ExpandedCellView } from './ExpandedCellView';
 import { CardDisplay } from './CardDisplay';
 import { Portal } from './Portal';
 import { CardPreviewProvider, useCardPreview } from '../context/CardPreviewContext';
+import type { RemoteDragState } from '../hooks/useGameSocket';
 
 interface TableBoardProps {
   roomState: RoomState;
   localPlayerId: string;
   connectionStatus: string;
+  remoteDraggingCards?: Record<string, RemoteDragState>;
   onAction: (type: GameActionType, payload: unknown) => void;
   onLeaveRoom: () => void;
 }
@@ -32,6 +36,7 @@ interface TableBoardProps {
 const TableBoardInner: React.FC<TableBoardProps> = ({
   roomState,
   localPlayerId,
+  remoteDraggingCards,
   onAction,
   onLeaveRoom,
 }) => {
@@ -119,6 +124,8 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     };
   };
 
+  const lastDragMoveTimeRef = useRef<number>(0);
+
   const handleDragStart = (event: DragStartEvent) => {
     setIsDragging(true);
     const data = event.active.data.current as {
@@ -128,8 +135,97 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
     if (data?.card) {
       setActiveDragItem({ card: data.card, fromZone: data.fromZone });
+
+      const initial = event.active.rect.current?.initial;
+      const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+      const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
+      const normX = initial ? Math.max(0, Math.min(winW - cardPixelWidth, initial.left)) / winW : 0.5;
+      const normY = initial ? Math.max(0, Math.min(winH - cardPixelHeight, initial.top)) / winH : 0.5;
+
+      onAction('CARD_DRAG_MOVE', {
+        cardInstanceId: event.active.id,
+        isDragging: true,
+        position: { x: normX, y: normY },
+        cardDefinition: data.card.definition,
+        fromZone: data.fromZone,
+      });
     }
   };
+
+  const handleDragMove = (event: DragMoveEvent) => {
+    const now = Date.now();
+    if (now - lastDragMoveTimeRef.current < 33) {
+      return; // ~30 fps throttling (Punto 5, REQ-9)
+    }
+    lastDragMoveTimeRef.current = now;
+
+    const translated = event.active.rect.current?.translated;
+    const initial = event.active.rect.current?.initial;
+
+    const overlayWidth = translated?.width || initial?.width || cardPixelWidth;
+    const overlayHeight = translated?.height || initial?.height || cardPixelHeight;
+
+    let overlayLeft = 0;
+    let overlayTop = 0;
+
+    if (translated) {
+      overlayLeft = translated.left;
+      overlayTop = translated.top;
+    } else if (initial) {
+      overlayLeft = initial.left + (event.delta?.x ?? 0);
+      overlayTop = initial.top + (event.delta?.y ?? 0);
+    } else if (event.activatorEvent instanceof MouseEvent || event.activatorEvent instanceof PointerEvent) {
+      overlayLeft = event.activatorEvent.clientX - overlayWidth / 2 + (event.delta?.x ?? 0);
+      overlayTop = event.activatorEvent.clientY - overlayHeight / 2 + (event.delta?.y ?? 0);
+    }
+
+    const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+    const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
+
+    const clampedX = Math.max(0, Math.min(winW - overlayWidth, overlayLeft));
+    const clampedY = Math.max(0, Math.min(winH - overlayHeight, overlayTop));
+
+    const normX = clampedX / winW;
+    const normY = clampedY / winH;
+
+    const data = event.active.data.current as {
+      card?: CardInstance;
+      fromZone?: 'hand' | 'battlefield';
+    } | undefined;
+
+    onAction('CARD_DRAG_MOVE', {
+      cardInstanceId: event.active.id,
+      isDragging: true,
+      position: { x: normX, y: normY },
+      cardDefinition: data?.card?.definition,
+      fromZone: data?.fromZone,
+    });
+  };
+
+  const handleDragCancel = useCallback((event?: DragCancelEvent) => {
+    const cardId = activeDragItem?.card.instanceId || event?.active?.id;
+    if (cardId) {
+      onAction('CARD_DRAG_MOVE', {
+        cardInstanceId: cardId,
+        isDragging: false,
+      });
+    }
+    setIsDragging(false);
+    setActiveDragItem(null);
+  }, [activeDragItem, onAction, setIsDragging]);
+
+  // Cancelar arrastre con Escape (Punto 5)
+  useEffect(() => {
+    if (!activeDragItem) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleDragCancel();
+        window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeDragItem, handleDragCancel]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     setIsDragging(false);
@@ -137,10 +233,16 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
     const { active, over } = event;
 
+    // Notificar fin de arrastre efímero
+    onAction('CARD_DRAG_MOVE', {
+      cardInstanceId: active.id,
+      isDragging: false,
+    });
+
     const overData = over?.data.current as { zone?: string; playerId?: string } | undefined;
     const fromZone = (active.data.current as { fromZone?: string })?.fromZone;
 
-    // Punto 6: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila si el puntero está dentro
+    // Punto 4 / 6: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila si el puntero está dentro
     if (overData?.zone === 'library' || overData?.zone === 'graveyard' || overData?.zone === 'exile') {
       onAction('MOVE_CARD', {
         cardInstanceId: active.id,
@@ -268,11 +370,9 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       modifiers={[restrictToViewportModifier]}
       collisionDetection={customCollisionDetection}
       onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
       onDragEnd={handleDragEnd}
-      onDragCancel={() => {
-        setIsDragging(false);
-        setActiveDragItem(null);
-      }}
+      onDragCancel={handleDragCancel}
     >
       <div
         id="mesa-total"
@@ -295,6 +395,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas (Punto 1, REQ-9.7, REQ-22) */}
         <BattlefieldCanvas
           cards={allBattlefieldCards}
+          remoteDraggingCards={remoteDraggingCards}
           onAction={onAction}
         />
 

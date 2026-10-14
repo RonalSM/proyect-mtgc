@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { RoomState, GameActionType } from '@mtgc/shared';
+import type { RoomState, GameActionType, RemoteCardDraggingPayload } from '@mtgc/shared';
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting';
+export type RemoteDragState = RemoteCardDraggingPayload;
 
 interface UseGameSocketOptions {
   roomCode: string;
@@ -21,6 +22,7 @@ export function useGameSocket({
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
   const [roomState, setRoomState] = useState<RoomState | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [remoteDraggingCards, setRemoteDraggingCards] = useState<Record<string, RemoteDragState>>({});
 
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef<number>(0);
@@ -61,6 +63,20 @@ export function useGameSocket({
           const data = JSON.parse(event.data);
           if (data.type === 'ROOM_STATE_SYNC') {
             setRoomState(data.roomState);
+          } else if (data.type === 'REMOTE_CARD_DRAGGING') {
+            const payload = data.payload as RemoteDragState;
+            setRemoteDraggingCards(prev => {
+              if (!payload.isDragging) {
+                if (!prev[payload.cardInstanceId]) return prev;
+                const next = { ...prev };
+                delete next[payload.cardInstanceId];
+                return next;
+              }
+              return {
+                ...prev,
+                [payload.cardInstanceId]: payload,
+              };
+            });
           } else if (data.type === 'ACTION_REJECTED') {
             console.warn('[WS Rejected Action]:', data.error);
           } else if (data.type === 'ERROR') {
@@ -73,6 +89,7 @@ export function useGameSocket({
 
       ws.onclose = () => {
         setStatus('disconnected');
+        setRemoteDraggingCards({});
         socketRef.current = null;
 
         // Auto-reconnect with exponential backoff if enabled
@@ -127,6 +144,7 @@ export function useGameSocket({
     status,
     roomState,
     errorMessage,
+    remoteDraggingCards,
     sendAction,
     reconnect: connect,
   };

@@ -132,6 +132,19 @@ export const SetPlaymatSchema = z.object({
   playmatUrl: z.string().max(1000),
 });
 
+export const CardDragMoveSchema = z.object({
+  cardInstanceId: z.string().min(1),
+  isDragging: z.boolean(),
+  position: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+    })
+    .optional(),
+  cardDefinition: z.any().optional(),
+  fromZone: ZoneTypeSchema.optional(),
+});
+
 export const ActionEnvelopeSchema = z.object({
   type: z.enum([
     'ADJUST_LIFE',
@@ -163,6 +176,7 @@ export const ActionEnvelopeSchema = z.object({
     'START_GAME',
     'ROLL_D20_INITIATIVE',
     'SET_PLAYMAT',
+    'CARD_DRAG_MOVE',
   ]),
   payload: z.unknown(),
   clientTimestamp: z.number().optional(),

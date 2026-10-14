@@ -4,9 +4,11 @@ import { useDraggable } from '@dnd-kit/core';
 import { RotateCw, Eye, Plus, Copy } from 'lucide-react';
 import { CardDisplay } from './CardDisplay';
 import { useCardPreview } from '../context/CardPreviewContext';
+import type { RemoteDragState } from '../hooks/useGameSocket';
 
 interface BattlefieldCanvasProps {
   cards: CardInstance[];
+  remoteDraggingCards?: Record<string, RemoteDragState>;
   isLocalPlayer?: boolean;
   playerId?: string;
   onAction: (type: GameActionType, payload: unknown) => void;
@@ -143,6 +145,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
 
 export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   cards,
+  remoteDraggingCards,
   onAction,
 }) => {
   const { showPreview, hidePreview } = useCardPreview();
@@ -202,6 +205,43 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
           hidePreview={hidePreview}
         />
       ))}
+
+      {/* Movimiento en vivo para rivales (Punto 5, REQ-9) */}
+      {remoteDraggingCards &&
+        Object.values(remoteDraggingCards).map(item => {
+          if (!item.isDragging || !item.position) return null;
+          const posX = Math.max(0, Math.min(1, item.position.x)) * 100;
+          const posY = Math.max(0, Math.min(1, item.position.y)) * 100;
+
+          return (
+            <div
+              key={`remote-drag-${item.cardInstanceId}`}
+              data-remote-drag="true"
+              data-card-instance-id={item.cardInstanceId}
+              data-player-id={item.playerId}
+              className="absolute pointer-events-none select-none z-40 transition-[left,top] duration-75 ease-linear"
+              style={{
+                left: `${posX}%`,
+                top: `${posY}%`,
+                width: 'var(--card-w)',
+                height: 'var(--card-h)',
+              }}
+            >
+              <div className="w-full h-full rounded-md overflow-hidden border border-amber-400/80 shadow-lg shadow-amber-500/25 bg-slate-900 relative">
+                {item.cardDefinition ? (
+                  <CardDisplay card={item.cardDefinition} />
+                ) : (
+                  <div className="w-full h-full bg-slate-800 flex items-center justify-center text-xs text-amber-200">
+                    {item.playerName}
+                  </div>
+                )}
+                <div className="absolute bottom-0 inset-x-0 bg-black/75 backdrop-blur-xs text-[9px] text-amber-300 font-semibold text-center py-0.5 truncate px-1 border-t border-amber-400/30">
+                  {item.playerName}
+                </div>
+              </div>
+            </div>
+          );
+        })}
     </div>
   );
 };

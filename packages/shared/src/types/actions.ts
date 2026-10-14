@@ -39,7 +39,9 @@ export type GameActionType =
   // Initiative (REQ-21)
   | 'ROLL_D20_INITIATIVE'
   // Customization (REQ-22)
-  | 'SET_PLAYMAT';
+  | 'SET_PLAYMAT'
+  // Live dragging (ephemeral, REQ-9)
+  | 'CARD_DRAG_MOVE';
 
 export interface AdjustLifePayload {
   playerId: string;
@@ -173,4 +175,26 @@ export interface SetPlaymatPayload {
   playmatUrl: string;
 }
 
+export interface CardDragMovePayload {
+  cardInstanceId: string;
+  isDragging: boolean;
+  position?: {
+    x: number;
+    y: number;
+  };
+  cardDefinition?: CardDefinition;
+  fromZone?: ZoneType;
+}
 
+export interface RemoteCardDraggingPayload {
+  playerId: string;
+  playerName: string;
+  cardInstanceId: string;
+  isDragging: boolean;
+  position?: {
+    x: number;
+    y: number;
+  };
+  cardDefinition?: CardDefinition;
+  fromZone?: ZoneType;
+}

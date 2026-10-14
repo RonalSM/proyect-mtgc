@@ -47,7 +47,7 @@ export default function App() {
   }, []);
 
   // Connect WebSocket when inside a room
-  const { status, roomState, sendAction } = useGameSocket({
+  const { status, roomState, sendAction, remoteDraggingCards } = useGameSocket({
     roomCode: roomCode || '',
     playerId,
     playerName,
@@ -112,6 +112,7 @@ export default function App() {
           roomState={roomState}
           localPlayerId={playerId}
           connectionStatus={status}
+          remoteDraggingCards={remoteDraggingCards}
           onAction={sendAction}
           onLeaveRoom={handleLeaveRoom}
         />

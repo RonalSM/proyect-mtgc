@@ -24,6 +24,7 @@ import {
   StartGameSchema,
   RollD20InitiativeSchema,
   SetPlaymatSchema,
+  CardDragMoveSchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -55,6 +56,25 @@ export class WebSocketHandler {
     }
     recent.push(now);
     this.messageRateLimits.set(playerId, recent);
+    return true;
+  }
+
+  // playerId -> drag message timestamps in sliding window (separate rate limit, ~60 msg/sec)
+  private dragRateLimits = new Map<string, number[]>();
+
+  /**
+   * Checks sliding window rate limit for live card dragging (~60 msg/s, ephemeral)
+   */
+  public checkDragRateLimit(playerId: string, maxMessages = 60, windowMs = 1000): boolean {
+    const now = Date.now();
+    const timestamps = this.dragRateLimits.get(playerId) || [];
+    const recent = timestamps.filter(t => now - t < windowMs);
+    if (recent.length >= maxMessages) {
+      this.dragRateLimits.set(playerId, recent);
+      return false;
+    }
+    recent.push(now);
+    this.dragRateLimits.set(playerId, recent);
     return true;
   }
 
@@ -153,6 +173,40 @@ export class WebSocketHandler {
           error: 'Los espectadores solo pueden enviar mensajes o tirar dados.',
         }),
       );
+      return;
+    }
+
+    // Ephemeral live card dragging for rivals (Punto 5, REQ-9)
+    if (type === 'CARD_DRAG_MOVE') {
+      const allowed = this.checkDragRateLimit(client.playerId, 60, 1000);
+      if (!allowed) {
+        return;
+      }
+      try {
+        const valid = CardDragMoveSchema.parse(payload);
+        const clientsInRoom = this.roomClients.get(client.roomCode);
+        if (clientsInRoom) {
+          const ephemeralMsg = JSON.stringify({
+            type: 'REMOTE_CARD_DRAGGING',
+            payload: {
+              playerId: client.playerId,
+              playerName: client.playerName,
+              cardInstanceId: valid.cardInstanceId,
+              isDragging: valid.isDragging,
+              position: valid.position,
+              cardDefinition: valid.cardDefinition,
+              fromZone: valid.fromZone,
+            },
+          });
+          for (const c of clientsInRoom) {
+            if (c.playerId !== client.playerId && c.socket.readyState === WebSocket.OPEN) {
+              c.socket.send(ephemeralMsg);
+            }
+          }
+        }
+      } catch {
+        // Silently ignore malformed ephemeral drag frames
+      }
       return;
     }
 
