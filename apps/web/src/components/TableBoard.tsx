@@ -84,7 +84,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
     // Si over no proveyó playerId directo, encontrar qué celda de jugador está bajo el puntero
     if (!targetPlayerId && clientX && clientY) {
-      const elementsUnder = document.elementsFromPoint(clientX, clientY);
+      const elementsUnder = typeof document !== 'undefined' ? document.elementsFromPoint(clientX, clientY) : [];
       for (const el of elementsUnder) {
         const cell = el.closest('[data-player-cell]');
         if (cell) {
@@ -94,7 +94,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       }
     }
 
-    if (!targetPlayerId) return;
+    const finalPlayerId = targetPlayerId || localPlayerId;
 
     const fromZone = (active.data.current as { fromZone?: string })?.fromZone;
 
@@ -120,7 +120,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         cardInstanceId: active.id,
         fromZone: 'battlefield',
         toZone: 'battlefield',
-        toPlayerId: targetPlayerId || localPlayerId,
+        toPlayerId: finalPlayerId,
         position: { x: normX, y: normY, zIndex: 10 },
       });
     }
