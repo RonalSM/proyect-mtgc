@@ -73,9 +73,9 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
         overflow: 'hidden',
         pointerEvents: isDragging ? 'none' : 'auto',
       }}
-      className={`group relative rounded-lg cursor-grab active:cursor-grabbing origin-bottom flex-shrink-0 ${
+      className={`group relative rounded-lg cursor-grab active:cursor-grabbing origin-bottom flex-shrink-0 pointer-events-auto ${
         !isSelected && !isDragging
-          ? 'hover:-translate-y-4 hover:z-50 hover:shadow-lg'
+          ? 'hover:shadow-lg hover:border-amber-400/90'
           : ''
       }`}
     >

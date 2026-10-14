@@ -145,13 +145,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       data-row={row}
       data-col={col}
       data-two-player={isTwoPlayer ? 'true' : 'false'}
-      style={
-        {
-          containerType: 'size',
-          '--card-h': 'var(--card-h, clamp(70px, 20cqh, 210px))',
-          '--card-w': 'var(--card-w, calc(clamp(70px, 20cqh, 210px) * 0.714))',
-        } as React.CSSProperties
-      }
+      style={{ containerType: 'size' } as React.CSSProperties}
       className={`relative w-full h-full transition-all duration-200 select-none ${
         isActiveTurn
           ? 'ring-4 ring-inset ring-amber-400 shadow-[inset_0_0_60px_rgba(251,191,36,0.38)]'

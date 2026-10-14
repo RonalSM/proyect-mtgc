@@ -586,4 +586,104 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       }
     }
   });
+
+  test('Punto 7: Precision subpixel en soltado y dimensiones identicas de overlay (<= 2px)', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'PrecTest');
+    const page = pages[0];
+
+    try {
+      await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // 1. Arrastre desde la mano: agarrar con offset conocido, mover y medir overlay antes de soltar
+      const handCard = page.locator('[data-hand-card="true"]').first();
+      await expect(handCard).toBeVisible({ timeout: 10000 });
+      const handBox = await handCard.boundingBox();
+      expect(handBox).not.toBeNull();
+
+      // Agarre con offset conocido (dx: 30px, dy: 35px desde la esquina superior izquierda de la carta)
+      const grabOffsetX = 30;
+      const grabOffsetY = 35;
+      await handCard.hover({ position: { x: grabOffsetX, y: grabOffsetY } });
+      await page.mouse.down();
+      // Mover al centro del campo
+      await page.mouse.move(600, 350, { steps: 20 });
+      await page.waitForTimeout(150);
+
+      // Leer bounding box del overlay inmediatamente antes de soltar
+      const overlayEl = page.locator('[data-drag-overlay="true"]');
+      await expect(overlayEl).toBeVisible({ timeout: 5000 });
+      const overlayBoxHand = await overlayEl.boundingBox();
+      expect(overlayBoxHand).not.toBeNull();
+
+      // Soltar
+      await page.mouse.up();
+      await page.waitForTimeout(600);
+
+      // Verificar que la carta colocada en mesa coincide con el overlay con error <= 2px
+      const placedCards = page.locator('[data-battlefield-card="true"]');
+      await expect(placedCards.first()).toBeVisible({ timeout: 10000 });
+      const placedBox1 = await placedCards.first().boundingBox();
+      expect(placedBox1).not.toBeNull();
+
+      // Precisión subpixel <= 2px (Punto 7)
+      expect(Math.abs(placedBox1!.x - overlayBoxHand!.x)).toBeLessThanOrEqual(2);
+      expect(Math.abs(placedBox1!.y - overlayBoxHand!.y)).toBeLessThanOrEqual(2);
+
+      // Dimensiones exactas sin zoom ni deformación
+      expect(Math.abs(placedBox1!.width - overlayBoxHand!.width)).toBeLessThanOrEqual(2);
+      expect(Math.abs(placedBox1!.height - overlayBoxHand!.height)).toBeLessThanOrEqual(2);
+
+      // 2. Arrastre desde la mesa: reposicionamiento libre
+      const grabTableX = 40;
+      const grabTableY = 40;
+      await page.mouse.move(placedBox1!.x + grabTableX, placedBox1!.y + grabTableY);
+      await page.mouse.down();
+      await page.mouse.move(850, 480, { steps: 15 });
+      await page.waitForTimeout(100);
+
+      // Leer bounding box del overlay en la mesa antes de soltar
+      const overlayBoxTable = await overlayEl.boundingBox();
+      expect(overlayBoxTable).not.toBeNull();
+
+      await page.mouse.up();
+      await page.waitForTimeout(600);
+
+      const placedBox2 = await placedCards.first().boundingBox();
+      expect(placedBox2).not.toBeNull();
+
+      expect(Math.abs(placedBox2!.x - overlayBoxTable!.x)).toBeLessThanOrEqual(2);
+      expect(Math.abs(placedBox2!.y - overlayBoxTable!.y)).toBeLessThanOrEqual(2);
+      expect(Math.abs(placedBox2!.width - overlayBoxTable!.width)).toBeLessThanOrEqual(2);
+      expect(Math.abs(placedBox2!.height - overlayBoxTable!.height)).toBeLessThanOrEqual(2);
+
+      // 3. Arrastre cerca de los bordes del viewport
+      await page.mouse.move(placedBox2!.x + 25, placedBox2!.y + 25);
+      await page.mouse.down();
+      // Mover hacia el borde inferior derecho
+      await page.mouse.move(1915, 1070, { steps: 20 });
+      await page.waitForTimeout(100);
+
+      const overlayBoxEdge = await overlayEl.boundingBox();
+      expect(overlayBoxEdge).not.toBeNull();
+      // Restringido al viewport (sin salirse de 1920x1080)
+      expect(overlayBoxEdge!.x + overlayBoxEdge!.width).toBeLessThanOrEqual(1920);
+      expect(overlayBoxEdge!.y + overlayBoxEdge!.height).toBeLessThanOrEqual(1080);
+
+      await page.mouse.up();
+      await page.waitForTimeout(600);
+
+      const placedBoxEdge = await placedCards.first().boundingBox();
+      expect(placedBoxEdge).not.toBeNull();
+
+      expect(Math.abs(placedBoxEdge!.x - overlayBoxEdge!.x)).toBeLessThanOrEqual(2);
+      expect(Math.abs(placedBoxEdge!.y - overlayBoxEdge!.y)).toBeLessThanOrEqual(2);
+      expect(Math.abs(placedBoxEdge!.width - overlayBoxEdge!.width)).toBeLessThanOrEqual(2);
+      expect(Math.abs(placedBoxEdge!.height - overlayBoxEdge!.height)).toBeLessThanOrEqual(2);
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
 });

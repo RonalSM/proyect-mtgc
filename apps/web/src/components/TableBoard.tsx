@@ -416,6 +416,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           <DragOverlay dropAnimation={null}>
             {activeDragItem ? (
               <div
+                data-drag-overlay="true"
                 style={{
                   width: `${cardPixelWidth}px`,
                   height: `${cardPixelHeight}px`,
