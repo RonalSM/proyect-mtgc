@@ -65,8 +65,11 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
           ? 'translateY(-2.5rem) scale(1.25) rotate(0deg)'
           : undefined,
         zIndex: isSelected ? 60 : index + 5,
+        width: 'var(--card-w)',
+        height: 'var(--card-h)',
+        marginLeft: index === 0 ? 0 : 'calc(var(--card-w) * -0.42)',
       }}
-      className={`group relative w-16 sm:w-20 md:w-22 aspect-[2.5/3.5] rounded-lg transition-all duration-200 ease-out cursor-grab active:cursor-grabbing origin-bottom ${
+      className={`group relative rounded-lg transition-all duration-200 ease-out cursor-grab active:cursor-grabbing origin-bottom flex-shrink-0 ${
         isDragging ? 'opacity-30' : ''
       } ${
         !isSelected && !isDragging
@@ -199,7 +202,7 @@ export const HandFan: React.FC<HandFanProps> = ({
         </div>
 
         {/* Fanned Card Backs */}
-        <div className="flex items-end justify-center -space-x-5 sm:-space-x-6">
+        <div className="flex items-end justify-center">
           {Array.from({ length: cardsToShow }, (_, i) => {
             const offset = i - (cardsToShow - 1) / 2;
             const rot = Math.max(-14, Math.min(14, offset * 4.5));
@@ -211,8 +214,11 @@ export const HandFan: React.FC<HandFanProps> = ({
                 style={{
                   transform: `rotate(${rot}deg) translateY(${transY}px)`,
                   zIndex: i + 1,
+                  width: 'calc(var(--card-w) * 0.72)',
+                  height: 'calc(var(--card-h) * 0.72)',
+                  marginLeft: i === 0 ? 0 : 'calc(var(--card-w) * -0.42)',
                 }}
-                className="w-10 sm:w-11 aspect-[2.5/3.5] rounded-md overflow-hidden border border-slate-700/80 bg-slate-950 shadow-md transition-transform duration-200"
+                className="rounded-md overflow-hidden border border-slate-700/80 bg-slate-950 shadow-md transition-transform duration-200 flex-shrink-0"
               >
                 <img
                   src="https://cards.scryfall.io/back.png"
@@ -254,7 +260,7 @@ export const HandFan: React.FC<HandFanProps> = ({
       </div>
 
       {/* Fan Container */}
-      <div className="flex items-end justify-center -space-x-7 sm:-space-x-8 md:-space-x-9 hover:-space-x-4 transition-all duration-200">
+      <div className="flex items-end justify-center transition-all duration-200">
         {cards.map((card, i) => (
           <HandCardItem
             key={card.instanceId}

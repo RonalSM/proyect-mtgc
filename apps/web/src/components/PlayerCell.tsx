@@ -130,6 +130,13 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       data-row={row}
       data-col={col}
       data-two-player={isTwoPlayer ? 'true' : 'false'}
+      style={
+        {
+          containerType: 'size',
+          '--card-h': 'clamp(70px, 20cqh, 210px)',
+          '--card-w': 'calc(clamp(70px, 20cqh, 210px) * 0.714)',
+        } as React.CSSProperties
+      }
       className={`relative w-full h-full flex flex-col justify-between transition-all duration-200 select-none ${
         isActiveTurn
           ? 'ring-2 ring-inset ring-amber-400 shadow-[inset_0_0_50px_rgba(245,158,11,0.22)]'
@@ -361,7 +368,11 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         <div
           data-dock-zone="command"
           onClick={() => setActivePileModal('command')}
-          className="w-14 sm:w-16 md:w-20 aspect-[2.5/3.5] rounded-lg overflow-hidden border shadow-lg cursor-pointer transition-transform hover:scale-105 active:scale-95 bg-slate-950 flex flex-col items-center justify-center relative flex-shrink-0"
+          style={{
+            width: 'var(--card-w)',
+            height: 'var(--card-h)',
+          }}
+          className="rounded-lg overflow-hidden border shadow-lg cursor-pointer transition-transform hover:scale-105 active:scale-95 bg-slate-950 flex flex-col items-center justify-center relative flex-shrink-0"
           title={`Zona de Comando (${zones.command.length} cartas)`}
         >
           {zones.command.length > 0 ? (
@@ -401,7 +412,11 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         <div
           data-dock-zone="library"
           onClick={() => isLocalPlayer && onAction('DRAW_CARDS', { count: 1 })}
-          className={`w-14 sm:w-16 md:w-20 aspect-[2.5/3.5] rounded-lg overflow-hidden border shadow-lg relative flex flex-col items-center justify-center flex-shrink-0 ${
+          style={{
+            width: 'var(--card-w)',
+            height: 'var(--card-h)',
+          }}
+          className={`rounded-lg overflow-hidden border shadow-lg relative flex flex-col items-center justify-center flex-shrink-0 ${
             isLocalPlayer ? 'cursor-pointer hover:scale-105 active:scale-95 border-amber-500/50' : 'border-slate-800'
           }`}
           title={isLocalPlayer ? 'Click para robar carta de la Biblioteca' : 'Biblioteca'}
@@ -423,7 +438,14 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         </div>
 
         {/* 5. Cementerio y Exilio Apilados (Mismo ancho que una carta, mitad de alto cada uno) */}
-        <div data-dock-zone="graveyard-exile" className="w-14 sm:w-16 md:w-20 aspect-[2.5/3.5] flex flex-col gap-1 flex-shrink-0">
+        <div
+          data-dock-zone="graveyard-exile"
+          style={{
+            width: 'var(--card-w)',
+            height: 'var(--card-h)',
+          }}
+          className="flex flex-col gap-1 flex-shrink-0"
+        >
           {/* Cementerio (Mitad Superior) */}
           <div
             onClick={() => setActivePileModal('graveyard')}
