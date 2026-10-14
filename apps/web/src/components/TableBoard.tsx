@@ -7,6 +7,7 @@ import {
   KeyboardSensor,
   useSensor,
   useSensors,
+  useDroppable,
   type DragStartEvent,
   type DragEndEvent,
 } from '@dnd-kit/core';
@@ -50,6 +51,12 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     useSensor(KeyboardSensor),
   );
 
+  // MesaTotal es el único droppable de la mesa (Punto 6)
+  const { setNodeRef: setTabletopRef } = useDroppable({
+    id: 'tabletop',
+    data: { zone: 'battlefield' },
+  });
+
   const handleDragStart = (event: DragStartEvent) => {
     setIsDragging(true);
     const data = event.active.data.current as {
@@ -68,6 +75,20 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
     const { active, over } = event;
     if (!over) return;
+
+    const overData = over.data.current as { zone?: string; playerId?: string } | undefined;
+    const fromZone = (active.data.current as { fromZone?: string })?.fromZone;
+
+    // Punto 6: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila
+    if (overData?.zone === 'library' || overData?.zone === 'graveyard' || overData?.zone === 'exile') {
+      onAction('MOVE_CARD', {
+        cardInstanceId: active.id,
+        fromZone: fromZone || 'battlefield',
+        toZone: overData.zone,
+        toPlayerId: overData.playerId || localPlayerId,
+      });
+      return;
+    }
 
     let targetPlayerId = (over.data.current as { playerId?: string })?.playerId;
 
@@ -95,8 +116,6 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     }
 
     const finalPlayerId = targetPlayerId || localPlayerId;
-
-    const fromZone = (active.data.current as { fromZone?: string })?.fromZone;
 
     const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
     const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
@@ -178,7 +197,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         setActiveDragItem(null);
       }}
     >
-      <div id="mesa-total" className="relative w-screen h-[100dvh] overflow-hidden bg-black select-none">
+      <div id="mesa-total" ref={setTabletopRef} className="relative w-screen h-[100dvh] overflow-hidden bg-black select-none">
         {/* Full-bleed Table Grid (Visual Divisions & Floating Docks) */}
         <TableGrid
           roomState={roomState}

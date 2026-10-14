@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useDroppable } from '@dnd-kit/core';
 import { toArtCropUrl } from '@mtgc/shared';
 import type { PlayerState, GameActionType, CardInstance } from '@mtgc/shared';
 import {
@@ -66,6 +67,22 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const [isPlaymatModalOpen, setIsPlaymatModalOpen] = useState(false);
   const [customPlaymatInput, setCustomPlaymatInput] = useState('');
   const [zoomedCard, setZoomedCard] = useState<CardInstance | null>(null);
+
+  // Droppable hooks para pilas individuales (Punto 6)
+  const { setNodeRef: setLibDropRef, isOver: isLibOver } = useDroppable({
+    id: `library-${player.id}`,
+    data: { zone: 'library', playerId: player.id },
+  });
+
+  const { setNodeRef: setGydDropRef, isOver: isGydOver } = useDroppable({
+    id: `graveyard-${player.id}`,
+    data: { zone: 'graveyard', playerId: player.id },
+  });
+
+  const { setNodeRef: setExileDropRef, isOver: isExileOver } = useDroppable({
+    id: `exile-${player.id}`,
+    data: { zone: 'exile', playerId: player.id },
+  });
 
   const lifeButtonRef = useRef<HTMLButtonElement>(null);
   const [lifePopoverPos, setLifePopoverPos] = useState<{ top: number; left: number } | null>(null);
@@ -413,18 +430,23 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           />
         </div>
 
-        {/* 4. Biblioteca - Dorso del tamaño de una carta con contador encima */}
+        {/* 4. Biblioteca - Dorso del tamaño de una carta con contador encima (Droppable) */}
         <div
+          ref={setLibDropRef}
           data-dock-zone="library"
           onClick={() => isLocalPlayer && onAction('DRAW_CARDS', { count: 1 })}
           style={{
             width: 'var(--card-w)',
             height: 'var(--card-h)',
           }}
-          className={`rounded-lg overflow-hidden border shadow-lg relative flex flex-col items-center justify-center flex-shrink-0 pointer-events-auto ${
-            isLocalPlayer ? 'cursor-pointer hover:scale-105 active:scale-95 border-amber-500/50' : 'border-slate-800'
+          className={`rounded-lg overflow-hidden border shadow-lg relative flex flex-col items-center justify-center flex-shrink-0 pointer-events-auto transition-all ${
+            isLibOver
+              ? 'ring-4 ring-amber-400 scale-110 shadow-2xl shadow-amber-500/60 z-30'
+              : isLocalPlayer
+              ? 'cursor-pointer hover:scale-105 active:scale-95 border-amber-500/50'
+              : 'border-slate-800'
           }`}
-          title={isLocalPlayer ? 'Click para robar carta de la Biblioteca' : 'Biblioteca'}
+          title={isLocalPlayer ? 'Click para robar carta de la Biblioteca (o suelta una carta aquí)' : 'Biblioteca (suelta una carta aquí)'}
         >
           <img
             src="https://cards.scryfall.io/back.png"
@@ -451,13 +473,18 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           }}
           className="flex flex-col gap-1 flex-shrink-0 pointer-events-auto"
         >
-          {/* Cementerio (Mitad Superior) */}
+          {/* Cementerio (Mitad Superior - Droppable) */}
           <div
+            ref={setGydDropRef}
             onClick={() => setActivePileModal('graveyard')}
             className={`flex-1 rounded-md overflow-hidden border border-slate-700 bg-slate-900/90 shadow flex flex-col items-center justify-center cursor-pointer hover:border-slate-500 active:scale-95 transition-all p-0.5 ${
-              zones.graveyard.length > 0 ? 'bg-slate-800/90' : 'opacity-70'
+              isGydOver
+                ? 'ring-4 ring-slate-200 scale-105 bg-slate-700 shadow-xl'
+                : zones.graveyard.length > 0
+                ? 'bg-slate-800/90'
+                : 'opacity-70'
             }`}
-            title={`Cementerio: ${zones.graveyard.length} cartas`}
+            title={`Cementerio: ${zones.graveyard.length} cartas (suelta una carta aquí)`}
           >
             <span className="text-[7px] font-extrabold text-slate-300 uppercase tracking-tight">
               CEMENTERIO
@@ -467,13 +494,18 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             </span>
           </div>
 
-          {/* Exilio (Mitad Inferior) */}
+          {/* Exilio (Mitad Inferior - Droppable) */}
           <div
+            ref={setExileDropRef}
             onClick={() => setActivePileModal('exile')}
             className={`flex-1 rounded-md overflow-hidden border border-slate-700 bg-slate-900/90 shadow flex flex-col items-center justify-center cursor-pointer hover:border-purple-500/50 active:scale-95 transition-all p-0.5 ${
-              zones.exile.length > 0 ? 'bg-purple-950/40 border-purple-700/60' : 'opacity-70'
+              isExileOver
+                ? 'ring-4 ring-purple-400 scale-105 bg-purple-900 shadow-xl'
+                : zones.exile.length > 0
+                ? 'bg-purple-950/40 border-purple-700/60'
+                : 'opacity-70'
             }`}
-            title={`Exilio: ${zones.exile.length} cartas`}
+            title={`Exilio: ${zones.exile.length} cartas (suelta una carta aquí)`}
           >
             <span className="text-[7px] font-extrabold text-purple-300 uppercase tracking-tight">
               EXILIO
