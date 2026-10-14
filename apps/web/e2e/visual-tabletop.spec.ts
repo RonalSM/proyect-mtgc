@@ -627,12 +627,17 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       expect(placedBox1).not.toBeNull();
 
       // Precisión subpixel <= 2px (Punto 7)
-      expect(Math.abs(placedBox1!.x - overlayBoxHand!.x)).toBeLessThanOrEqual(2);
-      expect(Math.abs(placedBox1!.y - overlayBoxHand!.y)).toBeLessThanOrEqual(2);
-
-      // Dimensiones exactas sin zoom ni deformación
-      expect(Math.abs(placedBox1!.width - overlayBoxHand!.width)).toBeLessThanOrEqual(2);
-      expect(Math.abs(placedBox1!.height - overlayBoxHand!.height)).toBeLessThanOrEqual(2);
+      const diffHand = {
+        x: Math.abs(placedBox1!.x - overlayBoxHand!.x),
+        y: Math.abs(placedBox1!.y - overlayBoxHand!.y),
+        width: Math.abs(placedBox1!.width - overlayBoxHand!.width),
+        height: Math.abs(placedBox1!.height - overlayBoxHand!.height),
+      };
+      console.log('MEDICION_MANO:', JSON.stringify({ overlay: overlayBoxHand, placed: placedBox1, diff: diffHand }));
+      expect(diffHand.x).toBeLessThanOrEqual(2);
+      expect(diffHand.y).toBeLessThanOrEqual(2);
+      expect(diffHand.width).toBeLessThanOrEqual(2);
+      expect(diffHand.height).toBeLessThanOrEqual(2);
 
       // 2. Arrastre desde la mesa: reposicionamiento libre
       const grabTableX = 40;
@@ -652,10 +657,17 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       const placedBox2 = await placedCards.first().boundingBox();
       expect(placedBox2).not.toBeNull();
 
-      expect(Math.abs(placedBox2!.x - overlayBoxTable!.x)).toBeLessThanOrEqual(2);
-      expect(Math.abs(placedBox2!.y - overlayBoxTable!.y)).toBeLessThanOrEqual(2);
-      expect(Math.abs(placedBox2!.width - overlayBoxTable!.width)).toBeLessThanOrEqual(2);
-      expect(Math.abs(placedBox2!.height - overlayBoxTable!.height)).toBeLessThanOrEqual(2);
+      const diffTable = {
+        x: Math.abs(placedBox2!.x - overlayBoxTable!.x),
+        y: Math.abs(placedBox2!.y - overlayBoxTable!.y),
+        width: Math.abs(placedBox2!.width - overlayBoxTable!.width),
+        height: Math.abs(placedBox2!.height - overlayBoxTable!.height),
+      };
+      console.log('MEDICION_MESA:', JSON.stringify({ overlay: overlayBoxTable, placed: placedBox2, diff: diffTable }));
+      expect(diffTable.x).toBeLessThanOrEqual(2);
+      expect(diffTable.y).toBeLessThanOrEqual(2);
+      expect(diffTable.width).toBeLessThanOrEqual(2);
+      expect(diffTable.height).toBeLessThanOrEqual(2);
 
       // 3. Arrastre cerca de los bordes del viewport
       await page.mouse.move(placedBox2!.x + 25, placedBox2!.y + 25);
@@ -676,10 +688,17 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       const placedBoxEdge = await placedCards.first().boundingBox();
       expect(placedBoxEdge).not.toBeNull();
 
-      expect(Math.abs(placedBoxEdge!.x - overlayBoxEdge!.x)).toBeLessThanOrEqual(2);
-      expect(Math.abs(placedBoxEdge!.y - overlayBoxEdge!.y)).toBeLessThanOrEqual(2);
-      expect(Math.abs(placedBoxEdge!.width - overlayBoxEdge!.width)).toBeLessThanOrEqual(2);
-      expect(Math.abs(placedBoxEdge!.height - overlayBoxEdge!.height)).toBeLessThanOrEqual(2);
+      const diffEdge = {
+        x: Math.abs(placedBoxEdge!.x - overlayBoxEdge!.x),
+        y: Math.abs(placedBoxEdge!.y - overlayBoxEdge!.y),
+        width: Math.abs(placedBoxEdge!.width - overlayBoxEdge!.width),
+        height: Math.abs(placedBoxEdge!.height - overlayBoxEdge!.height),
+      };
+      console.log('MEDICION_BORDE:', JSON.stringify({ overlay: overlayBoxEdge, placed: placedBoxEdge, diff: diffEdge }));
+      expect(diffEdge.x).toBeLessThanOrEqual(2);
+      expect(diffEdge.y).toBeLessThanOrEqual(2);
+      expect(diffEdge.width).toBeLessThanOrEqual(2);
+      expect(diffEdge.height).toBeLessThanOrEqual(2);
     } finally {
       for (const ctx of contexts) {
         await ctx.close().catch(() => {});
@@ -727,6 +746,10 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
         expect(remoteBoxB.x + remoteBoxB.width).toBeGreaterThanOrEqual(targetMidX - 10);
         expect(remoteBoxB.y).toBeLessThanOrEqual(targetMidY + 10);
         expect(remoteBoxB.y + remoteBoxB.height).toBeGreaterThanOrEqual(targetMidY - 10);
+
+        // Capturas desde ambas perspectivas (Punto 9)
+        await pageA.screenshot({ path: path.join(SCREENSHOT_DIR, 'drag-live-contextA-sender.png') });
+        await pageB.screenshot({ path: path.join(SCREENSHOT_DIR, 'drag-live-contextB-rival.png') });
       }
 
       // 3. Contexto A suelta la carta
