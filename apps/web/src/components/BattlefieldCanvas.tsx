@@ -69,8 +69,8 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
         left: `${posX}%`,
         top: `${posY}%`,
         zIndex: isSelected ? 50 : zIndex,
-        width: 'var(--card-w, 64px)',
-        height: 'var(--card-h, 90px)',
+        width: 'var(--card-w)',
+        height: 'var(--card-h)',
       }}
     >
       {/* Card Frame */}

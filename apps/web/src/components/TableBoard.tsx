@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { RoomState, GameActionType, PlayerState, CardInstance } from '@mtgc/shared';
 import {
   DndContext,
@@ -43,6 +43,29 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   } | null>(null);
 
   const { setIsDragging } = useCardPreview();
+
+  // Medidas reales de la carta en la mesa en píxeles según pod y viewport (Punto 1)
+  const podSize = Object.keys(roomState.players).length;
+  const isTwoPlayer = podSize <= 2;
+  const [viewportSize, setViewportSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+    height: typeof window !== 'undefined' ? window.innerHeight : 1080,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const cellHeight = isTwoPlayer ? viewportSize.height : viewportSize.height / 2;
+  const cardPixelHeight = Math.round(Math.max(70, Math.min(210, cellHeight * 0.20)));
+  const cardPixelWidth = Math.round(cardPixelHeight * 0.714);
 
   // Pointer sensor con activationConstraint de 8px para distinguir clic de arrastre (REQ-9.2, REQ-22)
   const sensors = useSensors(
@@ -217,7 +240,15 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         setActiveDragItem(null);
       }}
     >
-      <div id="mesa-total" ref={setTabletopRef} className="relative w-screen h-[100dvh] overflow-hidden bg-black select-none">
+      <div
+        id="mesa-total"
+        ref={setTabletopRef}
+        style={{
+          '--card-w': `${cardPixelWidth}px`,
+          '--card-h': `${cardPixelHeight}px`,
+        } as React.CSSProperties}
+        className="relative w-screen h-[100dvh] overflow-hidden bg-black select-none"
+      >
         {/* Full-bleed Table Grid (Visual Divisions & Floating Docks) */}
         <TableGrid
           roomState={roomState}
@@ -245,16 +276,16 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           />
         )}
 
-        {/* Drag Overlay visual en portal a document.body para que nada se recorte al cruzar la pantalla (Punto 7) */}
+        {/* Drag Overlay visual en portal a document.body con medidas exactas en px sin zoom ni rotación (Punto 1) */}
         <Portal>
           <DragOverlay dropAnimation={null}>
             {activeDragItem ? (
               <div
                 style={{
-                  width: 'var(--card-w, 75px)',
-                  height: 'var(--card-h, 105px)',
+                  width: `${cardPixelWidth}px`,
+                  height: `${cardPixelHeight}px`,
                 }}
-                className="rounded-lg overflow-hidden border-2 border-amber-400 shadow-2xl ring-4 ring-amber-400/60 rotate-2 scale-105 pointer-events-none opacity-95 z-[9999]"
+                className="rounded-lg overflow-hidden border border-slate-700/80 shadow-md pointer-events-none select-none z-[9999]"
               >
                 <CardDisplay
                   card={activeDragItem.card.definition}

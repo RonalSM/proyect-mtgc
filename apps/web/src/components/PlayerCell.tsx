@@ -148,8 +148,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       style={
         {
           containerType: 'size',
-          '--card-h': 'clamp(70px, 20cqh, 210px)',
-          '--card-w': 'calc(clamp(70px, 20cqh, 210px) * 0.714)',
+          '--card-h': 'var(--card-h, clamp(70px, 20cqh, 210px))',
+          '--card-w': 'var(--card-w, calc(clamp(70px, 20cqh, 210px) * 0.714))',
         } as React.CSSProperties
       }
       className={`relative w-full h-full transition-all duration-200 select-none ${
