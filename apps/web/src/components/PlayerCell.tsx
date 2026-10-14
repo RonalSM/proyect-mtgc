@@ -93,8 +93,6 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
     }
   };
 
-  const cornerClasses = getLifeCornerClasses(row, col, isTwoPlayer);
-
   // Fallback playmat (REQ-22.3: art_crop de Scryfall, no la carta completa)
   const playmatImage = toArtCropUrl(
     player.playmatUrl ||
@@ -129,6 +127,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   return (
     <div
       data-player-cell={player.id}
+      data-row={row}
+      data-col={col}
+      data-two-player={isTwoPlayer ? 'true' : 'false'}
       className={`relative w-full h-full flex flex-col justify-between transition-all duration-200 select-none ${
         isActiveTurn
           ? 'ring-2 ring-inset ring-amber-400 shadow-[inset_0_0_50px_rgba(245,158,11,0.22)]'
@@ -186,174 +187,177 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         {children}
       </div>
 
-      {/* 4. Bloque de Vida con Nombre del Jugador Encima (Punto 6, REQ-22.5) */}
-      <div className={`absolute z-30 flex flex-col items-center space-y-1 ${cornerClasses} pointer-events-auto`}>
-        {/* Nombre del jugador encima de su vida */}
-        <div
-          data-name-tag={player.id}
-          className={`flex items-center space-x-1.5 px-3 py-1 rounded-xl backdrop-blur-md border text-xs font-bold transition-all shadow-md select-none max-w-[170px] ${
-            isActiveTurn
-              ? 'bg-amber-500/20 text-amber-300 border-amber-400 shadow-amber-500/15'
-              : 'bg-slate-900/90 text-slate-200 border-slate-700/80'
-          }`}
-        >
-          <span
-            className={`w-2 h-2 rounded-full flex-shrink-0 ${
-              player.isConnected ? 'bg-emerald-400' : 'bg-slate-600'
-            }`}
-          />
-          {player.initiativeOrder && (
-            <span className="font-mono text-[10px] text-amber-400 flex-shrink-0">
-              {player.initiativeOrder}.º
-            </span>
-          )}
-          <span className="truncate">{player.name}</span>
-          {isLocalPlayer && (
-            <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded flex-shrink-0">
-              Tú
-            </span>
-          )}
-          {player.isHost && <span className="text-[10px] text-amber-400 flex-shrink-0">👑</span>}
-        </div>
-
-        {/* At Risk Pill si aplica */}
-        {player.isAtRisk && !player.isEliminated && (
-          <span className="bg-rose-950/90 border border-rose-500 text-rose-300 px-2 py-0.5 rounded-lg text-[9px] font-bold animate-pulse flex items-center space-x-1 shadow">
-            <AlertTriangle className="w-2.5 h-2.5" />
-            <span>En riesgo ({player.riskReason})</span>
-          </span>
-        )}
-
-        {player.isEliminated && (
-          <span className="bg-rose-950 text-rose-400 border border-rose-800 px-2 py-0.5 rounded-lg text-[9px] font-bold shadow">
-            Eliminado
-          </span>
-        )}
-
-        {/* Botón de Vida */}
-        <div className="relative group">
-          <button
-            ref={lifeButtonRef}
-            data-life-button={player.id}
-            onClick={toggleLifeControls}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-2xl backdrop-blur-md border shadow-2xl transition-all cursor-pointer ${
-              player.life <= 0
-                ? 'bg-rose-950/90 border-rose-600 text-rose-300 ring-2 ring-rose-500/30'
-                : player.life <= 10
-                ? 'bg-amber-950/90 border-amber-600 text-amber-200'
-                : 'bg-slate-950/90 border-slate-700/80 text-white hover:border-amber-500/50'
+      {/* 4. Dock Inferior Unificado de cada Celda (Punto 1, REQ-22.5, REQ-22.7, REQ-22.8) */}
+      <div
+        data-player-dock={player.id}
+        className="relative z-20 flex items-end justify-between px-2.5 pb-2 w-full gap-1.5 sm:gap-2 pointer-events-auto select-none"
+      >
+        {/* 1. Hueco Propio para Nombre y Vida (Izquierda) */}
+        <div data-dock-zone="identity" className="flex flex-col items-start space-y-1 flex-shrink-0">
+          {/* Nombre del jugador encima de su vida */}
+          <div
+            data-name-tag={player.id}
+            className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-xl backdrop-blur-md border text-xs font-bold transition-all shadow-md select-none ${
+              isActiveTurn
+                ? 'bg-amber-500/20 text-amber-300 border-amber-400 shadow-amber-500/15'
+                : 'bg-slate-900/90 text-slate-200 border-slate-700/80'
             }`}
           >
-            <Heart
-              className={`w-4 h-4 ${
-                player.life <= 10 ? 'text-rose-500 fill-rose-500 animate-pulse' : 'text-rose-400'
+            <span
+              className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                player.isConnected ? 'bg-emerald-400' : 'bg-slate-600'
               }`}
             />
-            <span className="text-2xl font-black font-mono tracking-tight leading-none">
-              {player.life}
+            {player.initiativeOrder && (
+              <span className="font-mono text-[10px] text-amber-400 flex-shrink-0">
+                {player.initiativeOrder}.º
+              </span>
+            )}
+            <span className="truncate max-w-[140px]">{player.name}</span>
+            {isLocalPlayer && (
+              <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded flex-shrink-0">
+                Tú
+              </span>
+            )}
+            {player.isHost && <span className="text-[10px] text-amber-400 flex-shrink-0">👑</span>}
+          </div>
+
+          {/* At Risk Pill si aplica */}
+          {player.isAtRisk && !player.isEliminated && (
+            <span className="bg-rose-950/90 border border-rose-500 text-rose-300 px-2 py-0.5 rounded-lg text-[9px] font-bold animate-pulse flex items-center space-x-1 shadow">
+              <AlertTriangle className="w-2.5 h-2.5" />
+              <span>En riesgo ({player.riskReason})</span>
             </span>
-          </button>
-
-          {/* Quick Life Modifiers Popover via Portal (REQ-22.5) */}
-          {showLifeControls && lifePopoverPos && (
-            <Portal>
-              {/* Invisible overlay for click-outside */}
-              <div
-                data-life-backdrop="true"
-                className="fixed inset-0 z-50 bg-black/10 backdrop-blur-[0.5px]"
-                onClick={() => setShowLifeControls(false)}
-              />
-              <div
-                style={{ top: `${lifePopoverPos.top}px`, left: `${lifePopoverPos.left}px` }}
-                className="fixed z-50 bg-slate-900/95 border border-slate-700 rounded-2xl shadow-2xl p-2.5 flex flex-col space-y-2 w-52 backdrop-blur-md animate-in fade-in zoom-in-95"
-                onClick={e => e.stopPropagation()}
-              >
-                <div className="grid grid-cols-4 gap-1 text-xs font-bold font-mono">
-                  <button
-                    onClick={() => adjustLife(-5)}
-                    className="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-200 py-1 rounded-lg"
-                  >
-                    -5
-                  </button>
-                  <button
-                    onClick={() => adjustLife(-1)}
-                    className="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-200 py-1 rounded-lg"
-                  >
-                    -1
-                  </button>
-                  <button
-                    onClick={() => adjustLife(1)}
-                    className="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 py-1 rounded-lg"
-                  >
-                    +1
-                  </button>
-                  <button
-                    onClick={() => adjustLife(5)}
-                    className="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 py-1 rounded-lg"
-                  >
-                    +5
-                  </button>
-                </div>
-
-                {/* Direct SET_LIFE input */}
-                {showCustomLifeInput ? (
-                  <form onSubmit={handleSetLifeSubmit} className="flex space-x-1">
-                    <input
-                      type="number"
-                      value={customLifeValue}
-                      onChange={e => setCustomLifeValue(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-0.5 text-xs text-white font-mono"
-                      autoFocus
-                    />
-                    <button
-                      type="submit"
-                      className="bg-amber-500 text-slate-950 font-bold text-xs px-2 rounded-lg"
-                    >
-                      OK
-                    </button>
-                  </form>
-                ) : (
-                  <button
-                    onClick={() => setShowCustomLifeInput(true)}
-                    className="w-full text-center text-[10px] text-slate-400 hover:text-white py-0.5"
-                  >
-                    Escribir vida exacta
-                  </button>
-                )}
-
-                {/* Counter Badges Menu */}
-                <div className="pt-1.5 border-t border-slate-800 grid grid-cols-2 gap-1 text-[10px]">
-                  <div className="flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg">
-                    <span className="text-emerald-400 flex items-center space-x-1">
-                      <Skull className="w-2.5 h-2.5" />
-                      <span>{player.counters.poison}</span>
-                    </span>
-                    <div className="flex space-x-1">
-                      <button onClick={() => adjustCounter('poison', -1)} className="hover:text-white">-</button>
-                      <button onClick={() => adjustCounter('poison', 1)} className="hover:text-white">+</button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg">
-                    <span className="text-amber-400 flex items-center space-x-1">
-                      <Shield className="w-2.5 h-2.5" />
-                      <span>{player.counters.commanderTax}</span>
-                    </span>
-                    <div className="flex space-x-1">
-                      <button onClick={() => adjustCounter('commanderTax', -2)} className="hover:text-white">-2</button>
-                      <button onClick={() => adjustCounter('commanderTax', 2)} className="hover:text-white">+2</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Portal>
           )}
-        </div>
-      </div>
 
-      {/* 5. Zona Inferior de cada Celda (Punto 5, REQ-22.7, REQ-22.8) */}
-      <div className="relative z-20 flex items-end justify-between px-3 pb-2 w-full gap-2 pointer-events-auto select-none">
-        {/* 1. Zona de Comandante (Izquierda) - Mismo ancho y alto que una carta */}
+          {player.isEliminated && (
+            <span className="bg-rose-950 text-rose-400 border border-rose-800 px-2 py-0.5 rounded-lg text-[9px] font-bold shadow">
+              Eliminado
+            </span>
+          )}
+
+          {/* Botón de Vida */}
+          <div className="relative group">
+            <button
+              ref={lifeButtonRef}
+              data-life-button={player.id}
+              onClick={toggleLifeControls}
+              className={`flex items-center space-x-1.5 px-3 py-1 rounded-2xl backdrop-blur-md border shadow-2xl transition-all cursor-pointer ${
+                player.life <= 0
+                  ? 'bg-rose-950/90 border-rose-600 text-rose-300 ring-2 ring-rose-500/30'
+                  : player.life <= 10
+                  ? 'bg-amber-950/90 border-amber-600 text-amber-200'
+                  : 'bg-slate-950/90 border-slate-700/80 text-white hover:border-amber-500/50'
+              }`}
+            >
+              <Heart
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                  player.life <= 10 ? 'text-rose-500 fill-rose-500 animate-pulse' : 'text-rose-400'
+                }`}
+              />
+              <span className="text-xl sm:text-2xl font-black font-mono tracking-tight leading-none">
+                {player.life}
+              </span>
+            </button>
+
+            {/* Quick Life Modifiers Popover via Portal (REQ-22.5) */}
+            {showLifeControls && lifePopoverPos && (
+              <Portal>
+                {/* Invisible overlay for click-outside */}
+                <div
+                  data-life-backdrop="true"
+                  className="fixed inset-0 z-50 bg-black/10 backdrop-blur-[0.5px]"
+                  onClick={() => setShowLifeControls(false)}
+                />
+                <div
+                  style={{ top: `${lifePopoverPos.top}px`, left: `${lifePopoverPos.left}px` }}
+                  className="fixed z-50 bg-slate-900/95 border border-slate-700 rounded-2xl shadow-2xl p-2.5 flex flex-col space-y-2 w-52 backdrop-blur-md animate-in fade-in zoom-in-95"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <div className="grid grid-cols-4 gap-1 text-xs font-bold font-mono">
+                    <button
+                      onClick={() => adjustLife(-5)}
+                      className="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-200 py-1 rounded-lg"
+                    >
+                      -5
+                    </button>
+                    <button
+                      onClick={() => adjustLife(-1)}
+                      className="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-200 py-1 rounded-lg"
+                    >
+                      -1
+                    </button>
+                    <button
+                      onClick={() => adjustLife(1)}
+                      className="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 py-1 rounded-lg"
+                    >
+                      +1
+                    </button>
+                    <button
+                      onClick={() => adjustLife(5)}
+                      className="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 py-1 rounded-lg"
+                    >
+                      +5
+                    </button>
+                  </div>
+
+                  {/* Direct SET_LIFE input */}
+                  {showCustomLifeInput ? (
+                    <form onSubmit={handleSetLifeSubmit} className="flex space-x-1">
+                      <input
+                        type="number"
+                        value={customLifeValue}
+                        onChange={e => setCustomLifeValue(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-0.5 text-xs text-white font-mono"
+                        autoFocus
+                      />
+                      <button
+                        type="submit"
+                        className="bg-amber-500 text-slate-950 font-bold text-xs px-2 rounded-lg"
+                      >
+                        OK
+                      </button>
+                    </form>
+                  ) : (
+                    <button
+                      onClick={() => setShowCustomLifeInput(true)}
+                      className="w-full text-center text-[10px] text-slate-400 hover:text-white py-0.5"
+                    >
+                      Escribir vida exacta
+                    </button>
+                  )}
+
+                  {/* Counter Badges Menu */}
+                  <div className="pt-1.5 border-t border-slate-800 grid grid-cols-2 gap-1 text-[10px]">
+                    <div className="flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg">
+                      <span className="text-emerald-400 flex items-center space-x-1">
+                        <Skull className="w-2.5 h-2.5" />
+                        <span>{player.counters.poison}</span>
+                      </span>
+                      <div className="flex space-x-1">
+                        <button onClick={() => adjustCounter('poison', -1)} className="hover:text-white">-</button>
+                        <button onClick={() => adjustCounter('poison', 1)} className="hover:text-white">+</button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg">
+                      <span className="text-amber-400 flex items-center space-x-1">
+                        <Shield className="w-2.5 h-2.5" />
+                        <span>{player.counters.commanderTax}</span>
+                      </span>
+                      <div className="flex space-x-1">
+                        <button onClick={() => adjustCounter('commanderTax', -2)} className="hover:text-white">-2</button>
+                        <button onClick={() => adjustCounter('commanderTax', 2)} className="hover:text-white">+2</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Portal>
+            )}
+          </div>
+        </div>
+
+        {/* 2. Zona de Comandante - Mismo ancho y alto que una carta */}
         <div
           data-dock-zone="command"
           onClick={() => setActivePileModal('command')}
@@ -382,7 +386,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           )}
         </div>
 
-        {/* 2. Mano en Abanico (Centrada en la celda y completamente visible) */}
+        {/* 3. Mano en Abanico (Centrada en la celda y completamente visible) */}
         <div data-dock-zone="hand" className="flex-1 flex justify-center items-end overflow-visible min-w-0">
           <HandFan
             cards={zones.hand}
@@ -393,7 +397,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           />
         </div>
 
-        {/* 3. Biblioteca - Dorso del tamaño de una carta con contador encima */}
+        {/* 4. Biblioteca - Dorso del tamaño de una carta con contador encima */}
         <div
           data-dock-zone="library"
           onClick={() => isLocalPlayer && onAction('DRAW_CARDS', { count: 1 })}
@@ -418,7 +422,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           </div>
         </div>
 
-        {/* 4. Cementerio y Exilio Apilados (Mismo ancho que una carta, mitad de alto cada uno) */}
+        {/* 5. Cementerio y Exilio Apilados (Mismo ancho que una carta, mitad de alto cada uno) */}
         <div data-dock-zone="graveyard-exile" className="w-14 sm:w-16 md:w-20 aspect-[2.5/3.5] flex flex-col gap-1 flex-shrink-0">
           {/* Cementerio (Mitad Superior) */}
           <div
