@@ -9,7 +9,6 @@ import {
   useSensors,
   useDroppable,
   pointerWithin,
-  rectIntersection,
   type CollisionDetection,
   type DragStartEvent,
   type DragEndEvent,
@@ -83,19 +82,14 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     data: { zone: 'battlefield' },
   });
 
-  // Detección de colisiones: si el puntero está sobre una pila, priorizarla; de lo contrario tabletop
+  // Detección estricta de colisión por puntero (Punto 4):
+  // La carta va a una pila sólo si el puntero está dentro de esa pila; en cualquier otro caso queda en la mesa.
   const customCollisionDetection: CollisionDetection = (args) => {
     const pointerCollisions = pointerWithin(args);
     if (pointerCollisions.length > 0) {
       const pileCollision = pointerCollisions.find(c => c.id !== 'tabletop');
       if (pileCollision) return [pileCollision];
       return pointerCollisions;
-    }
-    const rectCollisions = rectIntersection(args);
-    if (rectCollisions.length > 0) {
-      const pileCollision = rectCollisions.find(c => c.id !== 'tabletop');
-      if (pileCollision) return [pileCollision];
-      return rectCollisions;
     }
     return [{ id: 'tabletop' } as any];
   };
