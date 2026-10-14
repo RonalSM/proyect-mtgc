@@ -62,18 +62,19 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
       onMouseLeave={hidePreview}
       style={{
         transform: isSelected
-          ? 'translateY(-2.5rem) scale(1.25) rotate(0deg)'
+          ? 'translateY(-2rem) rotate(0deg)'
           : undefined,
         zIndex: isSelected ? 60 : index + 5,
         width: 'var(--card-w)',
         height: 'var(--card-h)',
         marginLeft: index === 0 ? 0 : 'calc(var(--card-w) * -0.42)',
+        transition: isDragging ? 'none' : undefined,
       }}
       className={`group relative rounded-lg transition-all duration-200 ease-out cursor-grab active:cursor-grabbing origin-bottom flex-shrink-0 pointer-events-auto ${
-        isDragging ? 'opacity-30' : ''
+        isDragging ? 'opacity-0' : ''
       } ${
         !isSelected && !isDragging
-          ? 'hover:-translate-y-8 hover:scale-125 hover:rotate-0 hover:z-50 hover:shadow-2xl'
+          ? 'hover:-translate-y-4 hover:z-50 hover:shadow-lg'
           : ''
       }`}
     >

@@ -284,6 +284,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
                 style={{
                   width: `${cardPixelWidth}px`,
                   height: `${cardPixelHeight}px`,
+                  transition: 'none',
                 }}
                 className="rounded-lg overflow-hidden border border-slate-700/80 shadow-md pointer-events-none select-none z-[9999]"
               >
