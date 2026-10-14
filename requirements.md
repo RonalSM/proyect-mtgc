@@ -104,12 +104,15 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 4. THE sistema SHALL permitir girar (tap/untap), voltear, clonar token y agregar contadores a cartas.
 5. WHEN el jugador roba, baraja o hace mulligan, THE sistema SHALL ejecutar la acción con aleatoriedad generada en el servidor.
 6. THE sistema SHALL permitir ampliar una carta al pasar el cursor o mantener pulsado (móvil).
-7. THE superficie de juego (MesaTotal) SHALL ser un área continua ocupando el viewport (`fixed inset-0`) dividida en N divisiones de jugador (cada una con su playmat y coordenadas relativas normalizadas). Toda MesaTotal es zona de soltado y permite arrastrar cartas libremente entre divisiones:
-   - WHEN una carta en mesa se suelta en la división de otro jugador, THE sistema SHALL transferirla inmediatamente a su campo sin confirmación ni motor de reglas ("X pasó [Carta] a Y").
-   - THE sistema SHALL guardar la posición como `(jugador de la división, x, y)` normalizada (0..1) dentro de esa división.
-   - THE jugador SHALL solo poder levantar cartas de su mano o de su propia división; desde la mano solo se permite jugar a la propia división.
-   - Cada jugador puede mover manualmente sus cartas a las pilas (cementerio, exilio, biblioteca) de otro jugador si lo desea.
-   - THE sistema SHALL usar DragOverlay renderizado en portal para evitar recortes entre divisiones y resaltar la división de destino durante el arrastre.
+7. THE superficie de juego (MesaTotal) SHALL ser UNA sola superficie que ocupa todo el viewport (`fixed inset-0`). Es la única zona de soltado (un solo droppable de mesa). Cualquier punto de la pantalla es mesa:
+   7.1. Las divisiones de jugador son exclusivamente visuales (playmat de fondo y línea divisoria), NO son droppables, no recortan las cartas (sin overflow-hidden que las afecte) y el playmat cubre el 100% del área de cada división (incluyendo debajo del dock de controles, eliminando franjas separadas).
+   7.2. THE sistema SHALL mantener una capa única de cartas dentro de MesaTotal con posiciones en coordenadas globales normalizadas de la mesa ($x, y \in [0, 1]$ sobre toda la pantalla), limitando únicamente para que la carta quede completamente visible dentro del viewport (sin restricción arbitraria de 0.05 a 0.85).
+   7.3. Todos los clientes SHALL ver la misma disposición canónica de asientos y divisiones en todas las pantallas (sin reordenamiento por cliente). La mano privada y el dock de cada jugador flotan en la división asignada a ese jugador.
+   7.4. Cualquier carta en la mesa puede arrastrarse a cualquier punto de la pantalla, incluso encima de otras divisiones. Entregar una carta a otro jugador consiste en dejarla cerca de su división o playmat, de forma inmediata, sin aceptación ni confirmación, sin restricciones de dueño o controlador y sin motor de reglas.
+   7.5. Cualquier jugador en la mesa puede mover cualquier carta ya presente en el campo de batalla, como en una mesa real física. THE sistema SHALL registrar en la bitácora autoritativa quién movió qué carta ("X movió [Carta]"). Las manos permanecen privadas y desde la mano solo se juega hacia la mesa.
+   7.6. Los elementos flotantes (comandante, mano, biblioteca, cementerio, exilio, vida, nombre, barra, chat) flotan por encima de la mesa sobre el playmat; la capa contenedora flotante SHALL tener `pointer-events: none` y únicamente los controles interactivos `pointer-events: auto`, permitiendo que los clics y arrastres sobre espacio vacío lleguen a la mesa.
+   7.7. Soltar una carta sobre las ranuras de cementerio, exilio o biblioteca de un jugador la envía a dicha pila (manual), resaltando la pila bajo el puntero mientras se arrastra. Soltarla en cualquier otro punto la deja en el campo en sus coordenadas globales. THE sistema SHALL NOT mostrar rectángulos amarillos ni resaltados de celda en la mesa.
+   7.8. THE sistema SHALL renderizar el DragOverlay en un portal a document.body para que ninguna carta se recorte al cruzar la pantalla o las divisiones.
 
 ### REQ-10 Sincronización y reconexión
 **Historia:** Como jugador, quiero volver a la partida si se cae mi conexión.

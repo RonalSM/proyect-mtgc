@@ -272,9 +272,9 @@ interface SeatState { seat: number; userId: string; life: number; poison: number
 interface CardInstance {
   instanceId: string; cardId: string; tapped: boolean; faceDown: boolean;
   counters: Record<string, number>;
-  x: number;   // 0..1 normalizado respecto al ancho de la celda
-  y: number;   // 0..1 normalizado respecto al alto de la celda
-  z: number;   // orden de apilado en el campo
+  x: number;   // 0..1 normalizado respecto a MesaTotal (pantalla completa 100vw)
+  y: number;   // 0..1 normalizado respecto a MesaTotal (pantalla completa 100vh)
+  z: number;   // orden de apilado global en la mesa
 }
 
 type Playmat = { source: "commander" | "card" | "color"; cardId?: string; color?: string };
@@ -286,35 +286,36 @@ interface ActionLogEntry { gameId: string; version: number; actorSeat: number; a
 ```
 Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRecord, GameRecord 1–N ActionLogEntry.
 
-## Diseño de la interfaz de mesa inmersiva (v2)
+## Diseño de la interfaz de mesa inmersiva (v2) - Arquitectura MesaTotal
 
-### Estructura de pantalla (CSS Grid a sangre, 100dvh × 100vw)
+### Modelo de Capas (MesaTotal: Rojo = Mesa, Naranja = Divisiones, Verde = Elementos Flotantes)
 
 ```
-┌─────────────────────────┬─────────────────────────┬────────────────────────┐
-│        [ nombre ⛶ ]     │        [ nombre ⛶ ]     │       [ nombre ⛶ ]     │
-│  cartas libres en el    │                         │                        │
-│  campo (x, y)           │        ┌──────── barra flotante (superpuesta) ───┤
-│                  ( 40 ) │ ( 39 ) │                         │       ( 40 )   │
-│ mano ▯▯▯▯   ▯ ▯ ▯ ▯ pilas│                         │                        │
-├─────────────────────────┼─────────────────────────┼────────────────────────┤
-│        [ nombre ⛶ ]     │ ...                                              │
-│  ( 37 )  ← vida en la esquina interior (la más cercana al centro)           │
-│ mano ▯▯▯▯   ▯ ▯ ▯ ▯ pilas                                                   │
-└─────────────────────────┴─────────────────────────┴────────────────────────┘
+┌───────────────────────────────────────── MesaTotal (fixed inset-0, Único Droppable Global) ────────────────────────────────────────┐
+│                                                                                                                                     │
+│  ┌───────────────────────── División 0 (Visual) ───────────────────────┬───────────────────────── División 1 (Visual) ─────────────┐│
+│  │ Playmat 100% a sangre (sin franjas separadas)                       │ Playmat 100% a sangre (sin franjas separadas)               ││
+│  │                                                                     │                                                             ││
+│  │                                                                     │                                                             ││
+│  │ [Vida/Nombre]    [CMDR]     [Mano Jugador 0]     [LIB]    [Gyd/Exi] │ [Vida/Nombre]    [CMDR]     [Mano Jugador 1]    [LIB] [Gyd] ││
+│  │  (Dock Flotante: flex/grid, overlay sobre playmat, pointer-events)  │  (Dock Flotante: flex/grid, overlay sobre playmat)          ││
+│  ├─────────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤│
+│  │ [Vida/Nombre]    [CMDR]     [Mano Jugador 2]     [LIB]    [Gyd/Exi] │ [Vida/Nombre]    [CMDR]     [Mano Jugador 3]    [LIB] [Gyd] ││
+│  │  (Dock Flotante: flex/grid, overlay sobre playmat, pointer-events)  │  (Dock Flotante: flex/grid, overlay sobre playmat)          ││
+│  └─────────────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────────────────┘│
+│                                                                                                                                     │
+│  [Capa Única de Cartas en MesaTotal: Coordenadas Globales x, y (0..1) sobre toda la pantalla; sin overflow-hidden]                  │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- Contenedor: `display: grid; grid-template-rows: 1fr 1fr; grid-template-columns: repeat(var(--cols), 1fr); gap: 1px; height: 100dvh; background: #000`.
-- Cada `PlayerCell`: `position: relative; overflow: hidden; background-image: var(--playmat)`; capas internas con posición absoluta.
-- Esquina de la pastilla de vida: `fila = 0 → bottom, fila = 1 → top`; `col = 0 → right, otra → left`.
-- Anatomía de una celda (de atrás hacia delante):
-  1. `PlaymatBackground` (arte del comandante + degradado oscuro arriba y abajo)
-  2. `BattlefieldCanvas` (cartas con `left/top` en porcentaje y `z-index`)
-  3. `PileSlots` (abajo a la derecha) y `HandFan` (abajo a la izquierda)
-  4. `NameTag` (arriba al centro) y `LifePill` (esquina interior)
-  5. Overlays: vista ampliada de carta, celda ampliada
-- `FloatingToolbar`: `position: fixed; top: 8px; left: 50%; transform: translateX(-50%)`, fondo semitransparente con desenfoque, plegable.
-- Celda libre (3 o 5 jugadores): `LogChatPanel` fijo.
+- **MesaTotal (Capa Base y Droppable Global):** Superficie continua que cubre todo el viewport (`fixed inset-0`, `100vw × 100dvh`). Constituye el único droppable general de la mesa. Cualquier punto de la pantalla es mesa de juego.
+- **Divisiones de Jugadores (Visuales):** Cuadrícula fija de 2 columnas (2 jugadores) o 2 filas por hasta 3 columnas ($\ge 3$ jugadores). Son meramente visuales (fondo playmat + borde delimitador fino); **NO** son droppables, **NO** recortan las cartas (sin `overflow: hidden` en el campo) y el playmat cubre el 100% del área de cada división (incluyendo debajo del dock de controles).
+- **Disposición Canónica de Asientos:** Todos los clientes comparten la misma disposición de asientos y divisiones en pantalla (sin rotación por cliente). La mano privada y el dock de cada participante flotan sobre la división asignada a su asiento.
+- **Capa Única Global de Cartas:** Las cartas en el campo de batalla residen en una sola capa compartida sobre `MesaTotal`. Sus posiciones se expresan en coordenadas globales normalizadas $(x, y \in [0, 1])$ relativas al ancho y alto total de la ventana, asegurando sincronización geométrica idéntica en todos los navegadores. Una carta puede situarse en cualquier punto de la pantalla, en los bordes o a caballo entre dos divisiones.
+- **Libertad de Movimiento y Entrega Manual:** Cualquier participante puede mover cualquier carta ya presente en el campo de batalla. Entregar una carta a otro jugador es simplemente desplazarla y soltarla cerca de su división o playmat, de forma inmediata y física sin validaciones de juego ni aceptación. La bitácora autoritativa registra el movimiento ("X movió [Carta]").
+- **Elementos Flotantes (Dock, Vida, Pilas, Barra):** Flotan por encima de la mesa con `pointer-events: none` en sus contenedores envolventes y `pointer-events: auto` únicamente en los controles interactivos (botones, cartas de la mano, contadores), permitiendo que clics y arrastres sobre espacio vacío atraviesen limpiamente hasta la mesa.
+- **Pilas como Droppables Específicos:** Cementerio, exilio y biblioteca de cada jugador actúan como zonas de soltado específicas que se resaltan visualmente al sobrevolar una carta sobre ellas. Soltar la carta sobre una pila la transfiere a esa zona; soltarla en cualquier otro punto de la pantalla la ubica en el campo de batalla en sus coordenadas globales. Sin rectángulos amarillos ni recuadros de celda en la mesa.
+- **DragOverlay en Portal:** El elemento arrastrado se renderiza mediante `createPortal` en `document.body` garantizando que no sufra recortes ni alteraciones de z-index al cruzar cualquier área de la pantalla.
 
 ### Estilo visual
 - Tema oscuro; texto claro con sombra suave; cartas con borde fino y sombra para despegarlas del playmat.
