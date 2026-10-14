@@ -98,19 +98,16 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
     const fromZone = (active.data.current as { fromZone?: string })?.fromZone;
 
-    // Regla REQ-9.7: Desde la mano solo se juega a su propia división
+    const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+    const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
+    const cardW = 70;
+    const cardH = 98;
+    const maxNormX = Math.max(0, (winW - cardW) / winW);
+    const maxNormY = Math.max(0, (winH - cardH) / winH);
+    const normX = Math.max(0, Math.min(maxNormX, clientX / winW));
+    const normY = Math.max(0, Math.min(maxNormY, clientY / winH));
+
     if (fromZone === 'hand') {
-      if (targetPlayerId !== localPlayerId) return;
-
-      const targetElement =
-        document.getElementById(`battlefield-zone-${localPlayerId}`) ||
-        document.querySelector(`[data-player-cell="${localPlayerId}"]`);
-      if (!targetElement) return;
-
-      const rect = targetElement.getBoundingClientRect();
-      const normX = Math.max(0.05, Math.min(0.85, (clientX - rect.left) / rect.width));
-      const normY = Math.max(0.05, Math.min(0.80, (clientY - rect.top) / rect.height));
-
       onAction('MOVE_CARD', {
         cardInstanceId: active.id,
         fromZone: 'hand',
@@ -119,21 +116,11 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         position: { x: normX, y: normY, zIndex: 10 },
       });
     } else if (fromZone === 'battlefield') {
-      // Desde el campo de batalla: reposicionar en la propia división o transferir inmediatamente a la de otro jugador
-      const targetElement =
-        document.getElementById(`battlefield-zone-${targetPlayerId}`) ||
-        document.querySelector(`[data-player-cell="${targetPlayerId}"]`);
-      if (!targetElement) return;
-
-      const rect = targetElement.getBoundingClientRect();
-      const normX = Math.max(0.05, Math.min(0.85, (clientX - rect.left) / rect.width));
-      const normY = Math.max(0.05, Math.min(0.80, (clientY - rect.top) / rect.height));
-
       onAction('MOVE_CARD', {
         cardInstanceId: active.id,
         fromZone: 'battlefield',
         toZone: 'battlefield',
-        toPlayerId: targetPlayerId,
+        toPlayerId: targetPlayerId || localPlayerId,
         position: { x: normX, y: normY, zIndex: 10 },
       });
     }
@@ -151,6 +138,10 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     exile: [],
     command: [],
   };
+
+  const allBattlefieldCards = Object.values(roomState.playerZones).flatMap(
+    zones => zones.battlefield
+  );
 
   const renderPlayerCell = (
     player: PlayerState,
@@ -173,14 +164,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         isActiveTurn={isActiveTurn}
         onAction={onAction}
         onExpandCell={() => setExpandedPlayerId(player.id)}
-      >
-        <BattlefieldCanvas
-          cards={zones.battlefield}
-          isLocalPlayer={isLocal}
-          playerId={player.id}
-          onAction={onAction}
-        />
-      </PlayerCell>
+      />
     );
   };
 
@@ -194,14 +178,20 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         setActiveDragItem(null);
       }}
     >
-      <div className="relative w-screen h-[100dvh] overflow-hidden bg-black">
-        {/* Full-bleed 2-row Table Grid (REQ-22.1, 22.2) */}
+      <div id="mesa-total" className="relative w-screen h-[100dvh] overflow-hidden bg-black select-none">
+        {/* Full-bleed Table Grid (Visual Divisions & Floating Docks) */}
         <TableGrid
           roomState={roomState}
           localPlayerId={localPlayerId}
           onAction={onAction}
           onLeaveRoom={onLeaveRoom}
           renderPlayerCell={renderPlayerCell}
+        />
+
+        {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas (Punto 1, REQ-9.7, REQ-22) */}
+        <BattlefieldCanvas
+          cards={allBattlefieldCards}
+          onAction={onAction}
         />
 
         {/* Expanded Cell View Modal (REQ-22.11) */}

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import type { CardInstance, GameActionType, CardDefinition } from '@mtgc/shared';
-import { useDroppable, useDraggable } from '@dnd-kit/core';
+import { useDraggable } from '@dnd-kit/core';
 import { RotateCw, Eye, Plus, Copy } from 'lucide-react';
 import { CardDisplay } from './CardDisplay';
 import { useCardPreview } from '../context/CardPreviewContext';
 
 interface BattlefieldCanvasProps {
   cards: CardInstance[];
-  isLocalPlayer: boolean;
+  isLocalPlayer?: boolean;
   playerId?: string;
   onAction: (type: GameActionType, payload: unknown) => void;
 }
@@ -43,8 +43,12 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     disabled: !isLocalPlayer,
   });
 
-  const posX = Math.max(0.05, Math.min(0.85, card.position?.x ?? 0.45)) * 100;
-  const posY = Math.max(0.05, Math.min(0.75, card.position?.y ?? 0.45)) * 100;
+  // Punto 1: Coordenadas globales normalizadas 0..1 sobre toda la mesa
+  // Se eliminó la restricción arbitraria de 0.05 a 0.85; solo limitamos para que la carta quede visible en pantalla
+  const rawX = card.position?.x ?? 0.5;
+  const rawY = card.position?.y ?? 0.5;
+  const posX = Math.max(0, Math.min(0.96, rawX)) * 100;
+  const posY = Math.max(0, Math.min(0.92, rawY)) * 100;
   const zIndex = card.position?.zIndex ?? 5;
 
   return (
@@ -54,10 +58,11 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       {...listeners}
       data-battlefield-card="true"
       data-card-name={card.definition.name}
+      data-card-instance-id={card.instanceId}
       onClick={onCardClick}
       onMouseEnter={() => !card.isFaceDown && !isDragging && showPreview(card.definition)}
       onMouseLeave={hidePreview}
-      className={`absolute cursor-pointer transition-transform duration-150 group select-none ${
+      className={`absolute cursor-pointer transition-transform duration-150 group select-none pointer-events-auto ${
         card.isTapped ? 'rotate-90' : ''
       } ${isDragging ? 'opacity-30' : ''}`}
       style={{
@@ -97,7 +102,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
         )}
       </div>
 
-      {/* Quick Context Action Controls on selection (Local Player only) */}
+      {/* Quick Context Action Controls on selection */}
       {isLocalPlayer && isSelected && (
         <div
           onClick={e => e.stopPropagation()}
@@ -139,26 +144,16 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
 
 export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   cards,
-  isLocalPlayer,
-  playerId = 'local',
   onAction,
 }) => {
   const { showPreview, hidePreview } = useCardPreview();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
-  const { setNodeRef, isOver } = useDroppable({
-    id: `battlefield-${playerId}`,
-    data: { zone: 'battlefield', playerId },
-    disabled: false,
-  });
-
   const handleCardClick = (card: CardInstance) => {
-    if (!isLocalPlayer) return;
     setSelectedCardId(selectedCardId === card.instanceId ? null : card.instanceId);
   };
 
   const handleTap = (card: CardInstance) => {
-    if (!isLocalPlayer) return;
     onAction('TAP_CARD', {
       cardInstanceId: card.instanceId,
       isTapped: !card.isTapped,
@@ -166,7 +161,6 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   };
 
   const handleFlip = (card: CardInstance) => {
-    if (!isLocalPlayer) return;
     onAction('FLIP_CARD', {
       cardInstanceId: card.instanceId,
       isFaceDown: !card.isFaceDown,
@@ -174,7 +168,6 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   };
 
   const handleAddCounter = (card: CardInstance, counterType: string) => {
-    if (!isLocalPlayer) return;
     onAction('SET_CARD_COUNTER', {
       cardInstanceId: card.instanceId,
       counterType,
@@ -183,7 +176,6 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   };
 
   const handleClone = (card: CardInstance) => {
-    if (!isLocalPlayer) return;
     onAction('CLONE_TOKEN', {
       sourceCardInstanceId: card.instanceId,
     });
@@ -191,19 +183,16 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
 
   return (
     <div
-      ref={setNodeRef}
-      id={`battlefield-zone-${playerId}`}
-      data-droppable-player-id={playerId}
-      className={`relative w-full h-full overflow-hidden transition-all duration-200 ${
-        isOver ? 'bg-amber-500/15 ring-4 ring-inset ring-amber-400 shadow-[inset_0_0_30px_rgba(251,191,36,0.3)]' : ''
-      }`}
+      id="battlefield-canvas-global"
+      data-battlefield-canvas="true"
+      className="fixed inset-0 w-screen h-[100dvh] pointer-events-none z-10 overflow-hidden"
     >
-      {/* Cards on Battlefield with Normalized Coords & Draggable Repositioning (REQ-22.6) */}
+      {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas */}
       {cards.map(card => (
         <BattlefieldCardItem
           key={card.instanceId}
           card={card}
-          isLocalPlayer={isLocalPlayer}
+          isLocalPlayer={true}
           isSelected={selectedCardId === card.instanceId}
           onCardClick={() => handleCardClick(card)}
           onTap={() => handleTap(card)}

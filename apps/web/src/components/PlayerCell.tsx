@@ -45,7 +45,7 @@ interface PlayerCellProps {
   reduceBackgrounds?: boolean;
   onAction: (type: GameActionType, payload: unknown) => void;
   onExpandCell?: () => void;
-  children?: React.ReactNode; // Battlefield canvas
+  children?: React.ReactNode;
 }
 
 export const PlayerCell: React.FC<PlayerCellProps> = ({
@@ -189,8 +189,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         )}
       </div>
 
-      {/* 3. Middle Area: Battlefield Canvas (Layer 2) */}
-      <div className="relative z-10 flex-1 w-full h-full overflow-hidden">
+      {/* 3. Middle Area: Spacer without overflow-hidden */}
+      <div className="relative z-10 flex-1 w-full h-full pointer-events-none">
         {children}
       </div>
 
