@@ -225,14 +225,14 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           />
         )}
 
-        {/* Drag Overlay visual en portal para evitar recortes entre divisiones (REQ-9.7) */}
+        {/* Drag Overlay visual en portal a document.body para que nada se recorte al cruzar la pantalla (Punto 7) */}
         <Portal>
           <DragOverlay dropAnimation={null}>
             {activeDragItem ? (
               <div
                 style={{
-                  width: 'var(--card-w, 5rem)',
-                  height: 'var(--card-h, 7rem)',
+                  width: 'var(--card-w, 75px)',
+                  height: 'var(--card-h, 105px)',
                 }}
                 className="rounded-lg overflow-hidden border-2 border-amber-400 shadow-2xl ring-4 ring-amber-400/60 rotate-2 scale-105 pointer-events-none opacity-95 z-[9999]"
               >
