@@ -302,6 +302,10 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
           // -------------------------------------------------------------
           // ASSERTION F: Captura de pantalla para inspección visual
           // -------------------------------------------------------------
+          // Mover el ratón a la esquina para limpiar el hover preview central antes de la captura
+          await hostPage.mouse.move(0, 0);
+          await hostPage.waitForTimeout(1500);
+
           const screenshotDir = path.resolve(
             'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
           );

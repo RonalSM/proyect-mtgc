@@ -94,7 +94,6 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
           alt={cardName}
           loading="lazy"
           decoding="async"
-          crossOrigin="anonymous"
           onError={() => setImageError(true)}
           className={`w-full h-full object-cover pointer-events-none transition-transform duration-150 ${imageClassName}`}
         />

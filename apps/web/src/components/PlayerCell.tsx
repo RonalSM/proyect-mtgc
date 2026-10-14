@@ -148,10 +148,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               src={playmatImage}
               alt=""
               decoding="async"
-              className="w-full h-full object-cover opacity-25 filter blur-[0.5px]"
+              className="w-full h-full object-cover opacity-40 filter brightness-90"
             />
             {/* Dark gradient overlays ensuring >= 4.5:1 text contrast (REQ-22.15) */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-slate-950/40 to-black/90" />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/30 to-slate-950/80" />
           </>
         ) : (
           <div className="w-full h-full bg-slate-950" />
