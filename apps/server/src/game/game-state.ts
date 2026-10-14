@@ -510,26 +510,38 @@ export class GameStateSession {
    * Moves a card across zones
    */
   public moveCard(playerId: string, payload: MoveCardPayload): void {
-    const fromZones = this.state.playerZones[playerId];
-    if (!fromZones) return;
+    let fromPlayerId = playerId;
+    let fromArray: CardInstance[] | undefined;
+    let cardIndex = -1;
 
-    const fromArray = fromZones[payload.fromZone];
-    if (!fromArray) return;
+    if (payload.fromZone === 'battlefield') {
+      // Punto 4: Cualquier jugador puede mover cualquier carta de la mesa
+      for (const [pId, zones] of Object.entries(this.state.playerZones)) {
+        const idx = zones.battlefield.findIndex(c => c.instanceId === payload.cardInstanceId);
+        if (idx !== -1) {
+          fromPlayerId = pId;
+          fromArray = zones.battlefield;
+          cardIndex = idx;
+          break;
+        }
+      }
+    } else {
+      // Las manos y zonas privadas pertenecen exclusivamente al jugador
+      const fromZones = this.state.playerZones[playerId];
+      if (!fromZones) return;
+      fromArray = fromZones[payload.fromZone];
+      if (!fromArray) return;
+      cardIndex = fromArray.findIndex(c => c.instanceId === payload.cardInstanceId);
+    }
 
-    const cardIndex = fromArray.findIndex(c => c.instanceId === payload.cardInstanceId);
-    if (cardIndex === -1) return;
+    if (cardIndex === -1 || !fromArray) return;
 
-    const targetPlayerId = payload.toPlayerId || playerId;
+    const targetPlayerId = payload.toPlayerId || fromPlayerId;
     const toZones = this.state.playerZones[targetPlayerId];
     if (!toZones) return;
 
     const toArray = toZones[payload.toZone];
     if (!toArray) return;
-
-    // Regla REQ-9.7: Desde la mano sólo se juega a la propia división
-    if (payload.fromZone === 'hand' && targetPlayerId !== playerId) {
-      return;
-    }
 
     const [card] = fromArray.splice(cardIndex, 1);
     if (!card) return;
@@ -553,29 +565,21 @@ export class GameStateSession {
       toArray.push(card);
     }
 
-    this.syncPlayerCounts(playerId);
-    if (targetPlayerId !== playerId) {
+    this.syncPlayerCounts(fromPlayerId);
+    if (targetPlayerId !== fromPlayerId) {
       this.syncPlayerCounts(targetPlayerId);
     }
 
-    const targetName = this.state.players[targetPlayerId]?.name || 'Jugador';
-
-    if (targetPlayerId !== playerId) {
+    if (payload.fromZone === 'battlefield' && payload.toZone === 'battlefield') {
       this.addLog(
         playerId,
-        `pasó ${card.definition.name} a ${targetName}`,
+        `movió "${card.definition.name}"`,
         true,
       );
     } else if (payload.fromZone === 'hand' && payload.toZone === 'battlefield') {
       this.addLog(
         playerId,
         `jugó "${card.definition.name}" al campo de batalla`,
-        true,
-      );
-    } else if (payload.fromZone === 'battlefield' && payload.toZone === 'battlefield') {
-      this.addLog(
-        playerId,
-        `movió "${card.definition.name}" en el campo de batalla`,
         true,
       );
     } else {
@@ -594,8 +598,8 @@ export class GameStateSession {
         if (idx !== -1) {
           toArray.splice(idx, 1);
           fromArray.splice(cardIndex, 0, card);
-          this.syncPlayerCounts(playerId);
-          if (targetPlayerId !== playerId) {
+          this.syncPlayerCounts(fromPlayerId);
+          if (targetPlayerId !== fromPlayerId) {
             this.syncPlayerCounts(targetPlayerId);
           }
         }
