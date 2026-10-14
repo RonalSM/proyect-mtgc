@@ -1,6 +1,7 @@
 import {
   RoomState,
   CardDefinition,
+  CardInstance,
   GameLogEntry,
   AdjustLifePayload,
   SetLifePayload,

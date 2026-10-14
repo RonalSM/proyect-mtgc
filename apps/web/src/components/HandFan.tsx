@@ -69,7 +69,7 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
         height: 'var(--card-h)',
         marginLeft: index === 0 ? 0 : 'calc(var(--card-w) * -0.42)',
       }}
-      className={`group relative rounded-lg transition-all duration-200 ease-out cursor-grab active:cursor-grabbing origin-bottom flex-shrink-0 ${
+      className={`group relative rounded-lg transition-all duration-200 ease-out cursor-grab active:cursor-grabbing origin-bottom flex-shrink-0 pointer-events-auto ${
         isDragging ? 'opacity-30' : ''
       } ${
         !isSelected && !isDragging
@@ -97,7 +97,7 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
       {isSelected && (
         <div
           onClick={e => e.stopPropagation()}
-          className="absolute -top-9 left-1/2 -translate-x-1/2 flex items-center space-x-1 bg-slate-900/95 border border-slate-700 rounded-xl p-1 shadow-2xl z-50 text-[10px] whitespace-nowrap"
+          className="absolute -top-9 left-1/2 -translate-x-1/2 flex items-center space-x-1 bg-slate-900/95 border border-slate-700 rounded-xl p-1 shadow-2xl z-50 text-[10px] whitespace-nowrap pointer-events-auto"
         >
           <button
             onClick={onPlay}

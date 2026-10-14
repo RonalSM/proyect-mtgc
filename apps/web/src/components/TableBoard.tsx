@@ -8,6 +8,9 @@ import {
   useSensor,
   useSensors,
   useDroppable,
+  pointerWithin,
+  rectIntersection,
+  type CollisionDetection,
   type DragStartEvent,
   type DragEndEvent,
 } from '@dnd-kit/core';
@@ -57,6 +60,23 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     data: { zone: 'battlefield' },
   });
 
+  // Detección de colisiones: si el puntero está sobre una pila, priorizarla; de lo contrario tabletop
+  const customCollisionDetection: CollisionDetection = (args) => {
+    const pointerCollisions = pointerWithin(args);
+    if (pointerCollisions.length > 0) {
+      const pileCollision = pointerCollisions.find(c => c.id !== 'tabletop');
+      if (pileCollision) return [pileCollision];
+      return pointerCollisions;
+    }
+    const rectCollisions = rectIntersection(args);
+    if (rectCollisions.length > 0) {
+      const pileCollision = rectCollisions.find(c => c.id !== 'tabletop');
+      if (pileCollision) return [pileCollision];
+      return rectCollisions;
+    }
+    return [{ id: 'tabletop' } as any];
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     setIsDragging(true);
     const data = event.active.data.current as {
@@ -74,9 +94,8 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     setActiveDragItem(null);
 
     const { active, over } = event;
-    if (!over) return;
 
-    const overData = over.data.current as { zone?: string; playerId?: string } | undefined;
+    const overData = over?.data.current as { zone?: string; playerId?: string } | undefined;
     const fromZone = (active.data.current as { fromZone?: string })?.fromZone;
 
     // Punto 6: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila
@@ -90,7 +109,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       return;
     }
 
-    let targetPlayerId = (over.data.current as { playerId?: string })?.playerId;
+    let targetPlayerId = overData?.playerId;
 
     let clientX = 0;
     let clientY = 0;
@@ -190,6 +209,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   return (
     <DndContext
       sensors={sensors}
+      collisionDetection={customCollisionDetection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={() => {
