@@ -43,12 +43,11 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     disabled: !isLocalPlayer,
   });
 
-  // Punto 1: Coordenadas globales normalizadas 0..1 sobre toda la mesa
-  // Se eliminó la restricción arbitraria de 0.05 a 0.85; solo limitamos para que la carta quede visible en pantalla
+  // Punto 3: Coordenadas globales normalizadas 0..1 calculadas directamente desde el overlay
   const rawX = card.position?.x ?? 0.5;
   const rawY = card.position?.y ?? 0.5;
-  const posX = Math.max(0, Math.min(0.96, rawX)) * 100;
-  const posY = Math.max(0, Math.min(0.92, rawY)) * 100;
+  const posX = Math.max(0, Math.min(1, rawX)) * 100;
+  const posY = Math.max(0, Math.min(1, rawY)) * 100;
   const zIndex = card.position?.zIndex ?? 5;
 
   return (

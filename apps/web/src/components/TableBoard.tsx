@@ -100,6 +100,31 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     return [{ id: 'tabletop' } as any];
   };
 
+  // Modificador en vivo para restringir el arrastre al viewport y evitar desbordamientos y saltos (Punto 3)
+  const restrictToViewportModifier = ({
+    transform,
+    activeNodeRect,
+  }: {
+    transform: { x: number; y: number; scaleX: number; scaleY: number };
+    activeNodeRect: { top: number; left: number; width: number; height: number; bottom: number; right: number } | null;
+  }) => {
+    if (!activeNodeRect) return transform;
+    const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+    const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
+
+    const currentLeft = activeNodeRect.left + transform.x;
+    const currentTop = activeNodeRect.top + transform.y;
+
+    const clampedLeft = Math.max(0, Math.min(winW - activeNodeRect.width, currentLeft));
+    const clampedTop = Math.max(0, Math.min(winH - activeNodeRect.height, currentTop));
+
+    return {
+      ...transform,
+      x: transform.x + (clampedLeft - currentLeft),
+      y: transform.y + (clampedTop - currentTop),
+    };
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     setIsDragging(true);
     const data = event.active.data.current as {
@@ -121,7 +146,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const overData = over?.data.current as { zone?: string; playerId?: string } | undefined;
     const fromZone = (active.data.current as { fromZone?: string })?.fromZone;
 
-    // Punto 6: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila
+    // Punto 6: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila si el puntero está dentro
     if (overData?.zone === 'library' || overData?.zone === 'graveyard' || overData?.zone === 'exile') {
       onAction('MOVE_CARD', {
         cardInstanceId: active.id,
@@ -132,22 +157,45 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       return;
     }
 
-    let targetPlayerId = overData?.playerId;
+    // Punto 3: La posición final se calcula a partir del rectángulo real del overlay al soltar
+    const translated = active.rect.current?.translated;
+    const initial = active.rect.current?.initial;
 
-    let clientX = 0;
-    let clientY = 0;
+    const overlayWidth = translated?.width || initial?.width || cardPixelWidth;
+    const overlayHeight = translated?.height || initial?.height || cardPixelHeight;
 
-    if (event.activatorEvent instanceof MouseEvent || event.activatorEvent instanceof PointerEvent) {
-      clientX = event.activatorEvent.clientX + (event.delta?.x ?? 0);
-      clientY = event.activatorEvent.clientY + (event.delta?.y ?? 0);
-    } else if (active.rect.current?.translated) {
-      clientX = active.rect.current.translated.left + active.rect.current.translated.width / 2;
-      clientY = active.rect.current.translated.top + active.rect.current.translated.height / 2;
+    let overlayLeft = 0;
+    let overlayTop = 0;
+
+    if (translated) {
+      overlayLeft = translated.left;
+      overlayTop = translated.top;
+    } else if (initial) {
+      overlayLeft = initial.left + (event.delta?.x ?? 0);
+      overlayTop = initial.top + (event.delta?.y ?? 0);
+    } else if (event.activatorEvent instanceof MouseEvent || event.activatorEvent instanceof PointerEvent) {
+      overlayLeft = event.activatorEvent.clientX - overlayWidth / 2 + (event.delta?.x ?? 0);
+      overlayTop = event.activatorEvent.clientY - overlayHeight / 2 + (event.delta?.y ?? 0);
     }
 
-    // Si over no proveyó playerId directo, encontrar qué celda de jugador está bajo el puntero
-    if (!targetPlayerId && clientX && clientY) {
-      const elementsUnder = typeof document !== 'undefined' ? document.elementsFromPoint(clientX, clientY) : [];
+    const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+    const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
+
+    // Ajuste estricto dentro del viewport
+    const clampedX = Math.max(0, Math.min(winW - overlayWidth, overlayLeft));
+    const clampedY = Math.max(0, Math.min(winH - overlayHeight, overlayTop));
+
+    // Coordenadas globales normalizadas sin snapping ni redondeos visibles
+    const normX = clampedX / winW;
+    const normY = clampedY / winH;
+
+    // Detectar celda de jugador bajo el centro de la carta
+    let targetPlayerId = overData?.playerId;
+    const centerPointX = clampedX + overlayWidth / 2;
+    const centerPointY = clampedY + overlayHeight / 2;
+
+    if (!targetPlayerId && typeof document !== 'undefined') {
+      const elementsUnder = document.elementsFromPoint(centerPointX, centerPointY);
       for (const el of elementsUnder) {
         const cell = el.closest('[data-player-cell]');
         if (cell) {
@@ -158,15 +206,6 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     }
 
     const finalPlayerId = targetPlayerId || localPlayerId;
-
-    const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
-    const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
-    const cardW = 70;
-    const cardH = 98;
-    const maxNormX = Math.max(0, (winW - cardW) / winW);
-    const maxNormY = Math.max(0, (winH - cardH) / winH);
-    const normX = Math.max(0, Math.min(maxNormX, clientX / winW));
-    const normY = Math.max(0, Math.min(maxNormY, clientY / winH));
 
     if (fromZone === 'hand') {
       onAction('MOVE_CARD', {
@@ -232,6 +271,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   return (
     <DndContext
       sensors={sensors}
+      modifiers={[restrictToViewportModifier]}
       collisionDetection={customCollisionDetection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
