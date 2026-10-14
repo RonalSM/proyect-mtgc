@@ -42,9 +42,8 @@ export const TableGrid: React.FC<TableGridProps> = ({
   // --cols = 2 en 1v1, o ceil(jugadores / 2) entre 2 y 3 para >= 3 jugadores (REQ-22.2)
   const cols = isTwoPlayerMode ? 2 : Math.min(3, Math.max(2, Math.ceil(totalPlayers / 2)));
 
-  // Separate local player and opponents
-  const localPlayer = roomState.players[localPlayerId] || allSeated[0]!;
-  const opponents = allSeated.filter(p => p.id !== localPlayer.id);
+  // Orden canónico de asientos idéntico en todos los clientes (Punto 2)
+  const seatedPlayers = [...allSeated].sort((a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0));
 
   interface CellSlot {
     row: 0 | 1;
@@ -56,40 +55,33 @@ export const TableGrid: React.FC<TableGridProps> = ({
   const gridSlots: CellSlot[] = [];
 
   if (isTwoPlayerMode) {
-    // 2 jugadores: 2 columnas verticales (izquierda y derecha), no filas (Punto 4)
-    gridSlots.push({ row: 1, col: 0, player: localPlayer });
-    if (opponents[0]) {
-      gridSlots.push({ row: 1, col: 1, player: opponents[0] });
+    // 2 jugadores: 2 columnas verticales (izquierda = asiento 0, derecha = asiento 1)
+    gridSlots.push({ row: 0, col: 0, player: seatedPlayers[0] });
+    if (seatedPlayers[1]) {
+      gridSlots.push({ row: 0, col: 1, player: seatedPlayers[1] });
     }
   } else {
-    // 3 o más jugadores: cuadrícula REQ-22 de 2 filas y hasta 3 columnas
-    // Top Row (Row 0): col 0 to cols - 1
+    // 3 o más jugadores: cuadrícula canónica de 2 filas y hasta 3 columnas
+    let playerIdx = 0;
+
+    // Fila Superior (Row 0): col 0 .. cols - 1
     for (let c = 0; c < cols; c++) {
-      gridSlots.push({ row: 0, col: c });
+      gridSlots.push({
+        row: 0,
+        col: c,
+        player: seatedPlayers[playerIdx++],
+      });
     }
-    // Bottom Row (Row 1): col 0 (LOCAL), then col 1 to cols - 1
+
+    // Fila Inferior (Row 1): col 0 .. cols - 1
     for (let c = 0; c < cols; c++) {
-      gridSlots.push({ row: 1, col: c });
-    }
-
-    // Assign local player to (row: 1, col: 0)
-    const localSlot = gridSlots.find(s => s.row === 1 && s.col === 0);
-    if (localSlot) {
-      localSlot.player = localPlayer;
-    }
-
-    // Assign opponents to remaining slots in seat order
-    const remainingSlots = gridSlots.filter(s => !(s.row === 1 && s.col === 0));
-    opponents.forEach((opp, i) => {
-      if (remainingSlots[i]) {
-        remainingSlots[i]!.player = opp;
-      }
-    });
-
-    // If 3 or 5 players, the extra unused slot becomes free cell for log/chat (REQ-22.10)
-    const unusedSlot = remainingSlots.find(s => !s.player);
-    if (unusedSlot && (totalPlayers === 3 || totalPlayers === 5)) {
-      unusedSlot.isFreeCellForChat = true;
+      const p = seatedPlayers[playerIdx++];
+      gridSlots.push({
+        row: 1,
+        col: c,
+        player: p,
+        isFreeCellForChat: !p && (totalPlayers === 3 || totalPlayers === 5),
+      });
     }
   }
 
