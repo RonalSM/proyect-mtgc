@@ -77,15 +77,16 @@ Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 7. Game Server valida token y asiento → difunde "player_joined"
 ```
 
-### Flujo 2: Acción de juego (mover carta)
+### Flujo 2: Acción de juego (mover carta y transferencia libre entre divisiones en MesaTotal)
 ```
-1. Jugador arrastra carta → Web Client: aplica UI optimista
-2. Web Client → Game Server: { type: "MOVE_CARD", cardId, from, to, seq }
-3. Game Server: valida permisos (¿es su carta? ¿zona válida?)
-4. Game Server → Redis: actualiza estado, incrementa versión
-5. Game Server → todos los clientes: evento filtrado por visibilidad
-6. Web Client del emisor: confirma o revierte la UI optimista
-7. Game Server → log: registra la acción
+1. Jugador arrastra carta (desde su mano a su división, o desde su campo/pilas a cualquier división de MesaTotal).
+2. DragOverlay se renderiza mediante Portal a document.body para evitar recortes al cruzar divisiones, y se resalta la división de destino.
+3. Web Client calcula coordenadas relativas normalizadas (0..1) respecto a la división bajo el puntero: { toPlayerId, normX, normY, zIndex }.
+4. Web Client → Game Server: { type: "MOVE_CARD", payload: { cardInstanceId, fromZone, toZone, toPlayerId, position } }.
+5. Game Server: autoriza movimiento (el jugador sólo levanta cartas de su mano o de su propia división; desde la mano sólo juega a su propia división; sin motor de reglas en mesa).
+6. Si toPlayerId !== jugador origen, Game Server transfiere la carta al campo/pila del jugador destino e inserta en la bitácora: "X pasó [Carta] a Y".
+7. Game Server actualiza estado en Redis/memoria y emite evento con versión a todos los clientes.
+8. Clientes renderizan la carta en la sección del jugador correspondiente con su posición normalizada relativa.
 ```
 
 ### Flujo 3: Importar mazo

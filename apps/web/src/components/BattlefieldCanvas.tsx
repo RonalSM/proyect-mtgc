@@ -149,7 +149,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   const { setNodeRef, isOver } = useDroppable({
     id: `battlefield-${playerId}`,
     data: { zone: 'battlefield', playerId },
-    disabled: !isLocalPlayer,
+    disabled: false,
   });
 
   const handleCardClick = (card: CardInstance) => {
@@ -193,8 +193,9 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
     <div
       ref={setNodeRef}
       id={`battlefield-zone-${playerId}`}
-      className={`relative w-full h-full overflow-hidden transition-colors ${
-        isOver && isLocalPlayer ? 'bg-amber-500/10 ring-2 ring-inset ring-amber-400/40' : ''
+      data-droppable-player-id={playerId}
+      className={`relative w-full h-full overflow-hidden transition-all duration-200 ${
+        isOver ? 'bg-amber-500/15 ring-4 ring-inset ring-amber-400 shadow-[inset_0_0_30px_rgba(251,191,36,0.3)]' : ''
       }`}
     >
       {/* Cards on Battlefield with Normalized Coords & Draggable Repositioning (REQ-22.6) */}

@@ -15,6 +15,7 @@ import { PlayerCell } from './PlayerCell';
 import { BattlefieldCanvas } from './BattlefieldCanvas';
 import { ExpandedCellView } from './ExpandedCellView';
 import { CardDisplay } from './CardDisplay';
+import { Portal } from './Portal';
 import { CardPreviewProvider, useCardPreview } from '../context/CardPreviewContext';
 
 interface TableBoardProps {
@@ -68,14 +69,8 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const { active, over } = event;
     if (!over) return;
 
-    const targetPlayerId = (over.data.current as { playerId?: string })?.playerId;
-    // Cada jugador solo juega sus cartas en su propia sección
-    if (targetPlayerId !== localPlayerId) return;
+    let targetPlayerId = (over.data.current as { playerId?: string })?.playerId;
 
-    const targetElement = document.getElementById(`battlefield-zone-${localPlayerId}`);
-    if (!targetElement) return;
-
-    const rect = targetElement.getBoundingClientRect();
     let clientX = 0;
     let clientY = 0;
 
@@ -87,23 +82,58 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       clientY = active.rect.current.translated.top + active.rect.current.translated.height / 2;
     }
 
-    const normX = Math.max(0.05, Math.min(0.85, (clientX - rect.left) / rect.width));
-    const normY = Math.max(0.05, Math.min(0.80, (clientY - rect.top) / rect.height));
+    // Si over no proveyó playerId directo, encontrar qué celda de jugador está bajo el puntero
+    if (!targetPlayerId && clientX && clientY) {
+      const elementsUnder = document.elementsFromPoint(clientX, clientY);
+      for (const el of elementsUnder) {
+        const cell = el.closest('[data-player-cell]');
+        if (cell) {
+          targetPlayerId = cell.getAttribute('data-player-cell') || undefined;
+          break;
+        }
+      }
+    }
+
+    if (!targetPlayerId) return;
 
     const fromZone = (active.data.current as { fromZone?: string })?.fromZone;
+
+    // Regla REQ-9.7: Desde la mano solo se juega a su propia división
     if (fromZone === 'hand') {
+      if (targetPlayerId !== localPlayerId) return;
+
+      const targetElement =
+        document.getElementById(`battlefield-zone-${localPlayerId}`) ||
+        document.querySelector(`[data-player-cell="${localPlayerId}"]`);
+      if (!targetElement) return;
+
+      const rect = targetElement.getBoundingClientRect();
+      const normX = Math.max(0.05, Math.min(0.85, (clientX - rect.left) / rect.width));
+      const normY = Math.max(0.05, Math.min(0.80, (clientY - rect.top) / rect.height));
+
       onAction('MOVE_CARD', {
         cardInstanceId: active.id,
         fromZone: 'hand',
         toZone: 'battlefield',
+        toPlayerId: localPlayerId,
         position: { x: normX, y: normY, zIndex: 10 },
       });
     } else if (fromZone === 'battlefield') {
-      // Reposicionamiento de cartas ya en mesa
+      // Desde el campo de batalla: reposicionar en la propia división o transferir inmediatamente a la de otro jugador
+      const targetElement =
+        document.getElementById(`battlefield-zone-${targetPlayerId}`) ||
+        document.querySelector(`[data-player-cell="${targetPlayerId}"]`);
+      if (!targetElement) return;
+
+      const rect = targetElement.getBoundingClientRect();
+      const normX = Math.max(0.05, Math.min(0.85, (clientX - rect.left) / rect.width));
+      const normY = Math.max(0.05, Math.min(0.80, (clientY - rect.top) / rect.height));
+
       onAction('MOVE_CARD', {
         cardInstanceId: active.id,
         fromZone: 'battlefield',
         toZone: 'battlefield',
+        toPlayerId: targetPlayerId,
         position: { x: normX, y: normY, zIndex: 10 },
       });
     }
@@ -186,18 +216,26 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           />
         )}
 
-        {/* Drag Overlay visual para arrastre suave de cartas */}
-        <DragOverlay dropAnimation={null}>
-          {activeDragItem ? (
-            <div className="w-16 sm:w-20 aspect-[2.5/3.5] rounded-lg overflow-hidden border-2 border-amber-400 shadow-2xl ring-2 ring-amber-400/50 rotate-3 scale-105 pointer-events-none opacity-90">
-              <CardDisplay
-                card={activeDragItem.card.definition}
-                isFaceDown={activeDragItem.card.isFaceDown}
-                allowFaceToggle={false}
-              />
-            </div>
-          ) : null}
-        </DragOverlay>
+        {/* Drag Overlay visual en portal para evitar recortes entre divisiones (REQ-9.7) */}
+        <Portal>
+          <DragOverlay dropAnimation={null}>
+            {activeDragItem ? (
+              <div
+                style={{
+                  width: 'var(--card-w, 5rem)',
+                  height: 'var(--card-h, 7rem)',
+                }}
+                className="rounded-lg overflow-hidden border-2 border-amber-400 shadow-2xl ring-4 ring-amber-400/60 rotate-2 scale-105 pointer-events-none opacity-95 z-[9999]"
+              >
+                <CardDisplay
+                  card={activeDragItem.card.definition}
+                  isFaceDown={activeDragItem.card.isFaceDown}
+                  allowFaceToggle={false}
+                />
+              </div>
+            ) : null}
+          </DragOverlay>
+        </Portal>
       </div>
     </DndContext>
   );

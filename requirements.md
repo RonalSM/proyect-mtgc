@@ -104,6 +104,12 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 4. THE sistema SHALL permitir girar (tap/untap), voltear, clonar token y agregar contadores a cartas.
 5. WHEN el jugador roba, baraja o hace mulligan, THE sistema SHALL ejecutar la acción con aleatoriedad generada en el servidor.
 6. THE sistema SHALL permitir ampliar una carta al pasar el cursor o mantener pulsado (móvil).
+7. THE superficie de juego (MesaTotal) SHALL ser un área continua ocupando el viewport (`fixed inset-0`) dividida en N divisiones de jugador (cada una con su playmat y coordenadas relativas normalizadas). Toda MesaTotal es zona de soltado y permite arrastrar cartas libremente entre divisiones:
+   - WHEN una carta en mesa se suelta en la división de otro jugador, THE sistema SHALL transferirla inmediatamente a su campo sin confirmación ni motor de reglas ("X pasó [Carta] a Y").
+   - THE sistema SHALL guardar la posición como `(jugador de la división, x, y)` normalizada (0..1) dentro de esa división.
+   - THE jugador SHALL solo poder levantar cartas de su mano o de su propia división; desde la mano solo se permite jugar a la propia división.
+   - Cada jugador puede mover manualmente sus cartas a las pilas (cementerio, exilio, biblioteca) de otro jugador si lo desea.
+   - THE sistema SHALL usar DragOverlay renderizado en portal para evitar recortes entre divisiones y resaltar la división de destino durante el arrastre.
 
 ### REQ-10 Sincronización y reconexión
 **Historia:** Como jugador, quiero volver a la partida si se cae mi conexión.
