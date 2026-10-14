@@ -65,14 +65,15 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
           ? 'translateY(-2rem) rotate(0deg)'
           : undefined,
         zIndex: isSelected ? 60 : index + 5,
-        width: 'var(--card-w)',
+        width: isDragging ? 0 : 'var(--card-w)',
         height: 'var(--card-h)',
-        marginLeft: index === 0 ? 0 : 'calc(var(--card-w) * -0.42)',
-        transition: isDragging ? 'none' : undefined,
+        marginLeft: isDragging ? 0 : (index === 0 ? 0 : 'calc(var(--card-w) * -0.42)'),
+        opacity: isDragging ? 0 : 1,
+        transition: 'width 250ms cubic-bezier(0.4, 0, 0.2, 1), margin-left 250ms cubic-bezier(0.4, 0, 0.2, 1), opacity 150ms ease-out, transform 200ms ease-out',
+        overflow: 'hidden',
+        pointerEvents: isDragging ? 'none' : 'auto',
       }}
-      className={`group relative rounded-lg transition-all duration-200 ease-out cursor-grab active:cursor-grabbing origin-bottom flex-shrink-0 pointer-events-auto ${
-        isDragging ? 'opacity-0' : ''
-      } ${
+      className={`group relative rounded-lg cursor-grab active:cursor-grabbing origin-bottom flex-shrink-0 ${
         !isSelected && !isDragging
           ? 'hover:-translate-y-4 hover:z-50 hover:shadow-lg'
           : ''
@@ -81,11 +82,14 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
       {/* Card Face & Frame */}
       <div
         style={{
+          width: 'var(--card-w)',
+          minWidth: 'var(--card-w)',
+          height: '100%',
           transform: !isSelected
             ? `rotate(${rot}deg) translateY(${transY}px)`
             : 'none',
         }}
-        className={`w-full h-full rounded-lg overflow-hidden border shadow-lg transition-transform duration-200 ${
+        className={`rounded-lg overflow-hidden border shadow-lg transition-transform duration-200 ${
           isSelected
             ? 'border-amber-400 ring-2 ring-amber-400/60 shadow-amber-500/20'
             : 'border-slate-700/80 group-hover:border-amber-400/90'
