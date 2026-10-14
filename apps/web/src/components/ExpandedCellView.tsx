@@ -67,37 +67,35 @@ export const ExpandedCellView: React.FC<ExpandedCellViewProps> = ({
           isActiveTurn={isActiveTurn}
           onAction={onAction}
           onExpandCell={onClose}
-        >
-          {isLocal ? (
-            <BattlefieldCanvas
-              cards={zones.battlefield}
-              isLocalPlayer={true}
-              onAction={onAction}
-            />
-          ) : (
-            <div className="relative w-full h-full p-4 overflow-hidden">
-              <div className="flex flex-wrap gap-3">
-                {zones.battlefield.map(card => (
-                  <div
-                    key={card.instanceId}
-                    className="w-24 h-34 rounded-lg overflow-hidden border border-slate-700 shadow-md bg-slate-900"
-                  >
-                    <CardDisplay
-                      card={card.definition}
-                      isFaceDown={card.isFaceDown}
-                      isTapped={card.isTapped}
-                    />
-                  </div>
-                ))}
-                {zones.battlefield.length === 0 && (
-                  <div className="w-full text-center py-24 text-slate-500 text-xs italic">
-                    Sin cartas en el campo de batalla
-                  </div>
-                )}
-              </div>
+        />
+        {isLocal ? (
+          <BattlefieldCanvas
+            cards={zones.battlefield}
+            onAction={onAction}
+          />
+        ) : (
+          <div className="absolute inset-0 p-4 overflow-hidden pointer-events-auto z-15">
+            <div className="flex flex-wrap gap-3">
+              {zones.battlefield.map(card => (
+                <div
+                  key={card.instanceId}
+                  className="w-24 h-34 rounded-lg overflow-hidden border border-slate-700 shadow-md bg-slate-900"
+                >
+                  <CardDisplay
+                    card={card.definition}
+                    isFaceDown={card.isFaceDown}
+                    isTapped={card.isTapped}
+                  />
+                </div>
+              ))}
+              {zones.battlefield.length === 0 && (
+                <div className="w-full text-center py-24 text-slate-500 text-xs italic">
+                  Sin cartas en el campo de batalla
+                </div>
+              )}
             </div>
-          )}
-        </PlayerCell>
+          </div>
+        )}
       </div>
     </div>
   );

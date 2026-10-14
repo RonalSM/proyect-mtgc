@@ -45,7 +45,6 @@ interface PlayerCellProps {
   reduceBackgrounds?: boolean;
   onAction: (type: GameActionType, payload: unknown) => void;
   onExpandCell?: () => void;
-  children?: React.ReactNode;
 }
 
 export const PlayerCell: React.FC<PlayerCellProps> = ({
@@ -59,7 +58,6 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   reduceBackgrounds = false,
   onAction,
   onExpandCell,
-  children,
 }) => {
   const [showLifeControls, setShowLifeControls] = useState(false);
   const [showCustomLifeInput, setShowCustomLifeInput] = useState(false);
@@ -137,7 +135,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           '--card-w': 'calc(clamp(70px, 20cqh, 210px) * 0.714)',
         } as React.CSSProperties
       }
-      className={`relative w-full h-full flex flex-col justify-between transition-all duration-200 select-none ${
+      className={`relative w-full h-full transition-all duration-200 select-none ${
         isActiveTurn
           ? 'ring-4 ring-inset ring-amber-400 shadow-[inset_0_0_60px_rgba(251,191,36,0.38)]'
           : 'ring-1 ring-inset ring-slate-800/40'
@@ -148,7 +146,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 shadow-lg shadow-amber-400/80 z-30 pointer-events-none animate-pulse" />
       )}
 
-      {/* 1. PlaymatBackground (REQ-22.3) - overflow-hidden estricto solo aquí */}
+      {/* 1. PlaymatBackground (REQ-22.3) - Cubre el 100% de la división, incluida la zona bajo el dock */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         {!reduceBackgrounds ? (
           <>
@@ -166,8 +164,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         )}
       </div>
 
-      {/* 2. Top Bar: Expand & Playmat Buttons (REQ-22.4) */}
-      <div className="relative z-20 flex items-center justify-end px-3 pt-2 space-x-1.5 pointer-events-auto">
+      {/* 2. Top Bar: Expand & Playmat Buttons (Flotante) */}
+      <div className="absolute top-2 right-2 z-20 flex items-center space-x-1.5 pointer-events-auto">
         {isLocalPlayer && (
           <button
             onClick={() => setIsPlaymatModalOpen(true)}
@@ -189,22 +187,17 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         )}
       </div>
 
-      {/* 3. Middle Area: Spacer without overflow-hidden */}
-      <div className="relative z-10 flex-1 w-full h-full pointer-events-none">
-        {children}
-      </div>
-
-      {/* 4. Dock Inferior Unificado de cada Celda (Punto 1, REQ-22.5, REQ-22.7, REQ-22.8) */}
+      {/* 3. Dock Inferior Unificado Flotante sobre el Playmat (Punto 5) */}
       <div
         data-player-dock={player.id}
-        className="relative z-20 flex items-end justify-between px-2.5 pb-2 w-full gap-1.5 sm:gap-2 pointer-events-auto select-none"
+        className="absolute bottom-0 inset-x-0 z-20 flex items-end justify-between px-2.5 pb-2 w-full gap-1.5 sm:gap-2 pointer-events-none select-none"
       >
         {/* 1. Hueco Propio para Nombre y Vida (Izquierda) */}
-        <div data-dock-zone="identity" className="flex flex-col items-start space-y-1 flex-shrink-0">
+        <div data-dock-zone="identity" className="flex flex-col items-start space-y-1 flex-shrink-0 pointer-events-none">
           {/* Nombre del jugador encima de su vida */}
           <div
             data-name-tag={player.id}
-            className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-xl backdrop-blur-md border text-xs font-bold transition-all shadow-md select-none ${
+            className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-xl backdrop-blur-md border text-xs font-bold transition-all shadow-md select-none pointer-events-auto ${
               isActiveTurn
                 ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-lg shadow-amber-500/30 ring-2 ring-amber-300/80'
                 : 'bg-slate-900/90 text-slate-200 border-slate-700/80'
@@ -256,7 +249,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           )}
 
           {/* Botón de Vida */}
-          <div className="relative group">
+          <div className="relative group pointer-events-auto">
             <button
               ref={lifeButtonRef}
               data-life-button={player.id}
@@ -384,7 +377,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             width: 'var(--card-w)',
             height: 'var(--card-h)',
           }}
-          className="rounded-lg overflow-hidden border shadow-lg cursor-pointer transition-transform hover:scale-105 active:scale-95 bg-slate-950 flex flex-col items-center justify-center relative flex-shrink-0"
+          className="rounded-lg overflow-hidden border shadow-lg cursor-pointer transition-transform hover:scale-105 active:scale-95 bg-slate-950 flex flex-col items-center justify-center relative flex-shrink-0 pointer-events-auto"
           title={`Zona de Comando (${zones.command.length} cartas)`}
         >
           {zones.command.length > 0 ? (
@@ -410,7 +403,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         </div>
 
         {/* 3. Mano en Abanico (Centrada en la celda y completamente visible) */}
-        <div data-dock-zone="hand" className="flex-1 flex justify-center items-end overflow-visible min-w-0">
+        <div data-dock-zone="hand" className="flex-1 flex justify-center items-end overflow-visible min-w-0 pointer-events-none">
           <HandFan
             cards={zones.hand}
             handCount={player.handCount}
@@ -428,7 +421,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             width: 'var(--card-w)',
             height: 'var(--card-h)',
           }}
-          className={`rounded-lg overflow-hidden border shadow-lg relative flex flex-col items-center justify-center flex-shrink-0 ${
+          className={`rounded-lg overflow-hidden border shadow-lg relative flex flex-col items-center justify-center flex-shrink-0 pointer-events-auto ${
             isLocalPlayer ? 'cursor-pointer hover:scale-105 active:scale-95 border-amber-500/50' : 'border-slate-800'
           }`}
           title={isLocalPlayer ? 'Click para robar carta de la Biblioteca' : 'Biblioteca'}
@@ -456,7 +449,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             width: 'var(--card-w)',
             height: 'var(--card-h)',
           }}
-          className="flex flex-col gap-1 flex-shrink-0"
+          className="flex flex-col gap-1 flex-shrink-0 pointer-events-auto"
         >
           {/* Cementerio (Mitad Superior) */}
           <div

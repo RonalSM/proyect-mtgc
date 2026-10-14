@@ -252,7 +252,7 @@ export const HandFan: React.FC<HandFanProps> = ({
   const numCards = cards.length;
 
   return (
-    <div className="relative flex items-end justify-center select-none pt-3 pb-0.5 z-20">
+    <div className="relative flex items-end justify-center select-none pt-3 pb-0.5 z-20 pointer-events-none">
       {/* Hand Count badge */}
       <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-slate-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-slate-300 shadow backdrop-blur-md z-30 pointer-events-none">
         <span className="text-amber-400 font-extrabold mr-1">{numCards}</span>
@@ -260,7 +260,7 @@ export const HandFan: React.FC<HandFanProps> = ({
       </div>
 
       {/* Fan Container */}
-      <div className="flex items-end justify-center transition-all duration-200">
+      <div className="flex items-end justify-center transition-all duration-200 pointer-events-none">
         {cards.map((card, i) => (
           <HandCardItem
             key={card.instanceId}
