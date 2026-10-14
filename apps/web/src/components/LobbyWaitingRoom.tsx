@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { RoomState, GameActionType, CardDefinition, DeckCardWithQuantity } from '@mtgc/shared';
-import { parseDecklist, validateCommanderDeck, toArtCropUrl } from '@mtgc/shared';
+import { parseDecklist, validateCommanderDeck, toArtCropUrl, inferCardTypeLine } from '@mtgc/shared';
 import {
   Users,
   Copy,
@@ -124,7 +124,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         scryfallId: `card_${i}_${qty}`,
         name: c.cardName,
         cmc: (i % 6) + 1,
-        typeLine: 'Spell',
+        typeLine: inferCardTypeLine(c.cardName),
         colors: [] as any,
         colorIdentity: [] as any,
         imageUrlNormal: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.cardName)}&format=image`,
@@ -137,7 +137,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         scryfallId: `cmdr_${c.cardName}`,
         name: c.cardName,
         cmc: 4,
-        typeLine: 'Legendary Creature',
+        typeLine: inferCardTypeLine(c.cardName, 'Legendary Creature'),
         colors: ['W', 'U', 'B', 'R', 'G'] as any,
         colorIdentity: ['W', 'U', 'B', 'R', 'G'] as any,
       },
@@ -150,7 +150,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         scryfallId: `card_${c.cardName}`,
         name: c.cardName,
         cmc: 2,
-        typeLine: 'Spell',
+        typeLine: inferCardTypeLine(c.cardName),
         colors: [] as any,
         colorIdentity: [] as any,
       },
@@ -562,18 +562,11 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                                     'Swamp',
                                   ];
                                   const stapleName = staples[i % staples.length]!;
-                                  const isLand =
-                                    stapleName.includes('Forest') ||
-                                    stapleName.includes('Island') ||
-                                    stapleName.includes('Mountain') ||
-                                    stapleName.includes('Plains') ||
-                                    stapleName.includes('Swamp') ||
-                                    stapleName.includes('Tower');
                                   return {
                                     scryfallId: `card_${i}`,
                                     name: stapleName,
                                     cmc: (i % 6) + 1,
-                                    typeLine: isLand ? 'Land' : 'Spell',
+                                    typeLine: inferCardTypeLine(stapleName),
                                     colors: [],
                                     colorIdentity: [],
                                     imageUrlNormal: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(stapleName)}&format=image`,

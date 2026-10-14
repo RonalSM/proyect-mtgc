@@ -139,13 +139,13 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       }
       className={`relative w-full h-full flex flex-col justify-between transition-all duration-200 select-none ${
         isActiveTurn
-          ? 'ring-2 ring-inset ring-amber-400 shadow-[inset_0_0_50px_rgba(245,158,11,0.22)]'
+          ? 'ring-4 ring-inset ring-amber-400 shadow-[inset_0_0_60px_rgba(251,191,36,0.38)]'
           : 'ring-1 ring-inset ring-slate-800/40'
       }`}
     >
-      {/* Indicador de acento superior para el turno activo */}
+      {/* Indicador de acento superior para el turno activo (alto contraste) */}
       {isActiveTurn && (
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 shadow-md shadow-amber-400/50 z-30 pointer-events-none" />
+        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 shadow-lg shadow-amber-400/80 z-30 pointer-events-none animate-pulse" />
       )}
 
       {/* 1. PlaymatBackground (REQ-22.3) - overflow-hidden estricto solo aquí */}
@@ -206,7 +206,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             data-name-tag={player.id}
             className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-xl backdrop-blur-md border text-xs font-bold transition-all shadow-md select-none ${
               isActiveTurn
-                ? 'bg-amber-500/20 text-amber-300 border-amber-400 shadow-amber-500/15'
+                ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-lg shadow-amber-500/30 ring-2 ring-amber-300/80'
                 : 'bg-slate-900/90 text-slate-200 border-slate-700/80'
             }`}
           >
@@ -216,17 +216,29 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               }`}
             />
             {player.initiativeOrder && (
-              <span className="font-mono text-[10px] text-amber-400 flex-shrink-0">
+              <span
+                className={`font-mono text-[10px] flex-shrink-0 ${
+                  isActiveTurn ? 'text-slate-950 font-black' : 'text-amber-400'
+                }`}
+              >
                 {player.initiativeOrder}.º
               </span>
             )}
-            <span className="truncate max-w-[140px]">{player.name}</span>
+            <span className="whitespace-nowrap max-w-[clamp(150px,32cqw,320px)] truncate">{player.name}</span>
             {isLocalPlayer && (
-              <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded flex-shrink-0">
+              <span
+                className={`text-[9px] px-1 rounded flex-shrink-0 font-bold ${
+                  isActiveTurn ? 'bg-slate-950/20 text-slate-950' : 'bg-amber-500/20 text-amber-300'
+                }`}
+              >
                 Tú
               </span>
             )}
-            {player.isHost && <span className="text-[10px] text-amber-400 flex-shrink-0">👑</span>}
+            {player.isHost && (
+              <span className={`text-[10px] flex-shrink-0 ${isActiveTurn ? 'text-slate-950' : 'text-amber-400'}`}>
+                👑
+              </span>
+            )}
           </div>
 
           {/* At Risk Pill si aplica */}

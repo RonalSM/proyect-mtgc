@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useRef } from 'react';
 import type { CardDefinition } from '@mtgc/shared';
+import { inferCardTypeLine } from '@mtgc/shared';
 import { CardDisplay } from '../components/CardDisplay';
 import { Portal } from '../components/Portal';
 
@@ -56,7 +57,7 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                   {activeCard.name}
                 </div>
                 <div className="text-[11px] font-semibold text-slate-300 truncate">
-                  {activeCard.typeLine}
+                  {inferCardTypeLine(activeCard.name, activeCard.typeLine)}
                 </div>
               </div>
             </div>

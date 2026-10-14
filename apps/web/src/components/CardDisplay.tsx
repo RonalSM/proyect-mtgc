@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { CardDefinition } from '@mtgc/shared';
+import { inferCardTypeLine, type CardDefinition } from '@mtgc/shared';
 import { Layers, RefreshCw } from 'lucide-react';
 
 interface CardDisplayProps {
@@ -27,7 +27,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   const activeFace = hasMultipleFaces ? card.faces![currentFaceIndex] : null;
 
   const cardName = activeFace?.name || card.name || 'Carta Desconocida';
-  const cardType = activeFace?.typeLine || card.typeLine || 'Carta';
+  const cardType = inferCardTypeLine(cardName, activeFace?.typeLine || card.typeLine);
   const cardMana = activeFace?.manaCost || card.manaCost;
   const cardPower = activeFace?.power ?? card.power;
   const cardToughness = activeFace?.toughness ?? card.toughness;
