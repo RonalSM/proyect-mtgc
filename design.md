@@ -352,6 +352,18 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
 - Etiqueta de nombre: píldora pequeña con icono de ampliar; turno activo con borde de color y brillo suave.
 - Ranuras de pilas: rectángulos con proporción de carta; vacías con contorno punteado y etiqueta de zona.
 - Animaciones breves (robar, d20, pasar turno) solo con `transform` y `opacity`, desactivadas con `prefers-reduced-motion`.
+- **Verificación de la Matriz de Resoluciones y Pods (Punto 12):**
+  - Dimensiones de cartas medidas y homogéneas entre todas las zonas (--card-w, --card-h):
+    - 2 jugadores: 1920x1080 -> 96x135 px; 1366x768 -> 96x135 px; 1280x720 -> 93x130 px
+    - 3 jugadores: 1920x1080 -> 77x108 px; 1366x768 -> 55x77 px; 1280x720 -> 51x72 px
+    - 4 jugadores: 1920x1080 -> 77x108 px; 1366x768 -> 55x77 px; 1280x720 -> 51x72 px
+    - 5 jugadores: 1920x1080 -> 77x108 px; 1366x768 -> 55x77 px; 1280x720 -> 51x72 px
+    - 6 jugadores: 1920x1080 -> 77x108 px; 1366x768 -> 55x77 px; 1280x720 -> 51x72 px
+  - En las 15 combinaciones evaluadas y capturadas en artefactos (`matrix-[2..6]p-[res].png`):
+    - Sin solapamiento en el dock (`dockSections` libres de colisiones mutuas).
+    - Elementos dentro de la división de su jugador (`cellRect.left - 2 <= el.left && el.right <= cellRect.right + 2`).
+    - Mano dentro del viewport (`handCard.bottom <= window.innerHeight`).
+    - Cero scroll en document (`html.scrollWidth === innerWidth && html.scrollHeight === innerHeight`).
 
 ### Rutas
 `/table/:code/lobby` y `/table/:code/play`. El cliente redirige según `table.status`.

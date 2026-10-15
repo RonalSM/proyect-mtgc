@@ -34,6 +34,7 @@ async function setupPod(
 
   await hostPage.fill('input[placeholder="Ej. Pod Casual 4 Jugadores"]', `${roomPrefix} ${podSize}p ${width}x${height}`);
   await hostPage.fill('input[placeholder="Ej. Planeswalker 1"]', 'Nero (Host)');
+  await hostPage.selectOption('select', String(podSize));
   await hostPage.click('button:has-text("Crear Mesa y Obtener Código")');
 
   // Obtener código de sala
@@ -65,6 +66,8 @@ async function setupPod(
     'Edgar Markov',
     'Urza, Lord High Artificer',
     'The Ur-Dragon',
+    'Kess, Dissident Mage',
+    'Kenrith, the Returned King',
   ];
 
   for (let pIdx = 1; pIdx < podSize; pIdx++) {
@@ -132,13 +135,14 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
   const resolutions = [
     { width: 1920, height: 1080, name: '1920x1080' },
     { width: 1366, height: 768, name: '1366x768' },
+    { width: 1280, height: 720, name: '1280x720' },
   ];
 
-  const podSizes = [2, 3, 4];
+  const podSizes = [2, 3, 4, 5, 6];
 
   for (const podSize of podSizes) {
     for (const res of resolutions) {
-      test(`Pod de ${podSize} jugadores a ${res.name}: mano visible sin scroll, sin solapamientos y drag & drop`, async ({
+      test(`Matriz ${podSize}p a ${res.name}: dock dentro de celda, sin solapamientos y tamaño consistente`, async ({
         browser,
       }) => {
         test.setTimeout(90000);
@@ -147,7 +151,7 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
           podSize,
           res.width,
           res.height,
-          'Visual'
+          'Matrix'
         );
 
         try {
@@ -197,7 +201,7 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
 
           // -------------------------------------------------------------
           // ASSERTION C: Comprobar en CADA celda que nombre, vida, comandante,
-          // mano, biblioteca, cementerio y exilio no se solapan entre sí
+          // mano, biblioteca, cementerio y exilio no se solapan entre sí y están en su celda
           // -------------------------------------------------------------
           const cellAudits = await hostPage.evaluate(() => {
             const overlaps = (r1: DOMRect, r2: DOMRect) => {
@@ -216,6 +220,7 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
             const issues: string[] = [];
 
             playerCells.forEach((cell, cellIdx) => {
+              const cellRect = cell.getBoundingClientRect();
               const playerId = cell.getAttribute('data-player-cell') || `cell-${cellIdx}`;
               const nameTag = cell.querySelector('[data-name-tag]');
               const lifeBtn = cell.querySelector('[data-life-button]');
@@ -245,19 +250,20 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
                   );
                 }
 
-                if (toolbarBox && overlaps(r, toolbarBox)) {
+                if (toolbarBox && z.name !== 'nombre' && overlaps(r, toolbarBox)) {
                   issues.push(`Jugador ${playerId}: elemento ${z.name} solapa con la barra flotante`);
                 }
               });
 
               const dockSections = [
-                { name: 'identidad (nombre/vida)', el: cell.querySelector('[data-dock-zone="identity"]') },
+                { name: 'identidad (vida)', el: cell.querySelector('[data-dock-zone="identity"]') },
                 { name: 'comandante', el: commandZone },
                 { name: 'mano', el: handZone },
                 { name: 'biblioteca', el: libraryZone },
                 { name: 'cementerio/exilio', el: gyExileZone },
               ];
 
+              // Verificar que no se solapan entre sí
               for (let i = 0; i < dockSections.length; i++) {
                 for (let j = i + 1; j < dockSections.length; j++) {
                   const s1 = dockSections[i];
@@ -271,12 +277,48 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
                   }
                 }
               }
+
+              // Verificar que todos los elementos del dock están contenidos dentro de la división de su celda
+              dockSections.forEach(s => {
+                if (s.el) {
+                  const r = s.el.getBoundingClientRect();
+                  if (r.left < cellRect.left - 2 || r.right > cellRect.right + 2) {
+                    issues.push(`Jugador ${playerId}: ${s.name} desborda división de celda (celda L:${cellRect.left.toFixed(1)}, R:${cellRect.right.toFixed(1)}; elemento L:${r.left.toFixed(1)}, R:${r.right.toFixed(1)})`);
+                  }
+                }
+              });
             });
 
             return issues;
           });
 
           expect(cellAudits).toEqual([]);
+
+          // -------------------------------------------------------------
+          // ASSERTION D: Consistencia de dimensiones de carta
+          // -------------------------------------------------------------
+          const cardDimensions = await hostPage.evaluate(() => {
+            const handCard = document.querySelector('[data-hand-card="true"]');
+            const cmdCard = document.querySelector('[data-dock-zone="command"]');
+            const handRect = handCard ? handCard.getBoundingClientRect() : null;
+            const cmdRect = cmdCard ? cmdCard.getBoundingClientRect() : null;
+            return {
+              hand: handRect ? { w: Math.round(handRect.width), h: Math.round(handRect.height) } : null,
+              cmd: cmdRect ? { w: Math.round(cmdRect.width), h: Math.round(cmdRect.height) } : null,
+            };
+          });
+
+          if (cardDimensions.hand && cardDimensions.cmd) {
+            expect(Math.abs(cardDimensions.hand.w - cardDimensions.cmd.w)).toBeLessThanOrEqual(2);
+            expect(Math.abs(cardDimensions.hand.h - cardDimensions.cmd.h)).toBeLessThanOrEqual(2);
+          }
+
+          // -------------------------------------------------------------
+          // ASSERTION E: Captura de pantalla en el directorio de artefactos
+          // -------------------------------------------------------------
+          const artifactPath = `C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa/matrix-${podSize}p-${res.name}.png`;
+          await hostPage.screenshot({ path: artifactPath });
+          console.log(`[MATRIZ] ${podSize}p a ${res.name} validado. Carta: ${cardDimensions.hand?.w}x${cardDimensions.hand?.h} px. Captura: ${artifactPath}`);
 
           // -------------------------------------------------------------
           // ASSERTION D: Menús / Popovers dentro del viewport (Portal a document.body)

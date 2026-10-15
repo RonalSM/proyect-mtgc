@@ -251,6 +251,12 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 15. THE texto sobre los playmats SHALL cumplir contraste mínimo 4.5:1 (WCAG AA); WHERE el usuario active "reducir fondos" o `prefers-reduced-motion`, THE sistema SHALL sustituir los playmats por color liso y desactivar animaciones.
 16. WHERE el ancho es menor a 1024 px, THE sistema SHALL ofrecer el modo simplificado (REQ-17); en escritorio y tableta apaisada SHALL mostrar la cuadrícula completa.
 17. THE interacciones de cartas SHALL conservar el arrastrar y soltar (REQ-9.2) como método principal.
+18. **Matriz de resoluciones y jugadores (Punto 12):** THE sistema SHALL soportar de forma adaptativa y verificada pods de 2, 3, 4, 5 y 6 jugadores en resoluciones de escritorio estándar (1920x1080 Full HD, 1366x768 laptop HD y 1280x720 720p HD) garantizando:
+    18.1. Cero solapamiento entre elementos del dock de zonas (vida, comandante, mano, biblioteca, cementerio y exilio).
+    18.2. Todos los elementos del dock contenidos dentro de los márgenes horizontales de la división de su jugador sin invadir celdas vecinas.
+    18.3. Todas las cartas de la mano visibles y contenidas dentro del viewport sin desbordes.
+    18.4. Cero scroll vertical u horizontal en el documento (`window.scrollX === 0`, `window.scrollY === 0`, `overflow: hidden`).
+    18.5. Tamaño de cartas homogéneo e idéntico entre todas las zonas (mano, campo, comandante, drag overlay) calculado con relación de aspecto MTG (0.714) y acotado entre 65 px y 135 px de alto para optimizar el espacio útil según la cuadrícula y resolución.
 
 ## Requisitos no funcionales
 
