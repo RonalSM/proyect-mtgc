@@ -230,6 +230,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    6.2. WHEN el jugador arrastra una carta, THE sistema SHALL traerla al frente (orden `z`) y sincronizar su nueva posición a la mesa en menos de 300 ms (REQ-9.2).
    6.3. THE tamaño de carta SHALL calcularse como el menor valor entre el límite por alto (cerca del 20% del alto de la celda) y el límite por ancho de la división (`(cellWidth - 130) / 5.5 / 0.714`), garantizando que vida, comandante, mano comprimida, biblioteca y pilas quepan en la celda sin solapamientos a 1366x768 y resoluciones estrechas (Punto 9).
    6.3.1. WHEN la mano acumula cartas, THE abanico SHALL incrementar progresivamente su solape (hasta 0.85) comprimiéndose dinámicamente antes de invadir las ranuras de comandante o biblioteca, y ningún elemento de un jugador SHALL invadir la división de otro (Punto 9).
+   6.3.2. THE dimensiones de las cartas en la mano (propia y rival), en el campo de batalla, en la zona de comando y en el overlay visual de arrastre SHALL ser estrictamente idénticas en cualquier resolución y disposición de jugadores, vinculadas a las variables globales `--card-w` y `--card-h` sin discrepancias de zoom o escala (Punto 10).
    6.4. WHEN el cursor se detiene sobre una carta (o con pulsación larga en táctil), THE sistema SHALL mostrar su vista ampliada (REQ-9.6).
 7. THE mano SHALL mostrarse en el borde inferior de cada celda, parcialmente asomada:
    7.1. La mano del jugador local, boca arriba; sube al pasar el cursor y las cartas se arrastran al campo de batalla.

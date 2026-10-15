@@ -230,8 +230,8 @@ export const HandFan: React.FC<HandFanProps> = ({
                   style={{
                     transform: `rotate(${rot}deg) translateY(${transY}px)`,
                     zIndex: i + 1,
-                    width: 'calc(var(--card-w) * 0.72)',
-                    height: 'calc(var(--card-h) * 0.72)',
+                    width: 'var(--card-w)',
+                    height: 'var(--card-h)',
                     marginLeft: i === 0 ? 0 : `calc(var(--card-w) * -${oppOverlap.toFixed(2)})`,
                   }}
                   className="rounded-md overflow-hidden border border-slate-700/80 bg-slate-950 shadow-md transition-transform duration-200 flex-shrink-0"

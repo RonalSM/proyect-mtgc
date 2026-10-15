@@ -1478,6 +1478,70 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       }
     }
   });
+
+  test('Punto 10 - Tamaño consistente de carta entre mano, mesa, comandante y overlay del arrastre', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1366, 768, 'ConsistentSizePod');
+    const page = pages[0];
+
+    try {
+      await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+      await page.waitForTimeout(1000);
+
+      // 1. Arrastrar una carta de la mano a la mesa para tener una carta en el campo
+      const handCard = page.locator('[data-hand-card="true"]').first();
+      const handBoxInitial = await handCard.boundingBox();
+      expect(handBoxInitial).not.toBeNull();
+
+      // Mover al campo (centro de la pantalla)
+      await page.mouse.move(handBoxInitial!.x + handBoxInitial!.width / 2, handBoxInitial!.y + handBoxInitial!.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(handBoxInitial!.x + handBoxInitial!.width / 2, handBoxInitial!.y - 200, { steps: 10 });
+      await page.waitForTimeout(300);
+
+      // 2. Medir overlay durante el arrastre
+      const overlay = page.locator('[data-drag-overlay="true"]');
+      await expect(overlay).toBeVisible();
+      const overlayBox = await overlay.boundingBox();
+      expect(overlayBox).not.toBeNull();
+
+      // Soltar carta en la mesa
+      await page.mouse.up();
+      await page.waitForTimeout(1000);
+
+      // 3. Medir carta en la mesa
+      const battlefieldCard = page.locator('[data-battlefield-card="true"]').first();
+      await expect(battlefieldCard).toBeVisible();
+      const tableBox = await battlefieldCard.boundingBox();
+      expect(tableBox).not.toBeNull();
+
+      // 4. Medir carta restante en la mano
+      const remainingHandCard = page.locator('[data-hand-card="true"]').first();
+      await expect(remainingHandCard).toBeVisible();
+      const handBox = await remainingHandCard.boundingBox();
+      expect(handBox).not.toBeNull();
+
+      // 5. Medir zona de comandante
+      const cmdZone = page.locator('[data-dock-zone="command"]').first();
+      await expect(cmdZone).toBeVisible();
+      const cmdBox = await cmdZone.boundingBox();
+      expect(cmdBox).not.toBeNull();
+
+      // Verificar que Mano, Mesa, Comandante y Overlay tienen exactamente las mismas dimensiones (tolerancia <= 1px subpixel)
+      expect(Math.abs(tableBox!.width - handBox!.width)).toBeLessThanOrEqual(1.5);
+      expect(Math.abs(tableBox!.height - handBox!.height)).toBeLessThanOrEqual(1.5);
+
+      expect(Math.abs(tableBox!.width - cmdBox!.width)).toBeLessThanOrEqual(1.5);
+      expect(Math.abs(tableBox!.height - cmdBox!.height)).toBeLessThanOrEqual(1.5);
+
+      expect(Math.abs(tableBox!.width - overlayBox!.width)).toBeLessThanOrEqual(1.5);
+      expect(Math.abs(tableBox!.height - overlayBox!.height)).toBeLessThanOrEqual(1.5);
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
 });
 
 
