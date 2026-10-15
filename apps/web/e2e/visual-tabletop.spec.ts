@@ -1019,7 +1019,76 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       }
     }
   });
+
+  test('Punto 4: Interaccion de cartas (clic simple solo selecciona, doble clic gira/endereza, clic derecho abre menu contextual)', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'InteractTest');
+    const page = pages[0];
+
+    try {
+      await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // 1. Jugar carta a la mesa
+      const handCard = page.locator('[data-hand-card="true"]').first();
+      await expect(handCard).toBeVisible({ timeout: 10000 });
+      await handCard.hover({ position: { x: 30, y: 35 } });
+      await page.mouse.down();
+      await page.mouse.move(600, 350, { steps: 15 });
+      await page.mouse.up();
+      await page.waitForTimeout(800);
+
+      const placedCard = page.locator('[data-battlefield-card="true"]').first();
+      await expect(placedCard).toBeVisible({ timeout: 10000 });
+
+      // A. Clic simple: SOLO selecciona la carta, NO muestra menú contextual ni opciones
+      await placedCard.click();
+      await page.waitForTimeout(300);
+
+      const contextMenu = page.locator('[data-card-context-menu="true"]');
+      await expect(contextMenu).not.toBeVisible();
+      // Comprobar que está seleccionada visualmente (anillo de selección activo)
+      const isSelected = await placedCard.evaluate(el => el.querySelector('.border-amber-400') !== null);
+      expect(isSelected).toBe(true);
+
+      // B. Doble clic: Gira la carta (tap) directamente sin abrir modal ni menú
+      await placedCard.dblclick();
+      await page.waitForTimeout(500);
+
+      let isTapped = await placedCard.evaluate(el => el.classList.contains('rotate-90'));
+      expect(isTapped).toBe(true);
+      await expect(contextMenu).not.toBeVisible();
+      // Tampoco debe haberse abierto la ampliación de celda
+      await expect(page.locator('text=Celda Ampliada')).not.toBeVisible();
+
+      // Doble clic de nuevo: Endereza la carta (untap)
+      await placedCard.dblclick();
+      await page.waitForTimeout(500);
+
+      isTapped = await placedCard.evaluate(el => el.classList.contains('rotate-90'));
+      expect(isTapped).toBe(false);
+
+      // C. Clic derecho: Abre el menú contextual con las opciones
+      await placedCard.click({ button: 'right' });
+      await page.waitForTimeout(300);
+
+      await expect(contextMenu).toBeVisible();
+      await expect(contextMenu.locator('button:has-text("Girar")')).toBeVisible();
+      await expect(contextMenu.locator('button:has-text("+1/+1")')).toBeVisible();
+      await expect(contextMenu.locator('button:has-text("Clonar")')).toBeVisible();
+      await expect(contextMenu.locator('button:has-text("Boca abajo")')).toBeVisible();
+
+      // D. Clic fuera o tecla Escape: Cierra el menú contextual
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+      await expect(contextMenu).not.toBeVisible();
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
 });
+
 
 
 

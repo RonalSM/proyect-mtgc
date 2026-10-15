@@ -329,6 +329,10 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
 ### Estilo visual
 - Tema oscuro; texto claro con sombra suave; cartas con borde fino y sombra para despegarlas del playmat.
 - **Regla de rotación única de permanente (Punto 3):** La rotación de permanentes (Tap/Untap) se aplica exclusivamente en el contenedor externo `BattlefieldCardItem` (`transition-transform duration-150 origin-center rotate-90`). `CardDisplay` y las etiquetas internas `<img>` carecen de rotaciones propias (`transform: none`), eliminando el problema de rotación doble acumulada a 180° (invertida). Voltear cartas boca abajo o alternar cartas de doble cara conmuta el recurso visual sin aplicar rotaciones 3D conflictivas con el tap.
+- **Interacciones de cartas en mesa (Punto 4):**
+  - Clic simple: Selección visual sin abrir menús (`border-amber-400 ring-2`).
+  - Doble clic: Alterna giro (Tap/Untap) de forma directa sin activar la ampliación de celda ni desplegar controles.
+  - Clic derecho / Pulsación táctil prolongada (500 ms): Despliega menú contextual flotante con botones de acción (Girar, Contador +1/+1, Clonar, Voltear). Cerrado con clic fuera o tecla `Escape`.
 - Pastilla de vida: forma de píldora, fondo oscuro semitransparente, número grande (≥ 32 px).
 - Etiqueta de nombre: píldora pequeña con icono de ampliar; turno activo con borde de color y brillo suave.
 - Ranuras de pilas: rectángulos con proporción de carta; vacías con contorno punteado y etiqueta de zona.

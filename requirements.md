@@ -103,6 +103,10 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 3. THE sistema SHALL mantener la mano y la biblioteca ocultas para los demás jugadores.
 4. THE sistema SHALL permitir girar (tap/untap), voltear, clonar token y agregar contadores a cartas.
    4.1. **Rotación estricta y única de permanente (Punto 3):** Al girar (tap) una carta en el campo de batalla, la transformación de rotación ($90^\circ$ horario) SHALL aplicarse una sola vez y exclusivamente sobre el contenedor externo de la carta (`origin-center`). La cara frontal, la cara posterior y los elementos internos (`CardDisplay`, `img`) SHALL NOT heredar ni aplicar rotaciones adicionales ni transformaciones `rotateY` conflictivas, garantizando que el texto permanezca perfectamente legible a $90^\circ$ en sentido horario (verificado: cara frontal a $90^\circ$, imagen interna a $0^\circ$, dorso a $90^\circ$, enderezado a $0^\circ$).
+   4.2. **Interacciones de ratón y táctiles sobre cartas de la mesa (Punto 4):**
+       - **Clic simple:** Únicamente selecciona o deselecciona la carta (anillo visual). THE sistema SHALL NOT mostrar menús ni botones con clic simple.
+       - **Doble clic:** Gira (tap) o endereza (untap) el permanente inmediatamente, sin disparar ampliaciones de celda ni abrir menús.
+       - **Clic derecho / Pulsación larga (500 ms en táctil):** Abre el menú contextual con las opciones rápidas: Girar/Enderezar, Contador +1/+1, Clonar y Boca abajo/Boca arriba. Clic fuera o presionar `Escape` cierra el menú.
 5. WHEN el jugador roba, baraja o hace mulligan, THE sistema SHALL ejecutar la acción con aleatoriedad generada en el servidor.
 6. THE sistema SHALL permitir ampliar una carta al pasar el cursor o mantener pulsado (móvil).
 7. THE superficie de juego (MesaTotal) SHALL ser UNA sola superficie que ocupa todo el viewport (`fixed inset-0`). Es la única zona de soltado (un solo droppable de mesa). Cualquier punto de la pantalla es mesa:

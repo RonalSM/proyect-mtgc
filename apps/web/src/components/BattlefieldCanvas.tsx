@@ -44,11 +44,64 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   showPreview,
   hidePreview,
 }) => {
+  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
+  const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.instanceId,
     data: { card, fromZone: 'battlefield' },
     disabled: !isLocalPlayer,
   });
+
+  // Punto 4: Cerrar menú contextual al hacer clic fuera o pulsar Escape
+  React.useEffect(() => {
+    if (!isContextMenuOpen) return;
+    const handleClickOutside = () => setIsContextMenuOpen(false);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsContextMenuOpen(false);
+    };
+    window.addEventListener('click', handleClickOutside);
+    window.addEventListener('contextmenu', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('click', handleClickOutside);
+      window.removeEventListener('contextmenu', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isContextMenuOpen]);
+
+  // Clic derecho abre menú contextual
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isLocalPlayer) {
+      setIsContextMenuOpen(true);
+    }
+  };
+
+  // Doble clic gira o endereza sin disparar ampliaciones
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isLocalPlayer) {
+      onTap();
+    }
+  };
+
+  // Táctil: pulsación larga de 500 ms abre menú contextual
+  const handleTouchStart = () => {
+    if (!isLocalPlayer) return;
+    longPressTimerRef.current = setTimeout(() => {
+      setIsContextMenuOpen(true);
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
 
   // Punto 1 / Punto 3: Coordenadas optimistas en el mismo frame para evitar parpadeos
   const rawX = optimisticPosition ? optimisticPosition.x : (card.position?.x ?? 0.5);
@@ -66,6 +119,11 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       data-card-name={card.definition.name}
       data-card-instance-id={card.instanceId}
       onClick={onCardClick}
+      onDoubleClick={handleDoubleClick}
+      onContextMenu={handleContextMenu}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchEnd}
       onMouseEnter={() => !card.isFaceDown && !isDragging && showPreview(card.definition)}
       onMouseLeave={hidePreview}
       className={`absolute cursor-pointer group select-none pointer-events-auto transition-transform duration-150 origin-center ${
@@ -108,39 +166,56 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
         )}
       </div>
 
-      {/* Quick Context Action Controls on selection */}
-      {isLocalPlayer && isSelected && (
+      {/* Punto 4: Las opciones (girar, contador, clonar, ver) NO aparecen con clic simple; solo con clic derecho o pulsación larga */}
+      {isLocalPlayer && isContextMenuOpen && (
         <div
+          data-card-context-menu="true"
           onClick={e => e.stopPropagation()}
-          className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center space-x-1 bg-slate-900/95 border border-slate-700 rounded-lg p-1 shadow-2xl z-50 text-[10px]"
+          className="absolute -top-9 left-1/2 -translate-x-1/2 flex items-center space-x-1 bg-slate-900/95 border border-slate-700 rounded-xl p-1 shadow-2xl z-50 text-[10px] backdrop-blur-md"
         >
           <button
-            onClick={onTap}
-            className="p-1 hover:bg-slate-800 rounded text-amber-300"
+            onClick={() => {
+              onTap();
+              setIsContextMenuOpen(false);
+            }}
+            className="p-1 hover:bg-slate-800 rounded text-amber-300 flex items-center space-x-1 px-1.5 cursor-pointer"
             title={card.isTapped ? 'Enderezar' : 'Girar'}
           >
             <RotateCw className="w-3 h-3" />
+            <span>{card.isTapped ? 'Enderezar' : 'Girar'}</span>
           </button>
           <button
-            onClick={() => onAddCounter('+1/+1')}
-            className="p-1 hover:bg-slate-800 rounded text-emerald-300"
+            onClick={() => {
+              onAddCounter('+1/+1');
+              setIsContextMenuOpen(false);
+            }}
+            className="p-1 hover:bg-slate-800 rounded text-emerald-300 flex items-center space-x-1 px-1.5 cursor-pointer"
             title="Añadir contador +1/+1"
           >
             <Plus className="w-3 h-3" />
+            <span>+1/+1</span>
           </button>
           <button
-            onClick={onClone}
-            className="p-1 hover:bg-slate-800 rounded text-blue-300"
+            onClick={() => {
+              onClone();
+              setIsContextMenuOpen(false);
+            }}
+            className="p-1 hover:bg-slate-800 rounded text-blue-300 flex items-center space-x-1 px-1.5 cursor-pointer"
             title="Clonar token/permanente (REQ-9.4)"
           >
             <Copy className="w-3 h-3" />
+            <span>Clonar</span>
           </button>
           <button
-            onClick={onFlip}
-            className="p-1 hover:bg-slate-800 rounded text-slate-300"
+            onClick={() => {
+              onFlip();
+              setIsContextMenuOpen(false);
+            }}
+            className="p-1 hover:bg-slate-800 rounded text-slate-300 flex items-center space-x-1 px-1.5 cursor-pointer"
             title="Boca abajo / Boca arriba"
           >
             <Eye className="w-3 h-3" />
+            <span>{card.isFaceDown ? 'Boca arriba' : 'Boca abajo'}</span>
           </button>
         </div>
       )}
