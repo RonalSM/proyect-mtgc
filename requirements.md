@@ -132,6 +132,10 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
        - **Biblioteca a mano y campo:** Clic en la biblioteca roba a la mano de forma autoritativa sin requerir `playerId` explícito en la carga útil; arrastrar la carta superior de la biblioteca hacia la mesa la juega directamente al campo de batalla.
        - **Robustez del servidor:** Los esquemas de acciones (`DrawCardsSchema`, `AdjustLifeSchema`, `SetPlayerCounterSchema`, etc.) resuelven `playerId` como opcional recurriendo de forma segura a `client.playerId`.
        - **Estratificación y compresión del dock:** Las ranuras de Comandante, Biblioteca y Pilas cuentan con elevación `z-20` y el abanico de la mano adapta su solapamiento negativo según el número de cartas para garantizar que las cartas de la mano nunca se encimen ni tapen la zona de comando.
+   7.18. **La mano como destino de soltado (Punto 6):**
+       - **Devolución a la mano:** THE sistema SHALL permitir arrastrar cualquier carta desde la mesa o desde las pilas hacia el abanico de la mano propia, emitiendo la acción autoritativa `MOVE_CARD` con `toZone: 'hand'` y `toPlayerId: localPlayerId`.
+       - **Resalte suave en destino:** WHEN el puntero del ratón o el toque táctil pasa por encima del abanico propio durante un arrastre (`isHandOver = true`), THE sistema SHALL mostrar un resalte suave (`ring-2 ring-amber-400/80 bg-amber-400/15 shadow-[0_0_30px_rgba(251,191,36,0.3)]`).
+       - **Manos ajenas no son destino:** Las manos de los oponentes SHALL NOT ser zonas de soltado (`disabled: true` en su hook de droppable y descarte estricto en el cliente y servidor).
 
 ### REQ-10 Sincronización y reconexión
 **Historia:** Como jugador, quiero volver a la partida si se cae mi conexión.

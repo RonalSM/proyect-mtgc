@@ -1164,6 +1164,74 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       }
     }
   });
+
+  test('Punto 6: La mano como destino (resalte suave, devolucion a mano, manos ajenas no droppable)', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'HandDropPod');
+    const page = pages[0];
+
+    try {
+      await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // 1. Jugar una carta desde la mano a la mesa
+      const handCards = page.locator('[data-hand-card="true"]');
+      const startCount = await handCards.count();
+      expect(startCount).toBeGreaterThan(0);
+
+      const firstHandCard = handCards.first();
+      await expect(firstHandCard).toBeVisible({ timeout: 10000 });
+      const handCardBox = await firstHandCard.boundingBox();
+      expect(handCardBox).not.toBeNull();
+
+      await page.mouse.move(handCardBox!.x + handCardBox!.width / 2, handCardBox!.y + handCardBox!.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(600, 350, { steps: 20 });
+      await page.mouse.up();
+      await page.waitForTimeout(800);
+
+      // Comprobar que hay una carta en el campo
+      const placedCards = page.locator('[data-battlefield-card="true"]');
+      await expect(placedCards.first()).toBeVisible({ timeout: 10000 });
+      expect(await handCards.count()).toBe(startCount - 1);
+
+      // 2. Arrastrar la carta del campo de vuelta hacia la mano propia
+      const cardOnField = placedCards.first();
+      const cardBox = await cardOnField.boundingBox();
+      expect(cardBox).not.toBeNull();
+
+      const localHandDock = page.locator('[data-dock-zone="hand"]').first();
+      const handBox = await localHandDock.boundingBox();
+      expect(handBox).not.toBeNull();
+
+      // Mover el puntero sobre la mano y verificar que se activa el resalte suave
+      await page.mouse.move(cardBox!.x + 20, cardBox!.y + 20);
+      await page.mouse.down();
+      await page.mouse.move(handBox!.x + handBox!.width / 2, handBox!.y + handBox!.height / 2, { steps: 20 });
+      await page.waitForTimeout(200);
+
+      // Verificar resalte suave (data-is-over = true)
+      await expect(localHandDock).toHaveAttribute('data-is-over', 'true');
+
+      // Soltar sobre la mano
+      await page.mouse.up();
+      await page.waitForTimeout(800);
+
+      // Comprobar que la carta volvió a la mano propia
+      const finalHandCount = await handCards.count();
+      expect(finalHandCount).toBe(startCount);
+
+      // 3. Verificar que la mano del rival NO es zona de soltado
+      const rivalHandDock = page.locator('[data-dock-zone="hand"]').nth(1);
+      await expect(rivalHandDock).toBeVisible();
+      // La mano rival no tiene ref de droppable registrado para soltar
+      const rivalIsOver = await rivalHandDock.getAttribute('data-is-over');
+      expect(rivalIsOver).toBe('false');
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
 });
 
 

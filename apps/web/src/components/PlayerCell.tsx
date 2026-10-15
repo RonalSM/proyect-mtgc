@@ -503,15 +503,15 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           )}
         </div>
 
-        {/* 3. Mano en Abanico - Droppable para devolver cartas a la mano (Punto 5b / Punto 6) */}
+        {/* 3. Mano en Abanico - Droppable para devolver cartas a la mano (Punto 6) */}
         <div
           ref={isLocalPlayer ? setHandDropRef : undefined}
           data-dock-zone="hand"
           data-is-over={isHandOver ? 'true' : 'false'}
-          className={`flex-1 flex justify-center items-end overflow-visible min-w-0 pointer-events-auto transition-all rounded-xl z-10 ${
+          className={`flex-1 flex justify-center items-end overflow-visible min-w-0 pointer-events-auto transition-all duration-200 rounded-xl z-10 ${
             isHandOver
-              ? 'ring-4 ring-amber-400 bg-amber-500/20 shadow-2xl shadow-amber-500/50'
-              : ''
+              ? 'ring-2 ring-amber-400/80 bg-amber-400/15 shadow-[0_0_30px_rgba(251,191,36,0.3)] border border-amber-400/50'
+              : 'border border-transparent'
           }`}
         >
           <HandFan
