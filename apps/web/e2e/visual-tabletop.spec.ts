@@ -929,6 +929,97 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       }
     }
   });
+
+  test('Punto 3: Medicion de rotacion (90 deg en contenedor unico sin rotacion extra ni invertida)', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'RotateTest');
+    const page = pages[0];
+
+    try {
+      await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // 1. Jugar carta a la mesa
+      const handCard = page.locator('[data-hand-card="true"]').first();
+      await expect(handCard).toBeVisible({ timeout: 10000 });
+      await handCard.hover({ position: { x: 30, y: 35 } });
+      await page.mouse.down();
+      await page.mouse.move(600, 350, { steps: 15 });
+      await page.mouse.up();
+      await page.waitForTimeout(800);
+
+      const placedCard = page.locator('[data-battlefield-card="true"]').first();
+      await expect(placedCard).toBeVisible({ timeout: 10000 });
+
+      // Helper para extraer el ángulo de rotación a partir de getComputedStyle
+      const getRotationAngle = async (locator: any) => {
+        return await locator.evaluate((el: HTMLElement) => {
+          const st = window.getComputedStyle(el);
+          const tr = st.transform;
+          if (!tr || tr === 'none') return 0;
+          const match = tr.match(/matrix\(([^)]+)\)/);
+          if (!match) return 0;
+          const [a, b] = match[1].split(',').map(s => parseFloat(s.trim()));
+          const angle = Math.round(Math.atan2(b, a) * (180 / Math.PI));
+          return angle < 0 ? angle + 360 : angle;
+        });
+      };
+
+      // A. Cara frontal enderezada (0°)
+      const initialAngle = await getRotationAngle(placedCard);
+      console.log('ANGULO_FRONTAL_ENDEREZADA:', initialAngle);
+      expect(initialAngle).toBe(0);
+
+      // B. Girar la carta (Tap -> 90° horario)
+      await placedCard.click();
+      await page.waitForTimeout(200);
+      const tapBtn = page.locator('button[title="Girar"]');
+      await expect(tapBtn).toBeVisible({ timeout: 5000 });
+      await tapBtn.click();
+      await page.waitForTimeout(500);
+
+      const tappedAngle = await getRotationAngle(placedCard);
+      console.log('ANGULO_FRONTAL_GIRADA:', tappedAngle);
+      // Debe ser exactamente 90°, NUNCA 180°
+      expect(tappedAngle).toBe(90);
+
+      // Comprobar que la imagen interna NO tiene rotación propia
+      const innerImg = placedCard.locator('img').first();
+      const innerImgAngle = await getRotationAngle(innerImg);
+      console.log('ANGULO_IMG_INTERNA:', innerImgAngle);
+      expect(innerImgAngle).toBe(0);
+
+      // Captura de cara frontal girada 90°
+      await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'card-tapped-front-90deg.png') });
+
+      // C. Voltear carta boca abajo estando girada (Dorso girado 90°)
+      const flipBtn = page.locator('button[title="Boca abajo / Boca arriba"]');
+      await expect(flipBtn).toBeVisible({ timeout: 5000 });
+      await flipBtn.click();
+      await page.waitForTimeout(500);
+
+      const faceDownTappedAngle = await getRotationAngle(placedCard);
+      console.log('ANGULO_DORSO_GIRADO:', faceDownTappedAngle);
+      expect(faceDownTappedAngle).toBe(90);
+
+      // Captura de dorso girado 90°
+      await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'card-tapped-back-90deg.png') });
+
+      // D. Enderezar carta estando boca abajo (Dorso enderezado 0°)
+      const untapBtn = page.locator('button[title="Enderezar"]');
+      await expect(untapBtn).toBeVisible({ timeout: 5000 });
+      await untapBtn.click();
+      await page.waitForTimeout(500);
+
+      const faceDownUntappedAngle = await getRotationAngle(placedCard);
+      console.log('ANGULO_DORSO_ENDEREZADO:', faceDownUntappedAngle);
+      expect(faceDownUntappedAngle).toBe(0);
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
 });
+
 
 

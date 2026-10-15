@@ -83,9 +83,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
 
   return (
     <div
-      className={`w-full h-full rounded-md overflow-hidden relative select-none shadow-md ${
-        isTapped ? 'rotate-90' : ''
-      } ${className}`}
+      className={`w-full h-full rounded-md overflow-hidden relative select-none shadow-md ${className}`}
     >
       {/* 1. If image is available and hasn't failed, display <img> */}
       {resolvedImageUrl && !imageError ? (

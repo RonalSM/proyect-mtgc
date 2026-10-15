@@ -68,7 +68,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       onClick={onCardClick}
       onMouseEnter={() => !card.isFaceDown && !isDragging && showPreview(card.definition)}
       onMouseLeave={hidePreview}
-      className={`absolute cursor-pointer group select-none pointer-events-auto ${
+      className={`absolute cursor-pointer group select-none pointer-events-auto transition-transform duration-150 origin-center ${
         card.isTapped ? 'rotate-90' : ''
       } ${isDragging || isRemoteDragging ? 'opacity-0 pointer-events-none' : ''}`}
       style={{

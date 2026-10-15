@@ -79,7 +79,9 @@ export const ExpandedCellView: React.FC<ExpandedCellViewProps> = ({
               {zones.battlefield.map(card => (
                 <div
                   key={card.instanceId}
-                  className="w-24 h-34 rounded-lg overflow-hidden border border-slate-700 shadow-md bg-slate-900"
+                  className={`w-24 h-34 rounded-lg overflow-hidden border border-slate-700 shadow-md bg-slate-900 transition-transform origin-center ${
+                    card.isTapped ? 'rotate-90' : ''
+                  }`}
                 >
                   <CardDisplay
                     card={card.definition}
