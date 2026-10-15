@@ -9,7 +9,7 @@
  */
 export function toArtCropUrl(url?: string | null): string {
   if (!url || typeof url !== 'string' || !url.trim()) {
-    return 'https://cards.scryfall.io/art_crop/front/8/b/8ba9f61b-9964-4214-b31f-0e0a446a00ab.jpg';
+    return 'https://cards.scryfall.io/art_crop/front/1/a/1ac6cb62-45da-4e9a-84c6-09e6eacf0664.jpg?1789644465';
   }
   const trimmed = url.trim();
 

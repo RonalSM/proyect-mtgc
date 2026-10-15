@@ -87,6 +87,11 @@ const DraggableLibraryCard: React.FC<{
       <img
         src="https://cards.scryfall.io/back.png"
         alt="Biblioteca"
+        loading="lazy"
+        decoding="async"
+        onError={e => {
+          (e.target as HTMLElement).style.display = 'none';
+        }}
         className="w-full h-full object-cover pointer-events-none"
       />
       <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 pointer-events-none">
@@ -360,6 +365,11 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
     player.playmatUrl ||
     player.selectedDeck?.commanderImageUrl
   );
+  const [playmatError, setPlaymatError] = useState(false);
+
+  React.useEffect(() => {
+    setPlaymatError(false);
+  }, [playmatImage]);
 
   const adjustLife = (delta: number) => {
     onAction('ADJUST_LIFE', { playerId: player.id, delta });
@@ -405,20 +415,21 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       )}
 
       {/* 1. PlaymatBackground (REQ-22.3) - Cubre el 100% de la división, incluida la zona bajo el dock */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {!reduceBackgrounds ? (
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-slate-950">
+        {!reduceBackgrounds && playmatImage && !playmatError ? (
           <>
             <img
               src={playmatImage}
               alt=""
               decoding="async"
+              onError={() => setPlaymatError(true)}
               className="w-full h-full object-cover opacity-40 filter brightness-90"
             />
             {/* Dark gradient overlays ensuring >= 4.5:1 text contrast (REQ-22.15) */}
             <div className="absolute inset-0 bg-gradient-to-b from-slate-950/75 via-slate-950/30 to-slate-950/80" />
           </>
         ) : (
-          <div className="w-full h-full bg-slate-950" />
+          <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900" />
         )}
       </div>
 

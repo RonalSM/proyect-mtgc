@@ -41,7 +41,13 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
     if (card.imageUrlSmall) return card.imageUrlSmall;
 
     // Fallback to Scryfall exact name redirect URL if not a generic placeholder
-    if (cardName && !cardName.startsWith('Carta #') && cardName !== 'Carta Oculta') {
+    if (
+      cardName &&
+      !cardName.startsWith('Carta #') &&
+      !cardName.startsWith('Carta ') &&
+      cardName !== 'Carta Desconocida' &&
+      cardName !== 'Carta Oculta'
+    ) {
       return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image`;
     }
     return '';

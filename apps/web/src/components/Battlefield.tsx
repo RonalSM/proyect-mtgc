@@ -789,6 +789,9 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
                             alt={card.definition.name}
                             className="w-full h-full object-cover pointer-events-none"
                             loading="lazy"
+                            onError={e => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
                           />
                         ) : (
                           <div className="p-2 h-full flex flex-col justify-between text-xs pointer-events-none">
@@ -857,6 +860,9 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
                 <img
                   src={zoomedCard.definition.imageUrlNormal}
                   alt={zoomedCard.definition.name}
+                  onError={e => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
                   className="w-full rounded-2xl shadow-2xl border border-slate-700/80"
                 />
               ) : (
@@ -883,6 +889,9 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
                 <img
                   src={activeCard.card.definition.imageUrlNormal}
                   alt={activeCard.card.definition.name}
+                  onError={e => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
                   className="w-full h-full object-cover"
                 />
               ) : (

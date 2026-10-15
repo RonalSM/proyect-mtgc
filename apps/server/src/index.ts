@@ -31,8 +31,17 @@ await server.register(helmet, {
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      imgSrc: ["'self'", 'data:', 'https://cards.scryfall.io', 'https://svgs.scryfall.io', 'https://api.scryfall.com'],
-      connectSrc: ["'self'", 'https://api.scryfall.com', 'ws:', 'wss:'],
+      imgSrc: [
+        "'self'",
+        'data:',
+        'blob:',
+        'https://cards.scryfall.io',
+        'https://svgs.scryfall.io',
+        'https://api.scryfall.com',
+        'https://*.scryfall.io',
+        'https://*.scryfall.com',
+      ],
+      connectSrc: ["'self'", 'https://api.scryfall.com', 'https://*.scryfall.com', 'ws:', 'wss:'],
     },
   },
   crossOriginEmbedderPolicy: false,

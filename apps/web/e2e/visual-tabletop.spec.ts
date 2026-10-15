@@ -1542,6 +1542,44 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       }
     }
   });
+
+  test('Punto 11 - Fallbacks elegantes de imagenes sin iconos de imagen rota bajo fallo de red o CSP', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1366, 768, 'ImageFallbackPod');
+    const page = pages[0];
+
+    try {
+      await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+      await page.waitForTimeout(1000);
+
+      // Interceptar todas las llamadas a imágenes para simular fallo de red/CSP
+      await page.route('**/*.scryfall.io/**', route => route.abort('failed'));
+      await page.route('**/api.scryfall.com/**', route => route.abort('failed'));
+
+      // 1. Verificar que NO hay imágenes rotas visibles en toda la página
+      const brokenImagesCount = await page.evaluate(() => {
+        const imgs = Array.from(document.querySelectorAll('img'));
+        return imgs.filter(img => {
+          const style = window.getComputedStyle(img);
+          const isVisible = style.display !== 'none' && style.visibility !== 'hidden' && (img.offsetWidth > 0 || img.offsetHeight > 0);
+          return isVisible && img.complete && img.naturalWidth === 0;
+        }).length;
+      });
+      expect(brokenImagesCount).toBe(0);
+
+      // 2. Verificar que las celdas de jugadores existen y están renderizadas
+      const playerCells = page.locator('[data-player-cell]');
+      await expect(playerCells).toHaveCount(2);
+
+      // 3. Verificar que las cartas de la mano están presentes
+      const handCards = page.locator('[data-hand-card="true"]');
+      expect(await handCards.count()).toBeGreaterThan(0);
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
 });
 
 
