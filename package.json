@@ -8,6 +8,7 @@
     "apps/*"
   ],
   "scripts": {
+    "start": "node apps/server/dist/index.js",
     "build": "npm run --workspaces --if-present build",
     "dev": "concurrently -k -n \"shared,server,web\" -c \"cyan,green,magenta\" \"npm run --workspace=@mtgc/shared dev\" \"npm run --workspace=@mtgc/server dev\" \"npm run --workspace=@mtgc/web dev\"",
     "dev:web": "npm run --workspace=@mtgc/web dev",

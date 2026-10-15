@@ -1,6 +1,10 @@
 import fastify from 'fastify';
 import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
+import fastifyStatic from '@fastify/static';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { CreateRoomInputSchema, parseDecklist, validateCommanderDeck } from '@mtgc/shared';
 import { cardSearchService } from './services/card-search.service.js';
 import { scryfallService } from './services/scryfall.service.js';
@@ -635,6 +639,29 @@ server.register(async function (fastifyInstance) {
     });
   });
 });
+
+// En producción, servir los archivos estáticos de la aplicación React (apps/web/dist)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const webDistPath = path.resolve(__dirname, '../../web/dist');
+
+if (fs.existsSync(webDistPath)) {
+  await server.register(fastifyStatic, {
+    root: webDistPath,
+    prefix: '/',
+    wildcard: false,
+  });
+
+  server.setNotFoundHandler((request, reply) => {
+    // Si la ruta no encontrada es una llamada a la API o WebSocket, responder con 404 JSON
+    if (request.url.startsWith('/api') || request.url.startsWith('/ws')) {
+      reply.status(404).send({ error: 'Not Found', message: `Ruta ${request.url} no encontrada` });
+      return;
+    }
+    // En cualquier otra ruta (SPA de React como /table/:code/play), servir index.html
+    reply.sendFile('index.html');
+  });
+}
 
 const PORT = Number(process.env.PORT) || 3001;
 const HOST = process.env.HOST || '0.0.0.0';
