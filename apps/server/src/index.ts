@@ -20,15 +20,19 @@ import rateLimit from '@fastify/rate-limit';
 import { authService } from './services/auth.service.js';
 import { deckService } from './services/deck.service.js';
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 const server = fastify({
-  logger: {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-      },
-    },
-  },
+  logger: isDev
+    ? {
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+          },
+        },
+      }
+    : true,
 });
 
 await server.register(helmet, {
