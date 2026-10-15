@@ -783,4 +783,81 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       }
     }
   });
+
+  test('Punto 1: Sin parpadeo al soltar (grabacion requestAnimationFrame sin retroceso al estado viejo)', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'NoFlicker');
+    const page = pages[0];
+
+    try {
+      await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+      const handCard = page.locator('[data-hand-card="true"]').first();
+      await expect(handCard).toBeVisible({ timeout: 10000 });
+
+      // 1. Jugar carta de la mano a la mesa
+      await handCard.hover({ position: { x: 30, y: 35 } });
+      await page.mouse.down();
+      await page.mouse.move(500, 300, { steps: 15 });
+      await page.mouse.up();
+      await page.waitForTimeout(600);
+
+      const placedCard = page.locator('[data-battlefield-card="true"]').first();
+      await expect(placedCard).toBeVisible({ timeout: 10000 });
+      const cardId = await placedCard.getAttribute('data-card-instance-id');
+      const startBox = await placedCard.boundingBox();
+      expect(startBox).not.toBeNull();
+
+      // 2. Iniciar arrastre para moverla a una nueva posición lejana
+      await page.mouse.move(startBox!.x + 30, startBox!.y + 30);
+      await page.mouse.down();
+      const targetX = 900;
+      const targetY = 600;
+      await page.mouse.move(targetX, targetY, { steps: 15 });
+      await page.waitForTimeout(100);
+
+      // 3. Inyectar grabador de frames con requestAnimationFrame justo antes de soltar
+      await page.evaluate(cId => {
+        (window as any).__rafFrames = [];
+        const track = () => {
+          const el = document.querySelector(`[data-card-instance-id="${cId}"]`);
+          if (el) {
+            const r = el.getBoundingClientRect();
+            (window as any).__rafFrames.push({
+              x: r.x,
+              y: r.y,
+              opacity: window.getComputedStyle(el).opacity,
+              time: performance.now(),
+            });
+          }
+          if ((window as any).__rafFrames.length < 30) {
+            requestAnimationFrame(track);
+          }
+        };
+        requestAnimationFrame(track);
+      }, cardId);
+
+      // 4. Soltar
+      await page.mouse.up();
+      await page.waitForTimeout(800);
+
+      // 5. Obtener frames registrados durante y tras el soltado
+      const frames = await page.evaluate(() => (window as any).__rafFrames || []);
+      console.log('FRAMES_REGISTRADOS_DURANTE_SOLTADO:', frames.length);
+      expect(frames.length).toBeGreaterThan(5);
+
+      // Verificar que ningún frame visible mostró la carta en la posición inicial (startBox)
+      for (const f of frames) {
+        if (f.opacity !== '0' && f.opacity !== '0%') {
+          const distToOld = Math.hypot(f.x - startBox!.x, f.y - startBox!.y);
+          // La distancia al punto viejo debe ser grande (> 100px), demostrando que jamás volvió a la posición anterior
+          expect(distToOld).toBeGreaterThan(100);
+        }
+      }
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
 });
+

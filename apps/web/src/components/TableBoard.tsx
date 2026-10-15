@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { flushSync } from 'react-dom';
 import type { RoomState, GameActionType, PlayerState, CardInstance } from '@mtgc/shared';
 import {
   DndContext,
@@ -45,6 +46,9 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     card: CardInstance;
     fromZone: 'hand' | 'battlefield';
   } | null>(null);
+  const [optimisticPositions, setOptimisticPositions] = useState<
+    Record<string, { x: number; y: number; zIndex?: number; timestamp: number }>
+  >({});
 
   const { setIsDragging } = useCardPreview();
 
@@ -228,9 +232,6 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   }, [activeDragItem, handleDragCancel]);
 
   const handleDragEnd = (event: DragEndEvent) => {
-    setIsDragging(false);
-    setActiveDragItem(null);
-
     const { active, over } = event;
 
     // Notificar fin de arrastre efímero
@@ -244,6 +245,10 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
     // Punto 4 / 6: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila si el puntero está dentro
     if (overData?.zone === 'library' || overData?.zone === 'graveyard' || overData?.zone === 'exile') {
+      flushSync(() => {
+        setIsDragging(false);
+        setActiveDragItem(null);
+      });
       onAction('MOVE_CARD', {
         cardInstanceId: active.id,
         fromZone: fromZone || 'battlefield',
@@ -284,6 +289,16 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     // Coordenadas globales normalizadas sin snapping ni redondeos visibles
     const normX = clampedX / winW;
     const normY = clampedY / winH;
+
+    // Punto 1: Aplicar posición de forma optimista y síncrona en el mismo frame para eliminar parpadeo
+    flushSync(() => {
+      setOptimisticPositions(prev => ({
+        ...prev,
+        [active.id as string]: { x: normX, y: normY, zIndex: 10, timestamp: Date.now() },
+      }));
+      setIsDragging(false);
+      setActiveDragItem(null);
+    });
 
     // Detectar celda de jugador bajo el centro de la carta
     let targetPlayerId = overData?.playerId;
@@ -338,6 +353,33 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   const allBattlefieldCards = Object.values(roomState.playerZones).flatMap(
     zones => zones.battlefield
   );
+
+  // Punto 1: Reconciliación con confirmación del servidor sin retroceder ante ecos desactualizados
+  useEffect(() => {
+    setOptimisticPositions(prev => {
+      let changed = false;
+      const next = { ...prev };
+      const now = Date.now();
+      for (const [id, opt] of Object.entries(next)) {
+        const card = allBattlefieldCards.find(c => c.instanceId === id);
+        if (card && card.position) {
+          const dx = Math.abs(card.position.x - opt.x);
+          const dy = Math.abs(card.position.y - opt.y);
+          // Si el servidor ya confirmó la posición (distancia < 0.005), reconciliamos
+          if (dx < 0.005 && dy < 0.005) {
+            delete next[id];
+            changed = true;
+          }
+        }
+        // Timeout de seguridad: limpiar tras 3s
+        if (now - opt.timestamp > 3000) {
+          delete next[id];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [allBattlefieldCards]);
 
   const renderPlayerCell = (
     player: PlayerState,
@@ -396,6 +438,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         <BattlefieldCanvas
           cards={allBattlefieldCards}
           remoteDraggingCards={remoteDraggingCards}
+          optimisticPositions={optimisticPositions}
           onAction={onAction}
         />
 

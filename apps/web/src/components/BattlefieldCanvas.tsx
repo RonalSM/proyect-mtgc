@@ -9,6 +9,7 @@ import type { RemoteDragState } from '../hooks/useGameSocket';
 interface BattlefieldCanvasProps {
   cards: CardInstance[];
   remoteDraggingCards?: Record<string, RemoteDragState>;
+  optimisticPositions?: Record<string, { x: number; y: number; zIndex?: number }>;
   isLocalPlayer?: boolean;
   playerId?: string;
   onAction: (type: GameActionType, payload: unknown) => void;
@@ -18,6 +19,7 @@ interface BattlefieldCardItemProps {
   card: CardInstance;
   isLocalPlayer: boolean;
   isSelected: boolean;
+  optimisticPosition?: { x: number; y: number; zIndex?: number };
   onCardClick: () => void;
   onTap: () => void;
   onFlip: () => void;
@@ -31,6 +33,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   card,
   isLocalPlayer,
   isSelected,
+  optimisticPosition,
   onCardClick,
   onTap,
   onFlip,
@@ -45,12 +48,12 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     disabled: !isLocalPlayer,
   });
 
-  // Punto 3: Coordenadas globales normalizadas 0..1 calculadas directamente desde el overlay
-  const rawX = card.position?.x ?? 0.5;
-  const rawY = card.position?.y ?? 0.5;
+  // Punto 1 / Punto 3: Coordenadas optimistas en el mismo frame para evitar parpadeos
+  const rawX = optimisticPosition ? optimisticPosition.x : (card.position?.x ?? 0.5);
+  const rawY = optimisticPosition ? optimisticPosition.y : (card.position?.y ?? 0.5);
   const posX = Math.max(0, Math.min(1, rawX)) * 100;
   const posY = Math.max(0, Math.min(1, rawY)) * 100;
-  const zIndex = card.position?.zIndex ?? 5;
+  const zIndex = optimisticPosition?.zIndex ?? (card.position?.zIndex ?? 5);
 
   return (
     <div
@@ -146,6 +149,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
 export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   cards,
   remoteDraggingCards,
+  optimisticPositions,
   onAction,
 }) => {
   const { showPreview, hidePreview } = useCardPreview();
@@ -196,6 +200,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
           card={card}
           isLocalPlayer={true}
           isSelected={selectedCardId === card.instanceId}
+          optimisticPosition={optimisticPositions?.[card.instanceId]}
           onCardClick={() => handleCardClick(card)}
           onTap={() => handleTap(card)}
           onFlip={() => handleFlip(card)}
