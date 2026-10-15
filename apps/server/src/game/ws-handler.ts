@@ -214,19 +214,28 @@ export class WebSocketHandler {
       switch (type) {
         case 'ADJUST_LIFE': {
           const valid = AdjustLifeSchema.parse(payload);
-          session.adjustLife(valid);
+          session.adjustLife({
+            playerId: valid.playerId || client.playerId,
+            delta: valid.delta,
+          });
           break;
         }
 
         case 'SET_LIFE': {
           const valid = SetLifeSchema.parse(payload);
-          session.setLife(valid);
+          session.setLife({
+            playerId: valid.playerId || client.playerId,
+            life: valid.life,
+          });
           break;
         }
 
         case 'SET_PLAYER_STATUS': {
           const valid = SetPlayerStatusSchema.parse(payload);
-          session.setPlayerStatus(valid);
+          session.setPlayerStatus({
+            ...valid,
+            playerId: valid.playerId || client.playerId,
+          });
           break;
         }
 
@@ -238,7 +247,11 @@ export class WebSocketHandler {
 
         case 'SET_PLAYER_COUNTER': {
           const valid = SetPlayerCounterSchema.parse(payload);
-          session.setPlayerCounter(valid);
+          session.setPlayerCounter({
+            playerId: valid.playerId || client.playerId,
+            counterType: valid.counterType,
+            delta: valid.delta,
+          });
           break;
         }
 

@@ -10,7 +10,7 @@ export const ZoneTypeSchema = z.enum([
 ]);
 
 export const AdjustLifeSchema = z.object({
-  playerId: z.string().min(1),
+  playerId: z.string().min(1).optional(),
   delta: z.number().int(),
 });
 
@@ -21,7 +21,7 @@ export const CommanderDamageSchema = z.object({
 });
 
 export const SetPlayerCounterSchema = z.object({
-  playerId: z.string().min(1),
+  playerId: z.string().min(1).optional(),
   counterType: z.string().min(1),
   delta: z.number().int(),
 });
@@ -36,6 +36,7 @@ export const MoveCardSchema = z.object({
   cardInstanceId: z.string().min(1),
   fromZone: ZoneTypeSchema,
   toZone: ZoneTypeSchema,
+  fromPlayerId: z.string().optional(),
   toPlayerId: z.string().optional(),
   position: z
     .object({
@@ -62,7 +63,7 @@ export const CloneTokenSchema = z.object({
 });
 
 export const DrawCardsSchema = z.object({
-  playerId: z.string().min(1),
+  playerId: z.string().min(1).optional(),
   count: z.number().int().positive().max(100),
 });
 
@@ -86,12 +87,12 @@ export const TransferHostSchema = z.object({
 });
 
 export const SetLifeSchema = z.object({
-  playerId: z.string().min(1),
+  playerId: z.string().min(1).optional(),
   life: z.number().int(),
 });
 
 export const SetPlayerStatusSchema = z.object({
-  playerId: z.string().min(1),
+  playerId: z.string().min(1).optional(),
   isEliminated: z.boolean(),
   reason: z.string().max(200).optional(),
 });

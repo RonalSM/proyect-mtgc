@@ -44,7 +44,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
   const [activeDragItem, setActiveDragItem] = useState<{
     card: CardInstance;
-    fromZone: 'hand' | 'battlefield';
+    fromZone: 'hand' | 'battlefield' | 'command' | 'library' | 'graveyard' | 'exile';
   } | null>(null);
   const [optimisticPositions, setOptimisticPositions] = useState<
     Record<string, { x: number; y: number; zIndex?: number; timestamp: number }>
@@ -134,7 +134,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     setIsDragging(true);
     const data = event.active.data.current as {
       card: CardInstance;
-      fromZone: 'hand' | 'battlefield';
+      fromZone: 'hand' | 'battlefield' | 'command' | 'library' | 'graveyard' | 'exile';
     } | undefined;
 
     if (data?.card) {
@@ -194,7 +194,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
     const data = event.active.data.current as {
       card?: CardInstance;
-      fromZone?: 'hand' | 'battlefield';
+      fromZone?: 'hand' | 'battlefield' | 'command' | 'library' | 'graveyard' | 'exile';
     } | undefined;
 
     onAction('CARD_DRAG_MOVE', {
@@ -243,7 +243,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const overData = over?.data.current as { zone?: string; playerId?: string } | undefined;
     const fromZone = (active.data.current as { fromZone?: string })?.fromZone;
 
-    // Punto 4 / 6: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila si el puntero está dentro
+    // Punto 4 / 7: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila si el puntero está dentro
     if (overData?.zone === 'library' || overData?.zone === 'graveyard' || overData?.zone === 'exile') {
       flushSync(() => {
         setIsDragging(false);
@@ -254,6 +254,21 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         fromZone: fromZone || 'battlefield',
         toZone: overData.zone,
         toPlayerId: overData.playerId || localPlayerId,
+      });
+      return;
+    }
+
+    // Punto 6: Soltar sobre la propia mano la devuelve a la mano
+    if (overData?.zone === 'hand' && overData?.playerId === localPlayerId) {
+      flushSync(() => {
+        setIsDragging(false);
+        setActiveDragItem(null);
+      });
+      onAction('MOVE_CARD', {
+        cardInstanceId: active.id,
+        fromZone: fromZone || 'battlefield',
+        toZone: 'hand',
+        toPlayerId: localPlayerId,
       });
       return;
     }
@@ -318,10 +333,17 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
     const finalPlayerId = targetPlayerId || localPlayerId;
 
-    if (fromZone === 'hand') {
+    // Punto 5 / 7: Permitir jugar desde hand, command, library, graveyard y exile a la mesa
+    if (
+      fromZone === 'hand' ||
+      fromZone === 'command' ||
+      fromZone === 'library' ||
+      fromZone === 'graveyard' ||
+      fromZone === 'exile'
+    ) {
       onAction('MOVE_CARD', {
         cardInstanceId: active.id,
-        fromZone: 'hand',
+        fromZone: fromZone,
         toZone: 'battlefield',
         toPlayerId: localPlayerId,
         position: { x: normX, y: normY, zIndex: 10 },

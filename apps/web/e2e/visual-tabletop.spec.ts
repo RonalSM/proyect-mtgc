@@ -1087,7 +1087,85 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       }
     }
   });
+
+  test('Punto 5: Flujos zona a zona (comandante a mesa, mesa a mano, biblioteca a mesa y mano, pilas)', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'ZoneFlows');
+    const page = pages[0];
+
+    try {
+      await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // 1. Flujo (a): Sacar el comandante de la zona de comando a la mesa arrastrando
+      const commanderCard = page.locator('[data-commander-card="true"]').first();
+      await expect(commanderCard).toBeVisible({ timeout: 10000 });
+      const cmdBox = await commanderCard.boundingBox();
+      expect(cmdBox).not.toBeNull();
+
+      // Arrastrar comandante hacia el campo (centro de la pantalla)
+      await page.mouse.move(cmdBox!.x + 25, cmdBox!.y + 25);
+      await page.mouse.down();
+      await page.mouse.move(700, 350, { steps: 20 });
+      await page.mouse.up();
+      await page.waitForTimeout(800);
+
+      // Comprobar que el comandante ahora está en el campo de batalla
+      const placedCards = page.locator('[data-battlefield-card="true"]');
+      await expect(placedCards.first()).toBeVisible({ timeout: 10000 });
+      // La zona de comando muestra estado en campo
+      await expect(page.locator('text=(En campo)')).toBeVisible({ timeout: 5000 });
+
+      // 2. Flujo (b): Devolver una carta de la mesa a la mano arrastrando
+      const initialHandCount = await page.locator('[data-hand-card="true"]').count();
+      const cardOnField = placedCards.first();
+      const fieldBox = await cardOnField.boundingBox();
+      expect(fieldBox).not.toBeNull();
+
+      const handDock = page.locator('[data-dock-zone="hand"]').first();
+      const handBox = await handDock.boundingBox();
+      expect(handBox).not.toBeNull();
+
+      // Arrastrar desde la mesa hacia el abanico de la mano
+      await page.mouse.move(fieldBox!.x + 25, fieldBox!.y + 25);
+      await page.mouse.down();
+      await page.mouse.move(handBox!.x + handBox!.width / 2, handBox!.y + handBox!.height / 2, { steps: 20 });
+      await page.waitForTimeout(100);
+      await page.mouse.up();
+      await page.waitForTimeout(800);
+
+      // Comprobar que la mano aumentó en 1
+      const afterHandCount = await page.locator('[data-hand-card="true"]').count();
+      expect(afterHandCount).toBe(initialHandCount + 1);
+
+      // 3. Flujo (c): Sacar cartas de la biblioteca (click para robar sin error playerId y arrastre a mesa)
+      const libSlot = page.locator('[data-dock-zone="library"]').first();
+      await expect(libSlot).toBeVisible();
+      // Click roba a la mano
+      const countBeforeDraw = await page.locator('[data-hand-card="true"]').count();
+      await libSlot.click();
+      await page.waitForTimeout(800);
+      const countAfterDraw = await page.locator('[data-hand-card="true"]').count();
+      expect(countAfterDraw).toBe(countBeforeDraw + 1);
+
+      // Arrastrar desde la biblioteca a la mesa
+      const libBox = await libSlot.boundingBox();
+      expect(libBox).not.toBeNull();
+      await page.mouse.move(libBox!.x + 25, libBox!.y + 25);
+      await page.mouse.down();
+      await page.mouse.move(650, 400, { steps: 20 });
+      await page.mouse.up();
+      await page.waitForTimeout(800);
+
+      // Debe haber cartas en el campo
+      await expect(page.locator('[data-battlefield-card="true"]').first()).toBeVisible({ timeout: 5000 });
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
 });
+
 
 
 

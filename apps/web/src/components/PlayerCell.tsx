@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useDroppable } from '@dnd-kit/core';
+import { useDroppable, useDraggable } from '@dnd-kit/core';
 import { toArtCropUrl } from '@mtgc/shared';
 import type { PlayerState, GameActionType, CardInstance } from '@mtgc/shared';
 import {
@@ -13,6 +13,92 @@ import {
 import { HandFan } from './HandFan';
 import { CardDisplay } from './CardDisplay';
 import { Portal } from './Portal';
+
+// Componente de Comandante arrastrable hacia el campo (Punto 5a)
+const DraggableCommanderCard: React.FC<{
+  card: CardInstance;
+  isLocalPlayer: boolean;
+  commanderTax: number;
+  onClick: () => void;
+}> = ({ card, isLocalPlayer, commanderTax, onClick }) => {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: card.instanceId,
+    data: { card, fromZone: 'command' },
+    disabled: !isLocalPlayer,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      data-commander-card="true"
+      data-card-instance-id={card.instanceId}
+      onClick={onClick}
+      className={`w-full h-full relative cursor-grab active:cursor-grabbing select-none ${
+        isDragging ? 'opacity-0' : ''
+      }`}
+    >
+      <CardDisplay card={card.definition} allowFaceToggle={false} />
+      {commanderTax > 0 && (
+        <div className="absolute top-1 right-1 bg-amber-500 text-slate-950 font-black text-[9px] px-1 rounded shadow">
+          +{commanderTax}
+        </div>
+      )}
+      <div className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[8px] font-black text-amber-300 text-center py-0.5 tracking-wider uppercase backdrop-blur-xs pointer-events-none">
+        COMANDANTE
+      </div>
+    </div>
+  );
+};
+
+// Componente de Carta Superior de Biblioteca arrastrable hacia el campo o mano (Punto 5c / Punto 7)
+const DraggableLibraryCard: React.FC<{
+  card?: CardInstance;
+  isLocalPlayer: boolean;
+  count: number;
+  onClick: () => void;
+}> = ({ card, isLocalPlayer, count, onClick }) => {
+  const topCard = card || {
+    instanceId: 'library-top-card',
+    definition: { name: 'Carta de la Biblioteca', typeLine: 'Card' } as any,
+    isFaceDown: true,
+  };
+
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: topCard.instanceId,
+    data: { card: topCard, fromZone: 'library' },
+    disabled: !isLocalPlayer || count === 0,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      data-library-card="true"
+      data-card-instance-id={topCard.instanceId}
+      onClick={onClick}
+      className={`w-full h-full relative cursor-grab active:cursor-grabbing select-none ${
+        isDragging ? 'opacity-0' : ''
+      }`}
+    >
+      <img
+        src="https://cards.scryfall.io/back.png"
+        alt="Biblioteca"
+        className="w-full h-full object-cover pointer-events-none"
+      />
+      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 pointer-events-none">
+        <span className="text-sm sm:text-base font-black font-mono text-white drop-shadow-md">
+          {count}
+        </span>
+        <span className="text-[8px] font-black tracking-wider text-amber-300 uppercase drop-shadow">
+          BIBLIOTECA
+        </span>
+      </div>
+    </div>
+  );
+};
 
 export function getLifeCornerClasses(row: 0 | 1, col: number, isTwoPlayer?: boolean): string {
   if (isTwoPlayer) {
@@ -82,6 +168,13 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const { setNodeRef: setExileDropRef, isOver: isExileOver } = useDroppable({
     id: `exile-${player.id}`,
     data: { zone: 'exile', playerId: player.id },
+  });
+
+  // Punto 6: Droppable hook para la mano (solo para jugador local)
+  const { setNodeRef: setHandDropRef, isOver: isHandOver } = useDroppable({
+    id: `droppable-hand-${player.id}`,
+    data: { zone: 'hand', playerId: player.id },
+    disabled: !isLocalPlayer,
   });
 
   const lifeButtonRef = useRef<HTMLButtonElement>(null);
@@ -380,31 +473,28 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           </div>
         </div>
 
-        {/* 2. Zona de Comandante - Mismo ancho y alto que una carta */}
+        {/* 2. Zona de Comandante - Mismo ancho y alto que una carta (Punto 5a: Arrastrable hacia el campo) */}
         <div
           data-dock-zone="command"
-          onClick={() => setActivePileModal('command')}
           style={{
             width: 'var(--card-w)',
             height: 'var(--card-h)',
           }}
-          className="rounded-lg overflow-hidden border shadow-lg cursor-pointer transition-transform hover:scale-105 active:scale-95 bg-slate-950 flex flex-col items-center justify-center relative flex-shrink-0 pointer-events-auto"
+          className="rounded-lg overflow-hidden border shadow-lg bg-slate-950 flex flex-col items-center justify-center relative flex-shrink-0 pointer-events-auto z-20"
           title={`Zona de Comando (${zones.command.length} cartas)`}
         >
           {zones.command.length > 0 ? (
-            <div className="w-full h-full relative">
-              <CardDisplay card={zones.command[0].definition} allowFaceToggle={false} />
-              {player.counters.commanderTax > 0 && (
-                <div className="absolute top-1 right-1 bg-amber-500 text-slate-950 font-black text-[9px] px-1 rounded shadow">
-                  +{player.counters.commanderTax}
-                </div>
-              )}
-              <div className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[8px] font-black text-amber-300 text-center py-0.5 tracking-wider uppercase backdrop-blur-xs">
-                COMANDANTE
-              </div>
-            </div>
+            <DraggableCommanderCard
+              card={zones.command[0]}
+              isLocalPlayer={isLocalPlayer}
+              commanderTax={player.counters.commanderTax}
+              onClick={() => setActivePileModal('command')}
+            />
           ) : (
-            <div className="w-full h-full border-2 border-dashed border-amber-600/40 rounded-lg flex flex-col items-center justify-center p-1 text-center bg-amber-950/10">
+            <div
+              onClick={() => setActivePileModal('command')}
+              className="w-full h-full border-2 border-dashed border-amber-600/40 rounded-lg flex flex-col items-center justify-center p-1 text-center bg-amber-950/10 cursor-pointer"
+            >
               <span className="text-[9px] font-black text-amber-500/80 uppercase tracking-tight leading-tight">
                 ZONA COMANDO
               </span>
@@ -413,8 +503,17 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           )}
         </div>
 
-        {/* 3. Mano en Abanico (Centrada en la celda y completamente visible) */}
-        <div data-dock-zone="hand" className="flex-1 flex justify-center items-end overflow-visible min-w-0 pointer-events-none">
+        {/* 3. Mano en Abanico - Droppable para devolver cartas a la mano (Punto 5b / Punto 6) */}
+        <div
+          ref={isLocalPlayer ? setHandDropRef : undefined}
+          data-dock-zone="hand"
+          data-is-over={isHandOver ? 'true' : 'false'}
+          className={`flex-1 flex justify-center items-end overflow-visible min-w-0 pointer-events-auto transition-all rounded-xl z-10 ${
+            isHandOver
+              ? 'ring-4 ring-amber-400 bg-amber-500/20 shadow-2xl shadow-amber-500/50'
+              : ''
+          }`}
+        >
           <HandFan
             cards={zones.hand}
             handCount={player.handCount}
@@ -424,38 +523,29 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           />
         </div>
 
-        {/* 4. Biblioteca - Dorso del tamaño de una carta con contador encima (Droppable) */}
+        {/* 4. Biblioteca - Dorso del tamaño de una carta con contador encima (Punto 5c: Arrastrable y Click para robar) */}
         <div
           ref={setLibDropRef}
           data-dock-zone="library"
-          onClick={() => isLocalPlayer && onAction('DRAW_CARDS', { count: 1 })}
           style={{
             width: 'var(--card-w)',
             height: 'var(--card-h)',
           }}
-          className={`rounded-lg overflow-hidden border shadow-lg relative flex flex-col items-center justify-center flex-shrink-0 pointer-events-auto transition-all ${
+          className={`rounded-lg overflow-hidden border shadow-lg relative flex flex-col items-center justify-center flex-shrink-0 pointer-events-auto transition-all z-20 ${
             isLibOver
               ? 'ring-4 ring-amber-400 scale-110 shadow-2xl shadow-amber-500/60 z-30'
               : isLocalPlayer
               ? 'cursor-pointer hover:scale-105 active:scale-95 border-amber-500/50'
               : 'border-slate-800'
           }`}
-          title={isLocalPlayer ? 'Click para robar carta de la Biblioteca (o suelta una carta aquí)' : 'Biblioteca (suelta una carta aquí)'}
+          title={isLocalPlayer ? 'Click para robar de la Biblioteca, o arrastra al campo o a la mano' : 'Biblioteca'}
         >
-          <img
-            src="https://cards.scryfall.io/back.png"
-            alt="Biblioteca"
-            className="w-full h-full object-cover pointer-events-none"
+          <DraggableLibraryCard
+            card={zones.library[0]}
+            isLocalPlayer={isLocalPlayer}
+            count={zones.library.length || player.libraryCount}
+            onClick={() => isLocalPlayer && onAction('DRAW_CARDS', { playerId: player.id, count: 1 })}
           />
-          {/* Contador superpuesto encima */}
-          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 pointer-events-none">
-            <span className="text-sm sm:text-base font-black font-mono text-white drop-shadow-md">
-              {zones.library.length || player.libraryCount}
-            </span>
-            <span className="text-[8px] font-black tracking-wider text-amber-300 uppercase drop-shadow">
-              BIBLIOTECA
-            </span>
-          </div>
         </div>
 
         {/* 5. Cementerio y Exilio Apilados (Mismo ancho que una carta, mitad de alto cada uno) */}
@@ -465,7 +555,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             width: 'var(--card-w)',
             height: 'var(--card-h)',
           }}
-          className="flex flex-col gap-1 flex-shrink-0 pointer-events-auto"
+          className="flex flex-col gap-1 flex-shrink-0 pointer-events-auto z-20"
         >
           {/* Cementerio (Mitad Superior - Droppable) */}
           <div

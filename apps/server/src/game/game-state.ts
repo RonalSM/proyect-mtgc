@@ -511,7 +511,7 @@ export class GameStateSession {
    * Moves a card across zones
    */
   public moveCard(playerId: string, payload: MoveCardPayload): void {
-    let fromPlayerId = playerId;
+    let fromPlayerId = (payload as any).fromPlayerId || playerId;
     let fromArray: CardInstance[] | undefined;
     let cardIndex = -1;
 
@@ -527,17 +527,31 @@ export class GameStateSession {
         }
       }
     } else {
-      // Las manos y zonas privadas pertenecen exclusivamente al jugador
-      const fromZones = this.state.playerZones[playerId];
-      if (!fromZones) return;
-      fromArray = fromZones[payload.fromZone];
-      if (!fromArray) return;
-      cardIndex = fromArray.findIndex(c => c.instanceId === payload.cardInstanceId);
+      // Buscar primero en fromPlayerId
+      const fromZones = this.state.playerZones[fromPlayerId];
+      if (fromZones && fromZones[payload.fromZone]) {
+        cardIndex = fromZones[payload.fromZone].findIndex(c => c.instanceId === payload.cardInstanceId);
+        if (cardIndex !== -1) {
+          fromArray = fromZones[payload.fromZone];
+        }
+      }
+      // Si no se encontró y es zona pública (cementerio o exilio), buscar en todos los jugadores
+      if (cardIndex === -1 && (payload.fromZone === 'graveyard' || payload.fromZone === 'exile')) {
+        for (const [pId, zones] of Object.entries(this.state.playerZones)) {
+          const idx = zones[payload.fromZone]?.findIndex(c => c.instanceId === payload.cardInstanceId) ?? -1;
+          if (idx !== -1) {
+            fromPlayerId = pId;
+            fromArray = zones[payload.fromZone];
+            cardIndex = idx;
+            break;
+          }
+        }
+      }
     }
 
     if (cardIndex === -1 || !fromArray) return;
 
-    const targetPlayerId = payload.toPlayerId || fromPlayerId;
+    const targetPlayerId = payload.toPlayerId || fromPlayerId || playerId;
     const toZones = this.state.playerZones[targetPlayerId];
     if (!toZones) return;
 

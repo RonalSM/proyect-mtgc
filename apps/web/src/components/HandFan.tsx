@@ -49,6 +49,8 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
   const rot = Math.max(-15, Math.min(15, offset * 3.5));
   const transY = Math.abs(offset) * 2;
 
+  const overlapRatio = totalCards > 3 ? Math.min(0.70, 0.38 + (totalCards - 3) * 0.05) : 0.35;
+
   return (
     <div
       ref={setNodeRef}
@@ -67,7 +69,7 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
         zIndex: isSelected ? 60 : index + 5,
         width: isDragging ? 0 : 'var(--card-w)',
         height: 'var(--card-h)',
-        marginLeft: isDragging ? 0 : (index === 0 ? 0 : 'calc(var(--card-w) * -0.42)'),
+        marginLeft: isDragging ? 0 : (index === 0 ? 0 : `calc(var(--card-w) * -${overlapRatio.toFixed(2)})`),
         opacity: isDragging ? 0 : 1,
         transition: 'width 250ms cubic-bezier(0.4, 0, 0.2, 1), margin-left 250ms cubic-bezier(0.4, 0, 0.2, 1), opacity 150ms ease-out, transform 200ms ease-out',
         overflow: 'hidden',
@@ -208,36 +210,39 @@ export const HandFan: React.FC<HandFanProps> = ({
 
         {/* Fanned Card Backs */}
         <div className="flex items-end justify-center">
-          {Array.from({ length: cardsToShow }, (_, i) => {
-            const offset = i - (cardsToShow - 1) / 2;
-            const rot = Math.max(-14, Math.min(14, offset * 4.5));
-            const transY = Math.abs(offset) * 2;
+          {(() => {
+            const oppOverlap = cardsToShow > 3 ? Math.min(0.70, 0.38 + (cardsToShow - 3) * 0.05) : 0.35;
+            return Array.from({ length: cardsToShow }, (_, i) => {
+              const offset = i - (cardsToShow - 1) / 2;
+              const rot = Math.max(-14, Math.min(14, offset * 4.5));
+              const transY = Math.abs(offset) * 2;
 
-            return (
-              <div
-                key={i}
-                style={{
-                  transform: `rotate(${rot}deg) translateY(${transY}px)`,
-                  zIndex: i + 1,
-                  width: 'calc(var(--card-w) * 0.72)',
-                  height: 'calc(var(--card-h) * 0.72)',
-                  marginLeft: i === 0 ? 0 : 'calc(var(--card-w) * -0.42)',
-                }}
-                className="rounded-md overflow-hidden border border-slate-700/80 bg-slate-950 shadow-md transition-transform duration-200 flex-shrink-0"
-              >
-                <img
-                  src="https://cards.scryfall.io/back.png"
-                  alt="Reverso de carta"
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover pointer-events-none"
-                  onError={e => {
-                    (e.target as HTMLElement).style.display = 'none';
+              return (
+                <div
+                  key={i}
+                  style={{
+                    transform: `rotate(${rot}deg) translateY(${transY}px)`,
+                    zIndex: i + 1,
+                    width: 'calc(var(--card-w) * 0.72)',
+                    height: 'calc(var(--card-h) * 0.72)',
+                    marginLeft: i === 0 ? 0 : `calc(var(--card-w) * -${oppOverlap.toFixed(2)})`,
                   }}
-                />
-              </div>
-            );
-          })}
+                  className="rounded-md overflow-hidden border border-slate-700/80 bg-slate-950 shadow-md transition-transform duration-200 flex-shrink-0"
+                >
+                  <img
+                    src="https://cards.scryfall.io/back.png"
+                    alt="Reverso de carta"
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover pointer-events-none"
+                    onError={e => {
+                      (e.target as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                </div>
+              );
+            });
+          })()}
         </div>
       </div>
     );

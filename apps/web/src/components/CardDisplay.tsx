@@ -14,7 +14,7 @@ interface CardDisplayProps {
 export const CardDisplay: React.FC<CardDisplayProps> = ({
   card,
   isFaceDown = false,
-  isTapped = false,
+  isTapped: _isTapped = false,
   className = '',
   imageClassName = '',
   allowFaceToggle = true,
