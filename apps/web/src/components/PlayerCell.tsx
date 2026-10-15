@@ -470,10 +470,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         </div>
       )}
 
-      {/* 3. Dock Inferior Unificado Flotante sobre el Playmat (Punto 5 / Punto 8) */}
+      {/* 3. Dock Inferior Unificado Flotante sobre el Playmat (Punto 5 / Punto 8 / Punto 9) */}
       <div
         data-player-dock={player.id}
-        className="absolute bottom-0 inset-x-0 z-20 flex items-end justify-between px-2.5 pb-2 w-full gap-1.5 sm:gap-2 pointer-events-none select-none"
+        className="absolute bottom-0 inset-x-0 z-20 flex items-end justify-between px-2 pb-2 w-full gap-1 sm:gap-1.5 pointer-events-none select-none max-w-full overflow-x-clip overflow-y-visible"
       >
         {/* 1. Hueco Propio para Pastilla de Vida (Izquierda, Punto 8) */}
         <div data-dock-zone="identity" className="flex flex-col items-start space-y-1 flex-shrink-0 pointer-events-none">

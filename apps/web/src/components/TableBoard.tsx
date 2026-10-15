@@ -71,8 +71,26 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const cellHeight = isTwoPlayer ? viewportSize.height : viewportSize.height / 2;
-  const cardPixelHeight = Math.round(Math.max(70, Math.min(210, cellHeight * 0.20)));
+  const cellWidth = isTwoPlayer
+    ? viewportSize.width / 2
+    : podSize <= 4
+    ? viewportSize.width / 2
+    : viewportSize.width / 3;
+
+  const cellHeight = isTwoPlayer
+    ? viewportSize.height
+    : viewportSize.height / 2;
+
+  // Límite por alto: cerca del 20% del alto de la celda (REQ-22.6.3 / Punto 9)
+  const maxHByCellHeight = cellHeight * 0.20;
+
+  // Límite por ancho: vida (~80px) + gaps/padding (~50px) + comandante (W) + mano (~2.5*W) + biblioteca (W) + pilas (W)
+  // 5.5 * W <= cellWidth - 130  =>  W <= (cellWidth - 130) / 5.5
+  const maxWByCellWidth = Math.max(45, (cellWidth - 130) / 5.5);
+  const maxHByCellWidth = maxWByCellWidth / 0.714;
+
+  // El tamaño de carta debe ser el MENOR entre el límite por alto y el límite por ancho (Punto 9)
+  const cardPixelHeight = Math.round(Math.max(65, Math.min(135, Math.min(maxHByCellHeight, maxHByCellWidth))));
   const cardPixelWidth = Math.round(cardPixelHeight * 0.714);
 
   // Pointer sensor con activationConstraint de 8px para distinguir clic de arrastre (REQ-9.2, REQ-22)

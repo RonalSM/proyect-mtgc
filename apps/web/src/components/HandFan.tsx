@@ -48,8 +48,11 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
   const offset = index - (totalCards - 1) / 2;
   const rot = Math.max(-15, Math.min(15, offset * 3.5));
   const transY = Math.abs(offset) * 2;
-
-  const overlapRatio = totalCards > 3 ? Math.min(0.78, 0.48 + (totalCards - 3) * 0.05) : 0.35;
+  const overlapRatio = totalCards > 3
+    ? Math.min(0.85, 0.48 + (totalCards - 3) * 0.065)
+    : totalCards > 1
+    ? 0.35
+    : 0;
 
   return (
     <div
@@ -211,7 +214,11 @@ export const HandFan: React.FC<HandFanProps> = ({
         {/* Fanned Card Backs */}
         <div className="flex items-end justify-center">
           {(() => {
-            const oppOverlap = cardsToShow > 3 ? Math.min(0.78, 0.48 + (cardsToShow - 3) * 0.05) : 0.35;
+            const oppOverlap = cardsToShow > 3
+              ? Math.min(0.85, 0.50 + (cardsToShow - 3) * 0.065)
+              : cardsToShow > 1
+              ? 0.40
+              : 0;
             return Array.from({ length: cardsToShow }, (_, i) => {
               const offset = i - (cardsToShow - 1) / 2;
               const rot = Math.max(-14, Math.min(14, offset * 4.5));

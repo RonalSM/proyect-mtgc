@@ -1409,6 +1409,75 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       }
     }
   });
+
+  test('Punto 9 - Ancho del dock a 1366x768 con 2 jugadores sin solapamiento ni desborde', async ({ browser }) => {
+    test.setTimeout(90000);
+    // 2 jugadores en pantalla estrecha 1366x768
+    const { contexts, pages } = await setupPod(browser, 2, 1366, 768, 'DockWidthPod');
+    const page = pages[0];
+
+    try {
+      await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+      await page.waitForTimeout(1000);
+
+      const playerCells = page.locator('[data-player-cell]');
+      await expect(playerCells).toHaveCount(2);
+
+      const cell0Box = await playerCells.nth(0).boundingBox();
+      const cell1Box = await playerCells.nth(1).boundingBox();
+      expect(cell0Box).not.toBeNull();
+      expect(cell1Box).not.toBeNull();
+
+      // Verificar para cada jugador que ningún elemento del dock se solapa entre sí
+      for (let pIdx = 0; pIdx < 2; pIdx++) {
+        const cell = playerCells.nth(pIdx);
+        const cellBox = pIdx === 0 ? cell0Box! : cell1Box!;
+
+        const lifeBtn = cell.locator('[data-life-button]');
+        const cmdZone = cell.locator('[data-dock-zone="command"]');
+        const handZone = cell.locator('[data-dock-zone="hand"]');
+        const libZone = cell.locator('[data-dock-zone="library"]');
+        const gyExileZone = cell.locator('[data-dock-zone="graveyard-exile"]');
+
+        const [lifeB, cmdB, handB, libB, gyB] = await Promise.all([
+          lifeBtn.boundingBox(),
+          cmdZone.boundingBox(),
+          handZone.boundingBox(),
+          libZone.boundingBox(),
+          gyExileZone.boundingBox(),
+        ]);
+
+        expect(lifeB).not.toBeNull();
+        expect(cmdB).not.toBeNull();
+        expect(handB).not.toBeNull();
+        expect(libB).not.toBeNull();
+        expect(gyB).not.toBeNull();
+
+        // 1. Vida a la izquierda del comandante
+        expect(lifeB!.x + lifeB!.width).toBeLessThanOrEqual(cmdB!.x + 1);
+
+        // 2. Comandante a la izquierda de la mano
+        expect(cmdB!.x + cmdB!.width).toBeLessThanOrEqual(handB!.x + 1);
+
+        // 3. Mano a la izquierda de la biblioteca
+        expect(handB!.x + handB!.width).toBeLessThanOrEqual(libB!.x + 1);
+
+        // 4. Biblioteca a la izquierda del cementerio/exilio
+        expect(libB!.x + libB!.width).toBeLessThanOrEqual(gyB!.x + 1);
+
+        // 5. Todos los elementos del dock están estrictamente dentro de la división de su celda
+        const dockZones = [lifeB!, cmdB!, handB!, libB!, gyB!];
+        for (const b of dockZones) {
+          expect(b.x).toBeGreaterThanOrEqual(cellBox.x - 1);
+          expect(b.x + b.width).toBeLessThanOrEqual(cellBox.x + cellBox.width + 1);
+        }
+      }
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
 });
 
 
