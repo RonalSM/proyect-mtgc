@@ -118,7 +118,7 @@ export class DeckService {
         orderBy: { updatedAt: 'desc' },
       });
 
-      return decks.map(d => {
+      return decks.map((d: any) => {
         const parsedData = (d.deckData as any) || {};
         return {
           id: d.id,

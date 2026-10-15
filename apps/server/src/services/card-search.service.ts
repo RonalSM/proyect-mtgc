@@ -36,7 +36,7 @@ export class CardSearchService {
         take: 10,
       });
 
-      results = dbCards.map(c => c.name);
+      results = dbCards.map((c: any) => c.name);
     } catch {
       // Local DB might not be connected or populated yet; fallback to Scryfall
     }
