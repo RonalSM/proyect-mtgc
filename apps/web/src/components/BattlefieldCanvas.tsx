@@ -20,6 +20,7 @@ interface BattlefieldCardItemProps {
   isLocalPlayer: boolean;
   isSelected: boolean;
   optimisticPosition?: { x: number; y: number; zIndex?: number };
+  isRemoteDragging?: boolean;
   onCardClick: () => void;
   onTap: () => void;
   onFlip: () => void;
@@ -34,6 +35,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   isLocalPlayer,
   isSelected,
   optimisticPosition,
+  isRemoteDragging,
   onCardClick,
   onTap,
   onFlip,
@@ -68,7 +70,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       onMouseLeave={hidePreview}
       className={`absolute cursor-pointer group select-none pointer-events-auto ${
         card.isTapped ? 'rotate-90' : ''
-      } ${isDragging ? 'opacity-0' : ''}`}
+      } ${isDragging || isRemoteDragging ? 'opacity-0 pointer-events-none' : ''}`}
       style={{
         left: `${posX}%`,
         top: `${posY}%`,
@@ -194,22 +196,28 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
       className="fixed inset-0 w-screen h-[100dvh] pointer-events-none z-10 overflow-hidden"
     >
       {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas */}
-      {cards.map(card => (
-        <BattlefieldCardItem
-          key={card.instanceId}
-          card={card}
-          isLocalPlayer={true}
-          isSelected={selectedCardId === card.instanceId}
-          optimisticPosition={optimisticPositions?.[card.instanceId]}
-          onCardClick={() => handleCardClick(card)}
-          onTap={() => handleTap(card)}
-          onFlip={() => handleFlip(card)}
-          onAddCounter={counterType => handleAddCounter(card, counterType)}
-          onClone={() => handleClone(card)}
-          showPreview={showPreview}
-          hidePreview={hidePreview}
-        />
-      ))}
+      {cards.map(card => {
+        const isRemoteDragging = !!(
+          remoteDraggingCards && remoteDraggingCards[card.instanceId]?.isDragging
+        );
+        return (
+          <BattlefieldCardItem
+            key={card.instanceId}
+            card={card}
+            isLocalPlayer={true}
+            isSelected={selectedCardId === card.instanceId}
+            optimisticPosition={optimisticPositions?.[card.instanceId]}
+            isRemoteDragging={isRemoteDragging}
+            onCardClick={() => handleCardClick(card)}
+            onTap={() => handleTap(card)}
+            onFlip={() => handleFlip(card)}
+            onAddCounter={counterType => handleAddCounter(card, counterType)}
+            onClone={() => handleClone(card)}
+            showPreview={showPreview}
+            hidePreview={hidePreview}
+          />
+        );
+      })}
 
       {/* Movimiento en vivo para rivales (Punto 5, REQ-9) */}
       {remoteDraggingCards &&

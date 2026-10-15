@@ -27,6 +27,7 @@ export function useGameSocket({
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef<number>(0);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const remoteDragTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const connect = useCallback(() => {
     if (!enabled || !roomCode || !playerId) return;
@@ -65,18 +66,39 @@ export function useGameSocket({
             setRoomState(data.roomState);
           } else if (data.type === 'REMOTE_CARD_DRAGGING') {
             const payload = data.payload as RemoteDragState;
+            const cardId = payload.cardInstanceId;
+
+            // Limpiar temporizador previo para esta carta si existía
+            if (remoteDragTimeoutsRef.current[cardId]) {
+              clearTimeout(remoteDragTimeoutsRef.current[cardId]);
+              delete remoteDragTimeoutsRef.current[cardId];
+            }
+
             setRemoteDraggingCards(prev => {
               if (!payload.isDragging) {
-                if (!prev[payload.cardInstanceId]) return prev;
+                if (!prev[cardId]) return prev;
                 const next = { ...prev };
-                delete next[payload.cardInstanceId];
+                delete next[cardId];
                 return next;
               }
               return {
                 ...prev,
-                [payload.cardInstanceId]: payload,
+                [cardId]: payload,
               };
             });
+
+            // Punto 2: Timeout de seguridad de 1 segundo si no llegan más mensajes o hay desconexión
+            if (payload.isDragging) {
+              remoteDragTimeoutsRef.current[cardId] = setTimeout(() => {
+                setRemoteDraggingCards(prev => {
+                  if (!prev[cardId]) return prev;
+                  const next = { ...prev };
+                  delete next[cardId];
+                  return next;
+                });
+                delete remoteDragTimeoutsRef.current[cardId];
+              }, 1000);
+            }
           } else if (data.type === 'ACTION_REJECTED') {
             console.warn('[WS Rejected Action]:', data.error);
           } else if (data.type === 'ERROR') {
@@ -89,6 +111,9 @@ export function useGameSocket({
 
       ws.onclose = () => {
         setStatus('disconnected');
+        // Limpiar timeouts y cartas en arrastre remoto al desconectar
+        Object.values(remoteDragTimeoutsRef.current).forEach(t => clearTimeout(t));
+        remoteDragTimeoutsRef.current = {};
         setRemoteDraggingCards({});
         socketRef.current = null;
 
