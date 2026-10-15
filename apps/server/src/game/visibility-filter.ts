@@ -32,11 +32,14 @@ export function filterRoomStateForPlayer(
       };
     });
 
-    // 2. Filter Library: nobody sees unrevealed library order/details
-    const filteredLibrary: CardInstance[] = zones.library.map(card => ({
-      ...card,
-      definition: MASKED_CARD_DEFINITION,
-    }));
+    // 2. Filter Library: only owner sees their library cards (REQ-9.3, Punto 7)
+    const filteredLibrary: CardInstance[] = zones.library.map(card => {
+      if (isOwner) return card;
+      return {
+        ...card,
+        definition: MASKED_CARD_DEFINITION,
+      };
+    });
 
     filteredPlayerZones[playerId] = {
       battlefield: zones.battlefield,

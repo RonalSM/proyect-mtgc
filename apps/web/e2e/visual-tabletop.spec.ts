@@ -1232,6 +1232,117 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       }
     }
   });
+
+  test('Punto 7 - Pilas (carta superior con imagen y contador, draggable, modal inspector con clic derecho y privacidad de biblioteca)', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'PilesPod');
+    const page = pages[0];
+
+    try {
+      await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // 1. Arrastrar una carta de la mano hacia el cementerio
+      const handCards = page.locator('[data-hand-card="true"]');
+      const firstHandCard = handCards.first();
+      const handBox = await firstHandCard.boundingBox();
+      expect(handBox).not.toBeNull();
+
+      // Ubicación del cementerio local (mitad superior de graveyard-exile)
+      const gydDock = page.locator('[title*="Cementerio:"]').first();
+      await expect(gydDock).toBeVisible();
+      const gydBox = await gydDock.boundingBox();
+      expect(gydBox).not.toBeNull();
+
+      await page.mouse.move(handBox!.x + handBox!.width / 2, handBox!.y + handBox!.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(gydBox!.x + gydBox!.width / 2, gydBox!.y + gydBox!.height / 2, { steps: 20 });
+      await page.mouse.up();
+      await page.waitForTimeout(800);
+
+      // La carta superior del cementerio ahora es visible como DraggablePileCard
+      const topGydCard = page.locator('[data-pile-card="graveyard"]').first();
+      await expect(topGydCard).toBeVisible({ timeout: 5000 });
+      await expect(topGydCard.locator('img')).toBeVisible();
+      await expect(topGydCard.locator('text=1')).toBeVisible();
+
+      // 2. Arrastrar la carta superior del cementerio hacia la mesa
+      const topGydBox = await topGydCard.boundingBox();
+      expect(topGydBox).not.toBeNull();
+      await page.mouse.move(topGydBox!.x + topGydBox!.width / 2, topGydBox!.y + topGydBox!.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(700, 450, { steps: 20 });
+      await page.mouse.up();
+      await page.waitForTimeout(800);
+
+      // Ahora la carta está en el campo de batalla y el cementerio vuelve a estar vacío
+      await expect(page.locator('[data-battlefield-card="true"]').first()).toBeVisible({ timeout: 5000 });
+      await expect(topGydCard).not.toBeVisible();
+
+      // 3. Arrastrar la carta del campo al exilio
+      const placedCard = page.locator('[data-battlefield-card="true"]').first();
+      const placedBox = await placedCard.boundingBox();
+      expect(placedBox).not.toBeNull();
+
+      const exileDock = page.locator('[title*="Exilio:"]').first();
+      await expect(exileDock).toBeVisible();
+      const exileBox = await exileDock.boundingBox();
+      expect(exileBox).not.toBeNull();
+
+      await page.mouse.move(placedBox!.x + 20, placedBox!.y + 20);
+      await page.mouse.down();
+      await page.mouse.move(exileBox!.x + exileBox!.width / 2, exileBox!.y + exileBox!.height / 2, { steps: 20 });
+      await page.mouse.up();
+      await page.waitForTimeout(800);
+
+      // La carta superior del exilio es visible como DraggablePileCard
+      const topExileCard = page.locator('[data-pile-card="exile"]').first();
+      await expect(topExileCard).toBeVisible({ timeout: 5000 });
+      await expect(topExileCard.locator('text=1')).toBeVisible();
+
+      // 4. Clic en el exilio para abrir el modal inspector
+      await topExileCard.click();
+      await page.waitForTimeout(500);
+
+      const modalTitle = page.locator('h3:has-text("Exilio")');
+      await expect(modalTitle).toBeVisible();
+
+      // Clic derecho en la carta del modal para abrir el menú contextual
+      const modalCard = page.locator('[data-modal-card-item]').first();
+      await expect(modalCard).toBeVisible();
+      await modalCard.click({ button: 'right' });
+      await page.waitForTimeout(300);
+
+      const contextMenu = page.locator('[data-modal-context-menu="true"]');
+      await expect(contextMenu).toBeVisible();
+      await expect(contextMenu.locator('button:has-text("Enviar a la mano")')).toBeVisible();
+      await expect(contextMenu.locator('button:has-text("Enviar al campo")')).toBeVisible();
+
+      // Seleccionar "Enviar a la mano"
+      const handCountBefore = await page.locator('[data-hand-card="true"]').count();
+      await contextMenu.locator('button:has-text("Enviar a la mano")').click();
+      await page.waitForTimeout(800);
+
+      // Modal cerrado y la carta volvió a la mano
+      await expect(modalTitle).not.toBeVisible();
+      expect(await page.locator('[data-hand-card="true"]').count()).toBe(handCountBefore + 1);
+
+      // 5. Privacidad de biblioteca:
+      // El jugador local puede inspeccionar su propia biblioteca
+      const ownInspectBtn = page.locator('[data-library-inspect-btn="true"]').first();
+      await expect(ownInspectBtn).toBeVisible();
+      await ownInspectBtn.click();
+      await page.waitForTimeout(500);
+      await expect(page.locator('h3:has-text("Biblioteca")')).toBeVisible();
+
+      // En la celda del oponente no hay botón de inspeccionar biblioteca
+      const opponentCell = page.locator('[data-player-cell]').nth(1);
+      await expect(opponentCell.locator('[data-library-inspect-btn="true"]')).not.toBeVisible();
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
 });
 
 

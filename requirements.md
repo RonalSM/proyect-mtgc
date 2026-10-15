@@ -136,6 +136,11 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
        - **Devolución a la mano:** THE sistema SHALL permitir arrastrar cualquier carta desde la mesa o desde las pilas hacia el abanico de la mano propia, emitiendo la acción autoritativa `MOVE_CARD` con `toZone: 'hand'` y `toPlayerId: localPlayerId`.
        - **Resalte suave en destino:** WHEN el puntero del ratón o el toque táctil pasa por encima del abanico propio durante un arrastre (`isHandOver = true`), THE sistema SHALL mostrar un resalte suave (`ring-2 ring-amber-400/80 bg-amber-400/15 shadow-[0_0_30px_rgba(251,191,36,0.3)]`).
        - **Manos ajenas no son destino:** Las manos de los oponentes SHALL NOT ser zonas de soltado (`disabled: true` en su hook de droppable y descarte estricto en el cliente y servidor).
+   7.19. **Interacción completa con pilas (biblioteca, cementerio, exilio) (Punto 7):**
+       - **Carta superior con arte y contador:** La ranura de cementerio y la de exilio SHALL mostrar la ilustración de la última carta llegada como cara principal (`DraggablePileCard`), con una insignia superpuesta que indica el nombre de la zona y el conteo numérico total de cartas. Si la pila está vacía, muestra la ranura con estilo sutil y contador en 0.
+       - **Arrastre directo desde la pila:** La carta superior de cada pila SHALL ser arrastrable (`useDraggable` con `data: { fromZone: 'graveyard' | 'exile', card }`), permitiendo moverla directamente al campo de batalla o a la mano.
+       - **Modal inspector con menú contextual:** Al hacer clic en cualquier pila, THE sistema SHALL abrir un modal en portal con la cuadrícula completa de cartas de dicha zona. Hacer clic derecho sobre una carta dentro del modal despliega un menú flotante con las opciones: "Enviar a la mano", "Enviar al campo" (y en cementerio, "Enviar al exilio").
+       - **Privacidad de zonas:** Cualquier jugador puede inspeccionar libremente el cementerio y el exilio de todos los participantes. La biblioteca privada únicamente puede ser inspeccionada por su respectivo dueño; los rivales reciben los datos de las cartas enmascarados desde el servidor.
 
 ### REQ-10 Sincronización y reconexión
 **Historia:** Como jugador, quiero volver a la partida si se cae mi conexión.

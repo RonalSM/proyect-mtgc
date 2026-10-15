@@ -422,6 +422,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         isLocalPlayer={isLocal}
         isTwoPlayer={isTwoPlayer}
         isActiveTurn={isActiveTurn}
+        localPlayerId={localPlayerId}
         onAction={onAction}
         onExpandCell={() => setExpandedPlayerId(player.id)}
       />

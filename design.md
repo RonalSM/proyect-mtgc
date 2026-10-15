@@ -335,6 +335,11 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
    - El contenedor del abanico del jugador local (`[data-dock-zone="hand"]`) integra `useDroppable` con identificador `droppable-hand-${player.id}`. En `TableBoard.tsx`, soltar cualquier carta con `overData?.zone === 'hand' && overData?.playerId === localPlayerId` dispara la acción autoritativa `MOVE_CARD` con `toZone: 'hand'` y `toPlayerId: localPlayerId`.
    - Cuando el puntero del arrastre cruza la zona de la mano propia (`isHandOver: true`), el contenedor activa un resalte suave (`ring-2 ring-amber-400/80 bg-amber-400/15 shadow-[0_0_30px_rgba(251,191,36,0.3)] border-amber-400/50`) con transición de 200 ms.
    - Las manos de los rivales (`!isLocalPlayer`) no son droppables (`disabled: true` y sin registro de ref), asegurando que un jugador nunca pueda soltar o introducir cartas en las manos ajenas.
+11. **Pilas interactivas y modales con menú contextual (Punto 7):**
+   - **Ilustración y conteo de la carta superior:** El cementerio y el exilio renderizan `DraggablePileCard`, mostrando la imagen real de la última carta llegada como carátula de la pila y un contador nítido sobre ella.
+   - **Arrastre directo desde la pila:** La carta superior posee `useDraggable` con `fromZone: 'graveyard' | 'exile'`, permitiendo arrastrarla de forma natural hacia la mesa o hacia la mano propia.
+   - **Inspector modal y menú contextual:** Hacer clic sobre cualquier pila abre un modal con el desglose de cartas. Al hacer clic derecho en cualquier carta dentro del modal (`ModalCardItem`), se despliega un menú flotante con: "Enviar a la mano", "Enviar al campo" y en cementerio "Enviar al exilio".
+   - **Privacidad estricta de biblioteca:** Cualquier jugador puede consultar los modales de cementerio y exilio de todos los participantes. La biblioteca privada solo puede ser inspeccionada por su propio dueño (`isLocalPlayer`), y el servidor (`visibility-filter.ts`) enmascara las cartas de las bibliotecas rivales con `MASKED_CARD_DEFINITION`.
 
 ### Estilo visual
 - Tema oscuro; texto claro con sombra suave; cartas con borde fino y sombra para despegarlas del playmat.
