@@ -422,22 +422,34 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         )}
       </div>
 
-      {/* 2. Top Bar: Expand & Playmat Buttons (Flotante) */}
-      <div className="absolute top-2 right-2 z-20 flex items-center space-x-1.5 pointer-events-auto">
-        {isLocalPlayer && (
-          <button
-            onClick={() => setIsPlaymatModalOpen(true)}
-            className="p-1 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer shadow-sm"
-            title="Cambiar imagen de Playmat"
-          >
-            <ImageIcon className="w-3.5 h-3.5" />
-          </button>
-        )}
+      {/* 2. Top Header: Un solo contenedor con "Nombre [botón expandir]" centrado arriba (Punto 8) */}
+      <div
+        data-player-header={player.id}
+        data-name-tag={player.id}
+        className={`absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-1.5 px-3 py-1 rounded-xl backdrop-blur-md border text-xs font-bold transition-all shadow-md select-none pointer-events-auto ${
+          isActiveTurn
+            ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-lg shadow-amber-500/30 ring-2 ring-amber-300/80'
+            : 'bg-slate-900/90 text-slate-200 border-slate-700/80'
+        }`}
+      >
+        <span
+          className={`whitespace-nowrap max-w-[clamp(120px,25cqw,280px)] truncate ${
+            !player.isConnected ? 'opacity-40 text-slate-400 line-through' : ''
+          }`}
+          title={player.isConnected ? player.name : `${player.name} (Desconectado)`}
+        >
+          {player.name}
+        </span>
 
         {onExpandCell && (
           <button
+            data-expand-cell-btn={player.id}
             onClick={onExpandCell}
-            className="p-1 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer shadow-sm"
+            className={`p-0.5 rounded transition-colors cursor-pointer ${
+              isActiveTurn
+                ? 'text-slate-950 hover:bg-slate-950/20'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
             title="Ampliar esta celda a pantalla completa"
           >
             <Maximize2 className="w-3.5 h-3.5" />
@@ -445,52 +457,26 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         )}
       </div>
 
-      {/* 3. Dock Inferior Unificado Flotante sobre el Playmat (Punto 5) */}
+      {/* Botón de Playmat en la esquina superior derecha para el jugador local */}
+      {isLocalPlayer && (
+        <div className="absolute top-2 right-2 z-20 pointer-events-auto">
+          <button
+            onClick={() => setIsPlaymatModalOpen(true)}
+            className="p-1 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer shadow-sm"
+            title="Cambiar imagen de Playmat"
+          >
+            <ImageIcon className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* 3. Dock Inferior Unificado Flotante sobre el Playmat (Punto 5 / Punto 8) */}
       <div
         data-player-dock={player.id}
         className="absolute bottom-0 inset-x-0 z-20 flex items-end justify-between px-2.5 pb-2 w-full gap-1.5 sm:gap-2 pointer-events-none select-none"
       >
-        {/* 1. Hueco Propio para Nombre y Vida (Izquierda) */}
+        {/* 1. Hueco Propio para Pastilla de Vida (Izquierda, Punto 8) */}
         <div data-dock-zone="identity" className="flex flex-col items-start space-y-1 flex-shrink-0 pointer-events-none">
-          {/* Nombre del jugador encima de su vida */}
-          <div
-            data-name-tag={player.id}
-            className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-xl backdrop-blur-md border text-xs font-bold transition-all shadow-md select-none pointer-events-auto ${
-              isActiveTurn
-                ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-lg shadow-amber-500/30 ring-2 ring-amber-300/80'
-                : 'bg-slate-900/90 text-slate-200 border-slate-700/80'
-            }`}
-          >
-            <span
-              className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                player.isConnected ? 'bg-emerald-400' : 'bg-slate-600'
-              }`}
-            />
-            {player.initiativeOrder && (
-              <span
-                className={`font-mono text-[10px] flex-shrink-0 ${
-                  isActiveTurn ? 'text-slate-950 font-black' : 'text-amber-400'
-                }`}
-              >
-                {player.initiativeOrder}.º
-              </span>
-            )}
-            <span className="whitespace-nowrap max-w-[clamp(150px,32cqw,320px)] truncate">{player.name}</span>
-            {isLocalPlayer && (
-              <span
-                className={`text-[9px] px-1 rounded flex-shrink-0 font-bold ${
-                  isActiveTurn ? 'bg-slate-950/20 text-slate-950' : 'bg-amber-500/20 text-amber-300'
-                }`}
-              >
-                Tú
-              </span>
-            )}
-            {player.isHost && (
-              <span className={`text-[10px] flex-shrink-0 ${isActiveTurn ? 'text-slate-950' : 'text-amber-400'}`}>
-                👑
-              </span>
-            )}
-          </div>
 
           {/* At Risk Pill si aplica */}
           {player.isAtRisk && !player.isEliminated && (

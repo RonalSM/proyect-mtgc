@@ -233,7 +233,7 @@ interface LobbySeat {
 ### COMP-1 Web Client
 **Módulos:** `LobbyView`, `LobbySeatCard`, `DeckPicker`, `DeckImportModal`, `ReadyButton`, `InitiativeOverlay`, `TableGrid`, `PlayerCell`, `PlaymatBackground`, `NameTag`, `LifePill`, `BattlefieldCanvas`, `HandFan`, `PileSlots`, `FloatingToolbar`, `LogChatPanel`, `CardPreview`, `ExpandedCellView`.
 **Estado:** Zustand con un *store* de mesa sincronizado por versión de evento.
-**UX clave:** vista propia grande y oponentes en miniatura; atajos de teclado; modo "solo tracker" para móvil.
+**UX clave:** vista propia grande y oponentes en miniatura; atajos de teclado; modo "solo tracker" para móvil; contenedor de nombre y expandir celda centrado arriba en cada división con estado desconectado atenuado, y barra superior desplegable con orden de iniciativa y badges de estado (Punto 8).
 
 ### COMP-6 Card Service
 **Clases:** `ScryfallClient` (cola con rate limit), `DeckParser`, `CommanderValidator`, `CardCache`.

@@ -1343,6 +1343,72 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       }
     }
   });
+
+  test('Punto 8 - Nombre del jugador centrado arriba, barra desplegable y desconectado', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'PlayerHeaderPod');
+    try {
+      const page = pages[0];
+      await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // 1. Verificar contenedor de nombre centrado en la parte superior de cada división
+      const playerHeaders = page.locator('[data-player-header]');
+      await expect(playerHeaders).toHaveCount(2);
+
+      for (let i = 0; i < 2; i++) {
+        const header = playerHeaders.nth(i);
+        await expect(header).toBeVisible();
+
+        // Verificar que el header está posicionado en la parte superior
+        const box = await header.boundingBox();
+        expect(box).not.toBeNull();
+        expect(box!.y).toBeLessThan(120);
+
+        // Verificar que NO contiene "Tú", ni corona 👑, ni orden "1.º" dentro del header
+        const text = await header.innerText();
+        expect(text).not.toContain('Tú');
+        expect(text).not.toContain('👑');
+        expect(text).not.toContain('.º');
+
+        // Contiene el botón de expandir celda
+        const expandBtn = header.locator('[data-expand-cell-btn]');
+        await expect(expandBtn).toBeVisible();
+      }
+
+      // 2. La pastilla de vida se mantiene en el dock
+      const identityDocks = page.locator('[data-dock-zone="identity"]');
+      await expect(identityDocks).toHaveCount(2);
+      for (let i = 0; i < 2; i++) {
+        const lifeBtn = identityDocks.nth(i).locator('[data-life-button]');
+        await expect(lifeBtn).toBeVisible();
+      }
+
+      // 3. Barra superior desplegable contiene turno, iniciativa, estado, Tú y Corona
+      const turnIndicator = page.locator('[data-active-turn-indicator="true"]');
+      await expect(turnIndicator).toBeVisible();
+
+      // Clic para desplegar el orden de iniciativa
+      await turnIndicator.click();
+      await page.waitForTimeout(300);
+
+      const dropdown = page.locator('[data-initiative-dropdown="true"]');
+      await expect(dropdown).toBeVisible();
+      await expect(dropdown.locator('text=Orden de Iniciativa')).toBeVisible();
+
+      // 4. Desconexión del rival y tooltip de atenuado
+      await contexts[1].close();
+      await page.waitForTimeout(1500);
+
+      // El nombre del rival desconectado ahora tiene tooltip "(Desconectado)"
+      const rivalHeaderSpan = page.locator('[data-player-header]').nth(1).locator('span[title*="Desconectado"]');
+      await expect(rivalHeaderSpan).toBeVisible();
+      await expect(rivalHeaderSpan).toHaveClass(/opacity-40/);
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
 });
 
 

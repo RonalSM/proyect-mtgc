@@ -38,6 +38,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isDiceOpen, setIsDiceOpen] = useState(false);
+  const [isInitiativeDropdownOpen, setIsInitiativeDropdownOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
@@ -47,6 +48,8 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
     : null;
   const isMyTurn = roomState.activePlayerId === localPlayerId;
   const spectatorsCount = Object.values(roomState.players).filter(p => p.isSpectator).length;
+  const allPlayers = Object.values(roomState.players);
+  const sortedPlayers = [...allPlayers].sort((a, b) => (a.initiativeOrder || 0) - (b.initiativeOrder || 0));
 
   // Turn timer countdown
   useEffect(() => {
@@ -88,15 +91,110 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             </span>
             <div className="flex items-center space-x-1">
               <span className="text-[11px] text-slate-400">Turno:</span>
-              <span
-                className={`font-bold px-2 py-0.5 rounded-md text-[11px] ${
-                  isMyTurn
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 animate-pulse'
-                    : 'text-white'
-                }`}
-              >
-                {isMyTurn ? '¡Tu Turno!' : activePlayer?.name || '---'}
-              </span>
+              <div className="relative">
+                <button
+                  data-active-turn-indicator="true"
+                  onClick={() => setIsInitiativeDropdownOpen(!isInitiativeDropdownOpen)}
+                  className={`font-bold px-2 py-0.5 rounded-md text-[11px] flex items-center space-x-1.5 transition-colors cursor-pointer ${
+                    isMyTurn
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 animate-pulse'
+                      : 'text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60'
+                  }`}
+                  title="Clic para ver el orden de iniciativa de todos los jugadores"
+                >
+                  {activePlayer && (
+                    <span
+                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                        activePlayer.isConnected ? 'bg-emerald-400' : 'bg-slate-500'
+                      }`}
+                      title={activePlayer.isConnected ? 'Conectado' : 'Desconectado'}
+                    />
+                  )}
+                  {activePlayer?.initiativeOrder && (
+                    <span className="font-mono text-[10px] text-amber-400 font-black">
+                      {activePlayer.initiativeOrder}.º
+                    </span>
+                  )}
+                  <span className={activePlayer?.isConnected ? '' : 'opacity-40 text-slate-400 line-through'}>
+                    {isMyTurn ? '¡Tu Turno!' : activePlayer?.name || '---'}
+                  </span>
+                  {isMyTurn && (
+                    <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded font-bold">
+                      Tú
+                    </span>
+                  )}
+                  {activePlayer?.isHost && (
+                    <span className="text-[10px] text-amber-400" title="Anfitrión">
+                      👑
+                    </span>
+                  )}
+                  <ChevronDown className="w-3 h-3 text-slate-400 ml-0.5" />
+                </button>
+
+                {/* Dropdown de Orden de Iniciativa (Punto 8) */}
+                {isInitiativeDropdownOpen && (
+                  <div
+                    data-initiative-dropdown="true"
+                    className="absolute top-full mt-2 left-0 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-2 min-w-[210px] space-y-1 z-50 animate-in fade-in zoom-in-95"
+                  >
+                    <div className="text-[10px] font-bold text-amber-400 uppercase px-2 py-1 tracking-wider border-b border-slate-800 flex items-center justify-between">
+                      <span>Orden de Iniciativa</span>
+                      <span>Ronda {roomState.turnNumber}</span>
+                    </div>
+                    {sortedPlayers.map(p => {
+                      const isCurrentActive = p.id === activePlayer?.id;
+                      const isLocal = p.id === localPlayerId;
+                      return (
+                        <div
+                          key={p.id}
+                          className={`flex items-center justify-between px-2 py-1 rounded-lg text-xs ${
+                            isCurrentActive
+                              ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30'
+                              : 'text-slate-300 hover:bg-slate-800'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2 min-w-0">
+                            <span
+                              className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                p.isConnected ? 'bg-emerald-400' : 'bg-slate-500'
+                              }`}
+                              title={p.isConnected ? 'Conectado' : 'Desconectado'}
+                            />
+                            {p.initiativeOrder && (
+                              <span className="font-mono text-[10px] text-amber-400 font-black flex-shrink-0">
+                                {p.initiativeOrder}.º
+                              </span>
+                            )}
+                            <span
+                              className={`truncate ${!p.isConnected ? 'opacity-40 text-slate-400 line-through' : ''}`}
+                              title={p.isConnected ? p.name : `${p.name} (Desconectado)`}
+                            >
+                              {p.name}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
+                            {isLocal && (
+                              <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded font-bold">
+                                Tú
+                              </span>
+                            )}
+                            {p.isHost && (
+                              <span className="text-[10px] text-amber-400" title="Anfitrión">
+                                👑
+                              </span>
+                            )}
+                            {isCurrentActive && (
+                              <span className="text-[9px] bg-emerald-500/30 text-emerald-300 px-1 rounded font-bold">
+                                Activo
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
             {timerSeconds !== null && (

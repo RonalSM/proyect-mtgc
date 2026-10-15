@@ -215,9 +215,11 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    3.1. Por defecto, el recorte de arte (`art_crop`) del comandante del jugador, obtenido de Scryfall, con una capa oscura degradada en los bordes superior e inferior para mantener la legibilidad.
    3.2. WHERE el jugador lo elija, THE sistema SHALL permitir usar el arte de otra carta de su mazo o un color liso; la elección SHALL ser visible para toda la mesa.
    3.3. THE sistema SHALL mostrar la atribución de Scryfall y el aviso de no afiliación (REQ-18) en el pie de la pantalla.
-4. THE etiqueta de nombre SHALL ubicarse en el borde superior central de cada celda, con el nombre del jugador, un botón de ampliar celda y un punto de estado de conexión:
-   4.1. WHILE sea el turno de un jugador, THE sistema SHALL resaltar su etiqueta con un borde de color y un brillo suave en la celda.
-   4.2. THE etiqueta SHALL mostrar el orden de iniciativa (1.º, 2.º…) definido en REQ-21.
+4. THE contenedor de nombre SHALL ubicarse centrado en el borde superior de cada división conteniendo únicamente el nombre del jugador y el botón de expandir celda (Punto 8):
+   4.1. WHILE sea el turno de un jugador, THE sistema SHALL resaltar este contenedor con fondo ámbar y borde iluminado, además de resaltar el contorno de la división.
+   4.2. THE orden de iniciativa (1.º, 2.º…), corona de anfitrión 👑, píldora 'Tú' y punto indicador de conexión se trasladan a la barra superior desplegable (FloatingToolbar), con dropdown interactivo de jugadores.
+   4.3. WHEN un jugador se desconecta, su nombre en el contenedor superior se atenuará con opacidad reducida y un tooltip explícito `${player.name} (Desconectado)`.
+   4.4. THE pastilla de vida se mantiene en el dock inferior sobre el playmat, garantizando aislamiento total sin solapar elementos.
 5. THE pastilla de vida SHALL ubicarse en la **esquina interior** de cada celda, es decir, la más cercana al centro de la pantalla:
    5.1. Fila superior → borde inferior de la celda; fila inferior → borde superior de la celda.
    5.2. Columna izquierda → lado derecho; columna derecha o central → lado izquierdo.
