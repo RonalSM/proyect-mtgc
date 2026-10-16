@@ -219,12 +219,12 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
 **Historia:** Como jugador, quiero ver a todos en una cuadrícula a pantalla completa, cada uno con su propio fondo y su propio espacio, para sentir que estamos jugando juntos en una mesa.
 1. THE pantalla de partida SHALL ocupar toda la ventana (100 % del ancho y alto) sin scroll, sin márgenes exteriores y sin barra lateral permanente; las celdas SHALL tocarse entre sí separadas solo por una línea fina (1 px) oscura.
-2. THE pantalla SHALL dividirse en una cuadrícula de **2 filas y hasta 3 columnas** (máximo 6 celdas), una por jugador; `--cols = ceil(jugadores / 2)`:
-   - 2 jugadores: 2 filas × 1 columna
-   - 3 jugadores: 2 × 2 (3 jugadores + 1 celda libre para registro/chat)
-   - 4 jugadores: 2 × 2
-   - 5 jugadores: 2 × 3 (5 jugadores + 1 celda libre)
-   - 6 jugadores: 2 × 3
+2. THE pantalla SHALL dividirse en una cuadrícula de **2 columnas** para 2 jugadores (1 fila × 2 columnas lado a lado, `--cols = 2`) o de **2 filas y hasta 3 columnas** para 3–6 jugadores (máximo 6 celdas), una por jugador:
+   - 2 jugadores: 1 fila × 2 columnas (2 columnas lado a lado, `--cols = 2`)
+   - 3 jugadores: 2 filas × 2 columnas (3 jugadores + 1 celda libre para registro/chat)
+   - 4 jugadores: 2 filas × 2 columnas
+   - 5 jugadores: 2 filas × 3 columnas (5 jugadores + 1 celda libre)
+   - 6 jugadores: 2 filas × 3 columnas
    2.1. THE jugador local SHALL ocupar la celda inferior izquierda; los oponentes ocupan las demás en orden de asiento.
    2.2. THE contenido de todas las celdas SHALL mostrarse en posición vertical, sin rotar.
 3. THE cada celda SHALL tener un **playmat** como fondo a celda completa:
