@@ -301,8 +301,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   onExpandCell,
 }) => {
   const [showLifeControls, setShowLifeControls] = useState(false);
-  const [showCustomLifeInput, setShowCustomLifeInput] = useState(false);
-  const [customLifeValue, setCustomLifeValue] = useState(player.life.toString());
+  const [damageInput, setDamageInput] = useState('');
+  const [healInput, setHealInput] = useState('');
   const [activePileModal, setActivePileModal] = useState<'graveyard' | 'exile' | 'command' | 'library' | null>(null);
   const [isPlaymatModalOpen, setIsPlaymatModalOpen] = useState(false);
   const [customPlaymatInput, setCustomPlaymatInput] = useState('');
@@ -345,7 +345,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
     if (!showLifeControls && lifeButtonRef.current) {
       const rect = lifeButtonRef.current.getBoundingClientRect();
       const popoverWidth = 208;
-      const popoverHeight = 170;
+      const popoverHeight = 220;
 
       let top = rect.top - popoverHeight - 8;
       if (top < 10) {
@@ -377,12 +377,23 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
     onAction('ADJUST_LIFE', { playerId: player.id, delta });
   };
 
-  const handleSetLifeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const val = parseInt(customLifeValue, 10);
-    if (!isNaN(val)) {
-      onAction('SET_LIFE', { playerId: player.id, life: val });
-      setShowCustomLifeInput(false);
+  // Punto 7: Daño recibido resta a la vida actual y limpia el input
+  const handleDamageSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const val = parseInt(damageInput, 10);
+    if (!isNaN(val) && val > 0) {
+      adjustLife(-val);
+      setDamageInput('');
+    }
+  };
+
+  // Punto 7: Vida ganada suma a la vida actual y limpia el input
+  const handleHealSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const val = parseInt(healInput, 10);
+    if (!isNaN(val) && val > 0) {
+      adjustLife(val);
+      setHealInput('');
     }
   };
 
@@ -573,58 +584,86 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   className="fixed z-50 bg-slate-900/95 border border-slate-700 rounded-2xl shadow-2xl p-2.5 flex flex-col space-y-2 w-52 backdrop-blur-md animate-in fade-in zoom-in-95"
                   onClick={e => e.stopPropagation()}
                 >
-                  <div className="grid grid-cols-4 gap-1 text-xs font-bold font-mono">
+                  {/* Botones -1 y +1 (Punto 7: se eliminan los botones +-5) */}
+                  <div className="grid grid-cols-2 gap-1 text-xs font-bold font-mono">
                     <button
-                      onClick={() => adjustLife(-5)}
-                      className="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-200 py-1 rounded-lg"
-                    >
-                      -5
-                    </button>
-                    <button
+                      data-testid="life-minus-1"
                       onClick={() => adjustLife(-1)}
-                      className="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-200 py-1 rounded-lg"
+                      className="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-200 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       -1
                     </button>
                     <button
+                      data-testid="life-plus-1"
                       onClick={() => adjustLife(1)}
-                      className="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 py-1 rounded-lg"
+                      className="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       +1
                     </button>
-                    <button
-                      onClick={() => adjustLife(5)}
-                      className="bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-200 py-1 rounded-lg"
-                    >
-                      +5
-                    </button>
                   </div>
 
-                  {/* Direct SET_LIFE input */}
-                  {showCustomLifeInput ? (
-                    <form onSubmit={handleSetLifeSubmit} className="flex space-x-1">
-                      <input
-                        type="number"
-                        value={customLifeValue}
-                        onChange={e => setCustomLifeValue(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-0.5 text-xs text-white font-mono"
-                        autoFocus
-                      />
-                      <button
-                        type="submit"
-                        className="bg-amber-500 text-slate-950 font-bold text-xs px-2 rounded-lg"
-                      >
-                        OK
-                      </button>
+                  {/* Punto 7: Dos inputs numéricos: 'Daño recibido' y 'Vida ganada' */}
+                  <div className="flex flex-col space-y-1.5 pt-1.5 border-t border-slate-800">
+                    <form onSubmit={handleDamageSubmit} className="flex flex-col space-y-0.5">
+                      <label className="text-[10px] font-semibold text-rose-300">Daño recibido</label>
+                      <div className="flex space-x-1">
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          placeholder="Ej: 7"
+                          value={damageInput}
+                          aria-label="Daño recibido"
+                          data-testid="damage-received-input"
+                          onChange={e => setDamageInput(e.target.value.replace(/[^0-9]/g, ''))}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleDamageSubmit(e);
+                            }
+                          }}
+                          className="w-full bg-slate-950 border border-slate-700 focus:border-rose-500 rounded-lg px-2 py-0.5 text-xs text-rose-200 font-mono focus:outline-none"
+                        />
+                        <button
+                          type="submit"
+                          data-testid="apply-damage-btn"
+                          className="px-2 py-0.5 bg-rose-900 hover:bg-rose-800 text-rose-200 font-bold text-xs rounded-lg cursor-pointer"
+                        >
+                          -
+                        </button>
+                      </div>
                     </form>
-                  ) : (
-                    <button
-                      onClick={() => setShowCustomLifeInput(true)}
-                      className="w-full text-center text-[10px] text-slate-400 hover:text-white py-0.5"
-                    >
-                      Escribir vida exacta
-                    </button>
-                  )}
+
+                    <form onSubmit={handleHealSubmit} className="flex flex-col space-y-0.5">
+                      <label className="text-[10px] font-semibold text-emerald-300">Vida ganada</label>
+                      <div className="flex space-x-1">
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          placeholder="Ej: 3"
+                          value={healInput}
+                          aria-label="Vida ganada"
+                          data-testid="life-gained-input"
+                          onChange={e => setHealInput(e.target.value.replace(/[^0-9]/g, ''))}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleHealSubmit(e);
+                            }
+                          }}
+                          className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-lg px-2 py-0.5 text-xs text-emerald-200 font-mono focus:outline-none"
+                        />
+                        <button
+                          type="submit"
+                          data-testid="apply-heal-btn"
+                          className="px-2 py-0.5 bg-emerald-900 hover:bg-emerald-800 text-emerald-200 font-bold text-xs rounded-lg cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </form>
+                  </div>
 
                   {/* Counter Badges Menu (Punto 6: se eliminan controles de tax de la pastilla de vida para evitar duplicidad) */}
                   <div className="pt-1.5 border-t border-slate-800 flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg text-[10px]">

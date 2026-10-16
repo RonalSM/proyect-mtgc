@@ -186,33 +186,21 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
           </div>
         )}
 
-        {/* Life Controls */}
+        {/* Life Controls (se quitan +-5 según Punto 7) */}
         <div className="flex items-center space-x-2 mt-2">
-          <button
-            onClick={() => adjustLife(-5)}
-            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 hover:text-white transition-colors"
-          >
-            -5
-          </button>
           <button
             onClick={() => adjustLife(-1)}
             title="Restar 1 vida"
-            className="w-9 h-9 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 flex items-center justify-center text-rose-300 hover:text-white transition-colors"
+            className="w-9 h-9 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 flex items-center justify-center text-rose-300 hover:text-white transition-colors cursor-pointer"
           >
             <Minus className="w-4 h-4" />
           </button>
           <button
             onClick={() => adjustLife(1)}
             title="Sumar 1 vida"
-            className="w-9 h-9 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-800/50 flex items-center justify-center text-emerald-300 hover:text-white transition-colors"
+            className="w-9 h-9 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-800/50 flex items-center justify-center text-emerald-300 hover:text-white transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => adjustLife(5)}
-            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 hover:text-white transition-colors"
-          >
-            +5
           </button>
         </div>
       </div>

@@ -360,6 +360,13 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - Doble clic: Alterna giro (Tap/Untap) de forma directa sin activar la ampliación de celda ni desplegar controles.
   - Clic derecho / Pulsación táctil prolongada (500 ms): Despliega menú contextual flotante con botones de acción (Girar, Contador +1/+1, Clonar, Voltear). Cerrado con clic fuera o tecla `Escape`.
 - Pastilla de vida: forma de píldora, fondo oscuro semitransparente, número grande (≥ 32 px).
+- **Panel de vida interactivo (Punto 7):**
+  - Eliminación total de los botones de $\pm 5$ del DOM de la pastilla de vida, manteniendo únicamente botones táctiles rápidos de $\pm 1$.
+  - Dos entradas numéricas dedicadas dentro del panel flotante de vida:
+    - **"Daño recibido"** (`data-testid="damage-received-input"`): resta el valor ingresado a la vida actual (`adjustLife(-val)`) al presionar la tecla `Enter`.
+    - **"Vida ganada"** (`data-testid="life-gained-input"`): suma el valor ingresado a la vida actual (`adjustLife(val)`) al presionar la tecla `Enter`.
+  - Ambas entradas limpian automáticamente su valor de estado inmediatamente tras confirmarse con `Enter`.
+  - Validación de entrada en tiempo real que descarta cualquier carácter no numérico (`replace(/[^0-9]/g, '')`), aceptando estrictamente enteros positivos mayores que 0.
 - Etiqueta de nombre: píldora pequeña con icono de ampliar; turno activo con borde de color y brillo suave.
 - Ranuras de pilas: rectángulos con proporción de carta; vacías con contorno punteado y etiqueta de zona.
 - Animaciones breves (robar, d20, pasar turno) solo con `transform` y `opacity`, desactivadas con `prefers-reduced-motion`.

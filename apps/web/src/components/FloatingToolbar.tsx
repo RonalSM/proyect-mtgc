@@ -406,7 +406,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               </div>
               <div>
                 <strong className="text-white block mb-0.5">💖 Vidas y Contadores:</strong>
-                Haz clic en la pastilla de vida de tu esquina interior para modificar vidas (+1, −1, +5, −5) o gestionar daño de comandante y veneno.
+                Haz clic en la pastilla de vida de tu esquina interior para modificar vidas (+1, −1, daño recibido, vida ganada) o gestionar daño de comandante y veneno.
               </div>
               <div>
                 <strong className="text-white block mb-0.5">🔍 Zoom de Cartas:</strong>

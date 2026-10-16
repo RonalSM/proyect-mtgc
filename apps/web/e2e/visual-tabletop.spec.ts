@@ -1400,6 +1400,67 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
+  test('Punto 7-Nuevo: Panel de vida con Daño recibido y Vida ganada mediante Enter y comprobación de que +-5 ya no existe en el DOM', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'LifePanelPod');
+    const [pageA] = pages;
+
+    try {
+      await expect(pageA.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // 1. Localizar la pastilla de vida del jugador local y comprobar vida inicial en 40
+      const lifeBtn = pageA.locator('[data-life-button]').first();
+      await expect(lifeBtn).toBeVisible({ timeout: 10000 });
+      await expect(lifeBtn).toContainText('40');
+
+      // 2. Abrir el panel de vida haciendo clic en la pastilla
+      await lifeBtn.click();
+      await pageA.waitForTimeout(300);
+
+      // 3. Comprobar que +-5 ya no existe en el DOM
+      const plus5Btn = pageA.locator('button:has-text("+5")');
+      const minus5Btn = pageA.locator('button:has-text("-5")');
+      expect(await plus5Btn.count()).toBe(0);
+      expect(await minus5Btn.count()).toBe(0);
+
+      // 4. Escribir 7 en 'Daño recibido', Enter -> vida baja en 7 (de 40 a 33)
+      const damageInput = pageA.locator('input[aria-label="Daño recibido"]').first();
+      await expect(damageInput).toBeVisible();
+      await damageInput.fill('7');
+      await damageInput.press('Enter');
+      await pageA.waitForTimeout(600);
+
+      // Verificar que la vida bajó a 33
+      await expect(lifeBtn).toContainText('33');
+
+      // 5. Escribir 3 en 'Vida ganada', Enter -> vida sube en 3 (de 33 a 36)
+      if (!(await pageA.locator('input[aria-label="Vida ganada"]').first().isVisible())) {
+        await lifeBtn.click();
+        await pageA.waitForTimeout(300);
+      }
+      const healInput = pageA.locator('input[aria-label="Vida ganada"]').first();
+      await expect(healInput).toBeVisible();
+      await healInput.fill('3');
+      await healInput.press('Enter');
+      await pageA.waitForTimeout(600);
+
+      // Verificar que la vida subió a 36
+      await expect(lifeBtn).toContainText('36');
+
+      // 6. Verificar que los inputs quedaron limpios tras pulsar Enter
+      if (await damageInput.isVisible()) {
+        await expect(damageInput).toHaveValue('');
+      }
+      if (await healInput.isVisible()) {
+        await expect(healInput).toHaveValue('');
+      }
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
+
   test('Punto 5-Legacy: Flujos zona a zona (comandante a mesa, mesa a mano, biblioteca a mesa y mano, pilas)', async ({ browser }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'ZoneFlows');

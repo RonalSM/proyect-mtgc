@@ -57,9 +57,9 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 ### REQ-3 Seguimiento de vida
 **Historia:** Como jugador, quiero ajustar mi vida y la de otros, para llevar el marcador sin papel.
 1. THE sistema SHALL mostrar la vida de cada jugador de forma visible para todos.
-2. WHEN un jugador pulsa +1/−1 o +5/−5, THE sistema SHALL actualizar su vida y propagarla a todos en menos de 300 ms.
+2. WHEN un jugador pulsa +1/−1 o ingresa daño o vida, THE sistema SHALL actualizar su vida y propagarla a todos en menos de 300 ms. Se eliminan los botones de +-5 (Punto 7).
 3. WHEN la vida llega a 0 o menos, THE sistema SHALL marcar al jugador como "en riesgo de derrota" (sin eliminarlo automáticamente).
-4. THE sistema SHALL permitir ingresar un valor numérico arbitrario.
+4. THE sistema SHALL ofrecer en el panel de vida interactivo dos entradas numéricas: "Daño recibido" (resta a la vida actual) y "Vida ganada" (suma a la vida actual). Ambas aplican la variación al presionar la tecla Enter y limpian inmediatamente la entrada para la siguiente operación. Solo aceptan números enteros positivos, descartando cualquier otro carácter (Punto 7).
 
 ### REQ-4 Daño de comandante
 **Historia:** Como jugador, quiero registrar el daño de comandante por oponente, para detectar derrotas por 21.
@@ -232,7 +232,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 5. THE pastilla de vida SHALL ubicarse en la **esquina interior** de cada celda, es decir, la más cercana al centro de la pantalla:
    5.1. Fila superior → borde inferior de la celda; fila inferior → borde superior de la celda.
    5.2. Columna izquierda → lado derecho; columna derecha o central → lado izquierdo.
-   5.3. WHEN el jugador hace clic en la pastilla, THE sistema SHALL abrir los controles de −1, +1, −5, +5 y valor numérico (REQ-3).
+   5.3. WHEN el jugador hace clic en la pastilla, THE sistema SHALL abrir el panel de vida interactivo con controles directos de −1 y +1 (eliminando botones de +-5) y dos campos numéricos "Daño recibido" y "Vida ganada" accionados mediante Enter (REQ-3, Punto 7).
    5.4. THE veneno, energía, experiencia, impuesto de comandante y daño de comandante SHALL mostrarse como insignias pequeñas desplegables junto a la pastilla (REQ-4, REQ-5).
 6. THE campo de batalla SHALL ocupar el resto de la celda, con cartas colocadas libremente y que pueden solaparse parcialmente:
    6.1. THE posición de cada carta SHALL guardarse **normalizada** (valores de 0 a 1 respecto al tamaño de la celda), para que coincida en pantallas de distinto tamaño.
