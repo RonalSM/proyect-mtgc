@@ -403,6 +403,21 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       return;
     }
 
+    // Punto 6: Soltar sobre la zona de comando la devuelve al comando (+2 tax automático)
+    if (overData?.zone === 'command' && overData?.playerId === localPlayerId) {
+      flushSync(() => {
+        setIsDragging(false);
+        setActiveDragItem(null);
+      });
+      onAction('MOVE_CARD', {
+        cardInstanceId: active.id,
+        fromZone: fromZone || 'battlefield',
+        toZone: 'command',
+        toPlayerId: localPlayerId,
+      });
+      return;
+    }
+
     // Punto 1: Aplicar posición de forma optimista y síncrona en el mismo frame para eliminar parpadeo en emisor
     flushSync(() => {
       setOptimisticPositions(prev => ({
@@ -538,6 +553,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         isTwoPlayer={isTwoPlayer}
         isActiveTurn={isActiveTurn}
         localPlayerId={localPlayerId}
+        allBattlefieldCards={allBattlefieldCards}
         onAction={onAction}
         onExpandCell={() => setExpandedPlayerId(expandedPlayerId === player.id ? null : player.id)}
       />

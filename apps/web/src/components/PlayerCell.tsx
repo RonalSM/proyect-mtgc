@@ -5,7 +5,6 @@ import type { PlayerState, GameActionType, CardInstance } from '@mtgc/shared';
 import {
   Heart,
   Skull,
-  Shield,
   Maximize2,
   Image as ImageIcon,
   AlertTriangle,
@@ -15,13 +14,12 @@ import { HandFan } from './HandFan';
 import { CardDisplay } from './CardDisplay';
 import { Portal } from './Portal';
 
-// Componente de Comandante arrastrable hacia el campo (Punto 5a)
+// Componente de Comandante arrastrable hacia el campo (Punto 5a / Punto 6)
 const DraggableCommanderCard: React.FC<{
   card: CardInstance;
   isLocalPlayer: boolean;
-  commanderTax: number;
   onClick: () => void;
-}> = ({ card, isLocalPlayer, commanderTax, onClick }) => {
+}> = ({ card, isLocalPlayer, onClick }) => {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.instanceId,
     data: { card, fromZone: 'command' },
@@ -41,11 +39,6 @@ const DraggableCommanderCard: React.FC<{
       }`}
     >
       <CardDisplay card={card.definition} allowFaceToggle={false} />
-      {commanderTax > 0 && (
-        <div className="absolute top-1 right-1 bg-amber-500 text-slate-950 font-black text-[9px] px-1 rounded shadow">
-          +{commanderTax}
-        </div>
-      )}
       <div className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[8px] font-black text-amber-300 text-center py-0.5 tracking-wider uppercase backdrop-blur-xs pointer-events-none">
         COMANDANTE
       </div>
@@ -288,6 +281,7 @@ interface PlayerCellProps {
   isTwoPlayer?: boolean;
   reduceBackgrounds?: boolean;
   localPlayerId?: string;
+  allBattlefieldCards?: CardInstance[];
   onAction: (type: GameActionType, payload: unknown) => void;
   onExpandCell?: () => void;
 }
@@ -302,6 +296,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   isTwoPlayer = false,
   reduceBackgrounds = false,
   localPlayerId = player.id,
+  allBattlefieldCards,
   onAction,
   onExpandCell,
 }) => {
@@ -327,6 +322,13 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const { setNodeRef: setExileDropRef, isOver: isExileOver } = useDroppable({
     id: `exile-${player.id}`,
     data: { zone: 'exile', playerId: player.id },
+  });
+
+  // Punto 6: Droppable hook para la zona de comando
+  const { setNodeRef: setCommandDropRef, isOver: isCommandOver } = useDroppable({
+    id: `droppable-command-${player.id}`,
+    data: { zone: 'command', playerId: player.id },
+    disabled: !isLocalPlayer,
   });
 
   // Punto 6: Droppable hook para la mano (solo para jugador local)
@@ -386,6 +388,36 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
 
   const adjustCounter = (type: string, delta: number) => {
     onAction('SET_PLAYER_COUNTER', { playerId: player.id, counterType: type, delta });
+  };
+
+  // Punto 6: Devolver comandante a la zona de comando
+  const handleReturnCommanderToCommand = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const commanderCard =
+      allBattlefieldCards?.find(c => c.isCommander && c.ownerId === player.id) ||
+      zones.battlefield.find(c => c.isCommander) ||
+      zones.graveyard.find(c => c.isCommander) ||
+      zones.exile.find(c => c.isCommander) ||
+      zones.hand.find(c => c.isCommander);
+
+    if (commanderCard) {
+      const fromZone = allBattlefieldCards?.some(c => c.instanceId === commanderCard.instanceId)
+        ? 'battlefield'
+        : zones.graveyard.some(c => c.instanceId === commanderCard.instanceId)
+        ? 'graveyard'
+        : zones.exile.some(c => c.instanceId === commanderCard.instanceId)
+        ? 'exile'
+        : zones.hand.some(c => c.instanceId === commanderCard.instanceId)
+        ? 'hand'
+        : 'battlefield';
+
+      onAction('MOVE_CARD', {
+        cardInstanceId: commanderCard.instanceId,
+        fromZone,
+        toZone: 'command',
+        toPlayerId: player.id,
+      });
+    }
   };
 
   const handleSavePlaymat = (e: React.FormEvent) => {
@@ -594,28 +626,15 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     </button>
                   )}
 
-                  {/* Counter Badges Menu */}
-                  <div className="pt-1.5 border-t border-slate-800 grid grid-cols-2 gap-1 text-[10px]">
-                    <div className="flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg">
-                      <span className="text-emerald-400 flex items-center space-x-1">
-                        <Skull className="w-2.5 h-2.5" />
-                        <span>{player.counters.poison}</span>
-                      </span>
-                      <div className="flex space-x-1">
-                        <button onClick={() => adjustCounter('poison', -1)} className="hover:text-white">-</button>
-                        <button onClick={() => adjustCounter('poison', 1)} className="hover:text-white">+</button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg">
-                      <span className="text-amber-400 flex items-center space-x-1">
-                        <Shield className="w-2.5 h-2.5" />
-                        <span>{player.counters.commanderTax}</span>
-                      </span>
-                      <div className="flex space-x-1">
-                        <button onClick={() => adjustCounter('commanderTax', -2)} className="hover:text-white">-2</button>
-                        <button onClick={() => adjustCounter('commanderTax', 2)} className="hover:text-white">+2</button>
-                      </div>
+                  {/* Counter Badges Menu (Punto 6: se eliminan controles de tax de la pastilla de vida para evitar duplicidad) */}
+                  <div className="pt-1.5 border-t border-slate-800 flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg text-[10px]">
+                    <span className="text-emerald-400 flex items-center space-x-1">
+                      <Skull className="w-2.5 h-2.5" />
+                      <span>Veneno: {player.counters.poison}</span>
+                    </span>
+                    <div className="flex space-x-1">
+                      <button onClick={() => adjustCounter('poison', -1)} className="hover:text-white px-1 font-bold">-</button>
+                      <button onClick={() => adjustCounter('poison', 1)} className="hover:text-white px-1 font-bold">+</button>
                     </div>
                   </div>
                 </div>
@@ -624,32 +643,81 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           </div>
         </div>
 
-        {/* 2. Zona de Comandante - Mismo ancho y alto que una carta (Punto 5a: Arrastrable hacia el campo) */}
+        {/* 2. Zona de Comandante - Droppable para devolver al comandante (Punto 6) */}
         <div
+          ref={isLocalPlayer ? setCommandDropRef : undefined}
           data-dock-zone="command"
+          data-is-over={isCommandOver ? 'true' : 'false'}
           style={{
             width: 'var(--card-w)',
             height: 'var(--card-h)',
           }}
-          className="rounded-lg overflow-hidden border shadow-lg bg-slate-950 flex flex-col items-center justify-center relative flex-shrink-0 pointer-events-auto z-20"
+          className={`rounded-lg overflow-hidden border shadow-lg bg-slate-950 flex flex-col items-center justify-center relative flex-shrink-0 pointer-events-auto z-20 transition-all ${
+            isCommandOver ? 'ring-2 ring-amber-400 bg-amber-950/40 border-amber-400 scale-[1.03]' : 'border-slate-800'
+          }`}
           title={`Zona de Comando (${zones.command.length} cartas)`}
         >
+          {/* Badge interactivo con impuesto de comandante +/-2 (Punto 6) */}
+          <div
+            data-testid="commander-tax-badge"
+            className="absolute top-1 inset-x-1 z-30 flex items-center justify-between bg-slate-950/90 border border-amber-500/60 rounded px-1 py-0.5 shadow backdrop-blur-xs select-none pointer-events-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <span className="text-[9px] font-black text-amber-400 tracking-tight font-mono">
+              Tax: +{player.counters.commanderTax ?? 0}
+            </span>
+            {isLocalPlayer && (
+              <div className="flex items-center space-x-0.5 ml-1">
+                <button
+                  data-testid="commander-tax-minus"
+                  onClick={e => {
+                    e.stopPropagation();
+                    adjustCounter('commanderTax', -2);
+                  }}
+                  disabled={(player.counters.commanderTax ?? 0) <= 0}
+                  className="w-3.5 h-3.5 flex items-center justify-center bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-800 text-amber-300 font-bold text-[9px] rounded transition-colors cursor-pointer"
+                  title="Restar 2 al impuesto de comandante"
+                >
+                  -
+                </button>
+                <button
+                  data-testid="commander-tax-plus"
+                  onClick={e => {
+                    e.stopPropagation();
+                    adjustCounter('commanderTax', 2);
+                  }}
+                  className="w-3.5 h-3.5 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-[9px] rounded transition-colors cursor-pointer"
+                  title="Sumar 2 al impuesto de comandante"
+                >
+                  +
+                </button>
+              </div>
+            )}
+          </div>
+
           {zones.command.length > 0 ? (
             <DraggableCommanderCard
               card={zones.command[0]}
               isLocalPlayer={isLocalPlayer}
-              commanderTax={player.counters.commanderTax}
               onClick={() => setActivePileModal('command')}
             />
           ) : (
             <div
-              onClick={() => setActivePileModal('command')}
-              className="w-full h-full border-2 border-dashed border-amber-600/40 rounded-lg flex flex-col items-center justify-center p-1 text-center bg-amber-950/10 cursor-pointer"
+              className="w-full h-full border-2 border-dashed border-amber-600/40 rounded-lg flex flex-col items-center justify-center p-1 text-center bg-amber-950/10 relative"
             >
-              <span className="text-[9px] font-black text-amber-500/80 uppercase tracking-tight leading-tight">
-                ZONA COMANDO
-              </span>
-              <span className="text-[8px] text-slate-500 mt-0.5">(En campo)</span>
+              <div className="mt-5 flex flex-col items-center">
+                <span className="text-[8px] text-slate-500 mb-0.5">(En campo)</span>
+                {isLocalPlayer && (
+                  <button
+                    data-testid="return-to-command-btn"
+                    onClick={handleReturnCommanderToCommand}
+                    className="px-1.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[9px] uppercase tracking-tight rounded shadow hover:shadow-md transition-all active:scale-95 cursor-pointer leading-tight text-center z-20"
+                    title="Devolver al comandante a la zona de comando (+2 Tax)"
+                  >
+                    Devolver al comando
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>

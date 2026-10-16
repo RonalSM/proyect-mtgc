@@ -702,6 +702,22 @@ export class GameStateSession {
       this.syncPlayerCounts(targetPlayerId);
     }
 
+    // Punto 6: Al devolver el comandante a la zona de comando, el impuesto de comandante (tax) debe incrementarse automáticamente en +2.
+    // Sacar el comandante a la mesa NO altera el tax.
+    let prevTax: number | undefined;
+    if (payload.toZone === 'command' && card.isCommander) {
+      const ownerPlayer = this.state.players[card.ownerId];
+      if (ownerPlayer) {
+        prevTax = ownerPlayer.counters.commanderTax;
+        ownerPlayer.counters.commanderTax = (ownerPlayer.counters.commanderTax || 0) + 2;
+        this.addLog(
+          playerId,
+          `devolvió su comandante "${card.definition.name}" a la zona de comando (Tax: +${ownerPlayer.counters.commanderTax})`,
+          true,
+        );
+      }
+    }
+
     if (payload.fromZone === 'battlefield' && payload.toZone === 'battlefield') {
       this.addLog(
         playerId,
@@ -732,6 +748,12 @@ export class GameStateSession {
           card.holderId = previousHolderId;
           card.position = previousPosition;
           fromArray.splice(cardIndex, 0, card);
+          if (prevTax !== undefined) {
+            const ownerPlayer = this.state.players[card.ownerId];
+            if (ownerPlayer) {
+              ownerPlayer.counters.commanderTax = prevTax;
+            }
+          }
           this.syncPlayerCounts(fromPlayerId);
           if (targetPlayerId !== fromPlayerId) {
             this.syncPlayerCounts(targetPlayerId);

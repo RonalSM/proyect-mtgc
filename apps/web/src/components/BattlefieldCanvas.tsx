@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { CardInstance, GameActionType, CardDefinition } from '@mtgc/shared';
 import { useDraggable } from '@dnd-kit/core';
-import { RotateCw, Eye, Plus, Copy } from 'lucide-react';
+import { RotateCw, Eye, Plus, Copy, Shield } from 'lucide-react';
 import { CardDisplay } from './CardDisplay';
 import { useCardPreview } from '../context/CardPreviewContext';
 import type { RemoteDragState } from '../hooks/useGameSocket';
@@ -40,6 +40,7 @@ interface BattlefieldCardItemProps {
   onFlip: () => void;
   onAddCounter: (counterType: string) => void;
   onClone: () => void;
+  onSendToCommand?: () => void;
   showPreview: (card: CardDefinition) => void;
   hidePreview: () => void;
 }
@@ -57,6 +58,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   onFlip,
   onAddCounter,
   onClone,
+  onSendToCommand,
   showPreview,
   hidePreview,
 }) => {
@@ -289,6 +291,20 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
             <Eye className="w-3 h-3" />
             <span>{card.isFaceDown ? 'Boca arriba' : 'Boca abajo'}</span>
           </button>
+          {card.isCommander && onSendToCommand && (
+            <button
+              data-testid="context-to-command"
+              onClick={() => {
+                onSendToCommand();
+                setIsContextMenuOpen(false);
+              }}
+              className="p-1 hover:bg-slate-800 rounded text-amber-300 flex items-center space-x-1 px-1.5 cursor-pointer"
+              title="Devolver a la zona de comando (+2 Tax)"
+            >
+              <Shield className="w-3 h-3" />
+              <span>A Comando</span>
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -371,6 +387,15 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
     });
   };
 
+  const handleSendToCommand = (card: CardInstance) => {
+    onAction('MOVE_CARD', {
+      cardInstanceId: card.instanceId,
+      fromZone: 'battlefield',
+      toZone: 'command',
+      toPlayerId: card.ownerId,
+    });
+  };
+
   return (
     <div
       id="battlefield-canvas-global"
@@ -398,6 +423,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
             onFlip={() => handleFlip(card)}
             onAddCounter={counterType => handleAddCounter(card, counterType)}
             onClone={() => handleClone(card)}
+            onSendToCommand={() => handleSendToCommand(card)}
             showPreview={showPreview}
             hidePreview={hidePreview}
           />

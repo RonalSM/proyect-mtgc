@@ -142,6 +142,14 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
        - **Modal inspector con menú contextual:** Al hacer clic en cualquier pila, THE sistema SHALL abrir un modal en portal con la cuadrícula completa de cartas de dicha zona. Hacer clic derecho sobre una carta dentro del modal despliega un menú flotante con las opciones: "Enviar a la mano", "Enviar al campo" (y en cementerio, "Enviar al exilio").
        - **Privacidad de zonas:** Cualquier jugador puede inspeccionar libremente el cementerio y el exilio de todos los participantes. La biblioteca privada únicamente puede ser inspeccionada por su respectivo dueño; los rivales reciben los datos de las cartas enmascarados desde el servidor.
 
+    7.20. **Zona de comando interactiva y gestión autoritativa de impuesto (Punto 6):**
+       - **Ranura droppable:** La zona de comando en el dock de cada jugador SHALL ser un destino droppable (`useDroppable` con `data: { zone: 'command', playerId }`, deshabilitado para rivales), permitiendo devolver al comandante arrastrándolo desde la mesa o pilas.
+       - **Botón explícito de devolución:** WHEN la zona de comando está vacía (comandante en el campo u otra zona), THE sistema SHALL mostrar un botón explícito "Devolver al comando" (`data-testid="return-to-command-btn"`), permitiendo devolverlo inmediatamente sin necesidad de arrastre.
+       - **Auto-incremento de Tax:** Al devolver al comandante a la zona de comando (sea mediante arrastre, mediante el botón explícito o mediante el menú contextual clic derecho "A Comando"), THE servidor SHALL incrementar automáticamente el impuesto de comandante (`commanderTax`) en +2 de forma autoritativa.
+       - **Sacar a la mesa no altera el tax:** Sacar el comandante desde la zona de comando hacia el campo de batalla SHALL mantener inalterado el valor actual de `commanderTax`.
+       - **Badge de Tax interactivo:** La ranura de comando SHALL mostrar permanentemente un badge con el valor actual del impuesto (`Tax: +0`, `Tax: +2`, etc., `data-testid="commander-tax-badge"`) y dos controles interactivos (`+` y `-`, `data-testid="commander-tax-plus"` / `commander-tax-minus`) que sumen o resten de 2 en 2 (`SET_PLAYER_COUNTER` con delta ±2; el impuesto nunca varía de 1 en 1).
+       - **Eliminación de duplicidad en la pastilla de vida:** Los controles de `commanderTax` SHALL ser eliminados de la pastilla de vida (`LifePill`), centralizando toda la gestión del impuesto exclusivamente en la zona de comando.
+
 ### REQ-10 Sincronización y reconexión
 **Historia:** Como jugador, quiero volver a la partida si se cae mi conexión.
 1. THE sistema SHALL mantener el estado autoritativo de la mesa en el servidor.

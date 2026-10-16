@@ -1312,6 +1312,94 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
+  test('Punto 6: Zona de comando droppable, badge tax +/-2, auto-incremento de tax al devolver al comando y consistencia al sacar', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'CommandTaxPod');
+    const [pageA] = pages;
+
+    try {
+      await expect(pageA.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // 1. Estado inicial: ranura de comando droppable visible y badge Tax: +0
+      const commandZone = pageA.locator('[data-dock-zone="command"]').first();
+      await expect(commandZone).toBeVisible({ timeout: 10000 });
+      const taxBadge = pageA.locator('[data-testid="commander-tax-badge"]').first();
+      await expect(taxBadge).toBeVisible();
+      await expect(taxBadge).toContainText('Tax: +0');
+
+      // 2. Sacar comandante a la mesa (tax sigue en +0)
+      const commanderCard = pageA.locator('[data-commander-card="true"]').first();
+      await expect(commanderCard).toBeVisible();
+      const cmdBox = await commanderCard.boundingBox();
+      expect(cmdBox).not.toBeNull();
+
+      if (cmdBox) {
+        await pageA.mouse.move(cmdBox.x + cmdBox.width / 2, cmdBox.y + cmdBox.height / 2);
+        await pageA.mouse.down();
+        await pageA.mouse.move(cmdBox.x, cmdBox.y - 250, { steps: 15 });
+        await pageA.mouse.up();
+        await pageA.waitForTimeout(600);
+      }
+
+      // Verificar que el comandante está en la mesa y el tax se mantiene en +0
+      const battlefieldCard = pageA.locator('[data-battlefield-card="true"]').first();
+      await expect(battlefieldCard).toBeVisible({ timeout: 10000 });
+      await expect(taxBadge).toContainText('Tax: +0');
+
+      // 3. Botón explícito "Devolver al comando" está visible en la ranura vacía
+      const returnBtn = pageA.locator('[data-testid="return-to-command-btn"]').first();
+      await expect(returnBtn).toBeVisible({ timeout: 5000 });
+
+      // 4. Devolverlo al comando usando el botón: tax sube a +2
+      await returnBtn.click();
+      await pageA.waitForTimeout(600);
+
+      // Comprobar que el comandante volvió a la zona de comando y el tax es +2
+      await expect(pageA.locator('[data-commander-card="true"]').first()).toBeVisible({ timeout: 10000 });
+      await expect(taxBadge).toContainText('Tax: +2');
+
+      // 5. Subir tax manualmente a +4 usando el botón '+' del badge
+      const plusBtn = pageA.locator('[data-testid="commander-tax-plus"]').first();
+      await plusBtn.click();
+      await pageA.waitForTimeout(600);
+      await expect(taxBadge).toContainText('Tax: +4');
+
+      // 6. Sacarlo de nuevo a la mesa: tax se mantiene en +4
+      const cmdBox2 = await pageA.locator('[data-commander-card="true"]').first().boundingBox();
+      expect(cmdBox2).not.toBeNull();
+      if (cmdBox2) {
+        await pageA.mouse.move(cmdBox2.x + cmdBox2.width / 2, cmdBox2.y + cmdBox2.height / 2);
+        await pageA.mouse.down();
+        await pageA.mouse.move(cmdBox2.x, cmdBox2.y - 250, { steps: 15 });
+        await pageA.mouse.up();
+        await pageA.waitForTimeout(600);
+      }
+
+      await expect(pageA.locator('[data-battlefield-card="true"]').first()).toBeVisible({ timeout: 10000 });
+      await expect(taxBadge).toContainText('Tax: +4');
+
+      // 7. Devolverlo ahora arrastrándolo a la ranura de comando: tax sube automáticamente a +6
+      const bfBox = await pageA.locator('[data-battlefield-card="true"]').first().boundingBox();
+      const slotBox = await commandZone.boundingBox();
+      expect(bfBox).not.toBeNull();
+      expect(slotBox).not.toBeNull();
+      if (bfBox && slotBox) {
+        await pageA.mouse.move(bfBox.x + bfBox.width / 2, bfBox.y + bfBox.height / 2);
+        await pageA.mouse.down();
+        await pageA.mouse.move(slotBox.x + slotBox.width / 2, slotBox.y + slotBox.height / 2, { steps: 20 });
+        await pageA.mouse.up();
+        await pageA.waitForTimeout(600);
+      }
+
+      await expect(pageA.locator('[data-commander-card="true"]').first()).toBeVisible({ timeout: 10000 });
+      await expect(taxBadge).toContainText('Tax: +6');
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
+
   test('Punto 5-Legacy: Flujos zona a zona (comandante a mesa, mesa a mano, biblioteca a mesa y mano, pilas)', async ({ browser }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'ZoneFlows');
