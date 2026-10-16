@@ -196,6 +196,7 @@ export class WebSocketHandler {
               position: valid.position,
               cardDefinition: valid.cardDefinition,
               fromZone: valid.fromZone,
+              isTapped: valid.isTapped,
             },
           });
           for (const c of clientsInRoom) {

@@ -80,7 +80,7 @@ Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 ### Flujo 2: Acción de juego (mover carta en MesaTotal con coordenadas globales y sincronización sin parpadeo)
 ```
 1. Jugador A inicia arrastre de carta (desde mano a mesa, o reposicionando en el campo de batalla de MesaTotal).
-2. DragOverlay se renderiza mediante Portal a document.body para evitar recortes al cruzar divisiones.
+2. DragOverlay se renderiza mediante Portal a document.body conservando el giro apaisado para cartas giradas (isTapped: true como caja apaisada con desplazamiento de puntero constante y coincidencia ≤ 2px al soltar).
 3. Durante el arrastre, Web Client A emite CARD_DRAG_MOVE efímero throttled a ~30 fps con coordenadas globales normalizadas (x, y ∈ [0, 1]).
 4. Game Server retransmite REMOTE_CARD_DRAGGING a los demás clientes (receptor B). B oculta la carta real fija (opacity: 0) y muestra el fantasma remoto interpolado.
 5. Al soltar la carta:

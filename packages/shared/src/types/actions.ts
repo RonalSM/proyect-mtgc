@@ -184,6 +184,7 @@ export interface CardDragMovePayload {
   };
   cardDefinition?: CardDefinition;
   fromZone?: ZoneType;
+  isTapped?: boolean;
 }
 
 export interface RemoteCardDraggingPayload {
@@ -197,4 +198,5 @@ export interface RemoteCardDraggingPayload {
   };
   cardDefinition?: CardDefinition;
   fromZone?: ZoneType;
+  isTapped?: boolean;
 }

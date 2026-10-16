@@ -161,8 +161,13 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       const initial = event.active.rect.current?.initial;
       const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
       const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
-      const normX = initial ? Math.max(0, Math.min(winW - cardPixelWidth, initial.left)) / winW : 0.5;
-      const normY = initial ? Math.max(0, Math.min(winH - cardPixelHeight, initial.top)) / winH : 0.5;
+      const isTapped = !!data.card.isTapped;
+      const overlayWidth = isTapped ? cardPixelHeight : cardPixelWidth;
+      const overlayHeight = isTapped ? cardPixelWidth : cardPixelHeight;
+      const clampedX = initial ? Math.max(0, Math.min(winW - overlayWidth, initial.left)) : winW * 0.5;
+      const clampedY = initial ? Math.max(0, Math.min(winH - overlayHeight, initial.top)) : winH * 0.5;
+      const normX = clampedX / winW;
+      const normY = clampedY / winH;
 
       onAction('CARD_DRAG_MOVE', {
         cardInstanceId: event.active.id,
@@ -170,6 +175,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         position: { x: normX, y: normY },
         cardDefinition: data.card.definition,
         fromZone: data.fromZone,
+        isTapped,
       });
     }
   };
@@ -184,8 +190,14 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const translated = event.active.rect.current?.translated;
     const initial = event.active.rect.current?.initial;
 
-    const overlayWidth = translated?.width || initial?.width || cardPixelWidth;
-    const overlayHeight = translated?.height || initial?.height || cardPixelHeight;
+    const data = event.active.data.current as {
+      card?: CardInstance;
+      fromZone?: 'hand' | 'battlefield' | 'command' | 'library' | 'graveyard' | 'exile';
+    } | undefined;
+
+    const isTapped = !!(data?.card?.isTapped || activeDragItem?.card?.isTapped);
+    const overlayWidth = isTapped ? cardPixelHeight : (translated?.width || initial?.width || cardPixelWidth);
+    const overlayHeight = isTapped ? cardPixelWidth : (translated?.height || initial?.height || cardPixelHeight);
 
     let overlayLeft = 0;
     let overlayTop = 0;
@@ -210,17 +222,13 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const normX = clampedX / winW;
     const normY = clampedY / winH;
 
-    const data = event.active.data.current as {
-      card?: CardInstance;
-      fromZone?: 'hand' | 'battlefield' | 'command' | 'library' | 'graveyard' | 'exile';
-    } | undefined;
-
     onAction('CARD_DRAG_MOVE', {
       cardInstanceId: event.active.id,
       isDragging: true,
       position: { x: normX, y: normY },
-      cardDefinition: data?.card?.definition,
-      fromZone: data?.fromZone,
+      cardDefinition: data?.card?.definition || activeDragItem?.card?.definition,
+      fromZone: data?.fromZone || activeDragItem?.fromZone,
+      isTapped,
     });
   };
 
@@ -255,12 +263,13 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const overData = over?.data.current as { zone?: string; playerId?: string } | undefined;
     const fromZone = (active.data.current as { fromZone?: string })?.fromZone;
 
-    // Punto 3: La posición final se calcula a partir del rectángulo real del overlay al soltar
+    // Punto 2 / 3: La posición final se calcula a partir del rectángulo real del overlay al soltar
     const translated = active.rect.current?.translated;
     const initial = active.rect.current?.initial;
 
-    const overlayWidth = translated?.width || initial?.width || cardPixelWidth;
-    const overlayHeight = translated?.height || initial?.height || cardPixelHeight;
+    const isTapped = !!activeDragItem?.card?.isTapped;
+    const overlayWidth = isTapped ? cardPixelHeight : (translated?.width || initial?.width || cardPixelWidth);
+    const overlayHeight = isTapped ? cardPixelWidth : (translated?.height || initial?.height || cardPixelHeight);
 
     let overlayLeft = 0;
     let overlayTop = 0;
@@ -287,12 +296,12 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const normX = clampedX / winW;
     const normY = clampedY / winH;
 
-    // Punto 1: Notificar fin de arrastre efímero incluyendo la posición final calculada para que rivales
-    // mantengan oculta la carta fija y ubiquen el fantasma en el destino exacto sin parpadeos
+    // Punto 1 / Punto 2: Notificar fin de arrastre efímero incluyendo la posición final calculada e isTapped
     onAction('CARD_DRAG_MOVE', {
       cardInstanceId: active.id,
       isDragging: false,
       position: { x: normX, y: normY },
+      isTapped,
     });
 
     // Punto 4 / 7: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila si el puntero está dentro
@@ -497,24 +506,63 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           />
         )}
 
-        {/* Drag Overlay visual en portal a document.body con medidas exactas en px sin zoom ni rotación (Punto 1) */}
+        {/* Drag Overlay visual en portal a document.body con medidas exactas en px, conservando giro apaisado para cartas giradas (Punto 2) */}
         <Portal>
           <DragOverlay dropAnimation={null}>
             {activeDragItem ? (
               <div
                 data-drag-overlay="true"
-                style={{
-                  width: `${cardPixelWidth}px`,
-                  height: `${cardPixelHeight}px`,
-                  transition: 'none',
-                }}
-                className="rounded-lg overflow-hidden border border-slate-700/80 shadow-md pointer-events-none select-none z-[9999]"
+                style={
+                  activeDragItem.card.isTapped
+                    ? {
+                        width: `${cardPixelHeight}px`,
+                        height: `${cardPixelWidth}px`,
+                        position: 'relative',
+                        transition: 'none',
+                      }
+                    : {
+                        width: `${cardPixelWidth}px`,
+                        height: `${cardPixelHeight}px`,
+                        transition: 'none',
+                      }
+                }
+                className="pointer-events-none select-none z-[9999]"
               >
-                <CardDisplay
-                  card={activeDragItem.card.definition}
-                  isFaceDown={activeDragItem.card.isFaceDown}
-                  allowFaceToggle={false}
-                />
+                {activeDragItem.card.isTapped ? (
+                  <div
+                    style={{
+                      width: `${cardPixelWidth}px`,
+                      height: `${cardPixelHeight}px`,
+                      position: 'absolute',
+                      left: `${(cardPixelHeight - cardPixelWidth) / 2}px`,
+                      top: `${(cardPixelWidth - cardPixelHeight) / 2}px`,
+                      transition: 'none',
+                    }}
+                    className="rounded-lg overflow-hidden border border-slate-700/80 shadow-md origin-center rotate-90"
+                  >
+                    <CardDisplay
+                      card={activeDragItem.card.definition}
+                      isFaceDown={activeDragItem.card.isFaceDown}
+                      allowFaceToggle={false}
+                      isTapped={true}
+                    />
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      width: `${cardPixelWidth}px`,
+                      height: `${cardPixelHeight}px`,
+                      transition: 'none',
+                    }}
+                    className="rounded-lg overflow-hidden border border-slate-700/80 shadow-md"
+                  >
+                    <CardDisplay
+                      card={activeDragItem.card.definition}
+                      isFaceDown={activeDragItem.card.isFaceDown}
+                      allowFaceToggle={false}
+                    />
+                  </div>
+                )}
               </div>
             ) : null}
           </DragOverlay>

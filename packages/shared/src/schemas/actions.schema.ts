@@ -144,6 +144,7 @@ export const CardDragMoveSchema = z.object({
     .optional(),
   cardDefinition: z.any().optional(),
   fromZone: ZoneTypeSchema.optional(),
+  isTapped: z.boolean().optional(),
 });
 
 export const ActionEnvelopeSchema = z.object({

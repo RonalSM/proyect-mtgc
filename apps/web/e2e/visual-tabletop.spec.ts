@@ -932,69 +932,109 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 2: Carta duplicada eliminada en la vista de rivales (un solo elemento visible durante arrastre)', async ({ browser }) => {
+  test('Punto 2: Arrastrar carta girada (conserva giro, desplazamiento constante, overlay y carta soltada coinciden <= 2px)', async ({ browser }) => {
     test.setTimeout(90000);
-    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'NoDupTest');
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'TappedDragPod');
     const [pageA, pageB] = pages;
+    pageA.on('console', msg => console.log('BROWSER_A:', msg.text()));
 
     try {
       await expect(pageA.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
       await expect(pageB.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
 
-      // 1. Contexto A coloca una carta en la mesa
+      // 1. Contexto A juega una carta de su mano a la mesa
       const handCardA = pageA.locator('[data-hand-card="true"]').first();
       await expect(handCardA).toBeVisible({ timeout: 10000 });
-      await handCardA.hover({ position: { x: 30, y: 35 } });
+      const handBoxA = await handCardA.boundingBox();
+      expect(handBoxA).not.toBeNull();
+      await pageA.mouse.move(handBoxA!.x + handBoxA!.width / 2, handBoxA!.y + handBoxA!.height / 2);
       await pageA.mouse.down();
       await pageA.mouse.move(500, 300, { steps: 15 });
+      await pageA.waitForTimeout(200);
       await pageA.mouse.up();
-      await pageA.waitForTimeout(800);
+      await pageA.waitForTimeout(1000);
 
       const placedCardA = pageA.locator('[data-battlefield-card="true"]').first();
       await expect(placedCardA).toBeVisible({ timeout: 10000 });
       const cardId = await placedCardA.getAttribute('data-card-instance-id');
       expect(cardId).toBeTruthy();
 
-      // Contexto B también ve la carta colocada
-      const placedCardB = pageB.locator(`[data-battlefield-card="true"][data-card-instance-id="${cardId}"]`);
-      await expect(placedCardB).toBeVisible({ timeout: 10000 });
+      // 2. Girar la carta (doble clic)
+      await placedCardA.dblclick();
+      await pageA.waitForTimeout(600);
 
-      // 2. Contexto A inicia el arrastre de esa carta en la mesa sin soltarla
-      const startBoxA = await placedCardA.boundingBox();
-      expect(startBoxA).not.toBeNull();
-      await pageA.mouse.move(startBoxA!.x + 30, startBoxA!.y + 30);
+      // Comprobar que la carta está girada con data-tapped o rotate-90
+      const isRotated = await placedCardA.evaluate(el => el.getAttribute('data-tapped') === 'true' || el.querySelector('.rotate-90') !== null || el.classList.contains('rotate-90'));
+      expect(isRotated).toBe(true);
+
+      const tappedBoxInitial = await placedCardA.boundingBox();
+      expect(tappedBoxInitial).not.toBeNull();
+      // Comprobar que es una caja apaisada (width > height)
+      expect(tappedBoxInitial!.width).toBeGreaterThan(tappedBoxInitial!.height);
+
+      // 3. Agarrar la carta girada en su caja visual y medir desplazamiento inicial
+      const grabX = tappedBoxInitial!.x + 30;
+      const grabY = tappedBoxInitial!.y + 20;
+      const initialOffsetX = grabX - tappedBoxInitial!.x;
+      const initialOffsetY = grabY - tappedBoxInitial!.y;
+
+      await pageA.mouse.move(grabX, grabY);
       await pageA.mouse.down();
-      await pageA.mouse.move(950, 450, { steps: 20 });
-      await pageA.waitForTimeout(300);
 
-      // 3. Contexto B verifica:
-      // a) El fantasma remoto es visible
-      const remoteGhostB = pageB.locator(`[data-remote-drag="true"][data-card-instance-id="${cardId}"]`);
-      await expect(remoteGhostB).toBeVisible({ timeout: 5000 });
+      // Mover a una posición intermedia
+      const intermediateTargetX = grabX + 150;
+      const intermediateTargetY = grabY + 80;
+      await pageA.mouse.move(intermediateTargetX, intermediateTargetY, { steps: 10 });
+      await pageA.waitForTimeout(200);
 
-      // b) La carta real fija está oculta (opacity 0)
-      const stationaryOpacityB = await placedCardB.evaluate(el => window.getComputedStyle(el).opacity);
-      expect(stationaryOpacityB).toBe('0');
+      // Verificar que el overlay conserva el giro apaisado y las dimensiones
+      const overlay = pageA.locator('[data-drag-overlay="true"]');
+      await expect(overlay).toBeVisible();
+      const overlayBox = await overlay.boundingBox();
+      expect(overlayBox).not.toBeNull();
 
-      // c) En total para esa cardInstanceId, Contexto B ve estrictamente UN elemento visible (el fantasma)
-      const visibleCountB = await pageB.evaluate(cId => {
-        const matches = Array.from(document.querySelectorAll(`[data-card-instance-id="${cId}"]`));
-        return matches.filter(el => {
-          const style = window.getComputedStyle(el);
-          return style.opacity !== '0' && style.display !== 'none' && style.visibility !== 'hidden';
-        }).length;
-      }, cardId);
-      console.log('ELEMENTOS_VISIBLES_EN_RIVAL_DURANTE_DRAG:', visibleCountB);
-      expect(visibleCountB).toBe(1);
+      // Comprobar que el ancho y el alto no cambian (caja apaisada)
+      expect(Math.abs(overlayBox!.width - tappedBoxInitial!.width)).toBeLessThanOrEqual(2);
+      expect(Math.abs(overlayBox!.height - tappedBoxInitial!.height)).toBeLessThanOrEqual(2);
 
-      // 4. Contexto A suelta la carta
+      // Comprobar que el desplazamiento entre el puntero y la carta se mantiene constante
+      const currentOffsetX = intermediateTargetX - overlayBox!.x;
+      const currentOffsetY = intermediateTargetY - overlayBox!.y;
+      expect(Math.abs(currentOffsetX - initialOffsetX)).toBeLessThanOrEqual(2);
+      expect(Math.abs(currentOffsetY - initialOffsetY)).toBeLessThanOrEqual(2);
+
+      // Mover al destino final (750, 450)
+      const finalTargetX = 750;
+      const finalTargetY = 450;
+      await pageA.mouse.move(finalTargetX, finalTargetY, { steps: 15 });
+      await pageA.waitForTimeout(200);
+
+      const finalOverlayBox = await overlay.boundingBox();
+      expect(finalOverlayBox).not.toBeNull();
+
+      // 4. Soltar la carta
       await pageA.mouse.up();
       await pageA.waitForTimeout(800);
 
-      // 5. El fantasma desaparece y la carta real fija vuelve a ser visible en su nueva posición
-      await expect(remoteGhostB).not.toBeVisible({ timeout: 5000 });
-      const finalOpacityB = await placedCardB.evaluate(el => window.getComputedStyle(el).opacity);
-      expect(finalOpacityB).toBe('1');
+      // 5. Comprobar que el overlay y la carta soltada coinciden en 2 px o menos
+      const finalPlacedBox = await placedCardA.boundingBox();
+      expect(finalPlacedBox).not.toBeNull();
+
+      console.log('OVERLAY_FINAL_BOX:', finalOverlayBox);
+      console.log('PLACED_CARD_FINAL_BOX:', finalPlacedBox);
+
+      expect(Math.abs(finalPlacedBox!.x - finalOverlayBox!.x)).toBeLessThanOrEqual(2);
+      expect(Math.abs(finalPlacedBox!.y - finalOverlayBox!.y)).toBeLessThanOrEqual(2);
+      expect(Math.abs(finalPlacedBox!.width - finalOverlayBox!.width)).toBeLessThanOrEqual(2);
+      expect(Math.abs(finalPlacedBox!.height - finalOverlayBox!.height)).toBeLessThanOrEqual(2);
+
+      // Y también en Contexto B la carta se ve girada y con las mismas dimensiones apaisadas
+      const placedCardB = pageB.locator(`[data-battlefield-card="true"][data-card-instance-id="${cardId}"]`);
+      await expect(placedCardB).toBeVisible({ timeout: 5000 });
+      const placedBoxB = await placedCardB.boundingBox();
+      expect(placedBoxB).not.toBeNull();
+      expect(Math.abs(placedBoxB!.width - finalOverlayBox!.width)).toBeLessThanOrEqual(2);
+      expect(Math.abs(placedBoxB!.height - finalOverlayBox!.height)).toBeLessThanOrEqual(2);
     } finally {
       for (const ctx of contexts) {
         await ctx.close().catch(() => {});
