@@ -14,6 +14,7 @@ import {
 import { HandFan } from './HandFan';
 import { CardDisplay } from './CardDisplay';
 import { Portal } from './Portal';
+import { useCardPreview } from '../context/CardPreviewContext';
 import { scryfallQueue } from '../services/scryfallQueue';
 
 const CARD_TYPE_FILTERS = [
@@ -32,6 +33,7 @@ const DraggableCommanderCard: React.FC<{
   isLocalPlayer: boolean;
   onClick: () => void;
 }> = ({ card, isLocalPlayer, onClick }) => {
+  const { showPreview, hidePreview } = useCardPreview();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.instanceId,
     data: { card, fromZone: 'command' },
@@ -46,6 +48,8 @@ const DraggableCommanderCard: React.FC<{
       data-commander-card="true"
       data-card-instance-id={card.instanceId}
       onClick={onClick}
+      onMouseEnter={(e) => !card.isFaceDown && !isDragging && showPreview(card.definition, e)}
+      onMouseLeave={hidePreview}
       className={`w-full h-full relative cursor-grab active:cursor-grabbing select-none ${
         isDragging ? 'opacity-0' : ''
       }`}
@@ -119,6 +123,7 @@ const DraggablePileCard: React.FC<{
   isLocalPlayer: boolean;
   onClick: () => void;
 }> = ({ card, fromZone, count, isLocalPlayer, onClick }) => {
+  const { showPreview, hidePreview } = useCardPreview();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.instanceId,
     data: { card, fromZone },
@@ -135,6 +140,8 @@ const DraggablePileCard: React.FC<{
       data-pile-card={fromZone}
       data-card-instance-id={card.instanceId}
       onClick={onClick}
+      onMouseEnter={(e) => card?.definition && !card.isFaceDown && !isDragging && showPreview(card.definition, e)}
+      onMouseLeave={hidePreview}
       className={`w-full h-full relative cursor-grab active:cursor-grabbing select-none overflow-hidden rounded-md border ${
         isGraveyard ? 'border-slate-700 bg-slate-900' : 'border-purple-800 bg-purple-950'
       } ${isDragging ? 'opacity-0' : ''}`}
@@ -162,6 +169,7 @@ const ModalCardItem: React.FC<{
   ownerPlayerId: string;
   onCloseModal: () => void;
 }> = ({ card, zone, onAction, localPlayerId, ownerPlayerId, onCloseModal }) => {
+  const { showPreview, hidePreview } = useCardPreview();
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -210,6 +218,8 @@ const ModalCardItem: React.FC<{
       data-card-name={card.definition.name}
       data-card-type={card.definition.typeLine}
       onContextMenu={handleContextMenu}
+      onMouseEnter={(e) => showPreview(card.definition, e)}
+      onMouseLeave={hidePreview}
       className="space-y-1 relative group cursor-context-menu"
       title="Clic derecho para opciones (Enviar a la mano, Enviar al campo)"
     >

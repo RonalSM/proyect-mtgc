@@ -41,7 +41,10 @@ interface BattlefieldCardItemProps {
   onAddCounter: (counterType: string) => void;
   onClone: () => void;
   onSendToCommand?: () => void;
-  showPreview: (card: CardDefinition) => void;
+  showPreview: (
+    card: CardDefinition,
+    posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent
+  ) => void;
   hidePreview: () => void;
 }
 
@@ -188,7 +191,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchEnd}
-      onMouseEnter={() => !card.isFaceDown && !isDragging && showPreview(card.definition)}
+      onMouseEnter={(e) => !card.isFaceDown && !isDragging && showPreview(card.definition, e)}
       onMouseLeave={hidePreview}
       className={`absolute group select-none pointer-events-auto transition-[width,height] duration-150 ${
         canMove ? 'cursor-pointer' : 'cursor-not-allowed'

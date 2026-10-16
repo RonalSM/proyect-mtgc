@@ -1537,6 +1537,88 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
+  test('Punto 9-Nuevo: Vista previa de carta centrada en la mitad de pantalla opuesta al cursor sin contenedor, marco ni fondo, con cierre por Escape y retiro de puntero', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'CardPreviewPod');
+    const [pageA] = pages;
+
+    try {
+      await expect(pageA.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // 1. Colocar una carta en la esquina superior izquierda de la mesa (x: 200, y: 150)
+      const handCard = pageA.locator('[data-hand-card]').first();
+      await expect(handCard).toBeVisible({ timeout: 10000 });
+      const handBox = await handCard.boundingBox();
+      expect(handBox).not.toBeNull();
+
+      await pageA.mouse.move(handBox!.x + handBox!.width / 2, handBox!.y + handBox!.height / 2);
+      await pageA.mouse.down();
+      await pageA.mouse.move(200, 150, { steps: 15 });
+      await pageA.waitForTimeout(150);
+      await pageA.mouse.up();
+      await pageA.waitForTimeout(800);
+
+      const fieldCard = pageA.locator('[data-battlefield-card="true"]').first();
+      await expect(fieldCard).toBeVisible({ timeout: 10000 });
+
+      // 2. Pasar el cursor sobre la carta en la esquina superior izquierda (x < 960)
+      const cardBox = await fieldCard.boundingBox();
+      expect(cardBox).not.toBeNull();
+      await pageA.mouse.move(cardBox!.x + cardBox!.width / 2, cardBox!.y + cardBox!.height / 2);
+      await pageA.waitForTimeout(350);
+
+      // 3. Comprobar que la vista previa aparece y está centrada en la mitad derecha (x >= 960, ~1440 px)
+      const previewOverlay = pageA.locator('[data-testid="card-preview-overlay"]');
+      await expect(previewOverlay).toBeVisible({ timeout: 5000 });
+
+      const overlayBox = await previewOverlay.boundingBox();
+      expect(overlayBox).not.toBeNull();
+      const centerX = overlayBox!.x + overlayBox!.width / 2;
+      const centerY = overlayBox!.y + overlayBox!.height / 2;
+
+      // Pantalla de 1920x1080: mitad derecha tiene centro en x=1440 (75%), centro vertical en y=540 (50%)
+      expect(centerX).toBeGreaterThan(960);
+      expect(Math.abs(centerX - 1440)).toBeLessThan(60);
+      expect(Math.abs(centerY - 540)).toBeLessThan(60);
+
+      // 4. Medir que NO hay caja ni fondo adicional detrás de la imagen (sin marco gris, sin contenedor, sin botón de cerrar)
+      const overlayBg = await previewOverlay.evaluate(el => window.getComputedStyle(el).backgroundColor);
+      expect(overlayBg).toMatch(/rgba\(0,\s*0,\s*0,\s*0\)|transparent/);
+
+      const overlayBorder = await previewOverlay.evaluate(el => window.getComputedStyle(el).borderWidth);
+      expect(overlayBorder).toBe('0px');
+
+      const closeButtons = previewOverlay.locator('button');
+      expect(await closeButtons.count()).toBe(0);
+
+      // Sombra suave (drop-shadow) en la imagen
+      const imgWrapper = pageA.locator('[data-testid="card-preview-image-wrapper"]');
+      const filter = await imgWrapper.evaluate(el => window.getComputedStyle(el).filter);
+      expect(filter).toContain('drop-shadow');
+
+      // 5. Pulsar Escape -> La vista previa desaparece inmediatamente
+      await pageA.keyboard.press('Escape');
+      await pageA.waitForTimeout(200);
+      await expect(previewOverlay).toHaveCount(0);
+
+      // 6. Retirar el cursor y volver a pasarlo sobre la carta -> Reaparece
+      await pageA.mouse.move(960, 50);
+      await pageA.waitForTimeout(200);
+      await pageA.mouse.move(cardBox!.x + cardBox!.width / 2, cardBox!.y + cardBox!.height / 2);
+      await pageA.waitForTimeout(350);
+      await expect(previewOverlay).toBeVisible();
+
+      // 7. Retirar el cursor hacia un espacio vacío -> La vista previa desaparece inmediatamente
+      await pageA.mouse.move(960, 50);
+      await pageA.waitForTimeout(250);
+      await expect(previewOverlay).toHaveCount(0);
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
+
   test('Punto 5-Legacy: Flujos zona a zona (comandante a mesa, mesa a mano, biblioteca a mesa y mano, pilas)', async ({ browser }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'ZoneFlows');

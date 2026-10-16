@@ -23,7 +23,10 @@ interface HandCardItemProps {
   onPlay: (e: React.MouseEvent) => void;
   onDiscard: (e: React.MouseEvent) => void;
   onExile: (e: React.MouseEvent) => void;
-  showPreview: (card: CardDefinition) => void;
+  showPreview: (
+    card: CardDefinition,
+    posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent
+  ) => void;
   hidePreview: () => void;
 }
 
@@ -63,7 +66,7 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
       data-card-name={card.definition.name}
       onClick={onSelect}
       onDoubleClick={onZoom}
-      onMouseEnter={() => !isDragging && showPreview(card.definition)}
+      onMouseEnter={(e) => !isDragging && showPreview(card.definition, e)}
       onMouseLeave={hidePreview}
       style={{
         zIndex: isSelected ? 60 : index + 5,
