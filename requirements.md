@@ -236,6 +236,8 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 7. THE mano SHALL mostrarse en el borde inferior de cada celda, parcialmente asomada:
    7.1. La mano del jugador local, boca arriba; sube al pasar el cursor y las cartas se arrastran al campo de batalla.
    7.2. La mano de los oponentes, como reversos de cartas junto al texto "N cartas en mano"; THE sistema SHALL NOT enviar su contenido (REQ-16.3).
+   7.3. THE cartas visibles de la mano propia SHALL renderizarse en relación de aspecto 5:7 exacto (`aspect-[5/7]` con `object-fill`) y esquinas redondeadas naturales (`rounded-[6px]`), sin `overflow-hidden` en el contenedor del dock ni en los ítems de carta que corte bordes, textos o esquinas (Punto 4).
+   7.4. THE imágenes de las cartas de la mano SHALL resolverse y cargarse siempre en resolución normal de Scryfall (versión `normal`, nunca la versión pequeña ampliada) garantizando máxima nitidez, y las cartas SHALL permanecer 100 % completas dentro del viewport, incluso al elevarse con el cursor hover (`hover:-translate-y-5`) (Punto 4).
 8. THE pilas y la zona de comando SHALL mostrarse como ranuras pequeñas alineadas en el borde inferior derecho de cada celda: biblioteca (con cantidad de cartas), cementerio, exilio y zona de comando; las ranuras vacías SHALL mostrarse con contorno punteado:
    8.1. WHEN el jugador hace clic en una ranura, THE sistema SHALL abrir su contenido; cementerio, exilio y zona de comando son visibles para todos y la biblioteca solo para su dueño (REQ-9.3).
 9. THE barra flotante SHALL ubicarse centrada en la parte superior, superpuesta a las celdas y plegable con un botón de flecha, con:

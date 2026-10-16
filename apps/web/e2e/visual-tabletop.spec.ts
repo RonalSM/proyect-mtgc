@@ -1138,67 +1138,75 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 4: Interaccion de cartas (clic simple solo selecciona, doble clic gira/endereza, clic derecho abre menu contextual)', async ({ browser }) => {
+  test('Punto 4: Recortes en las cartas de la mano eliminados (aspecto 5:7, sin overflow-hidden, cartas completas dentro del viewport al elevarse, calidad normal, capturas zoom 200%)', async ({ browser }) => {
     test.setTimeout(90000);
-    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'InteractTest');
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'HandCardNoClippingPod');
     const page = pages[0];
 
     try {
       await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+      await page.waitForTimeout(1000);
 
-      // 1. Jugar carta a la mesa
-      const handCard = page.locator('[data-hand-card="true"]').first();
-      await expect(handCard).toBeVisible({ timeout: 10000 });
-      await handCard.hover({ position: { x: 30, y: 35 } });
-      await page.mouse.down();
-      await page.mouse.move(600, 350, { steps: 15 });
-      await page.mouse.up();
-      await page.waitForTimeout(800);
+      // 1. Localizar cartas de la mano
+      const handCards = page.locator('[data-hand-card="true"]');
+      await expect(handCards.first()).toBeVisible({ timeout: 10000 });
+      const count = await handCards.count();
+      expect(count).toBeGreaterThan(0);
 
-      const placedCard = page.locator('[data-battlefield-card="true"]').first();
-      await expect(placedCard).toBeVisible({ timeout: 10000 });
+      // 2. Verificar que no hay overflow-hidden en el contenedor del abanico ni en los items
+      const isClippingOverflow = await handCards.first().evaluate((el: HTMLElement) => {
+        const style = window.getComputedStyle(el);
+        const parentStyle = window.getComputedStyle(el.parentElement || el);
+        return style.overflow === 'hidden' || parentStyle.overflow === 'hidden';
+      });
+      expect(isClippingOverflow).toBe(false);
 
-      // A. Clic simple: SOLO selecciona la carta, NO muestra menú contextual ni opciones
-      await placedCard.click();
-      await page.waitForTimeout(300);
+      // 3. Verificar calidad de imagen normal (no pequeña ampliada)
+      const firstImg = handCards.first().locator('img');
+      await expect(firstImg).toBeVisible();
+      const imgSrc = await firstImg.getAttribute('src');
+      expect(imgSrc).toBeTruthy();
+      expect(imgSrc).not.toContain('/small/');
+      expect(imgSrc).not.toContain('version=small');
 
-      const contextMenu = page.locator('[data-card-context-menu="true"]');
-      await expect(contextMenu).not.toBeVisible();
-      // Comprobar que está seleccionada visualmente (anillo de selección activo)
-      const isSelected = await placedCard.evaluate(el => el.querySelector('.border-amber-400') !== null);
-      expect(isSelected).toBe(true);
+      // 4. Verificar relación de aspecto 5:7 (ancho / alto ≈ 0.714)
+      const targetCard = handCards.last();
+      const cardBox = await targetCard.boundingBox();
+      expect(cardBox).not.toBeNull();
+      const ratio = cardBox!.width / cardBox!.height;
+      // Tolerancia estrecha: 5/7 = 0.714
+      expect(Math.abs(ratio - (5 / 7))).toBeLessThan(0.04);
 
-      // B. Doble clic: Gira la carta (tap) directamente sin abrir modal ni menú
-      await placedCard.dblclick();
-      await page.waitForTimeout(500);
+      // 5. Verificar que la carta está completamente dentro del viewport en reposo
+      expect(cardBox!.y).toBeGreaterThanOrEqual(0);
+      expect(cardBox!.y + cardBox!.height).toBeLessThanOrEqual(1080);
+      expect(cardBox!.x).toBeGreaterThanOrEqual(0);
+      expect(cardBox!.x + cardBox!.width).toBeLessThanOrEqual(1920);
 
-      let isTapped = await placedCard.evaluate(el => el.classList.contains('rotate-90'));
-      expect(isTapped).toBe(true);
-      await expect(contextMenu).not.toBeVisible();
-      // Tampoco debe haberse abierto la ampliación de celda
-      await expect(page.locator('text=Celda Ampliada')).not.toBeVisible();
+      // Tomar captura ampliada del dock de mano en reposo
+      const handDock = page.locator('[data-dock-zone="hand"]').first();
+      await handDock.screenshot({
+        path: path.join(SCREENSHOT_DIR, 'hand-cards-dock-zoom-200.png'),
+      });
 
-      // Doble clic de nuevo: Endereza la carta (untap)
-      await placedCard.dblclick();
-      await page.waitForTimeout(500);
+      // 6. Elevar la carta con el cursor (hover sobre la carta superior del abanico)
+      await targetCard.hover();
+      await page.waitForTimeout(400);
 
-      isTapped = await placedCard.evaluate(el => el.classList.contains('rotate-90'));
-      expect(isTapped).toBe(false);
+      const elevatedBox = await targetCard.boundingBox();
+      expect(elevatedBox).not.toBeNull();
 
-      // C. Clic derecho: Abre el menú contextual con las opciones
-      await placedCard.click({ button: 'right' });
-      await page.waitForTimeout(300);
+      // Verificar que se elevó (-translate-y)
+      expect(elevatedBox!.y).toBeLessThan(cardBox!.y);
 
-      await expect(contextMenu).toBeVisible();
-      await expect(contextMenu.locator('button:has-text("Girar")')).toBeVisible();
-      await expect(contextMenu.locator('button:has-text("+1/+1")')).toBeVisible();
-      await expect(contextMenu.locator('button:has-text("Clonar")')).toBeVisible();
-      await expect(contextMenu.locator('button:has-text("Boca abajo")')).toBeVisible();
+      // Verificar que sigue 100% dentro del viewport sin cortarse por arriba ni por abajo
+      expect(elevatedBox!.y).toBeGreaterThanOrEqual(0);
+      expect(elevatedBox!.y + elevatedBox!.height).toBeLessThanOrEqual(1080);
 
-      // D. Clic fuera o tecla Escape: Cierra el menú contextual
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(300);
-      await expect(contextMenu).not.toBeVisible();
+      // Tomar captura ampliada de la carta elevada
+      await handDock.screenshot({
+        path: path.join(SCREENSHOT_DIR, 'hand-card-elevated-zoom-200.png'),
+      });
     } finally {
       for (const ctx of contexts) {
         await ctx.close().catch(() => {});

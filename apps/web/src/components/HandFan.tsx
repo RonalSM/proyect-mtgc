@@ -66,21 +66,19 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
       onMouseEnter={() => !isDragging && showPreview(card.definition)}
       onMouseLeave={hidePreview}
       style={{
-        transform: isSelected
-          ? 'translateY(-2rem) rotate(0deg)'
-          : undefined,
         zIndex: isSelected ? 60 : index + 5,
         width: isDragging ? 0 : 'var(--card-w)',
         height: 'var(--card-h)',
         marginLeft: isDragging ? 0 : (index === 0 ? 0 : `calc(var(--card-w) * -${overlapRatio.toFixed(2)})`),
         opacity: isDragging ? 0 : 1,
-        transition: 'width 250ms cubic-bezier(0.4, 0, 0.2, 1), margin-left 250ms cubic-bezier(0.4, 0, 0.2, 1), opacity 150ms ease-out, transform 200ms ease-out',
-        overflow: 'hidden',
+        transition: 'width 250ms cubic-bezier(0.4, 0, 0.2, 1), margin-left 250ms cubic-bezier(0.4, 0, 0.2, 1), opacity 150ms ease-out, transform 200ms cubic-bezier(0.4, 0, 0.2, 1)',
         pointerEvents: isDragging ? 'none' : 'auto',
       }}
-      className={`group relative rounded-lg cursor-grab active:cursor-grabbing origin-bottom flex-shrink-0 pointer-events-auto ${
-        !isSelected && !isDragging
-          ? 'hover:shadow-lg hover:border-amber-400/90'
+      className={`group relative cursor-grab active:cursor-grabbing origin-bottom flex-shrink-0 pointer-events-auto overflow-visible ${
+        isSelected
+          ? '-translate-y-7 z-[60] rotate-0'
+          : !isDragging
+          ? 'hover:-translate-y-5 hover:rotate-0 hover:z-50 transition-all duration-200'
           : ''
       }`}
     >
@@ -94,10 +92,10 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
             ? `rotate(${rot}deg) translateY(${transY}px)`
             : 'none',
         }}
-        className={`rounded-lg overflow-hidden border shadow-lg transition-transform duration-200 ${
+        className={`rounded-[6px] overflow-hidden border shadow-lg transition-transform duration-200 aspect-[5/7] bg-slate-900 ${
           isSelected
             ? 'border-amber-400 ring-2 ring-amber-400/60 shadow-amber-500/20'
-            : 'border-slate-700/80 group-hover:border-amber-400/90'
+            : 'border-slate-800 hover:border-amber-400/90'
         }`}
       >
         <CardDisplay card={card.definition} isFaceDown={false} allowFaceToggle={false} />
@@ -269,7 +267,7 @@ export const HandFan: React.FC<HandFanProps> = ({
   const numCards = cards.length;
 
   return (
-    <div className="relative flex items-end justify-center select-none pt-3 pb-0.5 z-20 pointer-events-none">
+    <div className="relative flex items-end justify-center select-none pt-7 pb-1 z-20 pointer-events-none overflow-visible">
       {/* Hand Count badge */}
       <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-slate-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-slate-300 shadow backdrop-blur-md z-30 pointer-events-none">
         <span className="text-amber-400 font-extrabold mr-1">{numCards}</span>
@@ -277,7 +275,7 @@ export const HandFan: React.FC<HandFanProps> = ({
       </div>
 
       {/* Fan Container */}
-      <div className="flex items-end justify-center transition-all duration-200 pointer-events-none">
+      <div className="flex items-end justify-center transition-all duration-200 pointer-events-none overflow-visible">
         {cards.map((card, i) => (
           <HandCardItem
             key={card.instanceId}

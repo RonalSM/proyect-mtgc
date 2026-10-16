@@ -33,24 +33,26 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   const cardToughness = activeFace?.toughness ?? card.toughness;
   const cardOracle = activeFace?.oracleText || card.oracleText;
 
-  // Resolve best candidate image URL
+  // Resolve best candidate image URL: siempre versión normal en alta definición (Punto 4)
   const resolvedImageUrl = (() => {
-    if (activeFace?.imageUrlNormal) return activeFace.imageUrlNormal;
-    if (activeFace?.imageUrlSmall) return activeFace.imageUrlSmall;
-    if (card.imageUrlNormal) return card.imageUrlNormal;
-    if (card.imageUrlSmall) return card.imageUrlSmall;
-
-    // Fallback to Scryfall exact name redirect URL if not a generic placeholder
+    let url = activeFace?.imageUrlNormal || card.imageUrlNormal || activeFace?.imageUrlSmall || card.imageUrlSmall || '';
     if (
+      !url &&
       cardName &&
       !cardName.startsWith('Carta #') &&
       !cardName.startsWith('Carta ') &&
       cardName !== 'Carta Desconocida' &&
       cardName !== 'Carta Oculta'
     ) {
-      return `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image`;
+      url = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=normal`;
     }
-    return '';
+    if (url) {
+      url = url.replace('/small/', '/normal/').replace('version=small', 'version=normal');
+      if (url.includes('format=image') && !url.includes('version=')) {
+        url += '&version=normal';
+      }
+    }
+    return url;
   })();
 
   const toggleFace = (e: React.MouseEvent) => {
@@ -65,7 +67,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   if (isFaceDown) {
     return (
       <div
-        className={`w-full h-full rounded-md overflow-hidden relative border border-slate-700 bg-slate-950 shadow-md ${className}`}
+        className={`w-full h-full rounded-[6px] overflow-hidden relative border border-slate-700 bg-slate-950 shadow-md aspect-[5/7] ${className}`}
       >
         <img
           src="https://cards.scryfall.io/back.png"
@@ -76,7 +78,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
             // If Scryfall back image fails, display styled MTG back fallback
             (e.target as HTMLElement).style.display = 'none';
           }}
-          className={`w-full h-full object-cover pointer-events-none select-none ${imageClassName}`}
+          className={`w-full h-full object-fill pointer-events-none select-none rounded-[6px] aspect-[5/7] ${imageClassName}`}
         />
         <div className="absolute inset-0 flex items-center justify-center p-2 text-center pointer-events-none">
           <div className="w-10 h-14 rounded-full border-2 border-amber-600/40 bg-amber-950/30 flex items-center justify-center shadow-inner">
@@ -89,9 +91,9 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
 
   return (
     <div
-      className={`w-full h-full rounded-md overflow-hidden relative select-none shadow-md ${className}`}
+      className={`w-full h-full rounded-[6px] overflow-hidden relative select-none shadow-md aspect-[5/7] bg-slate-900 ${className}`}
     >
-      {/* 1. If image is available and hasn't failed, display <img> */}
+      {/* 1. If image is available and hasn't failed, display <img> sin recortar arte (Punto 4: aspecto 5:7 exacto) */}
       {resolvedImageUrl && !imageError ? (
         <img
           src={resolvedImageUrl}
@@ -99,7 +101,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
           loading="lazy"
           decoding="async"
           onError={() => setImageError(true)}
-          className={`w-full h-full object-cover pointer-events-none transition-transform duration-150 ${imageClassName}`}
+          className={`w-full h-full object-fill pointer-events-none rounded-[6px] aspect-[5/7] transition-transform duration-150 ${imageClassName}`}
         />
       ) : (
         /* 2. Fallback Card Frame: High-contrast legible MTG card frame with name, mana, type, P/T */
