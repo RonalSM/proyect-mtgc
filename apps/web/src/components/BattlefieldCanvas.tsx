@@ -272,8 +272,9 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
     >
       {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas */}
       {cards.map(card => {
+        const remoteItem = remoteDraggingCards && remoteDraggingCards[card.instanceId];
         const isRemoteDragging = !!(
-          remoteDraggingCards && remoteDraggingCards[card.instanceId]?.isDragging
+          remoteItem && (remoteItem.isDragging || (remoteItem as any).pendingSync)
         );
         return (
           <BattlefieldCardItem
@@ -294,10 +295,10 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
         );
       })}
 
-      {/* Movimiento en vivo para rivales (Punto 5, REQ-9) */}
+      {/* Movimiento en vivo para rivales (Punto 5, REQ-9) y sostenimiento en destino (Punto 1) */}
       {remoteDraggingCards &&
         Object.values(remoteDraggingCards).map(item => {
-          if (!item.isDragging || !item.position) return null;
+          if ((!item.isDragging && !(item as any).pendingSync) || !item.position) return null;
           const posX = Math.max(0, Math.min(1, item.position.x)) * 100;
           const posY = Math.max(0, Math.min(1, item.position.y)) * 100;
 
@@ -307,7 +308,9 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
               data-remote-drag="true"
               data-card-instance-id={item.cardInstanceId}
               data-player-id={item.playerId}
-              className="absolute pointer-events-none select-none z-40 transition-[left,top] duration-75 ease-linear"
+              className={`absolute pointer-events-none select-none z-40 ${
+                (item as any).pendingSync ? 'transition-none' : 'transition-[left,top] duration-75 ease-linear'
+              }`}
               style={{
                 left: `${posX}%`,
                 top: `${posY}%`,

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { RoomState, GameActionType, RemoteCardDraggingPayload } from '@mtgc/shared';
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting';
-export type RemoteDragState = RemoteCardDraggingPayload;
+export type RemoteDragState = RemoteCardDraggingPayload & { pendingSync?: boolean };
 
 interface UseGameSocketOptions {
   roomCode: string;
@@ -64,6 +64,29 @@ export function useGameSocket({
           const data = JSON.parse(event.data);
           if (data.type === 'ROOM_STATE_SYNC') {
             setRoomState(data.roomState);
+            // Punto 1: Al llegar el nuevo estado autoritativo, limpiar en el mismo frame de render
+            // cualquier carta que estuviese en pendingSync, eliminando el parpadeo en el jugador receptor.
+            setRemoteDraggingCards(prev => {
+              let hasPending = false;
+              for (const k in prev) {
+                if (prev[k]?.pendingSync) {
+                  hasPending = true;
+                  break;
+                }
+              }
+              if (!hasPending) return prev;
+              const next = { ...prev };
+              for (const k in next) {
+                if (next[k]?.pendingSync) {
+                  delete next[k];
+                  if (remoteDragTimeoutsRef.current[k]) {
+                    clearTimeout(remoteDragTimeoutsRef.current[k]);
+                    delete remoteDragTimeoutsRef.current[k];
+                  }
+                }
+              }
+              return next;
+            });
           } else if (data.type === 'REMOTE_CARD_DRAGGING') {
             const payload = data.payload as RemoteDragState;
             const cardId = payload.cardInstanceId;
@@ -76,6 +99,18 @@ export function useGameSocket({
 
             setRemoteDraggingCards(prev => {
               if (!payload.isDragging) {
+                // Punto 1: Si viene con posición final (soltado), mantenemos la carta oculta en su posición vieja
+                // y mostramos el fantasma en la posición final hasta que llegue ROOM_STATE_SYNC.
+                if (payload.position) {
+                  return {
+                    ...prev,
+                    [cardId]: {
+                      ...payload,
+                      isDragging: false,
+                      pendingSync: true,
+                    },
+                  };
+                }
                 if (!prev[cardId]) return prev;
                 const next = { ...prev };
                 delete next[cardId];
@@ -87,18 +122,16 @@ export function useGameSocket({
               };
             });
 
-            // Punto 2: Timeout de seguridad de 1 segundo si no llegan más mensajes o hay desconexión
-            if (payload.isDragging) {
-              remoteDragTimeoutsRef.current[cardId] = setTimeout(() => {
-                setRemoteDraggingCards(prev => {
-                  if (!prev[cardId]) return prev;
-                  const next = { ...prev };
-                  delete next[cardId];
-                  return next;
-                });
-                delete remoteDragTimeoutsRef.current[cardId];
-              }, 1000);
-            }
+            // Timeout de seguridad de 1 segundo si no llegan más mensajes, falla la red o hay desconexión
+            remoteDragTimeoutsRef.current[cardId] = setTimeout(() => {
+              setRemoteDraggingCards(prev => {
+                if (!prev[cardId]) return prev;
+                const next = { ...prev };
+                delete next[cardId];
+                return next;
+              });
+              delete remoteDragTimeoutsRef.current[cardId];
+            }, 1000);
           } else if (data.type === 'ACTION_REJECTED') {
             console.warn('[WS Rejected Action]:', data.error);
           } else if (data.type === 'ERROR') {

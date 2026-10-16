@@ -252,44 +252,8 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    // Notificar fin de arrastre efímero
-    onAction('CARD_DRAG_MOVE', {
-      cardInstanceId: active.id,
-      isDragging: false,
-    });
-
     const overData = over?.data.current as { zone?: string; playerId?: string } | undefined;
     const fromZone = (active.data.current as { fromZone?: string })?.fromZone;
-
-    // Punto 4 / 7: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila si el puntero está dentro
-    if (overData?.zone === 'library' || overData?.zone === 'graveyard' || overData?.zone === 'exile') {
-      flushSync(() => {
-        setIsDragging(false);
-        setActiveDragItem(null);
-      });
-      onAction('MOVE_CARD', {
-        cardInstanceId: active.id,
-        fromZone: fromZone || 'battlefield',
-        toZone: overData.zone,
-        toPlayerId: overData.playerId || localPlayerId,
-      });
-      return;
-    }
-
-    // Punto 6: Soltar sobre la propia mano la devuelve a la mano
-    if (overData?.zone === 'hand' && overData?.playerId === localPlayerId) {
-      flushSync(() => {
-        setIsDragging(false);
-        setActiveDragItem(null);
-      });
-      onAction('MOVE_CARD', {
-        cardInstanceId: active.id,
-        fromZone: fromZone || 'battlefield',
-        toZone: 'hand',
-        toPlayerId: localPlayerId,
-      });
-      return;
-    }
 
     // Punto 3: La posición final se calcula a partir del rectángulo real del overlay al soltar
     const translated = active.rect.current?.translated;
@@ -323,7 +287,45 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const normX = clampedX / winW;
     const normY = clampedY / winH;
 
-    // Punto 1: Aplicar posición de forma optimista y síncrona en el mismo frame para eliminar parpadeo
+    // Punto 1: Notificar fin de arrastre efímero incluyendo la posición final calculada para que rivales
+    // mantengan oculta la carta fija y ubiquen el fantasma en el destino exacto sin parpadeos
+    onAction('CARD_DRAG_MOVE', {
+      cardInstanceId: active.id,
+      isDragging: false,
+      position: { x: normX, y: normY },
+    });
+
+    // Punto 4 / 7: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila si el puntero está dentro
+    if (overData?.zone === 'library' || overData?.zone === 'graveyard' || overData?.zone === 'exile') {
+      flushSync(() => {
+        setIsDragging(false);
+        setActiveDragItem(null);
+      });
+      onAction('MOVE_CARD', {
+        cardInstanceId: active.id,
+        fromZone: fromZone || 'battlefield',
+        toZone: overData.zone,
+        toPlayerId: overData.playerId || localPlayerId,
+      });
+      return;
+    }
+
+    // Punto 6: Soltar sobre la propia mano la devuelve a la mano
+    if (overData?.zone === 'hand' && overData?.playerId === localPlayerId) {
+      flushSync(() => {
+        setIsDragging(false);
+        setActiveDragItem(null);
+      });
+      onAction('MOVE_CARD', {
+        cardInstanceId: active.id,
+        fromZone: fromZone || 'battlefield',
+        toZone: 'hand',
+        toPlayerId: localPlayerId,
+      });
+      return;
+    }
+
+    // Punto 1: Aplicar posición de forma optimista y síncrona en el mismo frame para eliminar parpadeo en emisor
     flushSync(() => {
       setOptimisticPositions(prev => ({
         ...prev,

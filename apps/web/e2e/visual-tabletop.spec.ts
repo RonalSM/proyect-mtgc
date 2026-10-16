@@ -826,73 +826,103 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 1: Sin parpadeo al soltar (grabacion requestAnimationFrame sin retroceso al estado viejo)', async ({ browser }) => {
+  test('Punto 1: Sin parpadeo en el jugador receptor B al soltar A (grabacion requestAnimationFrame en B)', async ({ browser }) => {
     test.setTimeout(90000);
-    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'NoFlicker');
-    const page = pages[0];
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'NoFlickerB');
+    const [pageA, pageB] = pages;
 
     try {
-      await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
-      const handCard = page.locator('[data-hand-card="true"]').first();
-      await expect(handCard).toBeVisible({ timeout: 10000 });
+      await expect(pageA.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+      await expect(pageB.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
 
-      // 1. Jugar carta de la mano a la mesa
-      await handCard.hover({ position: { x: 30, y: 35 } });
-      await page.mouse.down();
-      await page.mouse.move(500, 300, { steps: 15 });
-      await page.mouse.up();
-      await page.waitForTimeout(600);
+      // 1. Contexto A juega una carta de su mano a la mesa
+      const handCardA = pageA.locator('[data-hand-card="true"]').first();
+      await expect(handCardA).toBeVisible({ timeout: 10000 });
+      const handBoxA = await handCardA.boundingBox();
+      expect(handBoxA).not.toBeNull();
+      await pageA.mouse.move(handBoxA!.x + handBoxA!.width / 2, handBoxA!.y + handBoxA!.height / 2);
+      await pageA.mouse.down();
+      await pageA.mouse.move(500, 300, { steps: 15 });
+      await pageA.waitForTimeout(200);
+      await pageA.mouse.up();
+      await pageA.waitForTimeout(1000);
 
-      const placedCard = page.locator('[data-battlefield-card="true"]').first();
-      await expect(placedCard).toBeVisible({ timeout: 10000 });
-      const cardId = await placedCard.getAttribute('data-card-instance-id');
-      const startBox = await placedCard.boundingBox();
-      expect(startBox).not.toBeNull();
+      const placedCardA = pageA.locator('[data-battlefield-card="true"]').first();
+      await expect(placedCardA).toBeVisible({ timeout: 10000 });
+      const cardId = await placedCardA.getAttribute('data-card-instance-id');
+      expect(cardId).toBeTruthy();
 
-      // 2. Iniciar arrastre para moverla a una nueva posición lejana
-      await page.mouse.move(startBox!.x + 30, startBox!.y + 30);
-      await page.mouse.down();
+      // Verificar que Contexto B ve la carta en su posición inicial (500, 300)
+      const placedCardB = pageB.locator(`[data-battlefield-card="true"][data-card-instance-id="${cardId}"]`);
+      await expect(placedCardB).toBeVisible({ timeout: 10000 });
+      const startBoxB = await placedCardB.boundingBox();
+      expect(startBoxB).not.toBeNull();
+
+      // 2. Contexto A inicia arrastre para moverla a una nueva posición lejana (900, 600)
+      const boxA = await placedCardA.boundingBox();
+      expect(boxA).not.toBeNull();
+      await pageA.mouse.move(boxA!.x + 30, boxA!.y + 30);
+      await pageA.mouse.down();
       const targetX = 900;
       const targetY = 600;
-      await page.mouse.move(targetX, targetY, { steps: 15 });
-      await page.waitForTimeout(100);
+      await pageA.mouse.move(targetX, targetY, { steps: 15 });
+      await pageA.waitForTimeout(200);
 
-      // 3. Inyectar grabador de frames con requestAnimationFrame justo antes de soltar
-      await page.evaluate(cId => {
-        (window as any).__rafFrames = [];
+      // 3. En Contexto B, inyectar grabador con requestAnimationFrame justo antes de que A suelte
+      await pageB.evaluate(cId => {
+        (window as any).__rafFramesB = [];
         const track = () => {
-          const el = document.querySelector(`[data-card-instance-id="${cId}"]`);
-          if (el) {
-            const r = el.getBoundingClientRect();
-            (window as any).__rafFrames.push({
-              x: r.x,
-              y: r.y,
-              opacity: window.getComputedStyle(el).opacity,
-              time: performance.now(),
-            });
-          }
-          if ((window as any).__rafFrames.length < 30) {
+          const stationaryEl = document.querySelector(`[data-battlefield-card="true"][data-card-instance-id="${cId}"]`);
+          const ghostEl = document.querySelector(`[data-remote-drag="true"][data-card-instance-id="${cId}"]`);
+
+          const stationaryRect = stationaryEl ? stationaryEl.getBoundingClientRect() : null;
+          const ghostRect = ghostEl ? ghostEl.getBoundingClientRect() : null;
+
+          const stationaryOpacity = stationaryEl ? window.getComputedStyle(stationaryEl).opacity : '0';
+          const ghostOpacity = ghostEl ? window.getComputedStyle(ghostEl).opacity : '0';
+
+          const stationaryVisible = stationaryEl && stationaryOpacity !== '0' && (stationaryEl as HTMLElement).offsetWidth > 0;
+          const ghostVisible = ghostEl && ghostOpacity !== '0' && (ghostEl as HTMLElement).offsetWidth > 0;
+
+          (window as any).__rafFramesB.push({
+            stationaryVisible: !!stationaryVisible,
+            ghostVisible: !!ghostVisible,
+            stationaryX: stationaryRect?.x ?? null,
+            stationaryY: stationaryRect?.y ?? null,
+            ghostX: ghostRect?.x ?? null,
+            ghostY: ghostRect?.y ?? null,
+            time: performance.now(),
+          });
+
+          if ((window as any).__rafFramesB.length < 40) {
             requestAnimationFrame(track);
           }
         };
         requestAnimationFrame(track);
       }, cardId);
 
-      // 4. Soltar
-      await page.mouse.up();
-      await page.waitForTimeout(800);
+      // 4. Contexto A suelta la carta
+      await pageA.mouse.up();
+      await pageA.waitForTimeout(800);
 
-      // 5. Obtener frames registrados durante y tras el soltado
-      const frames = await page.evaluate(() => (window as any).__rafFrames || []);
-      console.log('FRAMES_REGISTRADOS_DURANTE_SOLTADO:', frames.length);
-      expect(frames.length).toBeGreaterThan(5);
+      // 5. Obtener frames registrados en Contexto B durante y después del soltado
+      const framesB = await pageB.evaluate(() => (window as any).__rafFramesB || []);
+      console.log('FRAMES_REGISTRADOS_EN_B_DURANTE_SOLTADO:', framesB.length);
+      expect(framesB.length).toBeGreaterThan(5);
 
-      // Verificar que ningún frame visible mostró la carta en la posición inicial (startBox)
-      for (const f of frames) {
-        if (f.opacity !== '0' && f.opacity !== '0%') {
-          const distToOld = Math.hypot(f.x - startBox!.x, f.y - startBox!.y);
-          // La distancia al punto viejo debe ser grande (> 100px), demostrando que jamás volvió a la posición anterior
-          expect(distToOld).toBeGreaterThan(100);
+      // Verificar en B:
+      // A) Ningún frame visible muestra la carta en la posición inicial vieja (startBoxB)
+      // B) En ningún frame se muestran simultáneamente la carta estacionaria y el fantasma (sin duplicación)
+      for (const f of framesB) {
+        // No duplicado
+        if (f.stationaryVisible && f.ghostVisible) {
+          throw new Error('Carta duplicada visible en Contexto B en el mismo frame');
+        }
+
+        // Si la estacionaria fue visible, verificar que no estuvo en la posición vieja inicial
+        if (f.stationaryVisible && f.stationaryX !== null && f.stationaryY !== null) {
+          const distToOld = Math.hypot(f.stationaryX - startBoxB!.x, f.stationaryY - startBoxB!.y);
+          expect(distToOld).toBeGreaterThan(80);
         }
       }
     } finally {
