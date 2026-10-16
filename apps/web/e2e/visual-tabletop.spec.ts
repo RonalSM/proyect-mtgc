@@ -1461,6 +1461,82 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
+  test('Punto 8-Nuevo: Modal inspector de biblioteca con barra de búsqueda por nombre, filtros por tipo e indicador de sincronización Scryfall', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'LibrarySearchPod');
+    const [pageA] = pages;
+
+    try {
+      await expect(pageA.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // Si Sol Ring quedó en la mano, lo arrastramos a la biblioteca para asegurar que esté en la biblioteca
+      const solInHand = pageA.locator('[data-hand-card][data-card-name="Sol Ring"], [data-hand-card]:has-text("Sol Ring")').first();
+      if (await solInHand.isVisible()) {
+        const libSlot = pageA.locator('[data-dock-zone="library"]').first();
+        await solInHand.dragTo(libSlot);
+        await pageA.waitForTimeout(500);
+      }
+
+      // 1. Abrir modal inspector de la biblioteca privada
+      const inspectBtn = pageA.locator('[data-library-inspect-btn="true"]').first();
+      await expect(inspectBtn).toBeVisible({ timeout: 10000 });
+      await inspectBtn.click();
+      await pageA.waitForTimeout(500);
+
+      // 2. Verificar que el modal de biblioteca está abierto y contiene la barra de búsqueda y filtros
+      const searchInput = pageA.locator('[data-testid="library-search-input"]');
+      await expect(searchInput).toBeVisible();
+
+      // 3. Escribir "sol" en la barra de búsqueda -> Ver solo Sol Ring u otras que coincidan
+      await searchInput.fill('sol');
+      await pageA.waitForTimeout(400);
+
+      // Todas las cartas visibles en el modal deben contener "sol" (case-insensitive) en su nombre
+      const modalCards = pageA.locator('[data-modal-card-item]');
+      const count = await modalCards.count();
+      expect(count).toBeGreaterThan(0);
+      for (let i = 0; i < count; i++) {
+        const cardName = await modalCards.nth(i).getAttribute('data-card-name');
+        expect(cardName?.toLowerCase()).toContain('sol');
+      }
+
+      // 4. Limpiar búsqueda y activar filtro "Tierras" -> Ver solo tierras
+      await searchInput.fill('');
+      const tierrasBtn = pageA.locator('button:has-text("Tierras")').first();
+      await expect(tierrasBtn).toBeVisible();
+      await tierrasBtn.click();
+      await pageA.waitForTimeout(400);
+
+      const landCards = pageA.locator('[data-modal-card-item]');
+      const landCount = await landCards.count();
+      expect(landCount).toBeGreaterThan(0);
+      for (let i = 0; i < landCount; i++) {
+        const cardType = await landCards.nth(i).getAttribute('data-card-type');
+        expect(cardType?.toLowerCase()).toMatch(/land|tierra/);
+      }
+
+      // 5. Simular peticiones en cola de Scryfall y comprobar que el indicador se muestra
+      await pageA.evaluate(() => (window as any).__simulateScryfallQueue(5));
+      const syncIndicator = pageA.locator('[data-testid="scryfall-sync-indicator"]');
+      await expect(syncIndicator).toBeVisible();
+      await expect(syncIndicator).toContainText('Sincronizando cartas... (5 en cola)');
+
+      // 6. Simular que la cola se completa (0 en cola) y comprobar que el indicador desaparece
+      await pageA.evaluate(() => (window as any).__simulateScryfallQueue(0));
+      await expect(syncIndicator).toHaveCount(0);
+
+      // 7. Cerrar modal con el botón de cerrar
+      const closeBtn = pageA.locator('[data-testid="close-pile-modal-btn"]');
+      await closeBtn.click();
+      await pageA.waitForTimeout(300);
+      await expect(searchInput).toHaveCount(0);
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
+
   test('Punto 5-Legacy: Flujos zona a zona (comandante a mesa, mesa a mano, biblioteca a mesa y mano, pilas)', async ({ browser }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'ZoneFlows');

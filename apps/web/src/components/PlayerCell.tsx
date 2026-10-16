@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
 import { toArtCropUrl } from '@mtgc/shared';
 import type { PlayerState, GameActionType, CardInstance } from '@mtgc/shared';
@@ -9,10 +9,22 @@ import {
   Image as ImageIcon,
   AlertTriangle,
   Eye,
+  Search,
 } from 'lucide-react';
 import { HandFan } from './HandFan';
 import { CardDisplay } from './CardDisplay';
 import { Portal } from './Portal';
+import { scryfallQueue } from '../services/scryfallQueue';
+
+const CARD_TYPE_FILTERS = [
+  'Criaturas',
+  'Instantáneos',
+  'Conjuros',
+  'Artefactos',
+  'Encantamientos',
+  'Tierras',
+  'Planeswalkers',
+] as const;
 
 // Componente de Comandante arrastrable hacia el campo (Punto 5a / Punto 6)
 const DraggableCommanderCard: React.FC<{
@@ -195,6 +207,8 @@ const ModalCardItem: React.FC<{
   return (
     <div
       data-modal-card-item={card.instanceId}
+      data-card-name={card.definition.name}
+      data-card-type={card.definition.typeLine}
       onContextMenu={handleContextMenu}
       className="space-y-1 relative group cursor-context-menu"
       title="Clic derecho para opciones (Enviar a la mano, Enviar al campo)"
@@ -202,7 +216,7 @@ const ModalCardItem: React.FC<{
       <div className="aspect-[2.5/3.5] rounded-lg overflow-hidden border border-slate-700 bg-slate-950 group-hover:border-amber-400/80 transition-colors">
         <CardDisplay card={card.definition} />
       </div>
-      <div className="text-[10px] font-bold text-slate-300 truncate">
+      <div className="text-[10px] font-bold text-slate-300 truncate" title={card.definition.name}>
         {card.definition.name}
       </div>
 
@@ -304,6 +318,57 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const [damageInput, setDamageInput] = useState('');
   const [healInput, setHealInput] = useState('');
   const [activePileModal, setActivePileModal] = useState<'graveyard' | 'exile' | 'command' | 'library' | null>(null);
+  const [librarySearchQuery, setLibrarySearchQuery] = useState('');
+  const [libraryTypeFilter, setLibraryTypeFilter] = useState<string | null>(null);
+  const [syncQueueCount, setSyncQueueCount] = useState(0);
+
+  useEffect(() => {
+    if (activePileModal === 'library') {
+      const unsubscribe = scryfallQueue.subscribe(size => {
+        setSyncQueueCount(size);
+      });
+      return () => unsubscribe();
+    } else {
+      setLibrarySearchQuery('');
+      setLibraryTypeFilter(null);
+    }
+  }, [activePileModal]);
+
+  const filteredModalCards = useMemo(() => {
+    if (!activePileModal) return [];
+    const list = zones[activePileModal] || [];
+    if (activePileModal !== 'library') return list;
+
+    return list.filter(card => {
+      // 1. Filtrar por nombre
+      if (librarySearchQuery.trim()) {
+        const q = librarySearchQuery.trim().toLowerCase();
+        const name = (card.definition?.name || '').toLowerCase();
+        if (!name.includes(q)) return false;
+      }
+      // 2. Filtrar por tipo (Punto 8)
+      if (libraryTypeFilter) {
+        const typeLine = (card.definition?.typeLine || '').toLowerCase();
+        const filter = libraryTypeFilter.toLowerCase();
+        if (filter === 'criaturas') {
+          if (!typeLine.includes('creature') && !typeLine.includes('criatura')) return false;
+        } else if (filter === 'instantáneos' || filter === 'instantaneos') {
+          if (!typeLine.includes('instant') && !typeLine.includes('instantáneo')) return false;
+        } else if (filter === 'conjuros') {
+          if (!typeLine.includes('sorcery') && !typeLine.includes('conjuro')) return false;
+        } else if (filter === 'artefactos') {
+          if (!typeLine.includes('artifact') && !typeLine.includes('artefacto')) return false;
+        } else if (filter === 'encantamientos') {
+          if (!typeLine.includes('enchantment') && !typeLine.includes('encantamiento')) return false;
+        } else if (filter === 'tierras') {
+          if (!typeLine.includes('land') && !typeLine.includes('tierra')) return false;
+        } else if (filter === 'planeswalkers') {
+          if (!typeLine.includes('planeswalker')) return false;
+        }
+      }
+      return true;
+    });
+  }, [zones, activePileModal, librarySearchQuery, libraryTypeFilter]);
   const [isPlaymatModalOpen, setIsPlaymatModalOpen] = useState(false);
   const [customPlaymatInput, setCustomPlaymatInput] = useState('');
   const [zoomedCard, setZoomedCard] = useState<CardInstance | null>(null);
@@ -900,7 +965,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         </div>
       </div>
 
-      {/* Pile Modal Inspector (Punto 7) */}
+      {/* Pile Modal Inspector (Punto 8) */}
       {activePileModal && (
         <Portal>
           <div
@@ -909,27 +974,110 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           >
             <div
               onClick={e => e.stopPropagation()}
-              className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[75vh] flex flex-col shadow-2xl overflow-hidden"
+              className={`bg-slate-900 border border-slate-800 rounded-2xl w-full ${
+                activePileModal === 'library' ? 'max-w-2xl' : 'max-w-lg'
+              } max-h-[80vh] flex flex-col shadow-2xl overflow-hidden`}
             >
               <div className="px-5 py-3 border-b border-slate-800 flex items-center justify-between">
-                <h3 className="font-bold text-sm text-white capitalize">
-                  {activePileModal === 'command'
-                    ? 'Zona de Comando'
-                    : activePileModal === 'graveyard'
-                    ? 'Cementerio'
-                    : activePileModal === 'exile'
-                    ? 'Exilio'
-                    : 'Biblioteca'} ({zones[activePileModal]?.length || 0})
-                </h3>
+                <div className="flex items-center space-x-3">
+                  <h3 className="font-bold text-sm text-white capitalize">
+                    {activePileModal === 'command'
+                      ? 'Zona de Comando'
+                      : activePileModal === 'graveyard'
+                      ? 'Cementerio'
+                      : activePileModal === 'exile'
+                      ? 'Exilio'
+                      : 'Biblioteca'}{' '}
+                    (
+                    {activePileModal === 'library' && (librarySearchQuery || libraryTypeFilter)
+                      ? `${filteredModalCards.length} / ${zones[activePileModal]?.length || 0}`
+                      : zones[activePileModal]?.length || 0}
+                    )
+                  </h3>
+                  {/* Indicador de sincronización con Scryfall (Punto 8) */}
+                  {activePileModal === 'library' && syncQueueCount > 0 && (
+                    <div
+                      data-testid="scryfall-sync-indicator"
+                      className="flex items-center space-x-1.5 text-xs text-amber-300 bg-amber-950/70 border border-amber-800/80 px-2 py-0.5 rounded-full animate-pulse shadow-sm"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                      <span>Sincronizando cartas... ({syncQueueCount} en cola)</span>
+                    </div>
+                  )}
+                </div>
                 <button
+                  data-testid="close-pile-modal-btn"
                   onClick={() => setActivePileModal(null)}
-                  className="text-slate-400 hover:text-white font-bold text-lg"
+                  className="text-slate-400 hover:text-white font-bold text-lg cursor-pointer"
                 >
                   &times;
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 grid grid-cols-3 gap-3">
-                {zones[activePileModal]?.map((card, i) => (
+
+              {/* Barra de búsqueda y filtros rápidos por tipo (solo en Biblioteca, Punto 8) */}
+              {activePileModal === 'library' && (
+                <div className="px-5 py-2.5 bg-slate-950/60 border-b border-slate-800 flex flex-col space-y-2">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      placeholder="Buscar por nombre..."
+                      aria-label="Buscar por nombre"
+                      value={librarySearchQuery}
+                      onChange={e => setLibrarySearchQuery(e.target.value)}
+                      data-testid="library-search-input"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-8 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 font-sans"
+                    />
+                    {librarySearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setLibrarySearchQuery('')}
+                        className="absolute right-2.5 top-1.5 text-slate-400 hover:text-white text-xs cursor-pointer px-1 py-0.5"
+                      >
+                        &times;
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => setLibraryTypeFilter(null)}
+                      className={`px-2 py-0.5 rounded-md border font-medium cursor-pointer transition-colors ${
+                        libraryTypeFilter === null
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                          : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                      }`}
+                    >
+                      Todos
+                    </button>
+                    {CARD_TYPE_FILTERS.map(type => {
+                      const isSelected = libraryTypeFilter === type;
+                      const testId = `filter-${type
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')}`;
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          data-testid={testId}
+                          onClick={() => setLibraryTypeFilter(isSelected ? null : type)}
+                          className={`px-2 py-0.5 rounded-md border font-medium cursor-pointer transition-colors ${
+                            isSelected
+                              ? 'bg-amber-500 text-slate-950 font-bold border-amber-400 shadow-sm'
+                              : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex-1 overflow-y-auto p-4 grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {filteredModalCards.map((card, i) => (
                   <ModalCardItem
                     key={card.instanceId || i}
                     card={card}
@@ -940,9 +1088,11 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     onCloseModal={() => setActivePileModal(null)}
                   />
                 ))}
-                {(!zones[activePileModal] || zones[activePileModal].length === 0) && (
-                  <div className="col-span-3 text-center py-6 text-slate-500 text-xs italic">
-                    Esta zona está vacía
+                {filteredModalCards.length === 0 && (
+                  <div className="col-span-full text-center py-8 text-slate-500 text-xs italic">
+                    {activePileModal === 'library' && (librarySearchQuery || libraryTypeFilter)
+                      ? 'No se encontraron cartas con los filtros seleccionados'
+                      : 'Esta zona está vacía'}
                   </div>
                 )}
               </div>

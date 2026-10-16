@@ -150,6 +150,11 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
        - **Badge de Tax interactivo:** La ranura de comando SHALL mostrar permanentemente un badge con el valor actual del impuesto (`Tax: +0`, `Tax: +2`, etc., `data-testid="commander-tax-badge"`) y dos controles interactivos (`+` y `-`, `data-testid="commander-tax-plus"` / `commander-tax-minus`) que sumen o resten de 2 en 2 (`SET_PLAYER_COUNTER` con delta ±2; el impuesto nunca varía de 1 en 1).
        - **Eliminación de duplicidad en la pastilla de vida:** Los controles de `commanderTax` SHALL ser eliminados de la pastilla de vida (`LifePill`), centralizando toda la gestión del impuesto exclusivamente en la zona de comando.
 
+    7.21. **Modal inspector de biblioteca con buscador, filtros e indicador de cola Scryfall (Punto 8):**
+       - **Buscador en tiempo real por nombre:** El modal inspector de la biblioteca privada SHALL incorporar una barra de búsqueda (`data-testid="library-search-input"`) que filtre en tiempo real las cartas de la biblioteca cuyo nombre coincida con el texto ingresado (búsqueda sin distinción de mayúsculas/minúsculas).
+       - **Filtros rápidos por tipo:** El modal SHALL proporcionar botones de filtrado rápido por categoría de carta: Criaturas, Instantáneos, Conjuros, Artefactos, Encantamientos, Tierras y Planeswalkers (además de una opción para ver "Todos" o deseleccionar el filtro activo), evaluando la línea de tipos (`typeLine`) de cada carta.
+       - **Indicador de sincronización con Scryfall:** WHEN existan peticiones en cola o reintentos pendientes con Scryfall (`syncQueueCount > 0`), THE sistema SHALL mostrar un indicador visual en una esquina del modal (`data-testid="scryfall-sync-indicator"`) con el texto exacto `"Sincronizando cartas... (X en cola)"`. WHEN la cola se vacíe o finalice la sincronización, dicho indicador SHALL desaparecer por completo del DOM.
+
 ### REQ-10 Sincronización y reconexión
 **Historia:** Como jugador, quiero volver a la partida si se cae mi conexión.
 1. THE sistema SHALL mantener el estado autoritativo de la mesa en el servidor.

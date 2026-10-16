@@ -367,6 +367,10 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
     - **"Vida ganada"** (`data-testid="life-gained-input"`): suma el valor ingresado a la vida actual (`adjustLife(val)`) al presionar la tecla `Enter`.
   - Ambas entradas limpian automáticamente su valor de estado inmediatamente tras confirmarse con `Enter`.
   - Validación de entrada en tiempo real que descarta cualquier carácter no numérico (`replace(/[^0-9]/g, '')`), aceptando estrictamente enteros positivos mayores que 0.
+- **Inspector de Biblioteca con Buscador, Filtros y Telemetría Scryfall (Punto 8):**
+  - **Buscador en tiempo real:** Barra de búsqueda integrada en la cabecera del modal inspector de biblioteca que filtra la lista en memoria por `definition.name`.
+  - **Píldoras de filtrado por tipo:** Conjunto de filtros directos para `Criaturas`, `Instantáneos`, `Conjuros`, `Artefactos`, `Encantamientos`, `Tierras` y `Planeswalkers`, combinables con la búsqueda de texto y evaluados contra `definition.typeLine`.
+  - **Servicio de telemetría de cola Scryfall (`scryfallQueue`):** Gestor observable en `apps/web/src/services/scryfallQueue.ts` que notifica la cantidad de peticiones pendientes en cola y reintentos. Expone indicador reactivo `Sincronizando cartas... (X en cola)` (`data-testid="scryfall-sync-indicator"`) en la esquina superior del modal cuando la cola es mayor a 0, y se oculta automáticamente al vaciarse.
 - Etiqueta de nombre: píldora pequeña con icono de ampliar; turno activo con borde de color y brillo suave.
 - Ranuras de pilas: rectángulos con proporción de carta; vacías con contorno punteado y etiqueta de zona.
 - Animaciones breves (robar, d20, pasar turno) solo con `transform` y `opacity`, desactivadas con `prefers-reduced-motion`.
