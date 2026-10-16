@@ -69,7 +69,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 
 ### REQ-5 Contadores y estados
 **Historia:** Como jugador, quiero llevar veneno, energía, experiencia e impuesto de comandante.
-1. THE sistema SHALL ofrecer contadores de veneno, energía, experiencia y impuesto de comandante por jugador.
+1. THE sistema SHALL ofrecer contadores de veneno, energía y experiencia por jugador, y contador de impuesto de comandante (`commanderTax`) gestionado de forma centralizada en la ranura de comando mediante incrementos autoritativos automáticos (+2) al devolver y controles interactivos $\pm 2$ (REQ-9.7.20, Punto 6).
 2. WHEN el contador de veneno llega a 10, THE sistema SHALL resaltar al jugador.
 3. WHERE el jugador lo habilite, THE sistema SHALL permitir contadores personalizados con nombre.
 4. THE sistema SHALL permitir añadir contadores a cualquier carta del campo de batalla.
@@ -241,7 +241,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    5.1. Fila superior → borde inferior de la celda; fila inferior → borde superior de la celda.
    5.2. Columna izquierda → lado derecho; columna derecha o central → lado izquierdo.
    5.3. WHEN el jugador hace clic en la pastilla, THE sistema SHALL abrir el panel de vida interactivo con controles directos de −1 y +1 (eliminando botones de +-5) y dos campos numéricos "Daño recibido" y "Vida ganada" accionados mediante Enter (REQ-3, Punto 7).
-   5.4. THE veneno, energía, experiencia, impuesto de comandante y daño de comandante SHALL mostrarse como insignias pequeñas desplegables junto a la pastilla (REQ-4, REQ-5).
+   5.4. THE veneno, energía, experiencia y daño de comandante SHALL mostrarse como insignias pequeñas desplegables junto a la pastilla (REQ-4, REQ-5); el impuesto de comandante se gestiona y visualiza exclusivamente en la zona de comando (REQ-9.7.20, Punto 6).
 6. THE campo de batalla SHALL ocupar el resto de la celda, con cartas colocadas libremente y que pueden solaparse parcialmente:
    6.1. THE posición de cada carta SHALL guardarse **normalizada** (valores de 0 a 1 respecto al tamaño de la celda), para que coincida en pantallas de distinto tamaño.
    6.2. WHEN el jugador arrastra una carta, THE sistema SHALL traerla al frente (orden `z`) y sincronizar su nueva posición a la mesa en menos de 300 ms (REQ-9.2).
