@@ -1214,7 +1214,105 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 5: Flujos zona a zona (comandante a mesa, mesa a mano, biblioteca a mesa y mano, pilas)', async ({ browser }) => {
+  test('Punto 5: Propietario original (ownerId) y temporal (holderId) con 2 clientes (transferencia al campo de B, movimiento por B, recuperacion por A y bloqueo a B)', async ({ browser }) => {
+    test.setTimeout(90000);
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'OwnershipPod');
+    const [pageA, pageB] = pages;
+
+    try {
+      await expect(pageA.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+      await expect(pageB.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+
+      // 1. A arrastra una carta de su mano directamente al campo de B (columna derecha, x > 960)
+      const handCardA = pageA.locator('[data-hand-card="true"]').first();
+      await expect(handCardA).toBeVisible({ timeout: 10000 });
+      const handBoxA = await handCardA.boundingBox();
+      expect(handBoxA).not.toBeNull();
+
+      await pageA.mouse.move(handBoxA!.x + handBoxA!.width / 2, handBoxA!.y + handBoxA!.height / 2);
+      await pageA.mouse.down();
+      // Mover al campo de B (x = 1400, y = 350)
+      await pageA.mouse.move(1400, 350, { steps: 20 });
+      await pageA.waitForTimeout(200);
+      await pageA.mouse.up();
+      await pageA.waitForTimeout(1000);
+
+      // Comprobar que la carta está en la mesa para ambos jugadores
+      const cardOnBfA = pageA.locator('[data-battlefield-card="true"]').first();
+      await expect(cardOnBfA).toBeVisible({ timeout: 10000 });
+      const cardId = await cardOnBfA.getAttribute('data-card-instance-id');
+      expect(cardId).toBeTruthy();
+
+      const cardOnBfB = pageB.locator(`[data-battlefield-card="true"][data-card-instance-id="${cardId}"]`);
+      await expect(cardOnBfB).toBeVisible({ timeout: 10000 });
+
+      // 2. Verificar que en B, la carta tiene data-can-move="true" y clase cursor-pointer
+      await expect(cardOnBfB).toHaveAttribute('data-can-move', 'true');
+      const cardClassB = await cardOnBfB.getAttribute('class');
+      expect(cardClassB).toContain('cursor-pointer');
+      expect(cardClassB).not.toContain('cursor-not-allowed');
+
+      // Verificar que NO hay texto visible de "holder" o "titular" en la interfaz
+      const cardText = await cardOnBfB.innerText();
+      expect(cardText.toLowerCase()).not.toContain('titular');
+      expect(cardText.toLowerCase()).not.toContain('holder');
+
+      // 3. B ahora puede mover la carta dentro de su propio campo
+      const boxB1 = await cardOnBfB.boundingBox();
+      expect(boxB1).not.toBeNull();
+      await pageB.mouse.move(boxB1!.x + 25, boxB1!.y + 25);
+      await pageB.mouse.down();
+      await pageB.mouse.move(1600, 450, { steps: 15 });
+      await pageB.waitForTimeout(200);
+      await pageB.mouse.up();
+      await pageB.waitForTimeout(1000);
+
+      // Verificar que la carta se desplazó en el campo de B
+      const boxB2 = await cardOnBfB.boundingBox();
+      expect(boxB2).not.toBeNull();
+      expect(boxB2!.x).toBeGreaterThan(boxB1!.x + 50);
+
+      // 4. A (ownerId) recupera la carta a su propio campo (columna izquierda, x = 350 < 960)
+      const boxA1 = await cardOnBfA.boundingBox();
+      expect(boxA1).not.toBeNull();
+      await pageA.mouse.move(boxA1!.x + 25, boxA1!.y + 25);
+      await pageA.mouse.down();
+      await pageA.mouse.move(350, 350, { steps: 20 });
+      await pageA.waitForTimeout(200);
+      await pageA.mouse.up();
+      await pageA.waitForTimeout(1000);
+
+      // Verificar que la carta ahora está en el campo de A
+      const boxA2 = await cardOnBfA.boundingBox();
+      expect(boxA2).not.toBeNull();
+      expect(boxA2!.x).toBeLessThan(900);
+
+      // 5. En el cliente B, la carta recuperada por A ahora tiene data-can-move="false" y cursor-not-allowed
+      await expect(cardOnBfB).toHaveAttribute('data-can-move', 'false');
+      const cardClassBAfterRecovery = await cardOnBfB.getAttribute('class');
+      expect(cardClassBAfterRecovery).toContain('cursor-not-allowed');
+
+      // 6. B intenta agarrar la carta ajena -> se bloquea y aparece el aviso breve
+      const boxB3 = await cardOnBfB.boundingBox();
+      expect(boxB3).not.toBeNull();
+      await pageB.mouse.move(boxB3!.x + 25, boxB3!.y + 25);
+      await pageB.mouse.down();
+      await pageB.waitForTimeout(200);
+      await pageB.mouse.up();
+
+      // Verificar aviso breve de permiso en cliente B
+      const warningBanner = pageB.locator('[data-testid="permission-warning"]');
+      await expect(warningBanner).toBeVisible({ timeout: 5000 });
+      const warningText = await warningBanner.innerText();
+      expect(warningText).toContain('No puedes mover una carta ajena sin ser su titular temporal');
+    } finally {
+      for (const ctx of contexts) {
+        await ctx.close().catch(() => {});
+      }
+    }
+  });
+
+  test('Punto 5-Legacy: Flujos zona a zona (comandante a mesa, mesa a mano, biblioteca a mesa y mano, pilas)', async ({ browser }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'ZoneFlows');
     const page = pages[0];

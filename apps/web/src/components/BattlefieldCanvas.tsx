@@ -20,17 +20,21 @@ interface BattlefieldCanvasProps {
   optimisticPositions?: Record<string, { x: number; y: number; zIndex?: number }>;
   isLocalPlayer?: boolean;
   playerId?: string;
+  localPlayerId?: string;
   viewFraming?: ViewFraming;
+  onUnauthorizedAttempt?: (card: CardInstance) => void;
   onAction: (type: GameActionType, payload: unknown) => void;
 }
 
 interface BattlefieldCardItemProps {
   card: CardInstance;
-  isLocalPlayer: boolean;
+  isLocalPlayer?: boolean;
+  localPlayerId?: string;
   isSelected: boolean;
   optimisticPosition?: { x: number; y: number; zIndex?: number };
   isRemoteDragging?: boolean;
   viewFraming?: ViewFraming;
+  onUnauthorizedAttempt?: (card: CardInstance) => void;
   onCardClick: () => void;
   onTap: () => void;
   onFlip: () => void;
@@ -42,11 +46,12 @@ interface BattlefieldCardItemProps {
 
 const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   card,
-  isLocalPlayer,
+  localPlayerId,
   isSelected,
   optimisticPosition,
   isRemoteDragging,
   viewFraming,
+  onUnauthorizedAttempt,
   onCardClick,
   onTap,
   onFlip,
@@ -58,10 +63,15 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
+  // Punto 5: Comprobación de titularidad (propietario original o titular temporal)
+  const isOwner = !localPlayerId || card.ownerId === localPlayerId;
+  const isHolder = !!localPlayerId && card.holderId === localPlayerId;
+  const canMove = isOwner || isHolder;
+
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.instanceId,
     data: { card, fromZone: 'battlefield' },
-    disabled: !isLocalPlayer,
+    disabled: !canMove,
   });
 
   // Punto 4: Cerrar menú contextual al hacer clic fuera o pulsar Escape (con captura para no propagar a la vista expandida)
@@ -85,30 +95,46 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     };
   }, [isContextMenuOpen]);
 
-  // Clic derecho abre menú contextual
+  // Clic derecho abre menú contextual si tiene permiso, sino muestra aviso de restricción
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isLocalPlayer) {
+    if (canMove) {
       setIsContextMenuOpen(true);
+    } else {
+      onUnauthorizedAttempt?.(card);
     }
   };
 
-  // Doble clic gira o endereza sin disparar ampliaciones
+  // Doble clic gira o endereza si tiene permiso
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isLocalPlayer) {
+    if (canMove) {
       onTap();
+    } else {
+      onUnauthorizedAttempt?.(card);
     }
   };
 
-  // Táctil: pulsación larga de 500 ms abre menú contextual
+  // Táctil: pulsación larga de 500 ms abre menú contextual si tiene permiso
   const handleTouchStart = () => {
-    if (!isLocalPlayer) return;
+    if (!canMove) {
+      onUnauthorizedAttempt?.(card);
+      return;
+    }
     longPressTimerRef.current = setTimeout(() => {
       setIsContextMenuOpen(true);
     }, 500);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (!canMove) {
+      e.stopPropagation();
+      onUnauthorizedAttempt?.(card);
+      return;
+    }
+    listeners?.onPointerDown?.(e);
   };
 
   const handleTouchEnd = () => {
@@ -150,7 +176,11 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       data-card-name={card.definition.name}
       data-card-instance-id={card.instanceId}
       data-tapped={isTapped ? 'true' : 'false'}
+      data-can-move={canMove ? 'true' : 'false'}
+      data-card-owner={card.ownerId}
+      data-card-holder={card.holderId || ''}
       onClick={onCardClick}
+      onPointerDown={handlePointerDown}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       onTouchStart={handleTouchStart}
@@ -158,7 +188,9 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       onTouchMove={handleTouchEnd}
       onMouseEnter={() => !card.isFaceDown && !isDragging && showPreview(card.definition)}
       onMouseLeave={hidePreview}
-      className={`absolute cursor-pointer group select-none pointer-events-auto transition-[width,height] duration-150 ${
+      className={`absolute group select-none pointer-events-auto transition-[width,height] duration-150 ${
+        canMove ? 'cursor-pointer' : 'cursor-not-allowed'
+      } ${
         isDragging || isRemoteDragging ? 'opacity-0 pointer-events-none' : ''
       }`}
       style={{
@@ -206,8 +238,8 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
         )}
       </div>
 
-      {/* Punto 4: Las opciones (girar, contador, clonar, ver) NO aparecen con clic simple; solo con clic derecho o pulsación larga */}
-      {isLocalPlayer && isContextMenuOpen && (
+      {/* Punto 4: Las opciones (girar, contador, clonar, ver) NO aparecen con clic simple; solo con clic derecho o pulsación larga para quien tenga permisos */}
+      {canMove && isContextMenuOpen && (
         <div
           data-card-context-menu="true"
           onClick={e => e.stopPropagation()}
@@ -267,7 +299,9 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   cards,
   remoteDraggingCards,
   optimisticPositions,
+  localPlayerId,
   viewFraming,
+  onUnauthorizedAttempt,
   onAction,
 }) => {
   const { showPreview, hidePreview } = useCardPreview();
@@ -353,11 +387,12 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
           <BattlefieldCardItem
             key={card.instanceId}
             card={card}
-            isLocalPlayer={true}
+            localPlayerId={localPlayerId}
             isSelected={selectedCardId === card.instanceId}
             optimisticPosition={optimisticPositions?.[card.instanceId]}
             isRemoteDragging={isRemoteDragging}
             viewFraming={viewFraming}
+            onUnauthorizedAttempt={onUnauthorizedAttempt}
             onCardClick={() => handleCardClick(card)}
             onTap={() => handleTap(card)}
             onFlip={() => handleFlip(card)}

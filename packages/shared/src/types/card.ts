@@ -35,8 +35,9 @@ export interface CardDefinition {
 export interface CardInstance {
   instanceId: string; // Unique GUID for this card in the active game
   definition: CardDefinition;
-  ownerId: string;
+  ownerId: string; // Inmutable: jugador de cuya zona salió, o creador del token
   controllerId: string;
+  holderId?: string; // Titular temporal: jugador cuya división contiene la carta al 100% (oculto en UI)
   isCommander: boolean;
   isTapped: boolean;
   isFaceDown: boolean;

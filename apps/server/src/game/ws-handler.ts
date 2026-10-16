@@ -439,6 +439,7 @@ export class WebSocketHandler {
           error: err.message || 'Error en validación de acción',
         }),
       );
+      this.broadcastRoomState(client.roomCode);
     }
   }
 

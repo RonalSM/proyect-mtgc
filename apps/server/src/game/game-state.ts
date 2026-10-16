@@ -508,7 +508,81 @@ export class GameStateSession {
   }
 
   /**
-   * Moves a card across zones
+   * Computes which player's tabletop division contains the card bounding box (already rotated) at 100%.
+   * If the box crosses between two divisions or goes outside, returns undefined (empty holderId).
+   */
+  public computeHolderId(
+    position: { x: number; y: number },
+    isTapped: boolean,
+  ): string | undefined {
+    const allSeated = Object.values(this.state.players).filter(p => !p.isSpectator);
+    const totalPlayers = Math.max(2, allSeated.length);
+    const isTwoPlayerMode = totalPlayers === 2;
+    const cols = isTwoPlayerMode ? 2 : Math.min(3, Math.max(2, Math.ceil(totalPlayers / 2)));
+    const seatedPlayers = [...allSeated].sort((a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0));
+
+    // Normalized card dimensions (5:7 ratio or rotated 7:5)
+    const cardNormW = isTapped ? 0.08 : 0.045;
+    const cardNormH = isTapped ? 0.055 : 0.095;
+
+    const cardLeft = position.x;
+    const cardTop = position.y;
+    const cardRight = position.x + cardNormW;
+    const cardBottom = position.y + cardNormH;
+
+    for (let i = 0; i < seatedPlayers.length; i++) {
+      const p = seatedPlayers[i];
+      if (!p) continue;
+
+      let xMin: number;
+      let xMax: number;
+      let yMin: number;
+      let yMax: number;
+
+      if (isTwoPlayerMode) {
+        xMin = i === 0 ? 0.0 : 0.5;
+        xMax = i === 0 ? 0.5 : 1.0;
+        yMin = 0.0;
+        yMax = 1.0;
+      } else {
+        const row = i < cols ? 0 : 1;
+        const col = i < cols ? i : i - cols;
+        xMin = col / cols;
+        xMax = (col + 1) / cols;
+        yMin = row === 0 ? 0.0 : 0.5;
+        yMax = row === 0 ? 0.5 : 1.0;
+      }
+
+      // Check if 100% inside division (with 0.01 margin for subpixel precision)
+      const isInside =
+        cardLeft >= xMin - 0.01 &&
+        cardRight <= xMax + 0.01 &&
+        cardTop >= yMin - 0.01 &&
+        cardBottom <= yMax + 0.01;
+
+      if (isInside) {
+        return p.id;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Finds a card on any battlefield in the room
+   */
+  public findBattlefieldCard(instanceId: string): { card: CardInstance; playerId: string; index: number } | undefined {
+    for (const [pId, zones] of Object.entries(this.state.playerZones)) {
+      const idx = zones.battlefield.findIndex(c => c.instanceId === instanceId);
+      if (idx !== -1 && zones.battlefield[idx]) {
+        return { card: zones.battlefield[idx]!, playerId: pId, index: idx };
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Moves a card across zones with strict ownership and holderId authorization (Punto 5, REQ-9.2)
    */
   public moveCard(playerId: string, payload: MoveCardPayload): void {
     let fromPlayerId = (payload as any).fromPlayerId || playerId;
@@ -516,15 +590,11 @@ export class GameStateSession {
     let cardIndex = -1;
 
     if (payload.fromZone === 'battlefield') {
-      // Punto 4: Cualquier jugador puede mover cualquier carta de la mesa
-      for (const [pId, zones] of Object.entries(this.state.playerZones)) {
-        const idx = zones.battlefield.findIndex(c => c.instanceId === payload.cardInstanceId);
-        if (idx !== -1) {
-          fromPlayerId = pId;
-          fromArray = zones.battlefield;
-          cardIndex = idx;
-          break;
-        }
+      const found = this.findBattlefieldCard(payload.cardInstanceId);
+      if (found) {
+        fromPlayerId = found.playerId;
+        fromArray = this.state.playerZones[found.playerId]!.battlefield;
+        cardIndex = found.index;
       }
     } else {
       // Buscar primero en fromPlayerId
@@ -550,29 +620,76 @@ export class GameStateSession {
     }
 
     if (cardIndex === -1 || !fromArray) return;
+    const cardToMove = fromArray[cardIndex];
+    if (!cardToMove) return;
 
-    const targetPlayerId = payload.toPlayerId || fromPlayerId || playerId;
-    const toZones = this.state.playerZones[targetPlayerId];
-    if (!toZones) return;
+    // Punto 5: Comprobación estricta de autorización de movimiento:
+    // Quién puede mover una carta: su ownerId siempre (incluso para recuperarla de la mesa de otro)
+    // y cualquier otro jugador solo si es su holderId (si la carta está en su sección y 100% dentro de ella).
+    const isOwner = cardToMove.ownerId === playerId;
+    const isHolder = cardToMove.holderId === playerId;
 
-    const toArray = toZones[payload.toZone];
-    if (!toArray) return;
+    if (!isOwner && !isHolder) {
+      this.addLog(
+        playerId,
+        `⚠️ Acción no autorizada: intentó mover "${cardToMove.definition.name}" sin ser su propietario original ni su titular temporal`,
+      );
+      this.incrementVersion();
+      throw new Error(
+        `Acción no autorizada: no eres el propietario original (${cardToMove.ownerId}) ni el titular actual (${cardToMove.holderId}) de "${cardToMove.definition.name}".`,
+      );
+    }
 
+    const previousHolderId = cardToMove.holderId;
+    const previousPosition = cardToMove.position ? { ...cardToMove.position } : undefined;
+
+    // Remove from source array
     const [card] = fromArray.splice(cardIndex, 1);
     if (!card) return;
 
-    // Adjust card properties on move
+    // Target player zone
+    let targetPlayerId = payload.toPlayerId || fromPlayerId || playerId;
+
     if (payload.toZone === 'battlefield') {
+      const posX = payload.position?.x ?? 0.5;
+      const posY = payload.position?.y ?? 0.5;
       card.position = {
-        x: payload.position?.x ?? 0.5,
-        y: payload.position?.y ?? 0.5,
+        x: posX,
+        y: posY,
         zIndex: payload.position?.zIndex ?? 1,
       };
+
+      // Punto 5: Calcular holderId:
+      // Al soltar, holderId es el jugador cuya división contiene la caja de la carta (ya girada) al 100%;
+      // si queda entre dos divisiones o fuera, holderId queda vacío.
+      let newHolderId: string | undefined = undefined;
+      const geomHolder = this.computeHolderId({ x: posX, y: posY }, !!card.isTapped);
+      if (payload.holderId !== undefined && payload.holderId !== null) {
+        if (!payload.holderId || payload.holderId === geomHolder) {
+          newHolderId = payload.holderId || undefined;
+        } else {
+          newHolderId = geomHolder;
+        }
+      } else {
+        newHolderId = geomHolder;
+      }
+
+      card.holderId = newHolderId;
+      targetPlayerId = payload.toPlayerId || card.ownerId;
     } else {
       card.position = undefined;
       card.isTapped = false;
       card.isFaceDown = false;
+      card.holderId = undefined; // Fuera del campo de batalla no hay titular temporal
+      // Fuera del campo de batalla siempre regresa a zonas del propietario original (salvo donación explícita)
+      targetPlayerId = payload.toPlayerId || card.ownerId;
     }
+
+    const toZones = this.state.playerZones[targetPlayerId] || this.state.playerZones[card.ownerId];
+    if (!toZones) return;
+
+    const toArray = toZones[payload.toZone];
+    if (!toArray) return;
 
     if (payload.destinationIndex !== undefined && payload.destinationIndex >= 0) {
       toArray.splice(payload.destinationIndex, 0, card);
@@ -612,6 +729,8 @@ export class GameStateSession {
         const idx = toArray.findIndex(c => c.instanceId === card.instanceId);
         if (idx !== -1) {
           toArray.splice(idx, 1);
+          card.holderId = previousHolderId;
+          card.position = previousPosition;
           fromArray.splice(cardIndex, 0, card);
           this.syncPlayerCounts(fromPlayerId);
           if (targetPlayerId !== fromPlayerId) {
@@ -625,14 +744,18 @@ export class GameStateSession {
   }
 
   /**
-   * Taps or untaps a card on the battlefield
+   * Taps or untaps a card on the battlefield (owner or holder)
    */
   public tapCard(playerId: string, payload: TapCardPayload): void {
-    const zones = this.state.playerZones[playerId];
-    if (!zones) return;
+    const found = this.findBattlefieldCard(payload.cardInstanceId);
+    if (!found) return;
 
-    const card = zones.battlefield.find(c => c.instanceId === payload.cardInstanceId);
-    if (!card) return;
+    const card = found.card;
+    const isOwner = card.ownerId === playerId;
+    const isHolder = card.holderId === playerId;
+    if (!isOwner && !isHolder) {
+      throw new Error('No autorizado: solo el propietario original o el titular temporal pueden girar esta carta.');
+    }
 
     card.isTapped = payload.isTapped;
     card.rotation = payload.isTapped ? 90 : 0;
@@ -661,11 +784,15 @@ export class GameStateSession {
    * Flips a card face down or face up
    */
   public flipCard(playerId: string, payload: FlipCardPayload): void {
-    const zones = this.state.playerZones[playerId];
-    if (!zones) return;
+    const found = this.findBattlefieldCard(payload.cardInstanceId);
+    if (!found) return;
 
-    const card = zones.battlefield.find(c => c.instanceId === payload.cardInstanceId);
-    if (!card) return;
+    const card = found.card;
+    const isOwner = card.ownerId === playerId;
+    const isHolder = card.holderId === playerId;
+    if (!isOwner && !isHolder) {
+      throw new Error('No autorizado: solo el propietario original o el titular temporal pueden voltear esta carta.');
+    }
 
     card.isFaceDown = payload.isFaceDown;
     this.addLog(
@@ -679,13 +806,22 @@ export class GameStateSession {
    * Clones a token or permanent on the battlefield (REQ-9.4)
    */
   public cloneToken(playerId: string, payload: CloneTokenPayload): void {
-    const zones = this.state.playerZones[playerId];
-    if (!zones) return;
+    const found = this.findBattlefieldCard(payload.cardInstanceId);
+    if (!found) return;
 
-    const sourceCard = zones.battlefield.find(c => c.instanceId === payload.cardInstanceId);
-    if (!sourceCard) return;
+    const sourceCard = found.card;
+    const isOwner = sourceCard.ownerId === playerId;
+    const isHolder = sourceCard.holderId === playerId;
+    if (!isOwner && !isHolder) {
+      throw new Error('No autorizado: solo el propietario original o el titular temporal pueden clonar este permanente.');
+    }
 
-    const clonedInstance = {
+    const clonedPos = {
+      x: Math.min(0.9, (sourceCard.position?.x ?? 0.5) + 0.03),
+      y: Math.min(0.9, (sourceCard.position?.y ?? 0.5) + 0.03),
+    };
+
+    const clonedInstance: CardInstance = {
       instanceId: randomUUID(),
       definition: {
         ...sourceCard.definition,
@@ -693,30 +829,35 @@ export class GameStateSession {
           ? sourceCard.definition.name
           : `${sourceCard.definition.name} (Token)`,
       },
-      ownerId: playerId,
+      ownerId: playerId, // Inmutable: para fichas el que las crea
       controllerId: playerId,
+      holderId: this.computeHolderId(clonedPos, false),
       isCommander: false,
       isTapped: false,
       isFaceDown: false,
       rotation: 0,
       counters: { ...sourceCard.counters },
       position: {
-        x: Math.min(0.9, (sourceCard.position?.x ?? 0.5) + 0.03),
-        y: Math.min(0.9, (sourceCard.position?.y ?? 0.5) + 0.03),
+        ...clonedPos,
         zIndex: (sourceCard.position?.zIndex ?? 1) + 1,
       },
     };
 
-    zones.battlefield.push(clonedInstance);
+    const targetZones = this.state.playerZones[clonedInstance.holderId || playerId] || this.state.playerZones[playerId];
+    if (targetZones) {
+      targetZones.battlefield.push(clonedInstance);
+    }
     this.addLog(playerId, `clonó el token/permanente "${sourceCard.definition.name}"`, true);
 
     this.undoStack.push({
       playerId,
       description: `Revertir clon de ${sourceCard.definition.name}`,
       revert: () => {
-        const idx = zones.battlefield.findIndex(c => c.instanceId === clonedInstance.instanceId);
-        if (idx !== -1) {
-          zones.battlefield.splice(idx, 1);
+        if (targetZones) {
+          const idx = targetZones.battlefield.findIndex(c => c.instanceId === clonedInstance.instanceId);
+          if (idx !== -1) {
+            targetZones.battlefield.splice(idx, 1);
+          }
         }
       },
     });
@@ -728,11 +869,15 @@ export class GameStateSession {
    * Adds or removes counters from a card
    */
   public setCardCounter(playerId: string, payload: SetCardCounterPayload): void {
-    const zones = this.state.playerZones[playerId];
-    if (!zones) return;
+    const found = this.findBattlefieldCard(payload.cardInstanceId);
+    if (!found) return;
 
-    const card = zones.battlefield.find(c => c.instanceId === payload.cardInstanceId);
-    if (!card) return;
+    const card = found.card;
+    const isOwner = card.ownerId === playerId;
+    const isHolder = card.holderId === playerId;
+    if (!isOwner && !isHolder) {
+      throw new Error('No autorizado: solo el propietario original o el titular temporal pueden modificar contadores.');
+    }
 
     const current = card.counters[payload.counterType] || 0;
     const next = Math.max(0, current + payload.delta);

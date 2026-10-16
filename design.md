@@ -77,17 +77,18 @@ Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 7. Game Server valida token y asiento → difunde "player_joined"
 ```
 
-### Flujo 2: Acción de juego (mover carta en MesaTotal con coordenadas globales y sincronización sin parpadeo)
+### Flujo 2: Acción de juego (mover carta en MesaTotal con coordenadas globales, titularidad temporal y sincronización sin parpadeo)
 ```
-1. Jugador A inicia arrastre de carta (desde mano a mesa, o reposicionando en el campo de batalla de MesaTotal).
+1. Jugador A inicia arrastre de carta (desde mano a mesa, o reposicionando en el campo de batalla de MesaTotal). Se verifica autorización: solo su ownerId o su holderId pueden moverla; de lo contrario el cursor muestra not-allowed y un aviso breve.
 2. DragOverlay se renderiza mediante Portal a document.body conservando el giro apaisado para cartas giradas (isTapped: true como caja apaisada con desplazamiento de puntero constante y coincidencia ≤ 2px al soltar).
 3. Durante el arrastre, Web Client A emite CARD_DRAG_MOVE efímero throttled a ~30 fps con coordenadas globales normalizadas (x, y ∈ [0, 1]).
 4. Game Server retransmite REMOTE_CARD_DRAGGING a los demás clientes (receptor B). B oculta la carta real fija (opacity: 0) y muestra el fantasma remoto interpolado.
 5. Al soltar la carta:
-   a. Web Client A emite CARD_DRAG_MOVE con isDragging: false y la posición final calculada { position: { x, y } }.
-   b. Web Client A envía el comando autoritativo MOVE_CARD { cardInstanceId, fromZone, toZone, position: { x, y } }.
-   c. Receptor B recibe isDragging: false con la posición final; activa pendingSync: true manteniendo el fantasma en dicha posición y la carta fija oculta.
-6. Game Server procesa MOVE_CARD de forma autoritativa, actualiza estado en memoria/Redis, registra en bitácora ("X movió [Carta]") y emite ROOM_STATE_SYNC.
+   a. Web Client A calcula si la caja de la carta (ya girada) está contenida al 100% dentro de la división de algún jugador (holderId). Si queda entre divisiones o fuera, holderId queda vacío.
+   b. Web Client A emite CARD_DRAG_MOVE con isDragging: false y la posición final calculada { position: { x, y } }.
+   c. Web Client A envía el comando autoritativo MOVE_CARD { cardInstanceId, fromZone, toZone, holderId, position: { x, y } }.
+   d. Receptor B recibe isDragging: false con la posición final; activa pendingSync: true manteniendo el fantasma en dicha posición y la carta fija oculta.
+6. Game Server valida autoritativamente que el emisor sea ownerId o holderId de la carta. Calcula/verifica holderId según contención al 100% de la división, actualiza estado, registra en bitácora ("X movió [Carta]") y emite ROOM_STATE_SYNC. Si no está autorizado, rechaza la acción y registra advertencia en bitácora.
 7. Al recibir ROOM_STATE_SYNC, Receptor B retira pendingSync y revela la carta fija en su nueva posición en el idéntico frame de renderizado, eliminando el parpadeo y los duplicados.
 ```
 

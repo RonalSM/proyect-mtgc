@@ -38,6 +38,7 @@ export const MoveCardSchema = z.object({
   toZone: ZoneTypeSchema,
   fromPlayerId: z.string().optional(),
   toPlayerId: z.string().optional(),
+  holderId: z.string().optional().nullable(),
   position: z
     .object({
       x: z.number(),

@@ -82,6 +82,7 @@ export interface MoveCardPayload {
   fromZone: ZoneType;
   toZone: ZoneType;
   toPlayerId?: string; // If donating or transferring control
+  holderId?: string | null; // Titular temporal calculado al soltar la carta
   position?: {
     x: number;
     y: number;

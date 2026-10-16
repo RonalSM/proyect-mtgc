@@ -84,6 +84,19 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   const [optimisticPositions, setOptimisticPositions] = useState<
     Record<string, { x: number; y: number; zIndex?: number; timestamp: number }>
   >({});
+  const [permissionWarning, setPermissionWarning] = useState<string | null>(null);
+  const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const showPermissionWarning = useCallback((message: string) => {
+    if (warningTimerRef.current) {
+      clearTimeout(warningTimerRef.current);
+    }
+    setPermissionWarning(message);
+    warningTimerRef.current = setTimeout(() => {
+      setPermissionWarning(null);
+      warningTimerRef.current = null;
+    }, 3000);
+  }, []);
 
   const { setIsDragging } = useCardPreview();
 
@@ -400,23 +413,42 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       setActiveDragItem(null);
     });
 
-    // Detectar celda de jugador bajo el centro de la carta
-    let targetPlayerId = overData?.playerId;
-    const centerPointX = clampedX + overlayWidth / 2;
-    const centerPointY = clampedY + overlayHeight / 2;
+    // Punto 5: Calcular titular temporal (holderId)
+    // holderId es el jugador cuya división contiene la caja de la carta (ya girada) al 100%;
+    // si queda entre dos divisiones o fuera, holderId queda vacío (undefined).
+    let calculatedHolderId: string | undefined = undefined;
+    const seatedPlayers = Object.values(roomState.players)
+      .filter(p => !p.isSpectator)
+      .sort((a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0));
 
-    if (!targetPlayerId && typeof document !== 'undefined') {
-      const elementsUnder = document.elementsFromPoint(centerPointX, centerPointY);
-      for (const el of elementsUnder) {
-        const cell = el.closest('[data-player-cell]');
-        if (cell) {
-          targetPlayerId = cell.getAttribute('data-player-cell') || undefined;
-          break;
+    if (typeof document !== 'undefined') {
+      const cardBox = {
+        left: clampedX,
+        top: clampedY,
+        right: clampedX + overlayWidth,
+        bottom: clampedY + overlayHeight,
+      };
+
+      for (const p of seatedPlayers) {
+        const cellEl = document.querySelector(`[data-player-cell="${p.id}"]`);
+        if (cellEl) {
+          const rect = cellEl.getBoundingClientRect();
+          // Comprobar contención al 100% con margen de 2px para subpixel rounding
+          const is100PercentInside =
+            cardBox.left >= rect.left - 2 &&
+            cardBox.right <= rect.right + 2 &&
+            cardBox.top >= rect.top - 2 &&
+            cardBox.bottom <= rect.bottom + 2;
+
+          if (is100PercentInside) {
+            calculatedHolderId = p.id;
+            break;
+          }
         }
       }
     }
 
-    const finalPlayerId = targetPlayerId || expandedPlayerId || localPlayerId;
+    const finalPlayerId = calculatedHolderId || localPlayerId;
 
     // Punto 5 / 7: Permitir jugar desde hand, command, library, graveyard y exile a la mesa
     if (
@@ -430,7 +462,8 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         cardInstanceId: active.id,
         fromZone: fromZone,
         toZone: 'battlefield',
-        toPlayerId: localPlayerId,
+        toPlayerId: finalPlayerId,
+        holderId: calculatedHolderId,
         position: { x: normX, y: normY, zIndex: 10 },
       });
     } else if (fromZone === 'battlefield') {
@@ -439,6 +472,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         fromZone: 'battlefield',
         toZone: 'battlefield',
         toPlayerId: finalPlayerId,
+        holderId: calculatedHolderId,
         position: { x: normX, y: normY, zIndex: 10 },
       });
     }
@@ -546,8 +580,24 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           remoteDraggingCards={remoteDraggingCards}
           optimisticPositions={optimisticPositions}
           viewFraming={viewFraming}
+          localPlayerId={localPlayerId}
+          onUnauthorizedAttempt={() =>
+            showPermissionWarning(
+              'No puedes mover una carta ajena sin ser su titular temporal.',
+            )
+          }
           onAction={onAction}
         />
+
+        {/* Aviso breve de validación de propiedad/titularidad en el cliente (Punto 5) */}
+        {permissionWarning && (
+          <div
+            data-testid="permission-warning"
+            className="fixed top-14 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 bg-amber-950/95 border border-amber-500/90 text-amber-200 text-xs font-semibold rounded-xl shadow-2xl backdrop-blur-md flex items-center space-x-2 animate-bounce"
+          >
+            <span>⚠️ {permissionWarning}</span>
+          </div>
+        )}
 
         {/* Drag Overlay visual en portal a document.body con medidas exactas en px, conservando giro apaisado para cartas giradas (Punto 2) */}
         <Portal>
