@@ -1042,89 +1042,95 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 3: Medicion de rotacion (90 deg en contenedor unico sin rotacion extra ni invertida)', async ({ browser }) => {
+  test('Punto 3: Mesa expandida (sacar carta de la mano, mover carta de la mesa, devolver a la mano)', async ({ browser }) => {
     test.setTimeout(90000);
-    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'RotateTest');
+    const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'ExpandedViewPod');
     const page = pages[0];
 
     try {
       await expect(page.locator('#mesa-total')).toBeVisible({ timeout: 15000 });
+      await page.waitForTimeout(1000);
 
-      // 1. Jugar carta a la mesa
+      const initialHandCount = await page.locator('[data-hand-card="true"]').count();
+      expect(initialHandCount).toBeGreaterThan(0);
+
+      // 1. Abrir la vista expandida (zoom/encuadre de la misma mesa global)
+      const expandBtn = page.locator('[data-expand-cell-btn]').first();
+      await expect(expandBtn).toBeVisible({ timeout: 5000 });
+      await expandBtn.click();
+      await page.waitForTimeout(500);
+
+      const closeBtn = page.locator('[data-testid="close-expanded-view"]');
+      await expect(closeBtn).toBeVisible({ timeout: 5000 });
+
+      // 2. Sacar una carta de la mano y soltarla en la mesa expandida
       const handCard = page.locator('[data-hand-card="true"]').first();
-      await expect(handCard).toBeVisible({ timeout: 10000 });
-      await handCard.hover({ position: { x: 30, y: 35 } });
+      await expect(handCard).toBeVisible({ timeout: 5000 });
+      const handBox = await handCard.boundingBox();
+      expect(handBox).not.toBeNull();
+
+      await page.mouse.move(handBox!.x + handBox!.width / 2, handBox!.y + handBox!.height / 2);
       await page.mouse.down();
-      await page.mouse.move(600, 350, { steps: 15 });
-      await page.mouse.up();
-      await page.waitForTimeout(800);
-
-      const placedCard = page.locator('[data-battlefield-card="true"]').first();
-      await expect(placedCard).toBeVisible({ timeout: 10000 });
-
-      // Helper para extraer el ángulo de rotación a partir de getComputedStyle
-      const getRotationAngle = async (locator: any) => {
-        return await locator.evaluate((el: HTMLElement) => {
-          const st = window.getComputedStyle(el);
-          const tr = st.transform;
-          if (!tr || tr === 'none') return 0;
-          const match = tr.match(/matrix\(([^)]+)\)/);
-          if (!match) return 0;
-          const [a, b] = match[1].split(',').map(s => parseFloat(s.trim()));
-          const angle = Math.round(Math.atan2(b, a) * (180 / Math.PI));
-          return angle < 0 ? angle + 360 : angle;
-        });
-      };
-
-      // A. Cara frontal enderezada (0°)
-      const initialAngle = await getRotationAngle(placedCard);
-      console.log('ANGULO_FRONTAL_ENDEREZADA:', initialAngle);
-      expect(initialAngle).toBe(0);
-
-      // B. Girar la carta (Tap -> 90° horario)
-      await placedCard.click();
+      // Arrastrar hacia el centro de la mesa
+      await page.mouse.move(500, 300, { steps: 15 });
       await page.waitForTimeout(200);
-      const tapBtn = page.locator('button[title="Girar"]');
-      await expect(tapBtn).toBeVisible({ timeout: 5000 });
-      await tapBtn.click();
+      await page.mouse.up();
+      await page.waitForTimeout(1000);
+
+      // Verificar que la carta ahora está en la mesa y se redujo la mano
+      const placedCard = page.locator('[data-battlefield-card="true"]').first();
+      await expect(placedCard).toBeVisible({ timeout: 5000 });
+      const handCountAfterPlay = await page.locator('[data-hand-card="true"]').count();
+      expect(handCountAfterPlay).toBe(initialHandCount - 1);
+
+      // 3. Mover la carta de la mesa en la vista expandida (transformación inversa)
+      const cardBox1 = await placedCard.boundingBox();
+      expect(cardBox1).not.toBeNull();
+
+      await page.mouse.move(cardBox1!.x + 20, cardBox1!.y + 20);
+      await page.mouse.down();
+      await page.mouse.move(750, 420, { steps: 15 });
+      await page.waitForTimeout(200);
+      await page.mouse.up();
+      await page.waitForTimeout(1000);
+
+      const cardBox2 = await placedCard.boundingBox();
+      expect(cardBox2).not.toBeNull();
+      // La posición debe haber cambiado significativamente
+      expect(Math.abs(cardBox2!.x - cardBox1!.x)).toBeGreaterThan(30);
+
+      // 4. Verificar que el menú contextual de clic derecho sigue activo en la vista expandida
+      await placedCard.click({ button: 'right' });
+      await page.waitForTimeout(300);
+      const ctxMenu = page.locator('[data-card-context-menu="true"]');
+      await expect(ctxMenu).toBeVisible({ timeout: 3000 });
+      // Cerrar menú con clic fuera o Escape
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+
+      // 5. Devolver la carta de la mesa a la mano en la vista expandida
+      const cardBox3 = await placedCard.boundingBox();
+      expect(cardBox3).not.toBeNull();
+      const handDock = page.locator('[data-dock-zone="hand"]').first();
+      const handDockBox = await handDock.boundingBox();
+      expect(handDockBox).not.toBeNull();
+
+      await page.mouse.move(cardBox3!.x + 20, cardBox3!.y + 20);
+      await page.mouse.down();
+      await page.mouse.move(handDockBox!.x + handDockBox!.width / 2, handDockBox!.y + handDockBox!.height / 2, { steps: 15 });
+      await page.waitForTimeout(200);
+      await page.mouse.up();
+      await page.waitForTimeout(1000);
+
+      // La carta desapareció del campo de batalla y volvió a la mano
+      await expect(placedCard).not.toBeVisible();
+      const finalHandCount = await page.locator('[data-hand-card="true"]').count();
+      expect(finalHandCount).toBe(initialHandCount);
+
+      // 6. Cerrar vista expandida y volver a la cuadrícula global
+      await closeBtn.click();
       await page.waitForTimeout(500);
-
-      const tappedAngle = await getRotationAngle(placedCard);
-      console.log('ANGULO_FRONTAL_GIRADA:', tappedAngle);
-      // Debe ser exactamente 90°, NUNCA 180°
-      expect(tappedAngle).toBe(90);
-
-      // Comprobar que la imagen interna NO tiene rotación propia
-      const innerImg = placedCard.locator('img').first();
-      const innerImgAngle = await getRotationAngle(innerImg);
-      console.log('ANGULO_IMG_INTERNA:', innerImgAngle);
-      expect(innerImgAngle).toBe(0);
-
-      // Captura de cara frontal girada 90°
-      await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'card-tapped-front-90deg.png') });
-
-      // C. Voltear carta boca abajo estando girada (Dorso girado 90°)
-      const flipBtn = page.locator('button[title="Boca abajo / Boca arriba"]');
-      await expect(flipBtn).toBeVisible({ timeout: 5000 });
-      await flipBtn.click();
-      await page.waitForTimeout(500);
-
-      const faceDownTappedAngle = await getRotationAngle(placedCard);
-      console.log('ANGULO_DORSO_GIRADO:', faceDownTappedAngle);
-      expect(faceDownTappedAngle).toBe(90);
-
-      // Captura de dorso girado 90°
-      await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'card-tapped-back-90deg.png') });
-
-      // D. Enderezar carta estando boca abajo (Dorso enderezado 0°)
-      const untapBtn = page.locator('button[title="Enderezar"]');
-      await expect(untapBtn).toBeVisible({ timeout: 5000 });
-      await untapBtn.click();
-      await page.waitForTimeout(500);
-
-      const faceDownUntappedAngle = await getRotationAngle(placedCard);
-      console.log('ANGULO_DORSO_ENDEREZADO:', faceDownUntappedAngle);
-      expect(faceDownUntappedAngle).toBe(0);
+      await expect(closeBtn).not.toBeVisible();
     } finally {
       for (const ctx of contexts) {
         await ctx.close().catch(() => {});

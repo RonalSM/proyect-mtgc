@@ -18,12 +18,46 @@ import {
 } from '@dnd-kit/core';
 import { TableGrid } from './TableGrid';
 import { PlayerCell } from './PlayerCell';
-import { BattlefieldCanvas } from './BattlefieldCanvas';
-import { ExpandedCellView } from './ExpandedCellView';
+import { BattlefieldCanvas, type ViewFraming } from './BattlefieldCanvas';
 import { CardDisplay } from './CardDisplay';
 import { Portal } from './Portal';
 import { CardPreviewProvider, useCardPreview } from '../context/CardPreviewContext';
 import type { RemoteDragState } from '../hooks/useGameSocket';
+
+export function getPlayerFraming(playerId: string, roomState: RoomState): ViewFraming {
+  const allSeated = Object.values(roomState.players).filter(p => !p.isSpectator);
+  const totalPlayers = Math.max(2, allSeated.length);
+  const isTwoPlayerMode = totalPlayers === 2;
+  const cols = isTwoPlayerMode ? 2 : Math.min(3, Math.max(2, Math.ceil(totalPlayers / 2)));
+  const seatedPlayers = [...allSeated].sort((a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0));
+
+  const playerIdx = seatedPlayers.findIndex(p => p.id === playerId);
+  if (playerIdx === -1) {
+    return { xMin: 0, yMin: 0, width: 1, height: 1, isExpanded: false };
+  }
+
+  if (isTwoPlayerMode) {
+    const col = playerIdx === 0 ? 0 : 1;
+    return {
+      xMin: col * 0.5,
+      yMin: 0,
+      width: 0.5,
+      height: 1.0,
+      isExpanded: true,
+    };
+  }
+
+  const row = playerIdx < cols ? 0 : 1;
+  const col = playerIdx < cols ? playerIdx : playerIdx - cols;
+
+  return {
+    xMin: col / cols,
+    yMin: row === 0 ? 0 : 0.5,
+    width: 1 / cols,
+    height: 0.5,
+    isExpanded: true,
+  };
+}
 
 interface TableBoardProps {
   roomState: RoomState;
@@ -42,6 +76,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   onLeaveRoom,
 }) => {
   const [expandedPlayerId, setExpandedPlayerId] = useState<string | null>(null);
+  const viewFraming = expandedPlayerId ? getPlayerFraming(expandedPlayerId, roomState) : undefined;
   const [activeDragItem, setActiveDragItem] = useState<{
     card: CardInstance;
     fromZone: 'hand' | 'battlefield' | 'command' | 'library' | 'graveyard' | 'exile';
@@ -166,8 +201,14 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       const overlayHeight = isTapped ? cardPixelWidth : cardPixelHeight;
       const clampedX = initial ? Math.max(0, Math.min(winW - overlayWidth, initial.left)) : winW * 0.5;
       const clampedY = initial ? Math.max(0, Math.min(winH - overlayHeight, initial.top)) : winH * 0.5;
-      const normX = clampedX / winW;
-      const normY = clampedY / winH;
+      const uScreen = clampedX / winW;
+      const vScreen = clampedY / winH;
+      const normX = viewFraming?.isExpanded
+        ? Math.max(0, Math.min(1, viewFraming.xMin + uScreen * viewFraming.width))
+        : uScreen;
+      const normY = viewFraming?.isExpanded
+        ? Math.max(0, Math.min(1, viewFraming.yMin + vScreen * viewFraming.height))
+        : vScreen;
 
       onAction('CARD_DRAG_MOVE', {
         cardInstanceId: event.active.id,
@@ -219,8 +260,14 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const clampedX = Math.max(0, Math.min(winW - overlayWidth, overlayLeft));
     const clampedY = Math.max(0, Math.min(winH - overlayHeight, overlayTop));
 
-    const normX = clampedX / winW;
-    const normY = clampedY / winH;
+    const uScreen = clampedX / winW;
+    const vScreen = clampedY / winH;
+    const normX = viewFraming?.isExpanded
+      ? Math.max(0, Math.min(1, viewFraming.xMin + uScreen * viewFraming.width))
+      : uScreen;
+    const normY = viewFraming?.isExpanded
+      ? Math.max(0, Math.min(1, viewFraming.yMin + vScreen * viewFraming.height))
+      : vScreen;
 
     onAction('CARD_DRAG_MOVE', {
       cardInstanceId: event.active.id,
@@ -244,18 +291,21 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     setActiveDragItem(null);
   }, [activeDragItem, onAction, setIsDragging]);
 
-  // Cancelar arrastre con Escape (Punto 5)
+  // Cancelar arrastre con Escape o cerrar mesa expandida si no hay arrastre (Punto 3 / Punto 5)
   useEffect(() => {
-    if (!activeDragItem) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        handleDragCancel();
-        window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+        if (activeDragItem) {
+          handleDragCancel();
+          window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+        } else if (expandedPlayerId) {
+          setExpandedPlayerId(null);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeDragItem, handleDragCancel]);
+  }, [activeDragItem, expandedPlayerId, handleDragCancel]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -292,9 +342,15 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const clampedX = Math.max(0, Math.min(winW - overlayWidth, overlayLeft));
     const clampedY = Math.max(0, Math.min(winH - overlayHeight, overlayTop));
 
-    // Coordenadas globales normalizadas sin snapping ni redondeos visibles
-    const normX = clampedX / winW;
-    const normY = clampedY / winH;
+    // Coordenadas globales normalizadas mediante transformación inversa si la mesa está expandida (Punto 3)
+    const uScreen = clampedX / winW;
+    const vScreen = clampedY / winH;
+    const normX = viewFraming?.isExpanded
+      ? Math.max(0, Math.min(1, viewFraming.xMin + uScreen * viewFraming.width))
+      : uScreen;
+    const normY = viewFraming?.isExpanded
+      ? Math.max(0, Math.min(1, viewFraming.yMin + vScreen * viewFraming.height))
+      : vScreen;
 
     // Punto 1 / Punto 2: Notificar fin de arrastre efímero incluyendo la posición final calculada e isTapped
     onAction('CARD_DRAG_MOVE', {
@@ -360,7 +416,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       }
     }
 
-    const finalPlayerId = targetPlayerId || localPlayerId;
+    const finalPlayerId = targetPlayerId || expandedPlayerId || localPlayerId;
 
     // Punto 5 / 7: Permitir jugar desde hand, command, library, graveyard y exile a la mesa
     if (
@@ -387,10 +443,6 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       });
     }
   };
-
-  const expandedPlayer = expandedPlayerId
-    ? roomState.players[expandedPlayerId]
-    : null;
 
   const emptyZones = {
     library: [],
@@ -453,7 +505,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         isActiveTurn={isActiveTurn}
         localPlayerId={localPlayerId}
         onAction={onAction}
-        onExpandCell={() => setExpandedPlayerId(player.id)}
+        onExpandCell={() => setExpandedPlayerId(expandedPlayerId === player.id ? null : player.id)}
       />
     );
   };
@@ -477,34 +529,25 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         } as React.CSSProperties}
         className="relative w-screen h-[100dvh] overflow-hidden bg-black select-none"
       >
-        {/* Full-bleed Table Grid (Visual Divisions & Floating Docks) */}
+        {/* Full-bleed Table Grid (Visual Divisions & Floating Docks o Vista Ampliada) */}
         <TableGrid
           roomState={roomState}
           localPlayerId={localPlayerId}
           onAction={onAction}
           onLeaveRoom={onLeaveRoom}
           renderPlayerCell={renderPlayerCell}
+          expandedPlayerId={expandedPlayerId}
+          onCloseExpanded={() => setExpandedPlayerId(null)}
         />
 
-        {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas (Punto 1, REQ-9.7, REQ-22) */}
+        {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas y Zoom (Punto 1, Punto 3) */}
         <BattlefieldCanvas
           cards={allBattlefieldCards}
           remoteDraggingCards={remoteDraggingCards}
           optimisticPositions={optimisticPositions}
+          viewFraming={viewFraming}
           onAction={onAction}
         />
-
-        {/* Expanded Cell View Modal (REQ-22.11) */}
-        {expandedPlayer && (
-          <ExpandedCellView
-            player={expandedPlayer}
-            zones={roomState.playerZones[expandedPlayer.id] || emptyZones}
-            isLocal={expandedPlayer.id === localPlayerId}
-            isActiveTurn={roomState.activePlayerId === expandedPlayer.id}
-            onClose={() => setExpandedPlayerId(null)}
-            onAction={onAction}
-          />
-        )}
 
         {/* Drag Overlay visual en portal a document.body con medidas exactas en px, conservando giro apaisado para cartas giradas (Punto 2) */}
         <Portal>

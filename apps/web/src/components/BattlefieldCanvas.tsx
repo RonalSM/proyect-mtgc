@@ -6,12 +6,21 @@ import { CardDisplay } from './CardDisplay';
 import { useCardPreview } from '../context/CardPreviewContext';
 import type { RemoteDragState } from '../hooks/useGameSocket';
 
+export interface ViewFraming {
+  xMin: number;
+  yMin: number;
+  width: number;
+  height: number;
+  isExpanded: boolean;
+}
+
 interface BattlefieldCanvasProps {
   cards: CardInstance[];
   remoteDraggingCards?: Record<string, RemoteDragState>;
   optimisticPositions?: Record<string, { x: number; y: number; zIndex?: number }>;
   isLocalPlayer?: boolean;
   playerId?: string;
+  viewFraming?: ViewFraming;
   onAction: (type: GameActionType, payload: unknown) => void;
 }
 
@@ -21,6 +30,7 @@ interface BattlefieldCardItemProps {
   isSelected: boolean;
   optimisticPosition?: { x: number; y: number; zIndex?: number };
   isRemoteDragging?: boolean;
+  viewFraming?: ViewFraming;
   onCardClick: () => void;
   onTap: () => void;
   onFlip: () => void;
@@ -36,6 +46,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   isSelected,
   optimisticPosition,
   isRemoteDragging,
+  viewFraming,
   onCardClick,
   onTap,
   onFlip,
@@ -53,20 +64,24 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     disabled: !isLocalPlayer,
   });
 
-  // Punto 4: Cerrar menú contextual al hacer clic fuera o pulsar Escape
+  // Punto 4: Cerrar menú contextual al hacer clic fuera o pulsar Escape (con captura para no propagar a la vista expandida)
   React.useEffect(() => {
     if (!isContextMenuOpen) return;
     const handleClickOutside = () => setIsContextMenuOpen(false);
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsContextMenuOpen(false);
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        e.stopImmediatePropagation?.();
+        setIsContextMenuOpen(false);
+      }
     };
     window.addEventListener('click', handleClickOutside);
     window.addEventListener('contextmenu', handleClickOutside);
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, true);
     return () => {
       window.removeEventListener('click', handleClickOutside);
       window.removeEventListener('contextmenu', handleClickOutside);
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown, true);
     };
   }, [isContextMenuOpen]);
 
@@ -103,11 +118,23 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     }
   };
 
-  // Punto 1 / Punto 3: Coordenadas optimistas en el mismo frame para evitar parpadeos
+  // Punto 1 / Punto 3: Coordenadas optimistas y transformación inversa/directa para mesa expandida
   const rawX = optimisticPosition ? optimisticPosition.x : (card.position?.x ?? 0.5);
   const rawY = optimisticPosition ? optimisticPosition.y : (card.position?.y ?? 0.5);
-  const posX = Math.max(0, Math.min(1, rawX)) * 100;
-  const posY = Math.max(0, Math.min(1, rawY)) * 100;
+
+  let screenNormX = rawX;
+  let screenNormY = rawY;
+
+  if (viewFraming?.isExpanded) {
+    screenNormX = (rawX - viewFraming.xMin) / viewFraming.width;
+    screenNormY = (rawY - viewFraming.yMin) / viewFraming.height;
+    if (screenNormX < -0.15 || screenNormX > 1.15 || screenNormY < -0.15 || screenNormY > 1.15) {
+      return null;
+    }
+  }
+
+  const posX = Math.max(0, Math.min(1, screenNormX)) * 100;
+  const posY = Math.max(0, Math.min(1, screenNormY)) * 100;
   const zIndex = optimisticPosition?.zIndex ?? (card.position?.zIndex ?? 5);
 
   const isTapped = !!card.isTapped;
@@ -240,6 +267,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   cards,
   remoteDraggingCards,
   optimisticPositions,
+  viewFraming,
   onAction,
 }) => {
   const { showPreview, hidePreview } = useCardPreview();
@@ -264,8 +292,14 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
         const newH = rect.width;
         const newLeft = centerX - newW / 2;
         const newTop = centerY - newH / 2;
-        const newNormX = Math.max(0, Math.min(winW - newW, newLeft)) / winW;
-        const newNormY = Math.max(0, Math.min(winH - newH, newTop)) / winH;
+        const rawNormX = Math.max(0, Math.min(winW - newW, newLeft)) / winW;
+        const rawNormY = Math.max(0, Math.min(winH - newH, newTop)) / winH;
+        const newNormX = viewFraming?.isExpanded
+          ? viewFraming.xMin + rawNormX * viewFraming.width
+          : rawNormX;
+        const newNormY = viewFraming?.isExpanded
+          ? viewFraming.yMin + rawNormY * viewFraming.height
+          : rawNormY;
 
         onAction('MOVE_CARD', {
           cardInstanceId: card.instanceId,
@@ -323,6 +357,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
             isSelected={selectedCardId === card.instanceId}
             optimisticPosition={optimisticPositions?.[card.instanceId]}
             isRemoteDragging={isRemoteDragging}
+            viewFraming={viewFraming}
             onCardClick={() => handleCardClick(card)}
             onTap={() => handleTap(card)}
             onFlip={() => handleFlip(card)}
@@ -338,8 +373,17 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
       {remoteDraggingCards &&
         Object.values(remoteDraggingCards).map(item => {
           if ((!item.isDragging && !(item as any).pendingSync) || !item.position) return null;
-          const posX = Math.max(0, Math.min(1, item.position.x)) * 100;
-          const posY = Math.max(0, Math.min(1, item.position.y)) * 100;
+          let screenNormX = item.position.x;
+          let screenNormY = item.position.y;
+          if (viewFraming?.isExpanded) {
+            screenNormX = (screenNormX - viewFraming.xMin) / viewFraming.width;
+            screenNormY = (screenNormY - viewFraming.yMin) / viewFraming.height;
+            if (screenNormX < -0.15 || screenNormX > 1.15 || screenNormY < -0.15 || screenNormY > 1.15) {
+              return null;
+            }
+          }
+          const posX = Math.max(0, Math.min(1, screenNormX)) * 100;
+          const posY = Math.max(0, Math.min(1, screenNormY)) * 100;
 
           return (
             <div

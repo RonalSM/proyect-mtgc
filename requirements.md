@@ -244,7 +244,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    9.3. cantidad de espectadores (REQ-13) y botón de compartir/invitar (REQ-2);
    9.4. dados (REQ-21.9), ayuda y ajustes (incluye "reducir fondos").
 10. WHERE hay una celda libre (3 o 5 jugadores), THE sistema SHALL usarla para mostrar el registro y el chat fijos.
-11. WHEN el jugador pulsa el botón de ampliar de una celda o hace doble clic sobre ella, THE sistema SHALL ampliarla a casi toda la pantalla y volver a la cuadrícula con Esc o al cerrar.
+11. WHEN el jugador pulsa el botón de ampliar de una celda o hace doble clic sobre ella, THE sistema SHALL encuadrar y hacer zoom sobre dicha división como un encuadre de la misma mesa global única (no una segunda mesa ni modal desvinculado); THE sistema SHALL calcular las coordenadas de arrastre mediante transformación inversa ($x_{global} = x_{min} + u \times W$, $y_{global} = y_{min} + v \times H$), manteniendo activos el DndContext, los droppables de mano y pilas, y el menú contextual de clic derecho, permitiendo sacar cartas de la mano, mover cartas en el campo y devolverlas a la mano, volviendo a la cuadrícula completa con Esc o al pulsar "Cerrar" (Punto 3).
 12. THE sala de espera (REQ-20) y la fase de iniciativa (REQ-21) SHALL compartir el mismo estilo oscuro; durante la iniciativa, THE sistema SHALL mostrar el resultado del d20 de cada jugador dentro de su celda.
 13. WHERE el usuario es espectador, THE sistema SHALL mostrar las celdas con las manos ocultas y una etiqueta "Espectando".
 14. THE interfaz SHALL mantener 60 fps con 6 jugadores y 60 cartas en el campo; las imágenes de fondo SHALL cargarse en formato optimizado, con carga diferida y precarga del playmat propio.

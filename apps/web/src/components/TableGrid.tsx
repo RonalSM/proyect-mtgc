@@ -15,6 +15,8 @@ interface TableGridProps {
     isTwoPlayer?: boolean,
   ) => React.ReactNode;
   onLeaveRoom?: () => void;
+  expandedPlayerId?: string | null;
+  onCloseExpanded?: () => void;
 }
 
 export const TableGrid: React.FC<TableGridProps> = ({
@@ -23,6 +25,8 @@ export const TableGrid: React.FC<TableGridProps> = ({
   onAction,
   renderPlayerCell,
   onLeaveRoom,
+  expandedPlayerId,
+  onCloseExpanded,
 }) => {
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
   const [reduceBackgrounds, setReduceBackgrounds] = useState<boolean>(() => {
@@ -107,60 +111,84 @@ export const TableGrid: React.FC<TableGridProps> = ({
         onLeaveRoom={onLeaveRoom}
       />
 
-      {/* Grid: 1 fila x 2 columnas en 1v1; 2 filas x hasta 3 cols para >= 3 jugadores (Punto 4, REQ-22.1, 22.2) */}
-      <div
-        className="w-full h-full grid gap-[1px] bg-black"
-        style={{
-          gridTemplateRows: isTwoPlayerMode ? '1fr' : '1fr 1fr',
-          gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        }}
-      >
-        {gridSlots.map((slot, index) => {
-          const isLocal = slot.player?.id === localPlayerId;
-
-          if (slot.isFreeCellForChat) {
-            // Free Cell for Log & Chat (REQ-22.10)
-            return (
-              <div
-                key={`chat-slot-${index}`}
-                className="bg-slate-950/90 border border-slate-900 h-full flex flex-col overflow-hidden relative"
-              >
-                <div className="bg-slate-900/90 px-3 py-1.5 border-b border-slate-800 text-[11px] font-bold text-slate-400 flex items-center justify-between">
-                  <span>Registro de Partida y Chat</span>
-                  <span className="text-[10px] text-amber-500 font-mono">EN VIVO</span>
-                </div>
-                <div className="flex-1 overflow-hidden p-2">
-                  <GameLogAndChat
-                    logs={roomState.logs}
-                    onAction={onAction}
-                  />
-                </div>
-              </div>
-            );
-          }
-
-          if (slot.player) {
-            return (
-              <div
-                key={slot.player.id}
-                className="h-full w-full relative bg-slate-950"
-              >
-                {renderPlayerCell(slot.player, slot.row, slot.col, isLocal, isTwoPlayerMode)}
-              </div>
-            );
-          }
-
-          // Empty Placeholder Slot
-          return (
-            <div
-              key={`empty-${index}`}
-              className="bg-slate-950/40 border border-slate-900/80 flex items-center justify-center text-slate-700 text-xs font-mono"
+      {/* Grid: 1 fila x 2 columnas en 1v1; 2 filas x hasta 3 cols para >= 3 jugadores (Punto 4, REQ-22.1, 22.2) o Vista Ampliada (Punto 3) */}
+      {expandedPlayerId && roomState.players[expandedPlayerId] ? (
+        <div className="w-full h-full relative bg-slate-950">
+          <div className="absolute top-2 right-4 z-40 flex items-center space-x-2 bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-xl shadow-xl backdrop-blur-md">
+            <span className="text-xs font-bold text-amber-300">
+              Vista Ampliada: {roomState.players[expandedPlayerId].name}
+            </span>
+            <button
+              onClick={onCloseExpanded}
+              data-testid="close-expanded-view"
+              className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold cursor-pointer flex items-center space-x-1"
             >
-              Asiento Vacío
-            </div>
-          );
-        })}
-      </div>
+              <span>Cerrar (Esc)</span>
+            </button>
+          </div>
+          {renderPlayerCell(
+            roomState.players[expandedPlayerId],
+            1,
+            0,
+            expandedPlayerId === localPlayerId,
+            false
+          )}
+        </div>
+      ) : (
+        <div
+          className="w-full h-full grid gap-[1px] bg-black"
+          style={{
+            gridTemplateRows: isTwoPlayerMode ? '1fr' : '1fr 1fr',
+            gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          }}
+        >
+          {gridSlots.map((slot, index) => {
+            const isLocal = slot.player?.id === localPlayerId;
+
+            if (slot.isFreeCellForChat) {
+              // Free Cell for Log & Chat (REQ-22.10)
+              return (
+                <div
+                  key={`chat-slot-${index}`}
+                  className="bg-slate-950/90 border border-slate-900 h-full flex flex-col overflow-hidden relative"
+                >
+                  <div className="bg-slate-900/90 px-3 py-1.5 border-b border-slate-800 text-[11px] font-bold text-slate-400 flex items-center justify-between">
+                    <span>Registro de Partida y Chat</span>
+                    <span className="text-[10px] text-amber-500 font-mono">EN VIVO</span>
+                  </div>
+                  <div className="flex-1 overflow-hidden p-2">
+                    <GameLogAndChat
+                      logs={roomState.logs}
+                      onAction={onAction}
+                    />
+                  </div>
+                </div>
+              );
+            }
+
+            if (slot.player) {
+              return (
+                <div
+                  key={slot.player.id}
+                  className="h-full w-full relative bg-slate-950"
+                >
+                  {renderPlayerCell(slot.player, slot.row, slot.col, isLocal, isTwoPlayerMode)}
+                </div>
+              );
+            }
+
+            // Empty Placeholder Slot
+            return (
+              <div
+                key={`empty-${index}`}
+                className="bg-slate-950/40 border border-slate-900/80 flex items-center justify-center text-slate-700 text-xs font-mono"
+              >
+                Asiento Vacío
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Floating Chat & Logs Drawer (when clicked from FloatingToolbar or for 2, 4, 6 players) */}
       {isChatDrawerOpen && (
