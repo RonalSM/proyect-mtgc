@@ -158,6 +158,10 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
        - **Filtros rápidos por tipo:** El modal SHALL proporcionar botones de filtrado rápido por categoría de carta: Criaturas, Instantáneos, Conjuros, Artefactos, Encantamientos, Tierras y Planeswalkers (además de una opción para ver "Todos" o deseleccionar el filtro activo), evaluando la línea de tipos (`typeLine`) de cada carta.
        - **Indicador de sincronización con Scryfall:** WHEN existan peticiones en cola o reintentos pendientes con Scryfall (`syncQueueCount > 0`), THE sistema SHALL mostrar un indicador visual en una esquina del modal (`data-testid="scryfall-sync-indicator"`) con el texto exacto `"Sincronizando cartas... (X en cola)"`. WHEN la cola se vacíe o finalice la sincronización, dicho indicador SHALL desaparecer por completo del DOM.
 
+    7.22. **Arrastre a la biblioteca a la parte superior (Punto 6):**
+       - Arrastrar una carta (desde el campo de batalla, mano o pilas) hacia la ranura droppable de la biblioteca la transfiere autoritativamente a la parte superior (arriba, índice 0 de `zones.library` mediante `unshift`), garantizando que sea la próxima carta que se roba al ejecutar una acción de robo (`DRAW_CARDS`).
+       - La acción emite `MOVE_CARD` con `toZone: 'library'` y `destinationIndex: 0`, resuelto tanto en cliente como por defecto en el servidor ante la ausencia de índice explícito. Al entrar a la biblioteca, la posición en la mesa y el estado girado (`isTapped`) se limpian automáticamente.
+
 ### REQ-10 Sincronización y reconexión
 **Historia:** Como jugador, quiero volver a la partida si se cae mi conexión.
 1. THE sistema SHALL mantener el estado autoritativo de la mesa en el servidor.

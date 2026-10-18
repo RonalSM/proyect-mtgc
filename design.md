@@ -373,6 +373,11 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
    - **Badge permanente interactivo:** La ranura de comando renderiza una pastilla interactiva (`data-testid="commander-tax-badge"`) con el texto `Tax: +X` y botones táctiles `+` y `-` que despachan `SET_PLAYER_COUNTER` con delta $\pm 2$ (el impuesto nunca se incrementa ni decrementa de 1 en 1).
    - **Desacoplamiento de LifePill:** Se eliminaron los controles de `commanderTax` de la pastilla de vida (`LifePill`) para eliminar redundancias y centralizar la visualización y control del impuesto exclusivamente en la zona de comando.
 
+13. **Arrastre a la biblioteca a la parte superior (Punto 6):**
+   - En `TableBoard.tsx`, soltar una carta sobre la ranura de biblioteca (`overData?.zone === 'library'`) despacha `MOVE_CARD` con `toZone: 'library'` y `destinationIndex: 0`.
+   - En el servidor (`game-state.ts`), cuando `payload.toZone === 'library'` y no se especifica `destinationIndex`, la carta se inserta al inicio del array (`zones.library.unshift(card)`), quedando en la parte superior (arriba, índice 0).
+   - Esto garantiza autoritativamente que la carta soltada en la biblioteca sea la próxima carta extraída al invocar `drawCards` (que toma cartas desde el índice 0 con `splice(0, count)`). Su posición espacial en mesa y estado girado se resetean automáticamente.
+
 ### Estilo visual
 - Tema oscuro; texto claro con sombra suave; cartas con borde fino y sombra para despegarlas del playmat.
 - **Regla de rotación única de permanente (Punto 3):** La rotación de permanentes (Tap/Untap) se aplica exclusivamente en el contenedor externo `BattlefieldCardItem` (`transition-transform duration-150 origin-center rotate-90`). `CardDisplay` y las etiquetas internas `<img>` carecen de rotaciones propias (`transform: none`), eliminando el problema de rotación doble acumulada a 180° (invertida). Voltear cartas boca abajo o alternar cartas de doble cara conmuta el recurso visual sin aplicar rotaciones 3D conflictivas con el tap.

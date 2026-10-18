@@ -362,7 +362,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       isTapped,
     });
 
-    // Punto 4 / 7: Soltar sobre biblioteca, cementerio o exilio la transfiere a esa pila si el puntero está dentro
+    // Punto 6: Soltar sobre biblioteca la deja ARRIBA (destinationIndex: 0, próxima que se roba); cementerio/exilio van a la pila
     if (overData?.zone === 'library' || overData?.zone === 'graveyard' || overData?.zone === 'exile') {
       flushSync(() => {
         setIsDragging(false);
@@ -373,6 +373,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         fromZone: fromZone || 'battlefield',
         toZone: overData.zone,
         toPlayerId: overData.playerId || localPlayerId,
+        destinationIndex: overData.zone === 'library' ? 0 : undefined,
       });
       return;
     }

@@ -763,6 +763,9 @@ export class GameStateSession {
 
     if (payload.destinationIndex !== undefined && payload.destinationIndex >= 0) {
       toArray.splice(payload.destinationIndex, 0, card);
+    } else if (payload.toZone === 'library') {
+      // Punto 6: Arrastrar una carta a la biblioteca la deja ARRIBA (índice 0, es la próxima que se roba)
+      toArray.unshift(card);
     } else {
       toArray.push(card);
     }
