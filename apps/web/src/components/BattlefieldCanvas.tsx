@@ -458,7 +458,9 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
               className={`absolute pointer-events-none select-none z-40 origin-center ${
                 item.isTapped ? 'rotate-90' : ''
               } ${
-                (item as any).pendingSync ? 'transition-none' : 'transition-[left,top] duration-75 ease-linear'
+                item.isFirstMessage || (item as any).pendingSync
+                  ? 'transition-none'
+                  : 'transition-[left,top] duration-75 ease-linear'
               }`}
               style={{
                 left: `${posX}%`,

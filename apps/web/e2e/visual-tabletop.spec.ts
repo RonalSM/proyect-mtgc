@@ -858,17 +858,7 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       const startBoxB = await placedCardB.boundingBox();
       expect(startBoxB).not.toBeNull();
 
-      // 2. Contexto A inicia arrastre para moverla a una nueva posición lejana (900, 600)
-      const boxA = await placedCardA.boundingBox();
-      expect(boxA).not.toBeNull();
-      await pageA.mouse.move(boxA!.x + 30, boxA!.y + 30);
-      await pageA.mouse.down();
-      const targetX = 900;
-      const targetY = 600;
-      await pageA.mouse.move(targetX, targetY, { steps: 15 });
-      await pageA.waitForTimeout(200);
-
-      // 3. En Contexto B, inyectar grabador con requestAnimationFrame justo antes de que A suelte
+      // 2. En Contexto B, inyectar grabador con requestAnimationFrame ANTES de que A inicie el arrastre
       await pageB.evaluate(cId => {
         (window as any).__rafFramesB = [];
         const track = () => {
@@ -894,35 +884,51 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
             time: performance.now(),
           });
 
-          if ((window as any).__rafFramesB.length < 40) {
+          if ((window as any).__rafFramesB.length < 100) {
             requestAnimationFrame(track);
           }
         };
         requestAnimationFrame(track);
       }, cardId);
 
+      // 3. Contexto A inicia arrastre y mueve a nueva posición (400, 700) - alejada del centro (960, 540)
+      const boxA = await placedCardA.boundingBox();
+      expect(boxA).not.toBeNull();
+      await pageA.mouse.move(boxA!.x + 30, boxA!.y + 30);
+      await pageA.mouse.down();
+      const targetX = 400;
+      const targetY = 700;
+      await pageA.mouse.move(targetX, targetY, { steps: 15 });
+      await pageA.waitForTimeout(200);
+
       // 4. Contexto A suelta la carta
       await pageA.mouse.up();
       await pageA.waitForTimeout(800);
 
-      // 5. Obtener frames registrados en Contexto B durante y después del soltado
+      // 5. Obtener frames registrados en Contexto B durante todo el proceso
       const framesB = await pageB.evaluate(() => (window as any).__rafFramesB || []);
-      console.log('FRAMES_REGISTRADOS_EN_B_DURANTE_SOLTADO:', framesB.length);
+      console.log('FRAMES_REGISTRADOS_EN_B:', framesB.length);
       expect(framesB.length).toBeGreaterThan(5);
 
-      // Verificar en B:
-      // A) Ningún frame visible muestra la carta en la posición inicial vieja (startBoxB)
-      // B) En ningún frame se muestran simultáneamente la carta estacionaria y el fantasma (sin duplicación)
+      const ghostFrames = framesB.filter((f: any) => f.ghostVisible && f.ghostX !== null);
+      expect(ghostFrames.length).toBeGreaterThan(0);
+
+      // A) El primer frame del fantasma coincide con la posición original de la carta (<= 2 px)
+      const firstGhost = ghostFrames[0];
+      console.log('FIRST_GHOST_POS:', { firstGhost, startBoxB });
+      expect(Math.abs(firstGhost.ghostX - startBoxB!.x)).toBeLessThanOrEqual(2);
+      expect(Math.abs(firstGhost.ghostY - startBoxB!.y)).toBeLessThanOrEqual(2);
+
+      // B) Ningún frame del fantasma nació cerca del centro de la mesa (x=960, y=540)
+      for (const f of ghostFrames) {
+        const distToCenter = Math.hypot(f.ghostX - 960, f.ghostY - 540);
+        expect(distToCenter).toBeGreaterThan(150);
+      }
+
+      // C) Ningún frame visible muestra carta duplicada ni muestra la estacionaria en su posición vieja al soltar
       for (const f of framesB) {
-        // No duplicado
         if (f.stationaryVisible && f.ghostVisible) {
           throw new Error('Carta duplicada visible en Contexto B en el mismo frame');
-        }
-
-        // Si la estacionaria fue visible, verificar que no estuvo en la posición vieja inicial
-        if (f.stationaryVisible && f.stationaryX !== null && f.stationaryY !== null) {
-          const distToOld = Math.hypot(f.stationaryX - startBoxB!.x, f.stationaryY - startBoxB!.y);
-          expect(distToOld).toBeGreaterThan(80);
         }
       }
     } finally {

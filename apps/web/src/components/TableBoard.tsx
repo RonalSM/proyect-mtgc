@@ -212,16 +212,38 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       const isTapped = !!data.card.isTapped;
       const overlayWidth = isTapped ? cardPixelHeight : cardPixelWidth;
       const overlayHeight = isTapped ? cardPixelWidth : cardPixelHeight;
-      const clampedX = initial ? Math.max(0, Math.min(winW - overlayWidth, initial.left)) : winW * 0.5;
-      const clampedY = initial ? Math.max(0, Math.min(winH - overlayHeight, initial.top)) : winH * 0.5;
-      const uScreen = clampedX / winW;
-      const vScreen = clampedY / winH;
-      const normX = viewFraming?.isExpanded
-        ? Math.max(0, Math.min(1, viewFraming.xMin + uScreen * viewFraming.width))
-        : uScreen;
-      const normY = viewFraming?.isExpanded
-        ? Math.max(0, Math.min(1, viewFraming.yMin + vScreen * viewFraming.height))
-        : vScreen;
+
+      let normX = 0.5;
+      let normY = 0.5;
+
+      if (data.fromZone === 'battlefield' && data.card.position) {
+        // La carta ya está en la mesa con su posición normalizada exacta (Punto 1)
+        normX = data.card.position.x;
+        normY = data.card.position.y;
+      } else {
+        const domEl =
+          typeof document !== 'undefined'
+            ? (document.querySelector(`[data-card-instance-id="${event.active.id}"]`) as HTMLElement | null)
+            : null;
+        const rect = initial || domEl?.getBoundingClientRect();
+        let clampedX = winW * 0.5;
+        let clampedY = winH * 0.5;
+        if (rect) {
+          clampedX = Math.max(0, Math.min(winW - overlayWidth, rect.left));
+          clampedY = Math.max(0, Math.min(winH - overlayHeight, rect.top));
+        } else if (event.activatorEvent instanceof MouseEvent || event.activatorEvent instanceof PointerEvent) {
+          clampedX = Math.max(0, Math.min(winW - overlayWidth, event.activatorEvent.clientX - overlayWidth / 2));
+          clampedY = Math.max(0, Math.min(winH - overlayHeight, event.activatorEvent.clientY - overlayHeight / 2));
+        }
+        const uScreen = clampedX / winW;
+        const vScreen = clampedY / winH;
+        normX = viewFraming?.isExpanded
+          ? Math.max(0, Math.min(1, viewFraming.xMin + uScreen * viewFraming.width))
+          : uScreen;
+        normY = viewFraming?.isExpanded
+          ? Math.max(0, Math.min(1, viewFraming.yMin + vScreen * viewFraming.height))
+          : vScreen;
+      }
 
       onAction('CARD_DRAG_MOVE', {
         cardInstanceId: event.active.id,

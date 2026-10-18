@@ -2,7 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { RoomState, GameActionType, RemoteCardDraggingPayload } from '@mtgc/shared';
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting';
-export type RemoteDragState = RemoteCardDraggingPayload & { pendingSync?: boolean };
+export type RemoteDragState = RemoteCardDraggingPayload & {
+  pendingSync?: boolean;
+  isFirstMessage?: boolean;
+};
 
 interface UseGameSocketOptions {
   roomCode: string;
@@ -108,6 +111,7 @@ export function useGameSocket({
                       ...payload,
                       isDragging: false,
                       pendingSync: true,
+                      isFirstMessage: false,
                     },
                   };
                 }
@@ -116,9 +120,14 @@ export function useGameSocket({
                 delete next[cardId];
                 return next;
               }
+
+              const isFirst = !prev[cardId];
               return {
                 ...prev,
-                [cardId]: payload,
+                [cardId]: {
+                  ...payload,
+                  isFirstMessage: isFirst,
+                },
               };
             });
 
