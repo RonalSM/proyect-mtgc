@@ -167,15 +167,21 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
     ? Object.values(roomState.players).filter(p => !p.isSpectator && p.id !== localPlayerId)
     : [];
 
+  const mountTimeRef = useRef<number>(Date.now());
+
+  const handleBackdropClose = (e: React.MouseEvent) => {
+    // Evitar que el clic/evento que abrió el menú lo cierre inmediatamente si el backdrop nació bajo el cursor
+    if (Date.now() - mountTimeRef.current < 150) return;
+    if (e.target !== e.currentTarget) return;
+    onClose();
+  };
+
   return (
     <Portal>
       <div
         className="fixed inset-0 z-[100]"
-        onClick={onClose}
-        onContextMenu={e => {
-          e.preventDefault();
-          onClose();
-        }}
+        onClick={handleBackdropClose}
+        onContextMenu={handleBackdropClose}
       >
         <div
           ref={menuRef}
@@ -185,6 +191,8 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
           }}
           data-card-context-menu="true"
           onClick={e => e.stopPropagation()}
+          onContextMenu={e => e.stopPropagation()}
+          onPointerDown={e => e.stopPropagation()}
           className="fixed bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 min-w-[180px] z-[110] backdrop-blur-md text-xs text-slate-200 select-none"
         >
           {/* Header con nombre de carta */}

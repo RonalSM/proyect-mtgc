@@ -11,7 +11,12 @@ import { LegalModal } from './components/LegalModal';
 import { RefreshCw, Layers, Users } from 'lucide-react';
 
 export default function App() {
-  const [roomCode, setRoomCode] = useState<string | null>(null);
+  const [roomCode, setRoomCode] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('mtgc_room_code') || null;
+    }
+    return null;
+  });
   const [playerId, setPlayerId] = useState<string>('');
   const [playerName, setPlayerName] = useState<string>('Planeswalker');
   const [isSpectator, setIsSpectator] = useState<boolean>(false);
@@ -83,6 +88,9 @@ export default function App() {
       if (res.ok) {
         const roomData = await res.json();
         setRoomCode(roomData.code);
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('mtgc_room_code', roomData.code);
+        }
         setIsSpectator(false);
       } else {
         alert('Error al crear la sala');
@@ -100,10 +108,16 @@ export default function App() {
     setPlayerName(name);
     setIsSpectator(spectator);
     setRoomCode(code);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('mtgc_room_code', code);
+    }
   };
 
   const handleLeaveRoom = () => {
     setRoomCode(null);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('mtgc_room_code');
+    }
   };
 
   // Full-bleed game table view (REQ-22.1, REQ-22.2) — no page scroll, exactly 100dvh

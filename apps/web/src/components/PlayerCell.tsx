@@ -808,6 +808,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         <div
           ref={setLibDropRef}
           data-dock-zone="library"
+          data-pile-zone="library"
           style={{
             width: 'var(--card-w)',
             height: 'var(--card-h)',

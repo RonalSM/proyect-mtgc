@@ -37,7 +37,7 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
   const isResolved = roomState.status === 'playing' || !!initiative?.resolvedOrder;
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 select-none">
+    <div data-testid="initiative-overlay" className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 select-none">
       <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl p-6 shadow-2xl space-y-6 relative overflow-hidden">
         {/* Glow accent */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />

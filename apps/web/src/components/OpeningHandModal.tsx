@@ -68,7 +68,7 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
     (cardsToBottomCount > 0 && selectedBottomCardIds.length !== cardsToBottomCount);
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 select-none overflow-y-auto">
+    <div data-testid="opening-hand-modal" className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 select-none overflow-y-auto">
       {/* Top Header */}
       <div className="w-full max-w-5xl flex flex-col items-center space-y-2 text-center pt-2">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold tracking-wide">
@@ -113,6 +113,18 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
             );
           })}
         </div>
+
+        {/* Notice badge */}
+        {!isSpectator && !myHasKept && (
+          <div className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-800 text-amber-300 border border-amber-500/30 flex items-center space-x-1.5 shadow-sm mt-1">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>
+              {(myMulligan?.mulliganCount || 0) === 0
+                ? 'El primer mulligan es gratis'
+                : `Si te quedas, pondrás ${cardsToBottomCount} carta(s) al fondo`}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Center: Cards Display */}
@@ -128,6 +140,8 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
                 return (
                   <div
                     key={card.instanceId}
+                    data-testid="mulligan-card"
+                    data-card-instance-id={card.instanceId}
                     onClick={() => handleToggleCardSelection(card.instanceId)}
                     className={`relative rounded-xl transition-all transform cursor-pointer group ${
                       isSelected
@@ -201,20 +215,28 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
         {/* Local Player Decision Buttons */}
         {isMyDecisionTurn && !myHasKept ? (
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
-            {/* Mulligan Button */}
-            <button
-              onClick={handleMulligan}
-              className="w-full sm:w-auto px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-extrabold text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer group"
-            >
-              <RotateCcw className="w-4 h-4 text-amber-400 group-hover:rotate-180 transition-transform duration-500" />
-              <span>Hacer Mulligan</span>
-              <span className="bg-slate-950/80 text-amber-400 text-[10px] px-2 py-0.5 rounded-full border border-amber-500/30">
-                Tomados: {myMulligan?.mulliganCount || 0}
-              </span>
-            </button>
+            {/* Mulligan Button (solo si la mano resultante no es 0) */}
+            {cardsToBottomCount < 7 ? (
+              <button
+                data-testid="mulligan-btn"
+                onClick={handleMulligan}
+                className="w-full sm:w-auto px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-extrabold text-sm rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer group"
+              >
+                <RotateCcw className="w-4 h-4 text-amber-400 group-hover:rotate-180 transition-transform duration-500" />
+                <span>Hacer Mulligan</span>
+                <span className="bg-slate-950/80 text-amber-400 text-[10px] px-2 py-0.5 rounded-full border border-amber-500/30">
+                  Tomados: {myMulligan?.mulliganCount || 0}
+                </span>
+              </button>
+            ) : (
+              <div className="text-xs text-amber-400 font-bold bg-amber-950/60 border border-amber-500/40 px-3 py-2 rounded-xl">
+                Mano de 0 cartas alcanzada: solo queda quedarse con la mano.
+              </div>
+            )}
 
             {/* Keep Button */}
             <button
+              data-testid="keep-btn"
               onClick={handleKeep}
               disabled={isKeepDisabled}
               className={`w-full sm:w-auto px-8 py-3.5 font-black text-sm rounded-2xl shadow-xl transition-all flex items-center justify-center space-x-2 ${

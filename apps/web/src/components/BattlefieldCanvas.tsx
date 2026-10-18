@@ -167,6 +167,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       {...attributes}
       {...listeners}
       data-battlefield-card="true"
+      data-from-zone="battlefield"
       data-card-name={card.definition.name}
       data-card-instance-id={card.instanceId}
       data-tapped={isTapped ? 'true' : 'false'}
@@ -397,6 +398,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
             <div
               key={`remote-drag-${item.cardInstanceId}`}
               data-remote-drag="true"
+              data-remote-card-ghost="true"
               data-card-instance-id={item.cardInstanceId}
               data-player-id={item.playerId}
               className={`absolute pointer-events-none select-none z-40 origin-center ${

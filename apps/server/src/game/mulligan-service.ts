@@ -90,6 +90,10 @@ export class MulliganService {
       throw new Error('Ya has decidido quedarte con tu mano.');
     }
 
+    if (pMulligan.cardsToBottomCount >= 7) {
+      throw new Error('La mano resultante sería 0 cartas. Solo queda quedarse con la mano.');
+    }
+
     const zones = state.playerZones[playerId];
     if (!zones) {
       throw new Error('Zonas de jugador no encontradas.');
