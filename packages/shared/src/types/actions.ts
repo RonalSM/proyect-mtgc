@@ -17,6 +17,9 @@ export type GameActionType =
   | 'CLONE_TOKEN'
   | 'DRAW_CARDS'
   | 'MULLIGAN'
+  | 'MULLIGAN_TAKE'
+  | 'MULLIGAN_KEEP'
+  | 'MULLIGAN_FORCE_DECISION'
   | 'SHUFFLE_LIBRARY'
   // Turn Management
   | 'PASS_TURN'
@@ -200,4 +203,14 @@ export interface RemoteCardDraggingPayload {
   cardDefinition?: CardDefinition;
   fromZone?: ZoneType;
   isTapped?: boolean;
+}
+
+export interface MulliganTakePayload {}
+
+export interface MulliganKeepPayload {
+  bottomCardIds?: string[];
+}
+
+export interface MulliganForceDecisionPayload {
+  targetPlayerId: string;
 }

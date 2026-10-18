@@ -211,8 +211,22 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 4. THE sistema SHALL ordenar los turnos de mayor a menor resultado; el mayor juega primero.
 5. IF hay empate, THEN THE sistema SHALL repetir automáticamente la tirada solo entre los jugadores empatados en rondas sucesivas, hasta un máximo de 5 rondas; si el empate persiste tras 5 rondas, THE sistema SHALL desempatar por número de asiento ascendente.
 6. THE sistema SHALL mostrar el orden resultante (1.º, 2.º, 3.º…) en la barra de turnos y junto a cada zona de jugador.
-7. WHEN la iniciativa termina y se muestra el orden resuelto, THE sistema SHALL pasar la mesa de forma automática a la siguiente fase (`playing`); REQ-6 (pasar turno) usa este orden.
+7. WHEN la iniciativa termina y se muestra el orden resuelto, THE sistema SHALL pasar la mesa de forma automática a la fase de mulligan (`mulligan`); REQ-6 (pasar turno) usa este orden.
 8. THE botón "Dados" existente SHALL seguir disponible en la barra flotante durante la partida para tiradas libres (d6, d20, moneda), siendo generadas siempre de forma autoritativa por el servidor.
+
+### REQ-23 Fase de Mano Inicial y Mulligan de Londres (Punto 5)
+**Historia:** Como jugador, quiero evaluar mi mano inicial en una ventana dedicada y poder realizar mulligans siguiendo las reglas oficiales de Commander (Regla de Londres con primer mulligan gratuito), para empezar la partida con una mano jugable.
+1. THE estados del ciclo de vida de la mesa SHALL ser: `lobby`, `initiative`, `mulligan`, `playing`, `finished`.
+2. WHEN la iniciativa concluye, THE servidor SHALL barajar cada biblioteca con CSPRNG y repartir 7 cartas iniciales a cada jugador en estado oculto (las cartas de la mano NO aparecen en el abanico inferior hasta que el jugador se queda y concluye la fase).
+3. THE orden de decisión SHALL seguir estrictamente el orden de turno resuelto (`turnOrder`), empezando por el primer jugador y siguiendo en sentido horario. Solo decide el jugador en turno de decisión activo; el resto ve 'X está decidiendo'.
+4. THE sistema SHALL aplicar la Regla de Londres con mulligan gratis de Commander:
+   - Al hacer mulligan, la mano actual vuelve a la biblioteca, se baraja con CSPRNG y se roban 7 cartas.
+   - El primer mulligan ($k = 1$) es gratuito (roba 7 y no devuelve ninguna carta).
+   - En mulligans posteriores ($k \ge 2$), el jugador roba 7 cartas y debe elegir exactamente $k - 1$ cartas para poner en el fondo de la biblioteca al decidir quedarse.
+5. THE interfaz de mano inicial SHALL presentarse en una ventana modal central tipo playgroup.gg con fondo oscurecido y desenfocado que muestra las 7 cartas ampliadas en alta resolución, botón 'Quedarse' (con selector interactivo de cuáles van al fondo si $k \ge 2$) y botón 'Mulligan' con contador acumulado.
+6. THE sistema SHALL permitir al anfitrión saltar o forzar la decisión de un jugador desconectado o ausente para prevenir bloqueos de la partida.
+7. WHEN todos los jugadores han decidido quedarse con su mano, THE mesa SHALL pasar automáticamente a estado `playing` y las manos definitivas aparecerán en el abanico inferior.
+8. THE sistema SHALL rechazar cualquier intento de ejecutar acciones de mulligan sueltas durante el estado `playing` (el mulligan solo ocurre en esta fase).
 
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).

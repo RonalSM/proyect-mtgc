@@ -467,10 +467,11 @@ test('GameStateSession - drawCards, undo draw, and mulligan', () => {
   assert.strictEqual(zones.hand.length, 1);
   assert.strictEqual(zones.library.length, 10);
 
-  // Mulligan: puts hand in library, shuffles and draws 7
-  session.mulligan('p1');
-  assert.strictEqual(zones.hand.length, 7);
-  assert.strictEqual(zones.library.length, 4); // 11 total - 7 drawn = 4
+  // Mulligan suelta rechazada durante la partida (Punto 5)
+  assert.throws(
+    () => session.mulligan('p1'),
+    /La acción de mulligan solo está permitida durante la fase inicial de mulligan/,
+  );
 });
 
 test('GameStateSession - passTurn skips eliminated players and increments turnNumber', () => {
@@ -791,6 +792,9 @@ test('InitiativeService - authoritative D20 roll, descending order and tie break
   session.state.players['p2']!.initiativeRoll = 10;
 
   initiativeSvc.resolveRound();
+  assert.strictEqual(session.state.status, 'mulligan');
+  session.keepHand('p1');
+  session.keepHand('p2');
   assert.strictEqual(session.state.status, 'playing');
   assert.deepStrictEqual(session.state.turnOrder, ['p1', 'p2']);
   assert.strictEqual(session.state.activePlayerId, 'p1');
@@ -811,6 +815,9 @@ test('InitiativeService - authoritative D20 roll, descending order and tie break
   session.state.players['p2']!.initiativeRoll = 17;
 
   initiativeSvc.resolveRound();
+  assert.strictEqual(session.state.status, 'mulligan');
+  session.keepHand('p1');
+  session.keepHand('p2');
   assert.strictEqual(session.state.status, 'playing');
   assert.strictEqual(session.state.turnOrder[0], 'p1'); // Seat 0 plays before Seat 1
   assert.strictEqual(session.state.turnOrder[1], 'p2');
@@ -830,6 +837,8 @@ test('InitiativeService - authoritative D20 roll, descending order and tie break
   while (session.state.status === 'initiative') {
     initiativeSvc.resolveCurrentRoundWithAutoRolls();
   }
+  assert.strictEqual(session.state.status, 'mulligan');
+  session.state.turnOrder.forEach(pid => session.keepHand(pid));
   assert.strictEqual(session.state.status, 'playing');
   assert.ok(session.state.players['p1']?.initiativeRoll !== undefined);
   assert.ok(session.state.players['p2']?.initiativeRoll !== undefined);

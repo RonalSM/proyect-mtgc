@@ -4,6 +4,7 @@ import { LobbyView } from './components/LobbyView';
 import { TableBoard } from './components/TableBoard';
 import { LobbyWaitingRoom } from './components/LobbyWaitingRoom';
 import { InitiativeOverlay } from './components/InitiativeOverlay';
+import { OpeningHandModal } from './components/OpeningHandModal';
 import { DeckImporter } from './components/DeckImporter';
 import { LegalModal } from './components/LegalModal';
 import { RefreshCw, Layers, Users } from 'lucide-react';
@@ -118,6 +119,13 @@ export default function App() {
         />
         {roomState.status === 'initiative' && (
           <InitiativeOverlay
+            roomState={roomState}
+            localPlayerId={playerId}
+            onAction={sendAction}
+          />
+        )}
+        {roomState.status === 'mulligan' && (
+          <OpeningHandModal
             roomState={roomState}
             localPlayerId={playerId}
             onAction={sendAction}

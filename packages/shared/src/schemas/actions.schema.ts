@@ -148,6 +148,16 @@ export const CardDragMoveSchema = z.object({
   isTapped: z.boolean().optional(),
 });
 
+export const MulliganTakeSchema = z.object({});
+
+export const MulliganKeepSchema = z.object({
+  bottomCardIds: z.array(z.string()).optional(),
+});
+
+export const MulliganForceDecisionSchema = z.object({
+  targetPlayerId: z.string(),
+});
+
 export const ActionEnvelopeSchema = z.object({
   type: z.enum([
     'ADJUST_LIFE',
@@ -163,6 +173,9 @@ export const ActionEnvelopeSchema = z.object({
     'CLONE_TOKEN',
     'DRAW_CARDS',
     'MULLIGAN',
+    'MULLIGAN_TAKE',
+    'MULLIGAN_KEEP',
+    'MULLIGAN_FORCE_DECISION',
     'SHUFFLE_LIBRARY',
     'PASS_TURN',
     'SET_TURN_ORDER',

@@ -1,7 +1,20 @@
 import { PlayerState } from './player.js';
 import { CardInstance } from './card.js';
 
-export type RoomStatus = 'lobby' | 'initiative' | 'playing' | 'finished' | 'in_progress' | 'ended';
+export type RoomStatus = 'lobby' | 'initiative' | 'mulligan' | 'playing' | 'finished' | 'in_progress' | 'ended';
+
+export interface MulliganPlayerState {
+  playerId: string;
+  mulliganCount: number; // 0 = mano inicial sin mulligan, 1 = 1er mulligan (gratis en Commander), 2+ = k-1 al fondo
+  hasKept: boolean;
+  cardsToBottomCount: number; // max(0, mulliganCount - 1)
+  cardsPutToBottom?: string[]; // instanceIds
+}
+
+export interface MulliganState {
+  currentDecidingPlayerId: string | null; // Jugador en turno de decision segun turnOrder
+  players: Record<string, MulliganPlayerState>;
+}
 
 export interface InitiativeState {
   round: number; // 1 to 5
@@ -62,4 +75,5 @@ export interface RoomState {
   logs: GameLogEntry[];
   pendingUndoProposal?: UndoProposal;
   initiative?: InitiativeState;
+  mulligan?: MulliganState;
 }

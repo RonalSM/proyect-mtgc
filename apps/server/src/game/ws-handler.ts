@@ -24,6 +24,8 @@ import {
   StartGameSchema,
   SetPlaymatSchema,
   CardDragMoveSchema,
+  MulliganKeepSchema,
+  MulliganForceDecisionSchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -268,7 +270,28 @@ export class WebSocketHandler {
         }
 
         case 'MULLIGAN': {
+          session.mulliganService.onStateChanged = () => this.broadcastRoomState(client.roomCode);
           session.mulligan(client.playerId);
+          break;
+        }
+
+        case 'MULLIGAN_TAKE': {
+          session.mulliganService.onStateChanged = () => this.broadcastRoomState(client.roomCode);
+          session.takeMulligan(client.playerId);
+          break;
+        }
+
+        case 'MULLIGAN_KEEP': {
+          const valid = MulliganKeepSchema.parse(payload);
+          session.mulliganService.onStateChanged = () => this.broadcastRoomState(client.roomCode);
+          session.keepHand(client.playerId, valid.bottomCardIds);
+          break;
+        }
+
+        case 'MULLIGAN_FORCE_DECISION': {
+          const valid = MulliganForceDecisionSchema.parse(payload);
+          session.mulliganService.onStateChanged = () => this.broadcastRoomState(client.roomCode);
+          session.forceMulliganDecision(client.playerId, valid.targetPlayerId);
           break;
         }
 
@@ -406,6 +429,7 @@ export class WebSocketHandler {
         case 'START_GAME': {
           StartGameSchema.parse(payload);
           session.initiativeService.onStateChanged = () => this.broadcastRoomState(client.roomCode);
+          session.mulliganService.onStateChanged = () => this.broadcastRoomState(client.roomCode);
           session.startGame(client.playerId);
           break;
         }

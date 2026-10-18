@@ -24,6 +24,7 @@ import { redisSnapshotService } from '../services/redis-snapshot.service.js';
 import { LobbyManager } from './lobby-manager.js';
 import { GameStarter } from './game-starter.js';
 import { InitiativeService } from './initiative-service.js';
+import { MulliganService } from './mulligan-service.js';
 
 interface UndoRecord {
   playerId: string;
@@ -37,12 +38,14 @@ export class GameStateSession {
   public state: RoomState;
   public lobbyManager: LobbyManager;
   public initiativeService: InitiativeService;
+  public mulliganService: MulliganService;
   private undoStack: UndoRecord[] = [];
 
   constructor(initialState: RoomState) {
     this.state = initialState;
     this.lobbyManager = new LobbyManager(this.state);
     this.initiativeService = new InitiativeService(this);
+    this.mulliganService = new MulliganService(this);
   }
 
   /**
@@ -58,6 +61,25 @@ export class GameStateSession {
    */
   public rollD20Initiative(playerId: string): number {
     return this.initiativeService.rollD20(playerId);
+  }
+
+  /**
+   * Starts the London Mulligan phase (Punto 5)
+   */
+  public startMulliganPhase(): void {
+    this.mulliganService.startMulliganPhase();
+  }
+
+  public takeMulligan(playerId: string): void {
+    this.mulliganService.takeMulligan(playerId);
+  }
+
+  public keepHand(playerId: string, bottomCardIds?: string[]): void {
+    this.mulliganService.keepHand(playerId, bottomCardIds);
+  }
+
+  public forceMulliganDecision(hostPlayerId: string, targetPlayerId: string): void {
+    this.mulliganService.forceDecision(hostPlayerId, targetPlayerId);
   }
 
   public cleanup(): void {
@@ -472,27 +494,14 @@ export class GameStateSession {
   }
 
   /**
-   * Performs a Mulligan: reshuffles hand into library and draws 7
+   * Performs a Mulligan: only allowed during the 'mulligan' phase (Punto 5)
    */
   public mulligan(playerId: string): void {
-    const zones = this.state.playerZones[playerId];
-    if (!zones) return;
-
-    // Put hand back into library
-    zones.library.push(...zones.hand);
-    zones.hand = [];
-
-    // Shuffle with CSPRNG
-    zones.library = secureShuffle(zones.library);
-
-    // Draw 7 cards
-    const drawCount = Math.min(7, zones.library.length);
-    const drawn = zones.library.splice(0, drawCount);
-    zones.hand.push(...drawn);
-
-    this.syncPlayerCounts(playerId);
-    this.addLog(playerId, `realizó un Mulligan (barajó su mano y robó 7 cartas)`);
-    this.incrementVersion();
+    if (this.state.status === 'mulligan') {
+      this.mulliganService.takeMulligan(playerId);
+    } else {
+      throw new Error('La acción de mulligan solo está permitida durante la fase inicial de mulligan.');
+    }
   }
 
   /**

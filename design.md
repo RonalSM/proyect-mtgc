@@ -129,18 +129,37 @@ Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 3. Game Server → Sincroniza estado a toda la mesa; clientes muestran animación de dados y resultados.
 4. Si hay empate: el servidor detecta el empate, anuncia la ronda de desempate, lanza automáticamente para los empatados (hasta máx. 5 rondas; luego desempate por asiento) y sincroniza la nueva ronda.
 5. Game Server → INITIATIVE_RESOLVED { order }; se muestra el banner de orden de turnos oficial a toda la mesa.
-6. Game Server → Transición automática a la siguiente fase (`table.status = "playing"`); se inicia el turno del primer jugador.
+6. Game Server → Transición automática a la fase de mulligan (`table.status = "mulligan"`).
+```
+
+### Flujo 7: Fase de Mulligan y Mano Inicial (Punto 5, REQ-23)
+```
+1. Al resolverse la iniciativa, Game Server pasa a `status: "mulligan"`.
+2. Servidor baraja bibliotecas (CSPRNG Fisher-Yates) y reparte 7 cartas a cada jugador en estado oculto (la mano no aparece en el abanico inferior hasta que el jugador se queda y concluye la fase).
+3. Turno de decisión secuencial según `turnOrder` resuelto, empezando por el 1.º jugador. Solo decide el jugador activo (`mulligan.activePlayerId`); los demás ven "X está decidiendo".
+4. Ventana "Opening hand" en cliente: modal central sobre fondo oscurecido/desenfocado con 7 cartas grandes, botones "Quedarme con la mano" y "Mulligan".
+5. Regla de Londres con Commander free mulligan:
+   - Primer mulligan (k=1): gratis. Mano vuelve a biblioteca, se baraja con CSPRNG y roba 7.
+   - Mulligans posteriores (k >= 2): roba 7 y debe elegir exactamente k - 1 cartas para poner al fondo de la biblioteca (`zones.library.push(...bottomCards)`). Selector interactivo muestra el orden de selección.
+   - Puede repetir hasta quedarse con 0 cartas (cuando mano resultante es 0, solo queda "Quedarme").
+6. Mensajes autoritativos:
+   - `MULLIGAN_TAKE`: solicita nuevo robo.
+   - `MULLIGAN_KEEP { cardIdsToBottom }`: confirma mano y pone cartas al fondo si k >= 2.
+   - `MULLIGAN_FORCE_DECISION { targetPlayerId }`: anfitrión puede forzar que un jugador desconectado o ausente se quede con su mano actual para evitar bloqueos.
+7. Privacidad: los rivales solo ven el estado (decidiendo, se quedó con N cartas), nunca las cartas. La reconexión durante la fase restaura la ventana (RESUME).
+8. Cuando todos los jugadores han decidido quedarse, Game Server transiciona automáticamente a `status: "playing"` y se inicia el turno del primer jugador. La bitácora registra "X hizo mulligan" y "X se quedó con N cartas".
+9. Se rechaza cualquier acción de mulligan suelta durante `playing`.
 ```
 
 ## Máquina de estados de la mesa (v2)
 
 ```
-lobby ──(todos listos + host inicia)──► initiative ──(orden resuelto)──► playing ──► finished
+lobby ──(todos listos + host inicia)──► initiative ──(orden resuelto)──► mulligan ──(todos se quedan)──► playing ──► finished
   ▲                                           │
   └────(jugador sale o quita "Listo")─────────┘  (solo antes de que se resuelva la iniciativa: vuelve a lobby)
 ```
 
-`Table.status` pasa a `"lobby" | "initiative" | "playing" | "finished"`.
+`Table.status` pasa a `"lobby" | "initiative" | "mulligan" | "playing" | "finished"`.
 
 ## Componentes nuevos o ampliados (v2)
 

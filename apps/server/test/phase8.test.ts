@@ -179,7 +179,12 @@ test('Fase 8 Completa: Lobby -> Privacidad de Mazos -> Listo -> Inicio -> D20 In
 
   session.initiativeService.resolveRound();
 
-  // Ahora la partida debe transicionar a 'playing'
+  // Ahora la partida debe transicionar a 'mulligan' y luego a 'playing' al quedarse todos
+  assert.strictEqual(session.state.status, 'mulligan');
+  session.keepHand('p_alice');
+  session.keepHand('p_bob');
+  session.keepHand('p_charlie');
+  session.keepHand('p_diana');
   assert.strictEqual(session.state.status, 'playing');
   assert.strictEqual(session.state.turnOrder.length, 4);
   assert.deepStrictEqual(session.state.turnOrder, ['p_alice', 'p_bob', 'p_charlie', 'p_diana']);
@@ -383,6 +388,8 @@ test('Fase 8 - Pod de 6 jugadores en cuadrícula 2x3 con reparto y rotación (RE
   });
 
   session.initiativeService.resolveRound();
+  assert.strictEqual(session.state.status, 'mulligan');
+  pids.forEach(pid => session.keepHand(pid));
   assert.strictEqual(session.state.status, 'playing');
   assert.deepStrictEqual(session.state.turnOrder, pids);
 

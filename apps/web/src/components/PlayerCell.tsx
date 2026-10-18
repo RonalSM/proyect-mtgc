@@ -858,8 +858,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           }`}
         >
           <HandFan
-            cards={zones.hand}
-            handCount={player.handCount}
+            cards={roomState?.status === 'mulligan' ? [] : zones.hand}
+            handCount={roomState?.status === 'mulligan' ? 0 : player.handCount}
             isLocalPlayer={isLocalPlayer}
             localPlayerId={localPlayerId}
             roomState={roomState}

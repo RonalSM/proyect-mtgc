@@ -157,6 +157,9 @@ test('Punto 4: Desempate automatico en servidor sin intervencion de ningun jugad
 
   session.initiativeService.resolveRound({ autoAdvance: false });
 
+  assert.strictEqual(session.state.status, 'mulligan');
+  session.keepHand('p1');
+  session.keepHand('p2');
   assert.strictEqual(session.state.status, 'playing');
   assert.deepStrictEqual(session.state.turnOrder, ['p1', 'p2']);
   assert.strictEqual(session.state.activePlayerId, 'p1');

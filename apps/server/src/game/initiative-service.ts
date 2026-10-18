@@ -318,18 +318,10 @@ export class InitiativeService {
       }
 
       this.timeoutTimer = setTimeout(() => {
-        state.status = 'playing';
-        this.session.incrementVersion();
-        if (this.onStateChanged) {
-          this.onStateChanged();
-        }
+        this.session.startMulliganPhase();
       }, resolveDelay);
     } else {
-      state.status = 'playing';
-      this.session.incrementVersion();
-      if (this.onStateChanged) {
-        this.onStateChanged();
-      }
+      this.session.startMulliganPhase();
     }
   }
 
