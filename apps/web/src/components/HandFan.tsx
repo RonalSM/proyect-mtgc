@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import type { CardInstance, GameActionType, CardDefinition } from '@mtgc/shared';
+import type { CardInstance, GameActionType, CardDefinition, RoomState } from '@mtgc/shared';
 import { useDraggable } from '@dnd-kit/core';
 import { CardDisplay } from './CardDisplay';
 import { Play, Trash2, Sparkles, Maximize2 } from 'lucide-react';
 import { useCardPreview } from '../context/CardPreviewContext';
+import { getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
 
 interface HandFanProps {
   cards: CardInstance[];
   handCount: number;
   isLocalPlayer: boolean;
+  localPlayerId?: string;
+  roomState?: RoomState;
+  allBattlefieldCards?: CardInstance[];
   onAction: (type: GameActionType, payload: unknown) => void;
   onZoomCard?: (card: CardInstance) => void;
 }
@@ -149,22 +153,36 @@ export const HandFan: React.FC<HandFanProps> = ({
   cards,
   handCount,
   isLocalPlayer,
+  localPlayerId,
+  roomState,
+  allBattlefieldCards,
   onAction,
   onZoomCard,
 }) => {
   const { showPreview, hidePreview } = useCardPreview();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
-  // Play card from hand to battlefield
+  // Play card from hand to battlefield (Punto 2: al centro de la sección del propio jugador con cascada)
   const handlePlayToBattlefield = (card: CardInstance, e?: React.MouseEvent) => {
     e?.stopPropagation();
+    let targetPos = { x: 0.5, y: 0.5 };
+    const pId = localPlayerId || card.ownerId;
+    if (roomState && pId) {
+      targetPos = getPlayerBattlefieldCascadePosition(pId, roomState, allBattlefieldCards);
+    } else {
+      targetPos = {
+        x: 0.45 + (Math.random() * 0.1 - 0.05),
+        y: 0.5 + (Math.random() * 0.1 - 0.05),
+      };
+    }
     onAction('MOVE_CARD', {
       cardInstanceId: card.instanceId,
       fromZone: 'hand',
       toZone: 'battlefield',
+      toPlayerId: pId,
+      holderId: pId,
       position: {
-        x: 0.45 + (Math.random() * 0.1 - 0.05),
-        y: 0.5 + (Math.random() * 0.1 - 0.05),
+        ...targetPos,
         zIndex: 10,
       },
     });

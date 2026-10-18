@@ -18,46 +18,13 @@ import {
 } from '@dnd-kit/core';
 import { TableGrid } from './TableGrid';
 import { PlayerCell } from './PlayerCell';
-import { BattlefieldCanvas, type ViewFraming } from './BattlefieldCanvas';
+import { BattlefieldCanvas } from './BattlefieldCanvas';
 import { CardDisplay } from './CardDisplay';
 import { Portal } from './Portal';
 import { CardPreviewProvider, useCardPreview } from '../context/CardPreviewContext';
 import type { RemoteDragState } from '../hooks/useGameSocket';
-
-export function getPlayerFraming(playerId: string, roomState: RoomState): ViewFraming {
-  const allSeated = Object.values(roomState.players).filter(p => !p.isSpectator);
-  const totalPlayers = Math.max(2, allSeated.length);
-  const isTwoPlayerMode = totalPlayers === 2;
-  const cols = isTwoPlayerMode ? 2 : Math.min(3, Math.max(2, Math.ceil(totalPlayers / 2)));
-  const seatedPlayers = [...allSeated].sort((a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0));
-
-  const playerIdx = seatedPlayers.findIndex(p => p.id === playerId);
-  if (playerIdx === -1) {
-    return { xMin: 0, yMin: 0, width: 1, height: 1, isExpanded: false };
-  }
-
-  if (isTwoPlayerMode) {
-    const col = playerIdx === 0 ? 0 : 1;
-    return {
-      xMin: col * 0.5,
-      yMin: 0,
-      width: 0.5,
-      height: 1.0,
-      isExpanded: true,
-    };
-  }
-
-  const row = playerIdx < cols ? 0 : 1;
-  const col = playerIdx < cols ? playerIdx : playerIdx - cols;
-
-  return {
-    xMin: col / cols,
-    yMin: row === 0 ? 0 : 0.5,
-    width: 1 / cols,
-    height: 0.5,
-    isExpanded: true,
-  };
-}
+import { getPlayerFraming, getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
+export { getPlayerFraming, getPlayerBattlefieldCascadePosition };
 
 interface TableBoardProps {
   roomState: RoomState;
@@ -575,6 +542,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         isTwoPlayer={isTwoPlayer}
         isActiveTurn={isActiveTurn}
         localPlayerId={localPlayerId}
+        roomState={roomState}
         allBattlefieldCards={allBattlefieldCards}
         onAction={onAction}
         onExpandCell={() => setExpandedPlayerId(expandedPlayerId === player.id ? null : player.id)}

@@ -569,6 +569,50 @@ export class GameStateSession {
   }
 
   /**
+   * Computes the normalized center coordinates of a player's division with cascade offset (Punto 2)
+   */
+  public computePlayerDivisionCenter(targetPlayerId: string): { x: number; y: number } {
+    const allSeated = Object.values(this.state.players).filter(p => !p.isSpectator);
+    const totalPlayers = Math.max(2, allSeated.length);
+    const isTwoPlayerMode = totalPlayers === 2;
+    const cols = isTwoPlayerMode ? 2 : Math.min(3, Math.max(2, Math.ceil(totalPlayers / 2)));
+    const seatedPlayers = [...allSeated].sort((a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0));
+    const playerIdx = seatedPlayers.findIndex(p => p.id === targetPlayerId);
+
+    let xMin = 0;
+    let width = 1;
+    let yMin = 0;
+    let height = 1;
+
+    if (playerIdx !== -1) {
+      if (isTwoPlayerMode) {
+        xMin = playerIdx === 0 ? 0.0 : 0.5;
+        width = 0.5;
+        yMin = 0.0;
+        height = 1.0;
+      } else {
+        const row = playerIdx < cols ? 0 : 1;
+        const col = playerIdx < cols ? playerIdx : playerIdx - cols;
+        xMin = col / cols;
+        width = 1 / cols;
+        yMin = row === 0 ? 0.0 : 0.5;
+        height = 0.5;
+      }
+    }
+
+    const centerX = xMin + width * 0.5;
+    const centerY = yMin + height * 0.5;
+
+    const existingCount = this.state.playerZones[targetPlayerId]?.battlefield?.length ?? 0;
+    const cascadeOffset = (existingCount % 5) * 0.015;
+
+    return {
+      x: centerX - 0.0225 + cascadeOffset,
+      y: centerY - 0.0475 + cascadeOffset,
+    };
+  }
+
+  /**
    * Finds a card on any battlefield in the room
    */
   public findBattlefieldCard(instanceId: string): { card: CardInstance; playerId: string; index: number } | undefined {
@@ -651,17 +695,33 @@ export class GameStateSession {
     let targetPlayerId = payload.toPlayerId || fromPlayerId || playerId;
 
     if (payload.toZone === 'battlefield') {
-      const posX = payload.position?.x ?? 0.5;
-      const posY = payload.position?.y ?? 0.5;
+      let posX = payload.position?.x;
+      let posY = payload.position?.y;
+
+      // Punto 2: Si no se provee posición o viene de la posición por defecto (0.5, 0.5) desde menú/acción fuera de la mesa,
+      // enviar al centro de la sección del propio jugador con desplazamiento en cascada
+      if (
+        posX === undefined ||
+        posY === undefined ||
+        (posX === 0.5 && posY === 0.5 && payload.fromZone !== 'battlefield')
+      ) {
+        const cascadePos = this.computePlayerDivisionCenter(targetPlayerId);
+        posX = cascadePos.x;
+        posY = cascadePos.y;
+      }
+
       card.position = {
         x: posX,
         y: posY,
         zIndex: payload.position?.zIndex ?? 1,
       };
 
-      // Punto 5: Calcular holderId:
-      // Al soltar, holderId es el jugador cuya división contiene la caja de la carta (ya girada) al 100%;
-      // si queda entre dos divisiones o fuera, holderId queda vacío.
+      // Garantizar ownerId
+      if (!card.ownerId) {
+        card.ownerId = targetPlayerId;
+      }
+
+      // Punto 5 y Punto 2: Calcular holderId:
       let newHolderId: string | undefined = undefined;
       const geomHolder = this.computeHolderId({ x: posX, y: posY }, !!card.isTapped);
       if (payload.holderId !== undefined && payload.holderId !== null) {
@@ -674,6 +734,7 @@ export class GameStateSession {
         newHolderId = geomHolder;
       }
 
+      // Si la carta entra en la sección del propio jugador, su holderId es el jugador
       card.holderId = newHolderId;
       targetPlayerId = payload.toPlayerId || card.ownerId;
     } else {

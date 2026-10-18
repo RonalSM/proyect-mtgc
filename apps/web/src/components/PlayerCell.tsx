@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
 import { toArtCropUrl } from '@mtgc/shared';
-import type { PlayerState, GameActionType, CardInstance } from '@mtgc/shared';
+import type { PlayerState, GameActionType, CardInstance, RoomState } from '@mtgc/shared';
 import {
   Heart,
   Skull,
@@ -16,6 +16,7 @@ import { CardDisplay } from './CardDisplay';
 import { Portal } from './Portal';
 import { useCardPreview } from '../context/CardPreviewContext';
 import { scryfallQueue } from '../services/scryfallQueue';
+import { getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
 
 const CARD_TYPE_FILTERS = [
   'Criaturas',
@@ -160,15 +161,17 @@ const DraggablePileCard: React.FC<{
   );
 };
 
-// Componente para carta dentro del inspector de pila con menú contextual (Punto 7)
+// Componente para carta dentro del inspector de pila con menú contextual (Punto 7 / Punto 2)
 const ModalCardItem: React.FC<{
   card: CardInstance;
   zone: 'graveyard' | 'exile' | 'library' | 'command';
   onAction: (type: GameActionType, payload: unknown) => void;
   localPlayerId: string;
   ownerPlayerId: string;
+  roomState?: RoomState;
+  allBattlefieldCards?: CardInstance[];
   onCloseModal: () => void;
-}> = ({ card, zone, onAction, localPlayerId, ownerPlayerId, onCloseModal }) => {
+}> = ({ card, zone, onAction, localPlayerId, ownerPlayerId, roomState, allBattlefieldCards, onCloseModal }) => {
   const { showPreview, hidePreview } = useCardPreview();
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -191,12 +194,17 @@ const ModalCardItem: React.FC<{
 
   const handleSendToField = () => {
     setContextMenuPos(null);
+    let targetPos = { x: 0.5, y: 0.5 };
+    if (roomState) {
+      targetPos = getPlayerBattlefieldCascadePosition(localPlayerId, roomState, allBattlefieldCards);
+    }
     onAction('MOVE_CARD', {
       cardInstanceId: card.instanceId,
       fromZone: zone,
       toZone: 'battlefield',
       toPlayerId: localPlayerId,
-      position: { x: 0.5, y: 0.5 },
+      holderId: localPlayerId,
+      position: targetPos,
     });
     onCloseModal();
   };
@@ -305,6 +313,7 @@ interface PlayerCellProps {
   isTwoPlayer?: boolean;
   reduceBackgrounds?: boolean;
   localPlayerId?: string;
+  roomState?: RoomState;
   allBattlefieldCards?: CardInstance[];
   onAction: (type: GameActionType, payload: unknown) => void;
   onExpandCell?: () => void;
@@ -320,6 +329,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   isTwoPlayer = false,
   reduceBackgrounds = false,
   localPlayerId = player.id,
+  roomState,
   allBattlefieldCards,
   onAction,
   onExpandCell,
@@ -851,6 +861,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             cards={zones.hand}
             handCount={player.handCount}
             isLocalPlayer={isLocalPlayer}
+            localPlayerId={localPlayerId}
+            roomState={roomState}
+            allBattlefieldCards={allBattlefieldCards}
             onAction={onAction}
             onZoomCard={card => setZoomedCard(card)}
           />
@@ -1095,6 +1108,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     onAction={onAction}
                     localPlayerId={localPlayerId}
                     ownerPlayerId={player.id}
+                    roomState={roomState}
+                    allBattlefieldCards={allBattlefieldCards}
                     onCloseModal={() => setActivePileModal(null)}
                   />
                 ))}
