@@ -13,13 +13,69 @@ export class InitiativeService {
   }
 
   /**
-   * Starts or resets the 15-second initiative timer (REQ-21.4)
+   * Starts automatic server-driven initiative (Punto 4, REQ-21):
+   * Rolls D20 for all seated players using CSPRNG, broadcasts rolls,
+   * schedules automatic tie-break or resolution, and advances automatically.
+   * Clients cannot roll manually.
+   */
+  public startAutomaticInitiative(options?: {
+    rollDisplayMs?: number;
+    tieDisplayMs?: number;
+    resolveDisplayMs?: number;
+    autoAdvance?: boolean;
+  }): void {
+    const state = this.session.state;
+    if (state.status !== 'initiative' || !state.initiative) return;
+
+    this.clearTimer();
+    const initiative = state.initiative;
+    initiative.round = 1;
+    initiative.rolls = {};
+    initiative.activeTiedPlayerIds = undefined;
+    initiative.resolvedOrder = undefined;
+    this.roundRollsHistory.clear();
+
+    const seatedPlayerIds = Object.keys(state.players).filter(
+      id => !state.players[id]?.isSpectator,
+    );
+
+    // Roll automatically for all seated players with CSPRNG
+    for (const pid of seatedPlayerIds) {
+      const roll = secureRoll(20);
+      initiative.rolls[pid] = roll;
+      if (state.players[pid]) {
+        state.players[pid]!.initiativeRoll = roll;
+      }
+      this.session.addLog(pid, `tiró un D20 de iniciativa: 🎲 ${roll}`);
+    }
+
+    this.roundRollsHistory.set(1, { ...initiative.rolls });
+
+    const displayDelay = options?.rollDisplayMs ?? 3500;
+    initiative.deadlineTimestamp = Date.now() + displayDelay;
+    this.session.incrementVersion();
+
+    if (this.onStateChanged) {
+      this.onStateChanged();
+    }
+
+    const autoAdvance = options?.autoAdvance ?? true;
+    if (autoAdvance) {
+      if (displayDelay > 0) {
+        this.timeoutTimer = setTimeout(() => {
+          this.resolveRound({ autoAdvance: true, ...options });
+        }, displayDelay);
+      } else {
+        this.resolveRound({ autoAdvance: true, ...options });
+      }
+    }
+  }
+
+  /**
+   * Starts or resets initiative timer (legacy fallback)
    */
   public startInitiativeTimer(): void {
-    this.clearTimer();
-    this.timeoutTimer = setTimeout(() => {
-      this.resolveCurrentRoundWithAutoRolls();
-    }, 15000);
+    this.startAutomaticInitiative();
   }
 
   public clearTimer(): void {
@@ -31,6 +87,7 @@ export class InitiativeService {
 
   /**
    * Rolls a D20 for initiative on the server (REQ-21.2 / crypto.randomInt)
+   * Note: In Punto 4 initiative rolls are generated automatically by the server.
    */
   public rollD20(playerId: string): number {
     const state = this.session.state;
@@ -68,7 +125,7 @@ export class InitiativeService {
 
     const allRolled = pool.every(id => initiative.rolls[id] !== undefined);
     if (allRolled) {
-      this.resolveRound();
+      this.resolveRound({ autoAdvance: false });
     }
 
     if (this.onStateChanged) {
@@ -79,7 +136,7 @@ export class InitiativeService {
   }
 
   /**
-   * Resolves unrolled players automatically after 15s timeout or disconnection (REQ-21.4)
+   * Resolves unrolled players automatically after timeout (legacy fallback)
    */
   public resolveCurrentRoundWithAutoRolls(): void {
     const state = this.session.state;
@@ -100,12 +157,12 @@ export class InitiativeService {
         }
         this.session.addLog(
           pid,
-          `(Tiempo de 15s expirado) Servidor tiró D20 automático: 🎲 ${auto}`,
+          `Servidor tiró D20 automático: 🎲 ${auto}`,
         );
       }
     }
 
-    this.resolveRound();
+    this.resolveRound({ autoAdvance: false });
 
     if (this.onStateChanged) {
       this.onStateChanged();
@@ -115,7 +172,12 @@ export class InitiativeService {
   /**
    * Resolves round rolls, handles ties up to 5 rounds, and finalizes turn order (REQ-21.5, REQ-21.6)
    */
-  public resolveRound(): void {
+  public resolveRound(options?: {
+    rollDisplayMs?: number;
+    tieDisplayMs?: number;
+    resolveDisplayMs?: number;
+    autoAdvance?: boolean;
+  }): void {
     const state = this.session.state;
     if (state.status !== 'initiative' || !state.initiative) return;
 
@@ -129,7 +191,7 @@ export class InitiativeService {
     const currentPool = initiative.activeTiedPlayerIds ?? seatedPlayerIds;
     const rollsMap = new Map<string, number>();
     for (const pid of currentPool) {
-      rollsMap.set(pid, initiative.rolls[pid] ?? 1);
+      rollsMap.set(pid, initiative.rolls[pid] ?? state.players[pid]?.initiativeRoll ?? 1);
     }
 
     const groups = new Map<number, string[]>();
@@ -155,20 +217,51 @@ export class InitiativeService {
       }
     }
 
+    const autoAdvance = options?.autoAdvance ?? false;
+
     // Check if any tie exists in this round and we haven't reached 5 rounds (REQ-21.6)
     if (tiedPlayerIds.length > 0 && initiative.round < 5) {
       initiative.round++;
       initiative.activeTiedPlayerIds = tiedPlayerIds;
       initiative.rolls = {};
-      initiative.deadlineTimestamp = Date.now() + 15000;
 
       const tiedNames = tiedPlayerIds.map(id => state.players[id]?.name || id).join(', ');
       this.session.addLog(
         state.hostId,
         `¡Empate en iniciativa! Se abre la ronda ${initiative.round} de desempate para: ${tiedNames}`,
       );
+
+      // Roll automatically for all tied players with CSPRNG (Punto 4)
+      for (const pid of tiedPlayerIds) {
+        const tieRoll = secureRoll(20);
+        initiative.rolls[pid] = tieRoll;
+        if (state.players[pid]) {
+          state.players[pid]!.initiativeRoll = tieRoll;
+        }
+        this.session.addLog(
+          pid,
+          `(Desempate Ronda ${initiative.round}) tiró un D20 de iniciativa: 🎲 ${tieRoll}`,
+        );
+      }
+      this.roundRollsHistory.set(initiative.round, { ...initiative.rolls });
+
+      const tieDelay = options?.tieDisplayMs ?? 3500;
+      initiative.deadlineTimestamp = Date.now() + tieDelay;
       this.session.incrementVersion();
-      this.startInitiativeTimer();
+
+      if (this.onStateChanged) {
+        this.onStateChanged();
+      }
+
+      if (autoAdvance) {
+        if (tieDelay > 0) {
+          this.timeoutTimer = setTimeout(() => {
+            this.resolveRound(options);
+          }, tieDelay);
+        } else {
+          this.resolveRound(options);
+        }
+      }
       return;
     }
 
@@ -194,7 +287,6 @@ export class InitiativeService {
     });
 
     state.turnOrder = finalOrder;
-    state.status = 'playing';
     state.activePlayerId = finalOrder[0] ?? null;
     state.turnNumber = 1;
 
@@ -215,7 +307,30 @@ export class InitiativeService {
       state.hostId,
       `Iniciativa resuelta. Orden de turnos: ${orderSummary}`,
     );
-    this.session.incrementVersion();
+
+    const resolveDelay = options?.resolveDisplayMs ?? (autoAdvance ? 2500 : 0);
+
+    if (autoAdvance && resolveDelay > 0) {
+      // Broadcast state with resolvedOrder so clients see the final resolved order UI
+      this.session.incrementVersion();
+      if (this.onStateChanged) {
+        this.onStateChanged();
+      }
+
+      this.timeoutTimer = setTimeout(() => {
+        state.status = 'playing';
+        this.session.incrementVersion();
+        if (this.onStateChanged) {
+          this.onStateChanged();
+        }
+      }, resolveDelay);
+    } else {
+      state.status = 'playing';
+      this.session.incrementVersion();
+      if (this.onStateChanged) {
+        this.onStateChanged();
+      }
+    }
   }
 
   public cleanup(): void {

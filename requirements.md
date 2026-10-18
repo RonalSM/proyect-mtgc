@@ -203,17 +203,16 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 12. THE sala de espera SHALL permitir al anfitrión expulsar jugadores y transferir el rol de anfitrión (REQ-13) y mostrar el código y enlace de invitación (REQ-2).
 13. THE sala de espera SHALL actualizar los cambios de otros jugadores (mazo elegido, listo, entradas y salidas) en menos de 300 ms.
 
-### REQ-21 Iniciativa con D20 y orden de turnos
-**Historia:** Como jugador, quiero que el orden de turnos se decida con un dado de 20 caras, para que sea justo y visible para todos.
-1. WHEN la partida inicia, THE sistema SHALL abrir la fase de iniciativa en la que cada jugador lanza un d20.
-2. THE sistema SHALL generar cada resultado en el servidor con un generador criptográficamente seguro (valores 1 a 20); el cliente nunca decide el valor.
-3. WHEN un jugador pulsa "Lanzar d20", THE sistema SHALL mostrar la animación y el resultado a toda la mesa en menos de 2 segundos.
-4. IF un jugador no lanza en 15 segundos o está desconectado, THEN THE sistema SHALL lanzar por él automáticamente.
-5. WHEN todos los jugadores han lanzado, THE sistema SHALL ordenar los turnos de mayor a menor resultado; el mayor juega primero.
-6. IF hay empate, THEN THE sistema SHALL repetir la tirada solo entre los jugadores empatados, hasta un máximo de 5 rondas; si persiste, THE sistema SHALL desempatar por número de asiento.
-7. THE sistema SHALL mostrar el orden resultante (1.º, 2.º, 3.º…) en la barra de turnos y junto a cada zona de jugador.
-8. WHEN la iniciativa termina, THE sistema SHALL pasar la mesa a estado `playing` e iniciar el turno del primer jugador; REQ-6 (pasar turno) usa este orden.
-9. THE botón "Dados" existente SHALL seguir disponible durante la partida para tiradas libres (d6, d20, moneda).
+### REQ-21 Iniciativa con D20 y orden de turnos (Actualizado Punto 4)
+**Historia:** Como jugador, quiero que el orden de turnos se decida con un dado de 20 caras de forma 100% automática por el servidor, para que sea justo, visible y sin demoras.
+1. WHEN la partida inicia, THE sistema SHALL abrir la fase de iniciativa en la que el servidor genera automáticamente una tirada de d20 para cada jugador participante.
+2. THE sistema SHALL generar cada resultado en el servidor con un generador criptográficamente seguro (CSPRNG, valores 1 a 20); ningún jugador pulsa un botón y el cliente no puede enviar ninguna acción de tirada de iniciativa (rechazada autoritativamente con error).
+3. THE sistema SHALL mostrar la animación de los resultados y desempates a toda la mesa de forma sincronizada y avanzar la fase automáticamente.
+4. THE sistema SHALL ordenar los turnos de mayor a menor resultado; el mayor juega primero.
+5. IF hay empate, THEN THE sistema SHALL repetir automáticamente la tirada solo entre los jugadores empatados en rondas sucesivas, hasta un máximo de 5 rondas; si el empate persiste tras 5 rondas, THE sistema SHALL desempatar por número de asiento ascendente.
+6. THE sistema SHALL mostrar el orden resultante (1.º, 2.º, 3.º…) en la barra de turnos y junto a cada zona de jugador.
+7. WHEN la iniciativa termina y se muestra el orden resuelto, THE sistema SHALL pasar la mesa de forma automática a la siguiente fase (`playing`); REQ-6 (pasar turno) usa este orden.
+8. THE botón "Dados" existente SHALL seguir disponible en la barra flotante durante la partida para tiradas libres (d6, d20, moneda), siendo generadas siempre de forma autoritativa por el servidor.
 
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).

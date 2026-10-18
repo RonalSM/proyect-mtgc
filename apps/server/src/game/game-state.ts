@@ -50,7 +50,7 @@ export class GameStateSession {
    */
   public startGame(hostPlayerId: string): void {
     GameStarter.startGame(this, hostPlayerId);
-    this.initiativeService.startInitiativeTimer();
+    this.initiativeService.startAutomaticInitiative();
   }
 
   /**

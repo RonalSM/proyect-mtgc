@@ -1,28 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import type { RoomState, GameActionType } from '@mtgc/shared';
-import { Dices, Sparkles, Clock, Crown } from 'lucide-react';
+import { Dices, Sparkles, Crown } from 'lucide-react';
 
 interface InitiativeOverlayProps {
   roomState: RoomState;
   localPlayerId: string;
-  onAction: (type: GameActionType, payload: unknown) => void;
+  onAction?: (type: GameActionType, payload: unknown) => void;
 }
 
 export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
   roomState,
   localPlayerId,
-  onAction,
 }) => {
   const [secondsRemaining, setSecondsRemaining] = useState<number>(15);
-  const [isRolling, setIsRolling] = useState(false);
 
   const initiative = roomState.initiative;
   const localPlayer = roomState.players[localPlayerId];
   const isSpectator = localPlayer?.isSpectator ?? false;
 
   const seatedPlayers = Object.values(roomState.players).filter(p => !p.isSpectator);
-  const pool = initiative?.activeTiedPlayerIds ?? seatedPlayers.map(p => p.id);
-  const isLocalInPool = pool.includes(localPlayerId);
   const localHasRolled = initiative?.rolls[localPlayerId] !== undefined;
 
   // Countdown timer for 15s deadline
@@ -37,13 +33,6 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
 
     return () => clearInterval(interval);
   }, [initiative?.deadlineTimestamp]);
-
-  const handleRoll = () => {
-    if (!isLocalInPool || localHasRolled || isRolling) return;
-    setIsRolling(true);
-    onAction('ROLL_D20_INITIATIVE', {});
-    setTimeout(() => setIsRolling(false), 800);
-  };
 
   const isResolved = roomState.status === 'playing' || !!initiative?.resolvedOrder;
 
@@ -69,35 +58,36 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
             {isResolved ? '¡Orden de Turnos Decidido!' : 'Tirada de Iniciativa'}
           </h2>
 
-          {!isResolved && (
+          {!isResolved ? (
             <p className="text-xs text-slate-400 flex items-center justify-center space-x-1.5">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>
-                Tiempo restante para tirar: <strong className="text-white">{secondsRemaining}s</strong> (el servidor tira automáticamente al vencer)
+                Tirada 100% automática del servidor (CSPRNG). Avanzando en {secondsRemaining}s...
               </span>
+            </p>
+          ) : (
+            <p className="text-xs text-emerald-400 flex items-center justify-center space-x-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Iniciativa resuelta. Entrando a la mesa de juego...</span>
             </p>
           )}
         </div>
 
-        {/* Local Player Roll CTA */}
-        {!isResolved && !isSpectator && isLocalInPool && (
+        {/* Status / Local Player Roll Indicator (Sin botones, 100% automático Punto 4) */}
+        {!isResolved && (
           <div className="flex flex-col items-center justify-center py-2 space-y-2">
-            {!localHasRolled ? (
-              <button
-                onClick={handleRoll}
-                disabled={isRolling}
-                className="group relative px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-lg rounded-2xl shadow-xl shadow-amber-500/25 transition-all transform hover:scale-105 active:scale-95 flex items-center space-x-3 cursor-pointer"
-              >
-                <Dices className="w-6 h-6 animate-spin text-slate-950" />
-                <span>LANZAR D20</span>
-              </button>
-            ) : (
-              <div className="flex items-center space-x-3 bg-slate-950 border border-emerald-500/30 px-6 py-3 rounded-2xl shadow-inner">
-                <span className="text-sm font-semibold text-slate-300">Tu resultado:</span>
-                <span className="text-2xl font-black font-mono text-emerald-400 flex items-center space-x-1">
-                  <span>🎲</span>
-                  <span>{initiative?.rolls[localPlayerId]}</span>
-                </span>
+            <div className="flex items-center space-x-3 bg-slate-950/80 border border-amber-500/30 px-6 py-3 rounded-2xl shadow-inner">
+              <Dices className="w-6 h-6 animate-spin text-amber-400" />
+              <span className="text-sm font-semibold text-slate-300">
+                {initiative?.activeTiedPlayerIds && initiative.activeTiedPlayerIds.length > 0
+                  ? `Resolviendo desempate automático (Ronda ${initiative.round})...`
+                  : 'El servidor está calculando la iniciativa de todos los jugadores...'}
+              </span>
+            </div>
+            {localHasRolled && !isSpectator && (
+              <div className="flex items-center space-x-2 text-xs text-slate-400">
+                <span>Tu tirada de D20:</span>
+                <strong className="text-amber-400 font-mono text-sm">🎲 {initiative?.rolls[localPlayerId]}</strong>
               </div>
             )}
           </div>

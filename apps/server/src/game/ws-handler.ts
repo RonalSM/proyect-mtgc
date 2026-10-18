@@ -22,7 +22,6 @@ import {
   SelectDeckSchema,
   SetReadySchema,
   StartGameSchema,
-  RollD20InitiativeSchema,
   SetPlaymatSchema,
   CardDragMoveSchema,
 } from '@mtgc/shared';
@@ -412,10 +411,7 @@ export class WebSocketHandler {
         }
 
         case 'ROLL_D20_INITIATIVE': {
-          RollD20InitiativeSchema.parse(payload);
-          session.initiativeService.onStateChanged = () => this.broadcastRoomState(client.roomCode);
-          session.rollD20Initiative(client.playerId);
-          break;
+          throw new Error('La tirada de iniciativa es 100% automática y gestionada exclusivamente por el servidor. Ningún jugador debe lanzar manualmente.');
         }
 
         case 'SET_PLAYMAT': {

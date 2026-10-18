@@ -122,14 +122,14 @@ Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 8. Game Server → todos: INITIATIVE_STARTED
 ```
 
-### Flujo 6: Iniciativa (v2)
+### Flujo 6: Iniciativa Automática (Punto 4, REQ-21)
 ```
-1. Cada jugador → Game Server: ROLL_D20 (o lanzamiento automático al vencer el plazo de 15 s)
-2. Game Server: crypto.randomInt(1, 21) → D20_ROLLED a toda la mesa
-3. Al lanzar todos: ordena de mayor a menor
-4. Si hay empate: INITIATIVE_TIE → solo los empatados relanzan (máx. 5 rondas; luego por asiento)
-5. Game Server → INITIATIVE_RESOLVED { order } → table.status = "playing"
-6. Game Server → GAME_STARTED { firstSeat } y se inicia el turno del primero
+1. Host inicia la partida → Game Server: transición a `status: "initiative"` y `startAutomaticInitiative()`.
+2. Game Server: genera autoritativamente con CSPRNG (`crypto.randomInt(1, 21)`) la tirada de D20 para todos los jugadores sentados (ningún jugador pulsa botones; el cliente no puede enviar acciones de tirada y cualquier intento es rechazado con error).
+3. Game Server → Sincroniza estado a toda la mesa; clientes muestran animación de dados y resultados.
+4. Si hay empate: el servidor detecta el empate, anuncia la ronda de desempate, lanza automáticamente para los empatados (hasta máx. 5 rondas; luego desempate por asiento) y sincroniza la nueva ronda.
+5. Game Server → INITIATIVE_RESOLVED { order }; se muestra el banner de orden de turnos oficial a toda la mesa.
+6. Game Server → Transición automática a la siguiente fase (`table.status = "playing"`); se inicia el turno del primer jugador.
 ```
 
 ## Máquina de estados de la mesa (v2)
