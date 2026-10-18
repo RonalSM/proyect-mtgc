@@ -302,7 +302,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
                 setIsContextMenuOpen(false);
               }}
               className="p-1 hover:bg-slate-800 rounded text-amber-300 flex items-center space-x-1 px-1.5 cursor-pointer"
-              title="Devolver a la zona de comando (+2 Tax)"
+              title="Devolver a la zona de comando"
             >
               <Shield className="w-3 h-3" />
               <span>A Comando</span>

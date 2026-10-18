@@ -83,7 +83,7 @@ describe('Punto 6: Zona de comando e impuesto de comandante (commanderTax)', () 
     return { session, commander };
   }
 
-  test('Prueba oficial Punto 6: sacar comandante a la mesa (tax sigue en +0), devolverlo al comando (tax sube a +2), subir tax manualmente a +4, sacarlo de nuevo (tax se mantiene en +4)', () => {
+  test('Punto 3: Devolver comandante al comando NO auto-incrementa el tax; el impuesto es solo manual con botones +/-2', () => {
     const { session, commander } = setupCommanderSession();
 
     // Estado inicial: tax es 0
@@ -101,7 +101,7 @@ describe('Punto 6: Zona de comando e impuesto de comandante (commanderTax)', () 
     assert.strictEqual(session.state.playerZones.p_alice.battlefield.length, 1);
     assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 0, 'Sacar el comandante a la mesa no debe alterar el tax');
 
-    // 2. Devolverlo al comando: tax sube a +2
+    // 2. Devolverlo al comando: tax SIGUE en 0 (sin auto-incremento, Punto 3)
     session.moveCard('p_alice', {
       cardInstanceId: commander.instanceId,
       fromZone: 'battlefield',
@@ -110,18 +110,33 @@ describe('Punto 6: Zona de comando e impuesto de comandante (commanderTax)', () 
 
     assert.strictEqual(session.state.playerZones.p_alice.command.length, 1);
     assert.strictEqual(session.state.playerZones.p_alice.battlefield.length, 0);
-    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 2, 'Devolver al comando debe auto-incrementar tax en +2');
+    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 0, 'Devolver al comando NO debe auto-incrementar tax (sin motor de reglas)');
 
-    // 3. Subir tax manualmente a +4 (+2 vía SET_PLAYER_COUNTER)
+    // 3. Subir tax manualmente a +2 vía SET_PLAYER_COUNTER (botón +2)
     session.setPlayerCounter({
       playerId: 'p_alice',
       counterType: 'commanderTax',
       delta: 2,
     });
+    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 2, 'Subir tax manualmente con botón +2 debe dar 2');
 
+    // 4. Subir tax manualmente a +4 vía SET_PLAYER_COUNTER
+    session.setPlayerCounter({
+      playerId: 'p_alice',
+      counterType: 'commanderTax',
+      delta: 2,
+    });
     assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 4, 'Subir tax manualmente de 2 en 2 debe llegar a +4');
 
-    // 4. Sacarlo de nuevo a la mesa: tax se mantiene en +4
+    // 5. Restar tax manualmente a +2 vía SET_PLAYER_COUNTER (botón -2)
+    session.setPlayerCounter({
+      playerId: 'p_alice',
+      counterType: 'commanderTax',
+      delta: -2,
+    });
+    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 2, 'Restar tax manualmente con botón -2 debe dar 2');
+
+    // 6. Sacarlo de nuevo a la mesa: tax se mantiene en +2
     session.moveCard('p_alice', {
       cardInstanceId: commander.instanceId,
       fromZone: 'command',
@@ -130,11 +145,19 @@ describe('Punto 6: Zona de comando e impuesto de comandante (commanderTax)', () 
     });
 
     assert.strictEqual(session.state.playerZones.p_alice.battlefield.length, 1);
-    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 4, 'Sacarlo de nuevo debe mantener el tax en +4');
+    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 2, 'Sacarlo de nuevo debe mantener el tax manual en +2');
   });
 
-  test('Undo revierte el incremento de commanderTax al devolver al comando', () => {
+  test('Undo de movimiento no altera el commanderTax manual', () => {
     const { session, commander } = setupCommanderSession();
+
+    // Configurar tax manual a 4
+    session.setPlayerCounter({
+      playerId: 'p_alice',
+      counterType: 'commanderTax',
+      delta: 4,
+    });
+    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 4);
 
     // Sacar a la mesa
     session.moveCard('p_alice', {
@@ -143,20 +166,20 @@ describe('Punto 6: Zona de comando e impuesto de comandante (commanderTax)', () 
       toZone: 'battlefield',
       position: { x: 0.2, y: 0.2, zIndex: 1 },
     });
-    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 0);
+    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 4);
 
-    // Devolver al comando -> tax = 2
+    // Devolver al comando -> tax sigue en 4
     session.moveCard('p_alice', {
       cardInstanceId: commander.instanceId,
       fromZone: 'battlefield',
       toZone: 'command',
     });
-    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 2);
+    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 4);
 
-    // Undo -> revierte movimiento y tax vuelve a 0
+    // Undo -> revierte movimiento, tax sigue en 4
     const undoSuccess = session.undoLast('p_alice');
     assert.strictEqual(undoSuccess, true);
-    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 0, 'Deshacer debe revertir el impuesto de comandante');
+    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 4, 'Deshacer movimiento no altera el tax manual');
     assert.strictEqual(session.state.playerZones.p_alice.battlefield.length, 1);
   });
 });
