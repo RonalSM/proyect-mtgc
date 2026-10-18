@@ -224,27 +224,32 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 ### REQ-21 Iniciativa con D20 y orden de turnos (Actualizado Punto 4)
 **Historia:** Como jugador, quiero que el orden de turnos se decida con un dado de 20 caras de forma 100% automática por el servidor, para que sea justo, visible y sin demoras.
 1. WHEN la partida inicia, THE sistema SHALL abrir la fase de iniciativa en la que el servidor genera automáticamente una tirada de d20 para cada jugador participante.
-2. THE sistema SHALL generar cada resultado en el servidor con un generador criptográficamente seguro (CSPRNG, valores 1 a 20); ningún jugador pulsa un botón y el cliente no puede enviar ninguna acción de tirada de iniciativa (rechazada autoritativamente con error).
-3. THE sistema SHALL mostrar la animación de los resultados y desempates a toda la mesa de forma sincronizada y avanzar la fase automáticamente.
+2. THE sistema SHALL generar cada resultado en el servidor de forma 100% automática con un generador criptográficamente seguro (CSPRNG, valores 1 a 20): ningún jugador pulsa un botón en la interfaz y el cliente no puede enviar ninguna acción de tirada de iniciativa (cualquier intento se rechaza autoritativamente con error en el servidor).
+3. THE sistema SHALL mostrar la animación de los resultados y desempates a toda la mesa de forma sincronizada y avanzar la fase automáticamente sin intervención del usuario.
 4. THE sistema SHALL ordenar los turnos de mayor a menor resultado; el mayor juega primero.
 5. IF hay empate, THEN THE sistema SHALL repetir automáticamente la tirada solo entre los jugadores empatados en rondas sucesivas, hasta un máximo de 5 rondas; si el empate persiste tras 5 rondas, THE sistema SHALL desempatar por número de asiento ascendente.
 6. THE sistema SHALL mostrar el orden resultante (1.º, 2.º, 3.º…) en la barra de turnos y junto a cada zona de jugador.
 7. WHEN la iniciativa termina y se muestra el orden resuelto, THE sistema SHALL pasar la mesa de forma automática a la fase de mulligan (`mulligan`); REQ-6 (pasar turno) usa este orden.
-8. THE botón "Dados" existente SHALL seguir disponible en la barra flotante durante la partida para tiradas libres (d6, d20, moneda), siendo generadas siempre de forma autoritativa por el servidor.
+8. THE botón "Dados" existente SHALL seguir disponible en la barra flotante durante la partida para tiradas libres (d6, d20, moneda), siendo tiradas y generadas siempre de forma autoritativa por el servidor.
 
 ### REQ-23 Fase de Mano Inicial y Mulligan de Londres (Punto 5)
 **Historia:** Como jugador, quiero evaluar mi mano inicial en una ventana dedicada y poder realizar mulligans siguiendo las reglas oficiales de Commander (Regla de Londres con primer mulligan gratuito), para empezar la partida con una mano jugable.
-1. THE estados del ciclo de vida de la mesa SHALL ser: `lobby`, `initiative`, `mulligan`, `playing`, `finished`.
-2. WHEN la iniciativa concluye, THE servidor SHALL barajar cada biblioteca con CSPRNG y repartir 7 cartas iniciales a cada jugador en estado oculto (las cartas de la mano NO aparecen en el abanico inferior hasta que el jugador se queda y concluye la fase).
-3. THE orden de decisión SHALL seguir estrictamente el orden de turno resuelto (`turnOrder`), empezando por el primer jugador y siguiendo en sentido horario. Solo decide el jugador en turno de decisión activo; el resto ve 'X está decidiendo'.
+1. THE estados del ciclo de vida de la mesa SHALL ser estrictamente: `lobby`, `initiative`, `mulligan`, `playing`, `finished`.
+2. WHEN la iniciativa concluye, THE servidor SHALL barajar cada biblioteca con CSPRNG (Fisher-Yates) y repartir 7 cartas iniciales a cada jugador en estado oculto. La mano NO aparece en el abanico inferior hasta que el jugador se queda y concluye la fase.
+3. THE orden de decisión SHALL seguir estrictamente el orden de turno resuelto (`turnOrder`), empezando por el primer jugador y siguiendo en sentido horario. Solo decide el jugador en turno de decisión activo; el resto ve "X está decidiendo".
 4. THE sistema SHALL aplicar la Regla de Londres con mulligan gratis de Commander:
    - Al hacer mulligan, la mano actual vuelve a la biblioteca, se baraja con CSPRNG y se roban 7 cartas.
-   - El primer mulligan ($k = 1$) es gratuito (roba 7 y no devuelve ninguna carta).
-   - En mulligans posteriores ($k \ge 2$), el jugador roba 7 cartas y debe elegir exactamente $k - 1$ cartas para poner en el fondo de la biblioteca al decidir quedarse.
-5. THE interfaz de mano inicial SHALL presentarse en una ventana modal central tipo playgroup.gg con fondo oscurecido y desenfocado que muestra las 7 cartas ampliadas en alta resolución, botón 'Quedarse' (con selector interactivo de cuáles van al fondo si $k \ge 2$) y botón 'Mulligan' con contador acumulado.
-6. THE sistema SHALL permitir al anfitrión saltar o forzar la decisión de un jugador desconectado o ausente para prevenir bloqueos de la partida.
-7. WHEN todos los jugadores han decidido quedarse con su mano, THE mesa SHALL pasar automáticamente a estado `playing` y las manos definitivas aparecerán en el abanico inferior.
-8. THE sistema SHALL rechazar cualquier intento de ejecutar acciones de mulligan sueltas durante el estado `playing` (el mulligan solo ocurre en esta fase).
+   - El primer mulligan ($k = 1$) es gratis.
+   - Al quedarse tras $k$ mulligans ($k \ge 2$), el jugador pone al fondo de su biblioteca $\max(0, k - 1)$ cartas, en el orden exacto que elija.
+   - El jugador puede repetir mulligans hasta quedarse con 0 cartas; cuando la mano resultante sería 0 cartas, solo queda disponible el botón "Quedarme".
+5. THE interfaz SHALL presentarse como "Opening hand" de playgroup.gg:
+   - Ventana modal sobre la mesa atenuada con las 7 cartas grandes (imágenes de Scryfall en alta resolución).
+   - Botones "Quedarme con la mano" y "Mulligan".
+   - Avisos informativos: "El primer mulligan es gratis" y "Si te quedas, pondrás N carta(s) al fondo".
+   - Si $N > 0$, el jugador marca $N$ cartas interactivamente, visualizando el orden numérico de selección antes de confirmar la devolución al fondo de la biblioteca.
+6. **Privacidad estricta:** Los rivales solo ven el estado ("X está decidiendo", "X se quedó con N cartas"), nunca las cartas ni identidades de la mano ajena. La reconexión durante la fase restaura la ventana modal (`RESUME`). Si un jugador está desconectado, el anfitrión puede hacer que se quede con su mano actual para no bloquear la partida.
+7. WHEN todos los jugadores se han quedado, la fase pasa automáticamente a `playing` y empieza el turno del primer jugador. La bitácora registra "X hizo mulligan" y "X se quedó con N cartas".
+8. THE sistema SHALL rechazar y eliminar cualquier acción de mulligan suelta durante la partida (`playing`); el mulligan solo existe en esta fase.
 
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -256,7 +261,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - 4 jugadores: 2 filas × 2 columnas
    - 5 jugadores: 2 filas × 3 columnas (5 jugadores + 1 celda libre)
    - 6 jugadores: 2 filas × 3 columnas
-   2.1. THE jugador local SHALL ocupar la celda inferior izquierda; los oponentes ocupan las demás en orden de asiento.
+   2.1. Todos los clientes SHALL ver la misma disposición canónica de asientos y divisiones en todas las pantallas (disposición idéntica para todos, sin rotar ni reordenar según el jugador local).
    2.2. THE contenido de todas las celdas SHALL mostrarse en posición vertical, sin rotar.
 3. THE cada celda SHALL tener un **playmat** como fondo a celda completa:
    3.1. Por defecto, el recorte de arte (`art_crop`) del comandante del jugador, obtenido de Scryfall, con una capa oscura degradada en los bordes superior e inferior para mantener la legibilidad.
@@ -274,7 +279,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    5.3. WHEN el jugador hace clic en la pastilla, THE sistema SHALL abrir el panel de vida interactivo con controles directos de −1 y +1 (eliminando botones de +-5) y dos campos numéricos "Daño recibido" y "Vida ganada" accionados mediante Enter (REQ-3, Punto 7).
    5.4. THE veneno, energía, experiencia y daño de comandante SHALL mostrarse como insignias pequeñas desplegables junto a la pastilla (REQ-4, REQ-5); el impuesto de comandante se gestiona y visualiza exclusivamente en la zona de comando (REQ-9.7.20, Punto 6).
 6. THE campo de batalla SHALL ocupar el resto de la celda, con cartas colocadas libremente y que pueden solaparse parcialmente:
-   6.1. THE posición de cada carta SHALL guardarse **normalizada** (valores de 0 a 1 respecto al tamaño de la celda), para que coincida en pantallas de distinto tamaño.
+   6.1. THE posición de cada carta en el campo de batalla SHALL guardarse normalizada en coordenadas globales de la mesa ($x, y \in [0, 1]$ sobre toda la pantalla / MesaTotal), para que la disposición y colocación coincida de forma idéntica en pantallas de distinto tamaño y entre todos los participantes (posición global, eliminando coordenadas relativas a la celda).
    6.2. WHEN el jugador arrastra una carta, THE sistema SHALL traerla al frente (orden `z`) y sincronizar su nueva posición a la mesa en menos de 300 ms (REQ-9.2).
    6.3. THE tamaño de carta SHALL calcularse como el menor valor entre el límite por alto (cerca del 20% del alto de la celda) y el límite por ancho de la división (`(cellWidth - 130) / 5.5 / 0.714`), garantizando que vida, comandante, mano comprimida, biblioteca y pilas quepan en la celda sin solapamientos a 1366x768 y resoluciones estrechas (Punto 9).
    6.3.1. WHEN la mano acumula cartas, THE abanico SHALL incrementar progresivamente su solape (hasta 0.85) comprimiéndose dinámicamente antes de invadir las ranuras de comandante o biblioteca, y ningún elemento de un jugador SHALL invadir la división de otro (Punto 9).

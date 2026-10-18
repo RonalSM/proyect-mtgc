@@ -205,20 +205,29 @@ Fase 1 solo enlaza a Discord/Meet. Fase 2 evalúa LiveKit.
 **Interfaz de mensajes:**
 ```ts
 type ClientAction =
-  | { type: "ADJUST_LIFE"; targetSeat: number; delta: number }
-  | { type: "COMMANDER_DAMAGE"; targetSeat: number; sourceSeat: number; commanderId: string; delta: number }
+  | { type: "ADJUST_LIFE"; targetSeat?: number; delta: number; playerId?: string }
+  | { type: "COMMANDER_DAMAGE"; targetSeat?: number; sourceSeat?: number; commanderId: string; delta: number }
   | { type: "SET_COUNTER"; scope: "player" | "card"; id: string; counter: string; value: number }
-  | { type: "MOVE_CARD"; cardInstanceId: string; from: ZoneRef; to: ZoneRef; x?: number; y?: number }
-  | { type: "TAP_CARD"; cardInstanceId: string; tapped: boolean }
-  | { type: "DRAW"; count: number }
+  | { type: "MOVE_CARD"; cardInstanceId: string; fromZone: ZoneRef; toZone: ZoneRef; position?: { x: number; y: number }; holderId?: string; destinationIndex?: number }
+  | { type: "TAP_CARD"; cardInstanceId: string; isTapped?: boolean }
+  | { type: "DRAW_CARDS"; count: number }
   | { type: "SHUFFLE_LIBRARY" }
-  | { type: "MULLIGAN" }
   | { type: "END_TURN" }
   | { type: "UNDO_LAST" }
   | { type: "CHAT"; text: string }
+  | { type: "ROLL_DICE"; sides: number }
+  | MulliganAction
+  | RevealAction
   | LobbyAction
-  | InitiativeAction
   | PlaymatAction;
+
+type MulliganAction =
+  | { type: "MULLIGAN_DECISION"; decision: "keep" | "mulligan" }
+  | { type: "PUT_CARDS_ON_BOTTOM"; cardInstanceIds: string[] }
+  | { type: "HOST_FORCE_KEEP_MULLIGAN"; targetPlayerId: string };
+
+type RevealAction =
+  | { type: "REVEAL_CARD"; cardInstanceId: string; targetPlayerId?: string; fromZone?: ZoneRef };
 
 type LobbyAction =
   | { type: "SELECT_DECK"; source: "saved" | "session"; deckId: string }
@@ -232,7 +241,11 @@ type InitiativeAction = { type: "ROLL_D20" };
 type PlaymatAction = { type: "SET_PLAYMAT"; playmat: Playmat };
 
 type ServerEvent =
-  | { version: number; actor: number; payload: unknown; ts: string }
+  | { version: number; actor?: string; payload: unknown; ts: string }
+  | { type: "ROOM_STATE_SYNC"; state: RoomState }
+  | { type: "REMOTE_CARD_DRAGGING"; payload: RemoteDragPayload }
+  | { type: "MULLIGAN_STATE_SYNC"; mulliganState: MulliganRoomState }
+  | { type: "CARD_REVEALED"; card: CardInstance; fromPlayerId: string; fromPlayerName: string; targetPlayerId?: string; targetPlayerName?: string }
   | LobbyEvent;
 
 type LobbyEvent =
@@ -281,11 +294,11 @@ interface Card { id: string /* Scryfall id */; oracleId: string; name: string; m
                  colorIdentity: string[]; imageUris: Record<string,string>; legalities: Record<string,string>; updatedAt: Date }
 
 interface Table { id: string; code: string; hostId: string; seats: number; startingLife: number;
-                  isPrivate: boolean; status: "lobby" | "initiative" | "playing" | "finished"; createdAt: Date }
+                  isPrivate: boolean; status: "lobby" | "initiative" | "mulligan" | "playing" | "finished"; createdAt: Date }
 
 interface LobbyPlayerState { seat: number; userId: string; deckRef?: { source: "saved" | "session"; deckId: string }; ready: boolean }
 interface InitiativeState { round: number; rolls: Record<number, number>; pending: number[]; deadlineTs: string; order?: number[] }
-interface TableState { status: "lobby" | "initiative" | "playing" | "finished"; lobby: LobbyPlayerState[]; initiative?: InitiativeState; turnOrder?: number[] }
+interface TableState { status: "lobby" | "initiative" | "mulligan" | "playing" | "finished"; lobby: LobbyPlayerState[]; initiative?: InitiativeState; turnOrder?: number[] }
 
 interface SeatState { seat: number; userId: string; life: number; poison: number; energy: number; experience: number;
                       commanderTax: Record<string, number>; commanderDamage: Record<string, number>;
@@ -389,6 +402,20 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
      - Submenú de revelación: "A toda la mesa" (difusión broadcast a todos los sockets) o "A [Jugador X]" (filtrado estricto por servidor enviando el mensaje únicamente al socket del destinatario y al emisor mediante `VisibilityFilter`).
      - Los clientes destinatarios despliegan una modal efímera (`RevealedCardModal`) con la imagen y datos de la carta, cerrable por botón o tecla `Escape`.
      - Bitácora (`logs`): revelar a todos genera `${fromPlayerName} reveló "${card.name}" a todos`; revelar privado genera `${fromPlayerName} reveló una carta a ${targetPlayerName}` (sin revelar el nombre de la carta al resto de la mesa).
+
+
+### Privacidad y Reglas de Visibilidad de Mensajes
+1. **Fase de Mulligan y Regla de Londres:**
+   - La estructura de mano inicial de cada jugador (`mulliganState.players[playerId].cards`) se transmite de forma autoritativa y privada únicamente al socket del propio jugador.
+   - A los rivales se les ocultan las identidades de las cartas (reciben la cuenta `cardsCount`, el estado de decisión `'deciding' | 'kept'`, el número de mulligans realizados y la cantidad de cartas devueltas al fondo, pero jamás los identificadores o nombres de las cartas).
+   - En caso de reconexión durante la fase de mulligan (`RESUME`), el servidor retransmite el estado completo privado al cliente reconectado para restaurar la ventana modal `OpeningHandModal`.
+   - Se prohíbe y rechaza enérgicamente cualquier acción `MULLIGAN` suelta fuera de esta fase.
+2. **Revelación de cartas (`REVEAL_CARD` y `CARD_REVEALED`):**
+   - Cuando se revela "A toda la mesa" (`targetPlayerId: undefined`), el servidor difunde `CARD_REVEALED` a todos los clientes de la sala y registra en la bitácora pública `${playerName} reveló "${card.name}" a todos`.
+   - Cuando se revela "A un jugador específico" (`targetPlayerId: string`), el servidor filtra mediante `VisibilityFilter` y envía `CARD_REVEALED` única y exclusivamente al socket del jugador destinatario y al del emisor. Ningún otro cliente recibe el mensaje WebSocket ni la identidad de la carta.
+   - En la bitácora pública de la sala, el servidor registra únicamente `${playerName} reveló una carta a ${targetName}`, garantizando que ni el nombre, ni la imagen, ni el tipo de la carta sean filtrados a los rivales.
+3. **Mover a biblioteca (`MOVE_CARD` con `destinationIndex`):**
+   - Cuando una carta entra a la biblioteca (arriba en índice 0, abajo en `length` o en posición intermedia $N$), su identidad queda protegida bajo la regla de zona oculta: el servidor incrementa el conteo `libraryCount` para la sala, pero no expone el orden ni la identidad de las cartas de la biblioteca a los oponentes.
 
 ### Estilo visual
 - Tema oscuro; texto claro con sombra suave; cartas con borde fino y sombra para despegarlas del playmat.
