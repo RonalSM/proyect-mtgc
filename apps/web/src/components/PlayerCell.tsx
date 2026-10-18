@@ -13,10 +13,10 @@ import {
 } from 'lucide-react';
 import { HandFan } from './HandFan';
 import { CardDisplay } from './CardDisplay';
+import { CardContextMenu } from './CardContextMenu';
 import { Portal } from './Portal';
 import { useCardPreview } from '../context/CardPreviewContext';
 import { scryfallQueue } from '../services/scryfallQueue';
-import { getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
 
 const CARD_TYPE_FILTERS = [
   'Criaturas',
@@ -167,11 +167,10 @@ const ModalCardItem: React.FC<{
   zone: 'graveyard' | 'exile' | 'library' | 'command';
   onAction: (type: GameActionType, payload: unknown) => void;
   localPlayerId: string;
-  ownerPlayerId: string;
   roomState?: RoomState;
   allBattlefieldCards?: CardInstance[];
   onCloseModal: () => void;
-}> = ({ card, zone, onAction, localPlayerId, ownerPlayerId, roomState, allBattlefieldCards, onCloseModal }) => {
+}> = ({ card, zone, onAction, localPlayerId, roomState, allBattlefieldCards, onCloseModal }) => {
   const { showPreview, hidePreview } = useCardPreview();
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -179,45 +178,6 @@ const ModalCardItem: React.FC<{
     e.preventDefault();
     e.stopPropagation();
     setContextMenuPos({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleSendToHand = () => {
-    setContextMenuPos(null);
-    onAction('MOVE_CARD', {
-      cardInstanceId: card.instanceId,
-      fromZone: zone,
-      toZone: 'hand',
-      toPlayerId: localPlayerId,
-    });
-    onCloseModal();
-  };
-
-  const handleSendToField = () => {
-    setContextMenuPos(null);
-    let targetPos = { x: 0.5, y: 0.5 };
-    if (roomState) {
-      targetPos = getPlayerBattlefieldCascadePosition(localPlayerId, roomState, allBattlefieldCards);
-    }
-    onAction('MOVE_CARD', {
-      cardInstanceId: card.instanceId,
-      fromZone: zone,
-      toZone: 'battlefield',
-      toPlayerId: localPlayerId,
-      holderId: localPlayerId,
-      position: targetPos,
-    });
-    onCloseModal();
-  };
-
-  const handleSendToExile = () => {
-    setContextMenuPos(null);
-    onAction('MOVE_CARD', {
-      cardInstanceId: card.instanceId,
-      fromZone: 'graveyard',
-      toZone: 'exile',
-      toPlayerId: ownerPlayerId,
-    });
-    onCloseModal();
   };
 
   return (
@@ -239,44 +199,19 @@ const ModalCardItem: React.FC<{
       </div>
 
       {contextMenuPos && (
-        <Portal>
-          <div
-            className="fixed inset-0 z-[60]"
-            onClick={() => setContextMenuPos(null)}
-            onContextMenu={e => { e.preventDefault(); setContextMenuPos(null); }}
-          >
-            <div
-              style={{
-                top: `${contextMenuPos.y}px`,
-                left: `${contextMenuPos.x}px`,
-              }}
-              data-modal-context-menu="true"
-              onClick={e => e.stopPropagation()}
-              className="fixed bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-1 min-w-[150px] z-[70] backdrop-blur-md"
-            >
-              <button
-                onClick={handleSendToHand}
-                className="w-full text-left px-2.5 py-1 text-xs font-semibold text-slate-200 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-              >
-                Enviar a la mano
-              </button>
-              <button
-                onClick={handleSendToField}
-                className="w-full text-left px-2.5 py-1 text-xs font-semibold text-slate-200 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-              >
-                Enviar al campo
-              </button>
-              {zone === 'graveyard' && (
-                <button
-                  onClick={handleSendToExile}
-                  className="w-full text-left px-2.5 py-1 text-xs font-semibold text-purple-300 hover:text-purple-100 hover:bg-purple-950/80 rounded-lg transition-colors cursor-pointer"
-                >
-                  Enviar al exilio
-                </button>
-              )}
-            </div>
-          </div>
-        </Portal>
+        <CardContextMenu
+          card={card}
+          fromZone={zone}
+          position={contextMenuPos}
+          onClose={() => {
+            setContextMenuPos(null);
+            onCloseModal();
+          }}
+          roomState={roomState}
+          localPlayerId={localPlayerId}
+          allBattlefieldCards={allBattlefieldCards}
+          onAction={onAction}
+        />
       )}
     </div>
   );
@@ -1107,7 +1042,6 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     zone={activePileModal}
                     onAction={onAction}
                     localPlayerId={localPlayerId}
-                    ownerPlayerId={player.id}
                     roomState={roomState}
                     allBattlefieldCards={allBattlefieldCards}
                     onCloseModal={() => setActivePileModal(null)}

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import type { CardInstance, GameActionType, CardDefinition } from '@mtgc/shared';
+import type { CardInstance, GameActionType, CardDefinition, RoomState } from '@mtgc/shared';
 import { useDraggable } from '@dnd-kit/core';
-import { RotateCw, Eye, Plus, Copy, Shield } from 'lucide-react';
 import { CardDisplay } from './CardDisplay';
+import { CardContextMenu } from './CardContextMenu';
 import { useCardPreview } from '../context/CardPreviewContext';
 import type { RemoteDragState } from '../hooks/useGameSocket';
 
@@ -21,6 +21,7 @@ interface BattlefieldCanvasProps {
   isLocalPlayer?: boolean;
   playerId?: string;
   localPlayerId?: string;
+  roomState?: RoomState;
   viewFraming?: ViewFraming;
   onUnauthorizedAttempt?: (card: CardInstance) => void;
   onAction: (type: GameActionType, payload: unknown) => void;
@@ -34,6 +35,9 @@ interface BattlefieldCardItemProps {
   optimisticPosition?: { x: number; y: number; zIndex?: number };
   isRemoteDragging?: boolean;
   viewFraming?: ViewFraming;
+  roomState?: RoomState;
+  allBattlefieldCards?: CardInstance[];
+  onAction: (type: GameActionType, payload: unknown) => void;
   onUnauthorizedAttempt?: (card: CardInstance) => void;
   onCardClick: () => void;
   onTap: () => void;
@@ -55,6 +59,9 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   optimisticPosition,
   isRemoteDragging,
   viewFraming,
+  roomState,
+  allBattlefieldCards,
+  onAction,
   onUnauthorizedAttempt,
   onCardClick,
   onTap,
@@ -65,7 +72,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   showPreview,
   hidePreview,
 }) => {
-  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
   const longPressTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Punto 5: Comprobación de titularidad (propietario original o titular temporal)
@@ -79,33 +86,12 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     disabled: !canMove,
   });
 
-  // Punto 4: Cerrar menú contextual al hacer clic fuera o pulsar Escape (con captura para no propagar a la vista expandida)
-  React.useEffect(() => {
-    if (!isContextMenuOpen) return;
-    const handleClickOutside = () => setIsContextMenuOpen(false);
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        e.stopImmediatePropagation?.();
-        setIsContextMenuOpen(false);
-      }
-    };
-    window.addEventListener('click', handleClickOutside);
-    window.addEventListener('contextmenu', handleClickOutside);
-    window.addEventListener('keydown', handleKeyDown, true);
-    return () => {
-      window.removeEventListener('click', handleClickOutside);
-      window.removeEventListener('contextmenu', handleClickOutside);
-      window.removeEventListener('keydown', handleKeyDown, true);
-    };
-  }, [isContextMenuOpen]);
-
   // Clic derecho abre menú contextual si tiene permiso, sino muestra aviso de restricción
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (canMove) {
-      setIsContextMenuOpen(true);
+      setContextMenuPos({ x: e.clientX, y: e.clientY });
     } else {
       onUnauthorizedAttempt?.(card);
     }
@@ -129,7 +115,10 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       return;
     }
     longPressTimerRef.current = setTimeout(() => {
-      setIsContextMenuOpen(true);
+      setContextMenuPos({
+        x: typeof window !== 'undefined' ? window.innerWidth / 2 - 90 : 200,
+        y: typeof window !== 'undefined' ? window.innerHeight / 2 - 120 : 200,
+      });
     }, 500);
   };
 
@@ -243,72 +232,23 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
         )}
       </div>
 
-      {/* Punto 4: Las opciones (girar, contador, clonar, ver) NO aparecen con clic simple; solo con clic derecho o pulsación larga para quien tenga permisos */}
-      {canMove && isContextMenuOpen && (
-        <div
-          data-card-context-menu="true"
-          onClick={e => e.stopPropagation()}
-          className="absolute -top-9 left-1/2 -translate-x-1/2 flex items-center space-x-1 bg-slate-900/95 border border-slate-700 rounded-xl p-1 shadow-2xl z-50 text-[10px] backdrop-blur-md"
-        >
-          <button
-            onClick={() => {
-              onTap();
-              setIsContextMenuOpen(false);
-            }}
-            className="p-1 hover:bg-slate-800 rounded text-amber-300 flex items-center space-x-1 px-1.5 cursor-pointer"
-            title={card.isTapped ? 'Enderezar' : 'Girar'}
-          >
-            <RotateCw className="w-3 h-3" />
-            <span>{card.isTapped ? 'Enderezar' : 'Girar'}</span>
-          </button>
-          <button
-            onClick={() => {
-              onAddCounter('+1/+1');
-              setIsContextMenuOpen(false);
-            }}
-            className="p-1 hover:bg-slate-800 rounded text-emerald-300 flex items-center space-x-1 px-1.5 cursor-pointer"
-            title="Añadir contador +1/+1"
-          >
-            <Plus className="w-3 h-3" />
-            <span>+1/+1</span>
-          </button>
-          <button
-            onClick={() => {
-              onClone();
-              setIsContextMenuOpen(false);
-            }}
-            className="p-1 hover:bg-slate-800 rounded text-blue-300 flex items-center space-x-1 px-1.5 cursor-pointer"
-            title="Clonar token/permanente (REQ-9.4)"
-          >
-            <Copy className="w-3 h-3" />
-            <span>Clonar</span>
-          </button>
-          <button
-            onClick={() => {
-              onFlip();
-              setIsContextMenuOpen(false);
-            }}
-            className="p-1 hover:bg-slate-800 rounded text-slate-300 flex items-center space-x-1 px-1.5 cursor-pointer"
-            title="Boca abajo / Boca arriba"
-          >
-            <Eye className="w-3 h-3" />
-            <span>{card.isFaceDown ? 'Boca arriba' : 'Boca abajo'}</span>
-          </button>
-          {card.isCommander && onSendToCommand && (
-            <button
-              data-testid="context-to-command"
-              onClick={() => {
-                onSendToCommand();
-                setIsContextMenuOpen(false);
-              }}
-              className="p-1 hover:bg-slate-800 rounded text-amber-300 flex items-center space-x-1 px-1.5 cursor-pointer"
-              title="Devolver a la zona de comando"
-            >
-              <Shield className="w-3 h-3" />
-              <span>A Comando</span>
-            </button>
-          )}
-        </div>
+      {/* Menú contextual unificado con destinos (mano, cementerio, exilio, biblioteca) y revelar (Punto 7) */}
+      {canMove && contextMenuPos && (
+        <CardContextMenu
+          card={card}
+          fromZone="battlefield"
+          position={contextMenuPos}
+          onClose={() => setContextMenuPos(null)}
+          roomState={roomState}
+          localPlayerId={localPlayerId}
+          allBattlefieldCards={allBattlefieldCards}
+          onAction={onAction}
+          onTap={onTap}
+          onAddCounter={onAddCounter}
+          onClone={onClone}
+          onFlip={onFlip}
+          onSendToCommand={onSendToCommand}
+        />
       )}
     </div>
   );
@@ -319,6 +259,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   remoteDraggingCards,
   optimisticPositions,
   localPlayerId,
+  roomState,
   viewFraming,
   onUnauthorizedAttempt,
   onAction,
@@ -420,6 +361,9 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
             optimisticPosition={optimisticPositions?.[card.instanceId]}
             isRemoteDragging={isRemoteDragging}
             viewFraming={viewFraming}
+            roomState={roomState}
+            allBattlefieldCards={cards}
+            onAction={onAction}
             onUnauthorizedAttempt={onUnauthorizedAttempt}
             onCardClick={() => handleCardClick(card)}
             onTap={() => handleTap(card)}

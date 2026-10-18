@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { CardInstance, GameActionType, CardDefinition, RoomState } from '@mtgc/shared';
 import { useDraggable } from '@dnd-kit/core';
 import { CardDisplay } from './CardDisplay';
+import { CardContextMenu } from './CardContextMenu';
 import { Play, Trash2, Sparkles, Maximize2 } from 'lucide-react';
 import { useCardPreview } from '../context/CardPreviewContext';
 import { getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
@@ -27,6 +28,7 @@ interface HandCardItemProps {
   onPlay: (e: React.MouseEvent) => void;
   onDiscard: (e: React.MouseEvent) => void;
   onExile: (e: React.MouseEvent) => void;
+  onContextMenu: (e: React.MouseEvent) => void;
   showPreview: (
     card: CardDefinition,
     posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent
@@ -44,6 +46,7 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
   onPlay,
   onDiscard,
   onExile,
+  onContextMenu,
   showPreview,
   hidePreview,
 }) => {
@@ -70,6 +73,7 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
       data-card-name={card.definition.name}
       onClick={onSelect}
       onDoubleClick={onZoom}
+      onContextMenu={onContextMenu}
       onMouseEnter={(e) => !isDragging && showPreview(card.definition, e)}
       onMouseLeave={hidePreview}
       style={{
@@ -161,6 +165,7 @@ export const HandFan: React.FC<HandFanProps> = ({
 }) => {
   const { showPreview, hidePreview } = useCardPreview();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ card: CardInstance; pos: { x: number; y: number } } | null>(null);
 
   // Play card from hand to battlefield (Punto 2: al centro de la sección del propio jugador con cascada)
   const handlePlayToBattlefield = (card: CardInstance, e?: React.MouseEvent) => {
@@ -309,11 +314,29 @@ export const HandFan: React.FC<HandFanProps> = ({
             onPlay={e => handlePlayToBattlefield(card, e)}
             onDiscard={e => handleDiscardToGraveyard(card, e)}
             onExile={e => handleExile(card, e)}
+            onContextMenu={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              setContextMenu({ card, pos: { x: e.clientX, y: e.clientY } });
+            }}
             showPreview={showPreview}
             hidePreview={hidePreview}
           />
         ))}
       </div>
+
+      {contextMenu && (
+        <CardContextMenu
+          card={contextMenu.card}
+          fromZone="hand"
+          position={contextMenu.pos}
+          onClose={() => setContextMenu(null)}
+          roomState={roomState}
+          localPlayerId={localPlayerId}
+          allBattlefieldCards={allBattlefieldCards}
+          onAction={onAction}
+        />
+      )}
     </div>
   );
 };

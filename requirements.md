@@ -162,6 +162,20 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
        - Arrastrar una carta (desde el campo de batalla, mano o pilas) hacia la ranura droppable de la biblioteca la transfiere autoritativamente a la parte superior (arriba, índice 0 de `zones.library` mediante `unshift`), garantizando que sea la próxima carta que se roba al ejecutar una acción de robo (`DRAW_CARDS`).
        - La acción emite `MOVE_CARD` con `toZone: 'library'` y `destinationIndex: 0`, resuelto tanto en cliente como por defecto en el servidor ante la ausencia de índice explícito. Al entrar a la biblioteca, la posición en la mesa y el estado girado (`isTapped`) se limpian automáticamente.
 
+    7.23. **Menú contextual integral (Mano, Mesa y Pilas), submenú de biblioteca y revelación privada (Punto 7):**
+       - **Menú contextual:** Al hacer clic derecho (o pulsación prolongada) sobre una carta en la mano (`HandFan`), en el campo de batalla (`BattlefieldCanvas`) o dentro del modal inspector de pilas (`PlayerCell`), THE sistema SHALL desplegar un menú contextual unificado con los destinos:
+         - *Enviar a Cementerio:* Inserta la carta en la parte superior del cementerio (índice 0).
+         - *Enviar a Exilio:* Inserta la carta en la parte superior del exilio (índice 0).
+         - *Enviar a Mesa:* Mueve la carta al centro de la sección del propio jugador en la cuadrícula con desplazamiento en cascada (+0.015 en x, y), asignando `ownerId` inmutable y `holderId` del jugador local (Punto 2).
+         - *Enviar a Biblioteca:* Despliega un submenú con opciones de colocación:
+           - "Arriba": Inserta la carta en el índice 0 (próxima carta a ser robada).
+           - "Abajo": Inserta la carta en el fondo (`zones.library.length`).
+           - "Posición": Abre un campo numérico interactivo (1 a N, donde 1 es la cima) para insertar la carta con exactitud en el índice indicado.
+         - *Revelar:* Despliega un submenú con opciones de destino:
+           - "A toda la mesa": Emite `REVEAL_CARD` sin destinatario específico; el servidor difunde la identidad a todos los clientes y registra en la bitácora `X reveló "[Nombre]" a todos`.
+           - "A [Jugador X]": Emite `REVEAL_CARD` con `targetPlayerId`; el servidor envía la identidad exclusivamente al jugador objetivo y al emisor (`VisibilityFilter`). En la bitácora pública registra `X reveló una carta a Y` (sin exponer el nombre a los rivales).
+       - **Efecto de revelado:** La acción de revelar NO desplaza la carta de su zona. Los clientes que reciben el evento `CARD_REVEALED` muestran una ventana flotante temporal (`RevealedCardModal`) con la imagen y metadatos de la carta, cerrable mediante botón o tecla `Escape`.
+
 ### REQ-10 Sincronización y reconexión
 **Historia:** Como jugador, quiero volver a la partida si se cae mi conexión.
 1. THE sistema SHALL mantener el estado autoritativo de la mesa en el servidor.

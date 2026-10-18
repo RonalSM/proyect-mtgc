@@ -16,6 +16,7 @@ import {
   ConfirmUndoPayload,
   SelectDeckPayload,
   SetReadyPayload,
+  RevealCardPayload,
   toArtCropUrl,
 } from '@mtgc/shared';
 import { secureShuffle, secureRoll } from './csprng.js';
@@ -822,6 +823,57 @@ export class GameStateSession {
     });
 
     this.incrementVersion();
+  }
+
+  /**
+   * Revela una carta sin moverla a un jugador específico o a todos (Punto 7)
+   */
+  public revealCard(
+    playerId: string,
+    payload: RevealCardPayload,
+  ): { card: CardInstance; fromPlayerId: string; fromPlayerName: string; targetPlayerId?: string; targetPlayerName?: string } | undefined {
+    const fromPlayer = this.state.players[playerId];
+    const fromPlayerName = fromPlayer?.name || 'Jugador';
+
+    // Buscar en zonas del jugador emisor
+    const zones = this.state.playerZones[playerId];
+    let foundCard: CardInstance | undefined;
+    if (zones) {
+      if (payload.fromZone && zones[payload.fromZone]) {
+        foundCard = zones[payload.fromZone].find(c => c.instanceId === payload.cardInstanceId);
+      }
+      if (!foundCard) {
+        for (const zoneList of Object.values(zones)) {
+          foundCard = (zoneList as CardInstance[]).find((c: CardInstance) => c.instanceId === payload.cardInstanceId);
+          if (foundCard) break;
+        }
+      }
+    }
+    // Fallback: buscar en campo de batalla
+    if (!foundCard) {
+      const bf = this.findBattlefieldCard(payload.cardInstanceId);
+      if (bf) foundCard = bf.card;
+    }
+
+    if (!foundCard) return undefined;
+
+    let targetPlayerName: string | undefined;
+    if (payload.targetPlayerId && this.state.players[payload.targetPlayerId]) {
+      targetPlayerName = this.state.players[payload.targetPlayerId]?.name || 'Jugador';
+      this.addLog(playerId, `reveló una carta a ${targetPlayerName}`, false);
+    } else {
+      this.addLog(playerId, `reveló "${foundCard.definition.name}" a todos`, false);
+    }
+
+    this.incrementVersion();
+
+    return {
+      card: foundCard,
+      fromPlayerId: playerId,
+      fromPlayerName,
+      targetPlayerId: payload.targetPlayerId,
+      targetPlayerName,
+    };
   }
 
   /**

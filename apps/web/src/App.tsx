@@ -5,6 +5,7 @@ import { TableBoard } from './components/TableBoard';
 import { LobbyWaitingRoom } from './components/LobbyWaitingRoom';
 import { InitiativeOverlay } from './components/InitiativeOverlay';
 import { OpeningHandModal } from './components/OpeningHandModal';
+import { RevealedCardModal } from './components/RevealedCardModal';
 import { DeckImporter } from './components/DeckImporter';
 import { LegalModal } from './components/LegalModal';
 import { RefreshCw, Layers, Users } from 'lucide-react';
@@ -48,7 +49,7 @@ export default function App() {
   }, []);
 
   // Connect WebSocket when inside a room
-  const { status, roomState, sendAction, remoteDraggingCards } = useGameSocket({
+  const { status, roomState, sendAction, remoteDraggingCards, revealedCard, dismissRevealedCard } = useGameSocket({
     roomCode: roomCode || '',
     playerId,
     playerName,
@@ -129,6 +130,13 @@ export default function App() {
             roomState={roomState}
             localPlayerId={playerId}
             onAction={sendAction}
+          />
+        )}
+        {revealedCard && (
+          <RevealedCardModal
+            revealed={revealedCard}
+            localPlayerId={playerId}
+            onClose={dismissRevealedCard}
           />
         )}
         <LegalModal isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
@@ -246,6 +254,13 @@ export default function App() {
         </button>
       </footer>
 
+      {revealedCard && (
+        <RevealedCardModal
+          revealed={revealedCard}
+          localPlayerId={playerId}
+          onClose={dismissRevealedCard}
+        />
+      )}
       <LegalModal isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
     </div>
   );

@@ -378,6 +378,18 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
    - En el servidor (`game-state.ts`), cuando `payload.toZone === 'library'` y no se especifica `destinationIndex`, la carta se inserta al inicio del array (`zones.library.unshift(card)`), quedando en la parte superior (arriba, índice 0).
    - Esto garantiza autoritativamente que la carta soltada en la biblioteca sea la próxima carta extraída al invocar `drawCards` (que toma cartas desde el índice 0 con `splice(0, count)`). Su posición espacial en mesa y estado girado se resetean automáticamente.
 
+14. **Menú contextual en mano, mesa y pilas con submenús de biblioteca y revelación (Punto 7):**
+   - Menú contextual flotante (`CardContextMenu`) disponible al hacer clic derecho en la mano propia (`HandFan`), en cartas del campo de batalla (`BattlefieldCanvas`) o en cartas de cualquier modal inspector de pilas (`PlayerCell`).
+   - Opciones de envío a zonas:
+     - Cementerio (`graveyard`) y Exilio (`exile`): se insertan al tope (índice 0) de la pila correspondiente.
+     - Mesa (`battlefield`): calcula el centro de la división asignada al jugador (`getPlayerBattlefieldCascadePosition`), aplicando desplazamiento progresivo en cascada (+0.015 en x, y). La carta adquiere `ownerId` inmutable y `holderId` del jugador local.
+     - Biblioteca (`library`): submenú interactivo con tres acciones: "Arriba" (`destinationIndex: 0`), "Abajo" (`destinationIndex: library.length`), y "Posición" (con selector numérico $1 \dots N$, mapeado a `destinationIndex = pos - 1`).
+   - Revelación de cartas (`REVEAL_CARD` y `CARD_REVEALED`):
+     - No desplaza la carta de su zona.
+     - Submenú de revelación: "A toda la mesa" (difusión broadcast a todos los sockets) o "A [Jugador X]" (filtrado estricto por servidor enviando el mensaje únicamente al socket del destinatario y al emisor mediante `VisibilityFilter`).
+     - Los clientes destinatarios despliegan una modal efímera (`RevealedCardModal`) con la imagen y datos de la carta, cerrable por botón o tecla `Escape`.
+     - Bitácora (`logs`): revelar a todos genera `${fromPlayerName} reveló "${card.name}" a todos`; revelar privado genera `${fromPlayerName} reveló una carta a ${targetPlayerName}` (sin revelar el nombre de la carta al resto de la mesa).
+
 ### Estilo visual
 - Tema oscuro; texto claro con sombra suave; cartas con borde fino y sombra para despegarlas del playmat.
 - **Regla de rotación única de permanente (Punto 3):** La rotación de permanentes (Tap/Untap) se aplica exclusivamente en el contenedor externo `BattlefieldCardItem` (`transition-transform duration-150 origin-center rotate-90`). `CardDisplay` y las etiquetas internas `<img>` carecen de rotaciones propias (`transform: none`), eliminando el problema de rotación doble acumulada a 180° (invertida). Voltear cartas boca abajo o alternar cartas de doble cara conmuta el recurso visual sin aplicar rotaciones 3D conflictivas con el tap.

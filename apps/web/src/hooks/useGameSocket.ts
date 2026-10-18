@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { RoomState, GameActionType, RemoteCardDraggingPayload } from '@mtgc/shared';
+import type { RoomState, GameActionType, RemoteCardDraggingPayload, CardInstance } from '@mtgc/shared';
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting';
 export type RemoteDragState = RemoteCardDraggingPayload & {
@@ -26,6 +26,13 @@ export function useGameSocket({
   const [roomState, setRoomState] = useState<RoomState | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [remoteDraggingCards, setRemoteDraggingCards] = useState<Record<string, RemoteDragState>>({});
+  const [revealedCard, setRevealedCard] = useState<{
+    card: CardInstance;
+    fromPlayerId: string;
+    fromPlayerName: string;
+    targetPlayerId?: string;
+    targetPlayerName?: string;
+  } | null>(null);
 
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef<number>(0);
@@ -141,6 +148,8 @@ export function useGameSocket({
               });
               delete remoteDragTimeoutsRef.current[cardId];
             }, 1000);
+          } else if (data.type === 'CARD_REVEALED') {
+            setRevealedCard(data.payload);
           } else if (data.type === 'ACTION_REJECTED') {
             console.warn('[WS Rejected Action]:', data.error);
           } else if (data.type === 'ERROR') {
@@ -212,6 +221,8 @@ export function useGameSocket({
     roomState,
     errorMessage,
     remoteDraggingCards,
+    revealedCard,
+    dismissRevealedCard: () => setRevealedCard(null),
     sendAction,
     reconnect: connect,
   };

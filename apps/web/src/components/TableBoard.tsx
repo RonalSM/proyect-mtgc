@@ -588,6 +588,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           optimisticPositions={optimisticPositions}
           viewFraming={viewFraming}
           localPlayerId={localPlayerId}
+          roomState={roomState}
           onUnauthorizedAttempt={() =>
             showPermissionWarning(
               'No puedes mover una carta ajena sin ser su titular temporal.',

@@ -1,5 +1,5 @@
 import { ZoneType } from './zone.js';
-import { CardDefinition } from './card.js';
+import { CardDefinition, CardInstance } from './card.js';
 
 export type GameActionType =
   // Life & Counters
@@ -43,6 +43,8 @@ export type GameActionType =
   | 'ROLL_D20_INITIATIVE'
   // Customization (REQ-22)
   | 'SET_PLAYMAT'
+  // Reveal card (Punto 7)
+  | 'REVEAL_CARD'
   // Live dragging (ephemeral, REQ-9)
   | 'CARD_DRAG_MOVE';
 
@@ -213,4 +215,17 @@ export interface MulliganKeepPayload {
 
 export interface MulliganForceDecisionPayload {
   targetPlayerId: string;
+}
+
+export interface RevealCardPayload {
+  cardInstanceId: string;
+  fromZone?: ZoneType;
+  targetPlayerId?: string;
+}
+
+export interface CardRevealedPayload {
+  card: CardInstance;
+  fromPlayerId: string;
+  fromPlayerName: string;
+  targetPlayerId?: string;
 }

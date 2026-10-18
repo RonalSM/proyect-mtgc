@@ -158,6 +158,12 @@ export const MulliganForceDecisionSchema = z.object({
   targetPlayerId: z.string(),
 });
 
+export const RevealCardSchema = z.object({
+  cardInstanceId: z.string().min(1),
+  fromZone: ZoneTypeSchema.optional(),
+  targetPlayerId: z.string().optional(),
+});
+
 export const ActionEnvelopeSchema = z.object({
   type: z.enum([
     'ADJUST_LIFE',
@@ -192,6 +198,7 @@ export const ActionEnvelopeSchema = z.object({
     'START_GAME',
     'ROLL_D20_INITIATIVE',
     'SET_PLAYMAT',
+    'REVEAL_CARD',
     'CARD_DRAG_MOVE',
   ]),
   payload: z.unknown(),

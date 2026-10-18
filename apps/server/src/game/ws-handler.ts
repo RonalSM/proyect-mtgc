@@ -26,6 +26,7 @@ import {
   CardDragMoveSchema,
   MulliganKeepSchema,
   MulliganForceDecisionSchema,
+  RevealCardSchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -303,6 +304,40 @@ export class WebSocketHandler {
         case 'MOVE_CARD': {
           const valid = MoveCardSchema.parse(payload);
           session.moveCard(client.playerId, valid as any);
+          break;
+        }
+
+        case 'REVEAL_CARD': {
+          const valid = RevealCardSchema.parse(payload);
+          const result = session.revealCard(client.playerId, valid);
+          if (result) {
+            const revealedMsg = JSON.stringify({
+              type: 'CARD_REVEALED',
+              payload: {
+                card: result.card,
+                fromPlayerId: result.fromPlayerId,
+                fromPlayerName: result.fromPlayerName,
+                targetPlayerId: result.targetPlayerId,
+                targetPlayerName: result.targetPlayerName,
+              },
+            });
+
+            const clients = this.roomClients.get(client.roomCode);
+            if (clients) {
+              for (const c of clients) {
+                if (c.socket.readyState !== WebSocket.OPEN) continue;
+                if (result.targetPlayerId) {
+                  if (c.playerId === result.targetPlayerId || c.playerId === result.fromPlayerId) {
+                    c.socket.send(revealedMsg);
+                  }
+                } else {
+                  c.socket.send(revealedMsg);
+                }
+              }
+            }
+
+            this.broadcastRoomState(client.roomCode);
+          }
           break;
         }
 
