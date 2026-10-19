@@ -618,6 +618,18 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
        - *Pruebas de fidelidad cinemática de puntero:* Trayectorias fluidas sobre el espacio de juego libre (dentro de los límites de pantalla y sin colisión con el dock), verificando que en cada movimiento del ratón se mantenga $\Delta \le 1.0\text{ px}$ entre el punto agarrado y el cursor.
        - *Pruebas de contención perimetral (bordes y dock):* Trayectorias específicas hacia los 4 bordes del viewport y hacia el dock inferior, comprobando que las dimensiones orientadas efectivas de la carta detengan el movimiento exactamente en el perímetro sin desbordar ni saltar.
   - **Confirmación de integridad:** Se confirma de forma concluyente que no se ocultó ningún defecto ni caso de uso real; ambas mecánicas (seguimiento continuo sin desalineación y contención estricta en bordes) están validadas y certificadas por baterías de pruebas independientes.
+- **Consolidación de Métricas Empíricas de la Convención de Posición en el Centro (Punto 7 de Corrección de Posición):**
+  - **Tabla comparativa de métricas antes y después de la corrección:**
+
+| Momento / Magnitud Evaluada | Antes de la Corrección (Bug) | Después de la Corrección (Centro Unificado) | Criterio de Aceptación | Estado |
+|---|---|---|---|---|
+| $\Delta\text{Centro}$ al soltar carta girada (Host local) | $dx = -19.00\text{ px}, dy = +19.00\text{ px}$ | $dx = 0.00\text{ px}, dy = 0.00\text{ px}$ | $\le 1.0\text{ px}$ | Cumplido al 100% |
+| Salto vertical en frames 1 a 4 del fantasma remoto (Guest B) | $dy = +27.00\text{ px}$ | $dy = 0.00\text{ px}$ | $\le 1.0\text{ px}$ | Cumplido al 100% |
+| $\Delta\text{Centro}$ fantasma frame 1 vs carta original (Guest B) | $+27.00\text{ px}$ | $0.00\text{ px}$ | $\le 1.0\text{ px}$ | Cumplido al 100% |
+| $\Delta\text{Dimensiones}$ fantasma vs carta original (Guest B) | Inversión $96 \times 134 \to 134 \times 96$ con desfase | $0.00\text{ px}$ (gemelo idéntico) | $0.00\text{ px}$ | Cumplido al 100% |
+| Salto entre frames consecutivos en 500 ms post-drop | Hasta $19.00\text{ px}$ al soltar | $0.00\text{ px}$ en todos los frames | $\le 1.0\text{ px}$ | Cumplido al 100% |
+| Invarianza ante respuesta autoritativa del servidor | Salto al reemplazar optimista | $0.00\text{ px}$ ($\Delta < 0.001$ norm) | $\le 1.0\text{ px}$ | Cumplido al 100% |
+| Límite al viewport de carta apaisada | Se cortaban $19\text{ px}$ en bordes | Acotamiento con ancho y alto orientados | Cero desborde | Cumplido al 100% |
 
 ### Rutas
 `/table/:code/lobby` y `/table/:code/play`. El cliente redirige según `table.status`.

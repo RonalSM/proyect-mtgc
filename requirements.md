@@ -397,6 +397,10 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 23. **Garantía y delimitación de pruebas de puntero y límites de viewport (Punto 6 de Corrección de Posición):**
     23.1. THE pruebas automatizadas de arrastre sobre cartas en abanico (`HandFan`) SHALL direccionar los eventos de puntero hacia áreas descubiertas de la carta visible para evitar colisiones con cartas solapadas contiguas del abanico inferior.
     23.2. THE verificación de seguimiento de puntero puro (`pointer - cardCenter == initialOffset`) SHALL ejecutarse en trayectorias interiores al viewport y sobre la mesa de juego para evaluar la fidelidad cinemática de arrastre sin la intervención restrictiva deliberada del acotamiento (`clamping`) a bordes de pantalla y dock, la cual se certifica de forma aislada y explícita en sus propios casos de prueba de contención perimetral, confirmando que ninguna casuística real ha sido ocultada.
+24. **Consolidación de métricas empíricas de posición y dimensiones orientadas (Punto 7 de Corrección de Posición):**
+    24.1. THE sistema SHALL certificar y preservar en la documentación técnica las métricas empíricas de invarianza de centro:
+         - Discrepancia del defecto original: $\Delta\text{Centro}: dx = -19.00\text{ px}, dy = +19.00\text{ px}$ al soltar carta girada (idéntica a $(h - w) / 2 = 19.00\text{ px}$); salto en frames 1 a 4 del fantasma remoto de $dy = +27.00\text{ px}$.
+         - Resultados post-corrección: $\Delta\text{Centro}$ fantasma frame 1 en B = $0.00\text{ px}$ ($\le 1.0\text{ px}$); $\Delta\text{Dimensiones}$ fantasma = $0.00\text{ px}$; $\Delta\text{Centro}$ al soltar overlay vs mesa en A = $0.00\text{ px}$ ($\le 1.0\text{ px}$); máximo salto en frames consecutivos durante 500 ms post-drop = $0.00\text{ px}$ ($\le 1.0\text{ px}$); verificado al 100% en las 20 pruebas de Playwright sobre 2P y 4P a 1080p y 768p.
 
 ## Requisitos no funcionales
 
