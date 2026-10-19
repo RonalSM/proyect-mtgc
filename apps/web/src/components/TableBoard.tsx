@@ -145,28 +145,37 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     return [{ id: 'tabletop' } as any];
   };
 
-  // Modificador en vivo para restringir el arrastre al viewport y evitar desbordamientos y saltos (Punto 3)
-  const restrictToViewportModifier = ({
+  // Ref con la única fuente de verdad del desplazamiento entre el puntero y la caja visual (Punto 2)
+  const dragOffsetRef = useRef<{
+    grabOffsetFromCenter: { x: number; y: number };
+    grabOffsetFromTopLeft: { x: number; y: number };
+    initialBox: { left: number; top: number; width: number; height: number };
+  } | null>(null);
+
+  // Modificador con única fuente de verdad: preserva exactamente el desplazamiento entre el puntero y la caja visual (Punto 2)
+  const snapToVisualBoxModifier = ({
     transform,
     activeNodeRect,
   }: {
     transform: { x: number; y: number; scaleX: number; scaleY: number };
     activeNodeRect: { top: number; left: number; width: number; height: number; bottom: number; right: number } | null;
   }) => {
-    if (!activeNodeRect) return transform;
+    if (!dragOffsetRef.current || !activeNodeRect) return transform;
+
+    const { initialBox } = dragOffsetRef.current;
     const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
     const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
 
-    const currentLeft = activeNodeRect.left + transform.x;
-    const currentTop = activeNodeRect.top + transform.y;
+    const targetLeft = initialBox.left + transform.x;
+    const targetTop = initialBox.top + transform.y;
 
-    const clampedLeft = Math.max(0, Math.min(winW - activeNodeRect.width, currentLeft));
-    const clampedTop = Math.max(0, Math.min(winH - activeNodeRect.height, currentTop));
+    const clampedLeft = Math.max(0, Math.min(winW - initialBox.width, targetLeft));
+    const clampedTop = Math.max(0, Math.min(winH - initialBox.height, targetTop));
 
     return {
       ...transform,
-      x: transform.x + (clampedLeft - currentLeft),
-      y: transform.y + (clampedTop - currentTop),
+      x: clampedLeft - activeNodeRect.left,
+      y: clampedTop - activeNodeRect.top,
     };
   };
 
@@ -182,12 +191,36 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     if (data?.card) {
       setActiveDragItem({ card: data.card, fromZone: data.fromZone });
 
-      const initial = event.active.rect.current?.initial;
       const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
       const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
       const isTapped = !!data.card.isTapped;
       const overlayWidth = isTapped ? cardPixelHeight : cardPixelWidth;
       const overlayHeight = isTapped ? cardPixelWidth : cardPixelHeight;
+
+      // Medir getBoundingClientRect() de la caja visual real (ya girada si está girada)
+      const domEl =
+        typeof document !== 'undefined'
+          ? (document.querySelector(`[data-card-instance-id="${event.active.id}"]`) as HTMLElement | null)
+          : null;
+      const rect = domEl?.getBoundingClientRect();
+
+      const activator = event.activatorEvent as MouseEvent | PointerEvent;
+      const p0x = activator?.clientX ?? winW / 2;
+      const p0y = activator?.clientY ?? winH / 2;
+
+      const boxLeft = rect ? rect.left : p0x - overlayWidth / 2;
+      const boxTop = rect ? rect.top : p0y - overlayHeight / 2;
+      const boxWidth = rect ? rect.width : overlayWidth;
+      const boxHeight = rect ? rect.height : overlayHeight;
+
+      const boxCenterX = boxLeft + boxWidth / 2;
+      const boxCenterY = boxTop + boxHeight / 2;
+
+      dragOffsetRef.current = {
+        grabOffsetFromCenter: { x: p0x - boxCenterX, y: p0y - boxCenterY },
+        grabOffsetFromTopLeft: { x: p0x - boxLeft, y: p0y - boxTop },
+        initialBox: { left: boxLeft, top: boxTop, width: boxWidth, height: boxHeight },
+      };
 
       let normX = 0.5;
       let normY = 0.5;
@@ -197,20 +230,8 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         normX = data.card.position.x;
         normY = data.card.position.y;
       } else {
-        const domEl =
-          typeof document !== 'undefined'
-            ? (document.querySelector(`[data-card-instance-id="${event.active.id}"]`) as HTMLElement | null)
-            : null;
-        const rect = initial || domEl?.getBoundingClientRect();
-        let clampedX = winW * 0.5;
-        let clampedY = winH * 0.5;
-        if (rect) {
-          clampedX = Math.max(0, Math.min(winW - overlayWidth, rect.left));
-          clampedY = Math.max(0, Math.min(winH - overlayHeight, rect.top));
-        } else if (event.activatorEvent instanceof MouseEvent || event.activatorEvent instanceof PointerEvent) {
-          clampedX = Math.max(0, Math.min(winW - overlayWidth, event.activatorEvent.clientX - overlayWidth / 2));
-          clampedY = Math.max(0, Math.min(winH - overlayHeight, event.activatorEvent.clientY - overlayHeight / 2));
-        }
+        const clampedX = Math.max(0, Math.min(winW - overlayWidth, boxLeft));
+        const clampedY = Math.max(0, Math.min(winH - overlayHeight, boxTop));
         const uScreen = clampedX / winW;
         const vScreen = clampedY / winH;
         normX = viewFraming?.isExpanded
@@ -239,34 +260,28 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     }
     lastDragMoveTimeRef.current = now;
 
-    const translated = event.active.rect.current?.translated;
-    const initial = event.active.rect.current?.initial;
-
     const data = event.active.data.current as {
       card?: CardInstance;
       fromZone?: 'hand' | 'battlefield' | 'command' | 'library' | 'graveyard' | 'exile';
     } | undefined;
 
     const isTapped = !!(data?.card?.isTapped || activeDragItem?.card?.isTapped);
-    const overlayWidth = isTapped ? cardPixelHeight : (translated?.width || initial?.width || cardPixelWidth);
-    const overlayHeight = isTapped ? cardPixelWidth : (translated?.height || initial?.height || cardPixelHeight);
+    const overlayWidth = isTapped ? cardPixelHeight : cardPixelWidth;
+    const overlayHeight = isTapped ? cardPixelWidth : cardPixelHeight;
+
+    const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+    const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
 
     let overlayLeft = 0;
     let overlayTop = 0;
 
-    if (translated) {
-      overlayLeft = translated.left;
-      overlayTop = translated.top;
-    } else if (initial) {
-      overlayLeft = initial.left + (event.delta?.x ?? 0);
-      overlayTop = initial.top + (event.delta?.y ?? 0);
-    } else if (event.activatorEvent instanceof MouseEvent || event.activatorEvent instanceof PointerEvent) {
-      overlayLeft = event.activatorEvent.clientX - overlayWidth / 2 + (event.delta?.x ?? 0);
-      overlayTop = event.activatorEvent.clientY - overlayHeight / 2 + (event.delta?.y ?? 0);
+    if (dragOffsetRef.current) {
+      overlayLeft = dragOffsetRef.current.initialBox.left + (event.delta?.x ?? 0);
+      overlayTop = dragOffsetRef.current.initialBox.top + (event.delta?.y ?? 0);
+    } else if (event.active.rect.current?.translated) {
+      overlayLeft = event.active.rect.current.translated.left;
+      overlayTop = event.active.rect.current.translated.top;
     }
-
-    const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
-    const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
 
     const clampedX = Math.max(0, Math.min(winW - overlayWidth, overlayLeft));
     const clampedY = Math.max(0, Math.min(winH - overlayHeight, overlayTop));
@@ -335,7 +350,10 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     let overlayLeft = 0;
     let overlayTop = 0;
 
-    if (translated) {
+    if (dragOffsetRef.current) {
+      overlayLeft = dragOffsetRef.current.initialBox.left + (event.delta?.x ?? 0);
+      overlayTop = dragOffsetRef.current.initialBox.top + (event.delta?.y ?? 0);
+    } else if (translated) {
       overlayLeft = translated.left;
       overlayTop = translated.top;
     } else if (initial) {
@@ -345,6 +363,8 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       overlayLeft = event.activatorEvent.clientX - overlayWidth / 2 + (event.delta?.x ?? 0);
       overlayTop = event.activatorEvent.clientY - overlayHeight / 2 + (event.delta?.y ?? 0);
     }
+
+    dragOffsetRef.current = null;
 
     const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
     const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
@@ -563,7 +583,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   return (
     <DndContext
       sensors={sensors}
-      modifiers={[restrictToViewportModifier]}
+      modifiers={[snapToVisualBoxModifier]}
       collisionDetection={customCollisionDetection}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
@@ -618,63 +638,37 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           </div>
         )}
 
-        {/* Drag Overlay visual en portal a document.body con medidas exactas en px, conservando giro apaisado para cartas giradas (Punto 2) */}
+        {/* Drag Overlay visual en portal a document.body con estructura idéntica de slot y rotador (Punto 2) */}
         <Portal>
-          <DragOverlay dropAnimation={null}>
+          <DragOverlay modifiers={[snapToVisualBoxModifier]} dropAnimation={null}>
             {activeDragItem ? (
               <div
                 data-drag-overlay="true"
-                style={
-                  activeDragItem.card.isTapped
-                    ? {
-                        width: `${cardPixelHeight}px`,
-                        height: `${cardPixelWidth}px`,
-                        position: 'relative',
-                        transition: 'none',
-                      }
-                    : {
-                        width: `${cardPixelWidth}px`,
-                        height: `${cardPixelHeight}px`,
-                        transition: 'none',
-                      }
-                }
-                className="pointer-events-none select-none z-[9999]"
+                className="card-slot-container flex items-center justify-center pointer-events-none select-none z-[9999]"
+                style={{
+                  width: activeDragItem.card.isTapped ? `${cardPixelHeight}px` : `${cardPixelWidth}px`,
+                  height: activeDragItem.card.isTapped ? `${cardPixelWidth}px` : `${cardPixelHeight}px`,
+                  transition: 'none',
+                }}
               >
-                {activeDragItem.card.isTapped ? (
-                  <div
-                    style={{
-                      width: `${cardPixelWidth}px`,
-                      height: `${cardPixelHeight}px`,
-                      position: 'absolute',
-                      left: `${(cardPixelHeight - cardPixelWidth) / 2}px`,
-                      top: `${(cardPixelWidth - cardPixelHeight) / 2}px`,
-                      transition: 'none',
-                    }}
-                    className="rounded-lg overflow-hidden border border-slate-700/80 shadow-md origin-center rotate-90"
-                  >
-                    <CardDisplay
-                      card={activeDragItem.card.definition}
-                      isFaceDown={activeDragItem.card.isFaceDown}
-                      allowFaceToggle={false}
-                      isTapped={true}
-                    />
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      width: `${cardPixelWidth}px`,
-                      height: `${cardPixelHeight}px`,
-                      transition: 'none',
-                    }}
-                    className="rounded-lg overflow-hidden border border-slate-700/80 shadow-md"
-                  >
-                    <CardDisplay
-                      card={activeDragItem.card.definition}
-                      isFaceDown={activeDragItem.card.isFaceDown}
-                      allowFaceToggle={false}
-                    />
-                  </div>
-                )}
+                <div
+                  data-card-rotator="true"
+                  className="card-rotator rounded-md overflow-hidden border border-amber-400 shadow-2xl relative bg-slate-900 flex-shrink-0"
+                  style={{
+                    width: `${cardPixelWidth}px`,
+                    height: `${cardPixelHeight}px`,
+                    transform: activeDragItem.card.isTapped ? 'rotate(90deg)' : 'rotate(0deg)',
+                    transformOrigin: 'center center',
+                    transition: 'none',
+                  }}
+                >
+                  <CardDisplay
+                    card={activeDragItem.card.definition}
+                    isFaceDown={activeDragItem.card.isFaceDown}
+                    allowFaceToggle={false}
+                    isTapped={activeDragItem.card.isTapped}
+                  />
+                </div>
               </div>
             ) : null}
           </DragOverlay>

@@ -79,11 +79,11 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
       onMouseLeave={hidePreview}
       style={{
         zIndex: isSelected ? 60 : index + 5,
-        width: isDragging ? 0 : 'var(--card-w)',
+        width: 'var(--card-w)',
         height: 'var(--card-h)',
-        marginLeft: isDragging ? 0 : (index === 0 ? 0 : `calc(var(--card-w) * -${overlapRatio.toFixed(2)})`),
+        marginLeft: index === 0 ? 0 : `calc(var(--card-w) * -${overlapRatio.toFixed(2)})`,
         opacity: isDragging ? 0 : 1,
-        transition: 'width 250ms cubic-bezier(0.4, 0, 0.2, 1), margin-left 250ms cubic-bezier(0.4, 0, 0.2, 1), opacity 150ms ease-out, transform 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'opacity 150ms ease-out, transform 200ms cubic-bezier(0.4, 0, 0.2, 1)',
         pointerEvents: isDragging ? 'none' : 'auto',
       }}
       className={`group relative cursor-grab active:cursor-grabbing origin-bottom flex-shrink-0 pointer-events-auto overflow-visible ${

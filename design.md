@@ -456,6 +456,12 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
         - DPR 2: Enderezada = 3376.38, Girada = 3547.01, Ratio = 105.05% (>= 90% requerido cumplido).
         - Capturas ampliadas al 200% archivadas: `sharpness-untapped-200.png` y `sharpness-tapped-200.png`.
     - **Análisis de posición por centro en el modelo:** Al guardar o anclar la posición de la carta por su centro, las rotaciones no alteran las coordenadas de la carta, eliminando cualquier desfase entre clientes locales y remotos.
+    - **Fuente de verdad única para el arrastre y DragOverlay idéntico (Corrección Punto 2):**
+      - *Medición precisa de la caja visual:* En `handleDragStart`, se inspecciona el nodo del DOM mediante `getBoundingClientRect()` de la carta (considerando si está rotada 90° o no), calculando el vector de desplazamiento entre las coordenadas del evento puntero (`p0x, p0y`) y el centro de la caja (`grabOffsetFromCenter`), así como con su esquina superior izquierda (`grabOffsetFromTopLeft`).
+      - *Estructura gemela de slot y rotador:* El `DragOverlay` renderiza exactamente la misma arquitectura que `BattlefieldCanvas`: un contenedor `.card-slot-container` con dimensiones intercambiadas (`cardPixelHeight` × `cardPixelWidth` si está girada) y un `.card-rotator` centrado con `rotate(90deg)` o `rotate(0deg)`.
+      - *Modificador `snapToVisualBoxModifier`:* Neutraliza las discrepancias internas de `@dnd-kit` producidas por el centrado CSS (`translate(-50%, -50%)`), garantizando que la posición del overlay coincida exactamente con `initialBox.left + transform.x` y `initialBox.top + transform.y` acotada al viewport, eliminando saltos o desalineaciones visuales al superar los 8 px de activación.
+      - *Estabilidad dimensional de la mano:* En `HandFan.tsx`, las cartas arrastradas conservan su anchura de slot (`var(--card-w)`) aplicando `opacity: 0` en lugar de colapsar la anchura a 0, evitando saltos del abanico o alteraciones de rectángulos durante el arrastre.
+      - *Coordenadas de mesa desde el overlay:* Al soltar (`handleDragEnd`), las coordenadas de mesa se derivan estrictamente de la caja visual delimitada del overlay (`centerScreenX = clampedX + overlayWidth / 2`, `centerScreenY = clampedY + overlayHeight / 2`), asegurando continuidad perfecta entre la experiencia visual y el estado del servidor.
 
 ### Privacidad y Reglas de Visibilidad de Mensajes
 1. **Fase de Mulligan y Regla de Londres:**
