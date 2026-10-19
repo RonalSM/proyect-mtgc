@@ -196,6 +196,13 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
         - **Contenido del panel:** Al activarse, THE sistema SHALL desplegar el modal `CardDetailsModal` (`data-testid="card-details-modal"`) con imagen de alta definición (large o normal), nombre, coste de maná con insignias MTG, línea de tipo, texto Oracle en inglés con símbolos formateados, fuerza/resistencia o lealtad, identidad de color, edición/set, rareza, número de coleccionista, atribución al artista, aviso de copyright oficial ("™ & © Wizards of the Coast"), indicador de legalidad en Commander y sección de dictámenes oficiales (rulings) con fecha y fuente, o "Sin dictámenes" si no registra entradas.
         - **Cartas de doble cara (DFC):** Selector interactivo (`card-details-face-switcher`) que conmuta entre cara frontal y posterior actualizando imagen, estadísticas y texto Oracle.
         - **Cierre:** Cierra mediante clic en backdrop, botón de aspas o tecla `Escape`.
+    7.28. **Sincronización local de dictámenes oficiales (Rulings) y privacidad de consultas (Punto 5 de Correcciones del Cliente):**
+        - **Origen 100% local:** THE sistema SHALL proveer la totalidad de datos para "Ver carta" exclusivamente desde la base de datos local (PostgreSQL con Prisma y fallback en memoria). Cero llamadas a APIs externas (Scryfall o Gatherer) en tiempo real al interactuar con cartas en mesa o mano.
+        - **Tabla y modelo de Rulings:** Modelo relacional `Ruling` indexado por `oracleId`, con campos de fecha de publicación (`publishedAt`), fuente oficial (`source`), y texto del dictamen (`comment`).
+        - **Integración con sincronización nocturna:** Adición de la descarga del bulk `rulings` a la tarea cron nocturna automatizada (`BulkSyncService`), junto a Oracle Cards.
+        - **Comprobación de fecha para evitar descargas redundantes:** Verificación del campo `updated_at` contra la última sincronización (`lastRulingsUpdatedAt`); si no hay cambios, se omite la descarga retornando `skipped: true`.
+        - **Cabeceras obligatorias:** Uso estricto de cabeceras `User-Agent` identificado y `Accept: application/json` en todas las consultas al catálogo bulk de Scryfall.
+        - **Cartas sin dictámenes:** Si una carta no registra dictámenes en la base de datos local, la interfaz presenta el estado visual accesible "Sin dictámenes".
 
 
 ### REQ-10 Sincronización y reconexión

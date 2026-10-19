@@ -16,10 +16,20 @@ export class BulkSyncService {
   private lastSyncTime: Date | null = null;
   private cronTimer: NodeJS.Timeout | null = null;
   private isNightlyCronActive = false;
+  private lastRulingsUpdatedAt: string | null = null;
+  private lastRulingsSyncTime: Date | null = null;
   private rulingsByOracleId: Map<
     string,
     Array<{ publishedAt: string; source: string; comment: string }>
   > = new Map();
+
+  public getLastRulingsUpdatedAt(): string | null {
+    return this.lastRulingsUpdatedAt;
+  }
+
+  public setLastRulingsUpdatedAt(val: string | null): void {
+    this.lastRulingsUpdatedAt = val;
+  }
 
   public setRulingsForOracleId(
     oracleId: string,
@@ -194,8 +204,9 @@ export class BulkSyncService {
 
       this.cronTimer = setTimeout(async () => {
         try {
-          console.log('🌙 [BulkSync Cron] Ejecutando sincronización nocturna de Scryfall...');
+          console.log('🌙 [BulkSync Cron] Ejecutando sincronización nocturna de Scryfall (Cartas y Dictámenes)...');
           await this.syncOracleCards();
+          await this.syncRulings();
         } catch (err: any) {
           console.error('❌ [BulkSync Cron] Error en sincronización nocturna:', err?.message || err);
         } finally {
@@ -207,6 +218,108 @@ export class BulkSyncService {
     };
 
     scheduleNext();
+  }
+
+  /**
+   * Sincronización oficial del archivo bulk de dictámenes (Rulings) de Scryfall (Punto 5 / REQ-7.28)
+   * Compara fecha updated_at para evitar descargas innecesarias y almacena en base de datos local / memoria.
+   */
+  public async syncRulings(
+    limit?: number,
+  ): Promise<{ syncedCount: number; durationMs: number; skipped?: boolean; reason?: string }> {
+    const startTime = Date.now();
+    let syncedCount = 0;
+
+    console.log('🔄 [BulkSync] Consultando catálogo de bulk data para dictámenes (rulings)...');
+    const userAgent =
+      process.env.SCRYFALL_USER_AGENT || 'MTGCommanderVirtualTable/1.0.0 (admin@mtgc.local)';
+
+    const response = await fetch('https://api.scryfall.com/bulk-data', {
+      headers: {
+        'User-Agent': userAgent,
+        Accept: 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error al consultar Scryfall bulk-data: ${response.statusText}`);
+    }
+
+    const bulkMeta = (await response.json()) as BulkDataResponse;
+    const rulingsDataInfo = bulkMeta.data.find(item => item.type === 'rulings');
+
+    if (!rulingsDataInfo?.download_uri) {
+      throw new Error('No se encontró el archivo bulk "rulings" en Scryfall.');
+    }
+
+    // Comprobación de fecha: si no ha cambiado desde la última sincronización, omitir descarga
+    if (this.lastRulingsUpdatedAt && this.lastRulingsUpdatedAt === rulingsDataInfo.updated_at) {
+      console.log(
+        `⏭️ [BulkSync] El archivo bulk "rulings" no ha cambiado (${this.lastRulingsUpdatedAt}). Omitiendo descarga innecesaria.`,
+      );
+      return {
+        syncedCount: 0,
+        durationMs: Date.now() - startTime,
+        skipped: true,
+        reason: 'not_modified',
+      };
+    }
+
+    console.log(`⬇️ [BulkSync] Descargando Rulings desde: ${rulingsDataInfo.download_uri}`);
+    const rulingsResponse = await fetch(rulingsDataInfo.download_uri, {
+      headers: {
+        'User-Agent': userAgent,
+        Accept: 'application/json',
+      },
+    });
+
+    if (!rulingsResponse.ok) {
+      throw new Error(`Error al descargar archivo bulk rulings: ${rulingsResponse.statusText}`);
+    }
+
+    const rawRulings = (await rulingsResponse.json()) as any[];
+    const totalToProcess = limit ? Math.min(rawRulings.length, limit) : rawRulings.length;
+    console.log(`📦 [BulkSync] Procesando ${totalToProcess} dictámenes oficiales de Scryfall...`);
+
+    for (let i = 0; i < totalToProcess; i++) {
+      const r = rawRulings[i];
+      if (!r.oracle_id || !r.comment) continue;
+
+      const rulingItem = {
+        publishedAt: r.published_at || new Date().toISOString().slice(0, 10),
+        source: r.source || 'wotc',
+        comment: r.comment,
+      };
+
+      // Inserción en memoria local
+      const existing = this.rulingsByOracleId.get(r.oracle_id) || [];
+      existing.push(rulingItem);
+      this.rulingsByOracleId.set(r.oracle_id, existing);
+
+      // Inserción en Prisma PostgreSQL si está activo
+      try {
+        await (prisma as any).ruling?.create({
+          data: {
+            oracleId: r.oracle_id,
+            source: rulingItem.source,
+            publishedAt: new Date(rulingItem.publishedAt),
+            comment: rulingItem.comment,
+          },
+        });
+      } catch {
+        // Fallback tolerante en memoria
+      }
+      syncedCount++;
+    }
+
+    this.lastRulingsUpdatedAt = rulingsDataInfo.updated_at;
+    this.lastRulingsSyncTime = new Date();
+    const durationMs = Date.now() - startTime;
+    console.log(
+      `✅ [BulkSync] Sincronización de dictámenes completada: ${syncedCount} dictámenes en ${durationMs}ms`,
+    );
+
+    return { syncedCount, durationMs, skipped: false };
   }
 
   /**
@@ -229,6 +342,8 @@ export class BulkSyncService {
     return {
       isSyncing: this.isSyncing,
       lastSyncTime: this.lastSyncTime,
+      lastRulingsSyncTime: this.lastRulingsSyncTime,
+      lastRulingsUpdatedAt: this.lastRulingsUpdatedAt,
       nightlyCronActive: this.isNightlyCronActive,
     };
   }

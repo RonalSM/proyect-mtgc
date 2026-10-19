@@ -581,6 +581,13 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
     - Atribución de artista ("Ilustrado por [artista]") y aviso de copyright oficial ("™ & © Wizards of the Coast") conforme a las directrices de Scryfall.
     - Selector interactivo de caras (`card-details-face-switcher`) para cartas de doble cara (DFC).
     - Sección de dictámenes oficiales (rulings) alimentada por la base de datos local vía `GET /api/cards/:oracleId/rulings`, con fecha, fuente oficial y comentario o estado "Sin dictámenes".
+- **Sincronización Local de Dictámenes (Rulings) y Caché Basada en Fecha (Punto 5 de Correcciones del Cliente):**
+  - **Base de datos local:** Modelo Prisma `Ruling` (`oracleId`, `source`, `publishedAt`, `comment`) con índice en `oracleId`.
+  - **Sincronización bulk:** Método `syncRulings(limit?)` en [`BulkSyncService.ts`](apps/server/src/services/bulk-sync.service.ts) que consulta el catálogo oficial de Scryfall con cabeceras `User-Agent` institucional y `Accept: application/json`.
+  - **Comprobación de fecha:** Compara `updated_at` contra `lastRulingsUpdatedAt` y omite la descarga cuando el archivo no ha sido modificado en el CDN de Scryfall (`skipped: true, reason: 'not_modified'`).
+  - **Aislamiento en tiempo real:** Cero llamadas a APIs externas en caliente; la consulta desde la UI invoca `GET /api/cards/:oracleId/rulings` sirviendo datos desde la base de datos local o caché en memoria. Gatherer no es utilizado.
+  - **Integración con Cron Nocturno:** Sincronización conjunta de cartas Oracle y dictámenes oficiales a las 03:00 UTC.
+
 
 
 - Etiqueta de nombre: píldora pequeña con icono de ampliar; turno activo con borde de color y brillo suave.

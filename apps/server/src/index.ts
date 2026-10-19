@@ -636,6 +636,22 @@ server.post('/api/cards/sync-bulk', async (request, reply) => {
   return reply.send(result);
 });
 
+// Trigger bulk rulings sync (Admin only - Punto 5 / REQ-7.28)
+server.post('/api/cards/sync-rulings', async (request, reply) => {
+  const adminKey = request.headers['x-admin-key'];
+  const expectedKey = process.env.ADMIN_SECRET || 'mtgc_admin_secret_key';
+
+  if (!adminKey || adminKey !== expectedKey) {
+    return reply.status(403).send({
+      error: 'Acceso denegado: solo administradores pueden ejecutar la sincronización manual',
+    });
+  }
+
+  const limit = (request.body as { limit?: number })?.limit;
+  const result = await bulkSyncService.syncRulings(limit);
+  return reply.send(result);
+});
+
 // Bulk sync status & nightly cron info
 server.get('/api/cards/sync-status', async (_request, reply) => {
   return reply.send(bulkSyncService.getStatus());

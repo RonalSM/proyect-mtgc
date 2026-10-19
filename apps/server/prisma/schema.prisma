@@ -53,6 +53,19 @@ model Card {
   @@map("cards")
 }
 
+model Ruling {
+  id          String   @id @default(uuid())
+  oracleId    String
+  source      String   @default("wotc")
+  publishedAt DateTime
+  comment     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([oracleId])
+  @@map("rulings")
+}
+
 model Deck {
   id            String     @id @default(uuid())
   userId        String?
