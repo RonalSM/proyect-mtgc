@@ -584,6 +584,11 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
     - Dimensiones del rotador interior: `width = cardWNum`, `height = cardHNum`, con `transform = isTapped ? 'rotate(90deg)' : 'rotate(0deg)'`.
     - Posición: anclada en `(ghostCenterX, ghostCenterY)` con `transform: translate(-50%, -50%)`.
   - **Invarianza de tamaño y orientación:** El receptor B monta el fantasma directamente con su estado girado desde el fotograma 1 (sin rotación en vuelo desde 0° ni cambio de dimensiones de vertical a apaisado), garantizando que el centro inicial coincida de manera idéntica con el centro previo de la carta ($\le 1.0\text{ px}$).
+- **Alineación Continua y Cero Salto al Soltar (Punto 4 de Corrección de Posición):**
+  - **Identidad de centro overlay vs soltado:** Al soltar la carta en el campo de batalla (`handleDragEnd`), se calcula el centro exacto del overlay visual: `centerX = clampedX + overlayWidth / 2`, `centerY = clampedY + overlayHeight / 2`.
+  - **Actualización optimista síncrona:** Inmediatamente mediante `flushSync()`, se registra `optimisticPositions` con dicho centro normalizado `(centerX / winW, centerY / winH)`. Al desmontar el overlay y renderizar la carta en `BattlefieldCanvas`, el slot exterior se dibuja con centro `(centerPixelX, centerPixelY)` y `transform: translate(-50%, -50%)`, resultando en una discrepancia de $0.00\text{ px}$ respecto al overlay.
+  - **Invarianza ante sincronización del servidor:** El servidor almacena y retransmite las coordenadas normalizadas del centro recibidas. Al procesar la respuesta autoritativa, la posición ya coincide ($\Delta < 0.01$) y se limpia la posición optimista sin ningún salto ni parpadeo visual.
+  - **Límites de viewport orientados:** La función de acotamiento utiliza el ancho y alto orientados actuales (`orientedW = isTapped ? cardH : cardW`), impidiendo que los bordes derecho e inferior de cartas apaisadas se corten o sobrepasen el viewport y el dock.
 
 ### Rutas
 `/table/:code/lobby` y `/table/:code/play`. El cliente redirige según `table.status`.

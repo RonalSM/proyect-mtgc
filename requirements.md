@@ -387,6 +387,9 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 20. **Fantasma remoto orientado desde el primer fotograma (Punto 3 de Corrección de Posición):**
     20.1. WHEN un jugador inicia el arrastre de una carta (`onDragStart`), THE primer mensaje efímero de arrastre (`CARD_DRAG_MOVE`) emitido al servidor y retransmitido a los rivales SHALL incluir explícitamente el estado de giro (`isTapped`) y el centro exacto normalizado de la carta.
     20.2. THE cliente receptor remoto (B) SHALL renderizar el fantasma (`data-remote-card-ghost="true"`) utilizando la estructura gemela de contenedor slot apaisado (`.card-slot-container`) y rotador interno (`.card-rotator`), naciendo girado 90° desde el primer fotograma, sin mutación dimensional ni salto visual de orientación.
+21. **Cero salto al soltar carta en la mesa (Punto 4 de Corrección de Posición):**
+    21.1. WHEN un jugador suelta una carta en el campo de batalla (`onDragEnd`), THE centro geométrico de la última posición del overlay de arrastre y el centro de la primera posición de la carta colocada en la mesa SHALL coincidir con una diferencia máxima $\le 1.0\text{ px}$ (0.00 px medido), manteniéndose invariante tras recibir la sincronización autoritativa del servidor.
+    21.2. THE cálculo de contención dentro del viewport SHALL utilizar las dimensiones orientadas efectivas de la carta ($w \times h$ o $h \times w$), garantizando que ni el overlay ni la carta soltada desborden los límites de la pantalla ni del dock.
 
 ## Requisitos no funcionales
 
