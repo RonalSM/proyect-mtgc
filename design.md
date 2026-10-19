@@ -302,7 +302,32 @@ interface LobbySeat {
 ### COMP-1 Web Client
 **Módulos:** `LobbyView`, `LobbySeatCard`, `DeckPicker`, `DeckImportModal`, `ReadyButton`, `InitiativeOverlay`, `TableGrid`, `PlayerCell`, `PlaymatBackground`, `NameTag`, `LifePill`, `BattlefieldCanvas`, `HandFan`, `PileSlots`, `FloatingToolbar`, `LogChatPanel`, `CardPreview`.
 **Estado:** Zustand con un *store* de mesa sincronizado por versión de evento.
-**UX clave:** vista propia grande y oponentes en miniatura; atajos de teclado; modo "solo tracker" para móvil; mesa expandida como encuadre/zoom interactivo sobre la misma mesa global única (sin duplicar componentes) con cálculo de coordenadas por transformación inversa ($x_{global} = x_{min} + u \times W$, $y_{global} = y_{min} + v \times H$), manteniendo activos DndContext, droppables, mano y menú de clic derecho (Punto 3); eliminación de recortes en cartas de la mano con aspect-[5/7] exacto sin object-cover distorsionante, esquinas redondeadas naturales (rounded-[6px]), dock y abanico con overflow-visible, resolución de imagen normal (Scryfall normal, nunca small ampliada), y elevación por hover 100% contenida en el viewport (Punto 4); contenedor de nombre y expandir celda centrado arriba en cada división con estado desconectado atenuado, y barra superior desplegable con orden de iniciativa y badges de estado (Punto 8); escala de carta acotada por el menor entre límite por alto y límite por ancho de celda con compresión dinámica progresiva del abanico de mano para prevenir solapamientos en celdas estrechas (Punto 9); dimensiones de carta 100% unificadas e idénticas en mano, mesa, comandante y drag overlay sin saltos de escala (Punto 10); gestión resiliente de imágenes con eventos `onError`, fallbacks atmosféricos de playmats en gradiente oscuro y marcos de cartas legibles sin iconos de imagen rota, con CSP extendido para Scryfall (Punto 11).
+**UX clave y Arquitectura de Interacción:**
+- Vista propia grande y oponentes en miniatura; atajos de teclado; modo "solo tracker" para móvil.
+- Mesa expandida como encuadre/zoom interactivo sobre la misma mesa global única (sin duplicar componentes) con cálculo de coordenadas por transformación inversa ($x_{global} = x_{min} + u \times W$, $y_{global} = y_{min} + v \times H$), manteniendo activos DndContext, droppables, mano y menú de clic derecho.
+- Eliminación de recortes en cartas de la mano con `aspect-[5/7]` exacto sin `object-cover` distorsionante, esquinas redondeadas naturales (`rounded-[6px]`), dock y abanico con `overflow-visible`, resolución de imagen normal (`cards.scryfall.io` normal), y elevación por hover 100% contenida en el viewport.
+- Contenedor de nombre y expandir celda centrado arriba en cada división con estado desconectado atenuado, y barra superior desplegable con orden de iniciativa y badges de estado.
+- Escala de carta acotada por el menor entre límite por alto y límite por ancho de celda con compresión dinámica progresiva del abanico de mano para prevenir solapamientos en celdas estrechas.
+- Dimensiones de carta 100% unificadas e idénticas en mano, mesa, comandante y drag overlay sin saltos de escala.
+- Gestión resiliente de imágenes con eventos `onError`, fallbacks atmosféricos de playmats en gradiente oscuro y marcos de cartas legibles sin iconos de imagen rota.
+- **Nitidez óptica y erradicación de desenfoque al girar (Corrección Punto 1):**
+  - Dimensiones enteras y pares estrictas (`packages/shared/src/utils/card-dimensions.ts`): `--card-w` y `--card-h` calculadas como números pares (96×134 en 2p, 78×108 en 4p y 6p a 1080p; 96×134 en 2p, 56×78 en 4p y 6p a 768p), evitando que `translate(-50%, -50%)` asigne coordenadas fraccionarias con medio píxel.
+  - Posicionamiento entero aplicado: redondeo con `Math.round` en la posición visual de pantalla.
+  - Gestión temporal de `will-change`: aplicado exclusivamente durante la transición de 180 ms (`.is-animating-tap`) y desactivado inmediatamente al terminar para permitir a Chromium re-rasterizar la imagen a resolución nativa del dispositivo.
+  - Transform 2D puro: rotación en plano (`rotate(90deg)` / `rotate(0deg)`) libre de `translateZ`, `rotate3d` o filtros. Conservación de nitidez $\ge 90\%$ certificada mediante varianza del Laplaciano (DPR 1: 103.07%, DPR 2: 105.05%).
+- **Arrastre bajo cursor con fuente de verdad única (Corrección Punto 2):**
+  - Medición con `getBoundingClientRect()` de la caja visual real (rotada si está girada) al comenzar el arrastre en `handleDragStart`, capturando el desplazamiento del puntero al centro (`grabOffsetFromCenter`) y a la esquina (`grabOffsetFromTopLeft`) en `dragOffsetRef`.
+  - `DragOverlay` con arquitectura gemela: contenedor exterior `.card-slot-container` centrando un `.card-rotator` con dimensiones exactas y ángulo idéntico (`rotate(90deg)` si está girada).
+  - Modificador `snapToVisualBoxModifier` en `DndContext`: aplica el desplazamiento exacto capturado con respecto al rectángulo visual, eliminando desalineaciones y saltos abruptos al superar el umbral de activación de 8 px (`activationConstraint`).
+  - Estabilidad de la mano: `HandCardItem` conserva su anchura fija (`var(--card-w)`) con `opacity: 0` durante el arrastre, impidiendo el colapso dimensional.
+  - Cálculo de coordenadas finales desde el rectángulo delimitador del overlay (`clampedX + overlayWidth / 2`, `clampedY + overlayHeight / 2`).
+- **Seguimiento estricto del puntero durante el arrastre (Corrección Punto 3):**
+  - Listener global de `pointermove` en fase de captura sincronizando `latestPointerRef` en tiempo real.
+  - Invarianza del punto agarrado: la diferencia entre el punto agarrado del overlay (`puntero - esquina del overlay`) y el desplazamiento inicial es $\le 1.0\text{ px}$ (0.00 px medido) en todos los fotogramas de la trayectoria y en el fotograma exacto tras superar los 8 px. Certificado en 16 combinaciones en `apps/web/e2e/pointer-tracking.spec.ts`.
+- **Centrado exacto al enviar al campo con dimensiones reales (Corrección Punto 4):**
+  - Función `getCardDimensions(podSize, viewport)` compartida entre cliente (`table-framing.ts`) y servidor (`game-state.ts`).
+  - Reemplazo de constantes fijas (43.2×51.3) por la mitad de las dimensiones normalizadas de la carta (`cardHalfWNorm`, `cardHalfHNorm`).
+  - Coincidencia con el centro de la sección jugable propia (descontando el dock inferior) $\le 1.0\text{ px}$ en 2p, 4p y 6p a 1080p y 768p (0.00 px en unit tests y $\le 0.50\text{ px}$ en E2E Playwright).
 
 ### COMP-6 Card Service
 **Clases:** `ScryfallClient` (cola con rate limit), `DeckParser`, `CommanderValidator`, `CardCache`.
