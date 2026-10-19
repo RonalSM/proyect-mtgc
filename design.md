@@ -168,6 +168,7 @@ lobby ──(todos listos + host inicia)──► initiative ──(orden resuel
 | COMP-4 | Room Manager | Añade `LobbyManager`: asientos, mazo elegido, estado "Listo", reglas para habilitar "Iniciar" |
 | COMP-5 | Game Server | Añade `InitiativeService` (d20, desempates, tiempo límite) y `GameStarter` (barajar, comandante a zona de comando, mano de 7) |
 | COMP-6 | Card Service | Expone mazos guardados y de sesión; reutiliza el importador y el validador |
+| COMP-8 | Image Loading & Caching Service | Cola de descarga con concurrencia 6, reintentos exponenciales con timeout 8s, resolución directa CDN, esqueletos y virtualización |
 | COMP-1 | Web Client | Nuevas pantallas `LobbyView`, `InitiativeOverlay` y rediseño de `TableView` / `TableGrid` |
 
 ## Puntos de integración
@@ -198,6 +199,26 @@ Moxfield / Archidekt: dependen de sus condiciones de uso y APIs disponibles; el 
 Fase 1 solo enlaza a Discord/Meet. Fase 2 evalúa LiveKit.
 
 ## Componentes en detalle
+
+### COMP-8 Image Loading & Caching Service
+**Responsabilidad:** Optimizar la carga de imágenes de cartas para evitar bloqueos HTTP 429 de Scryfall, asegurar fluidez en el cliente web y garantizar que ninguna carta quede colgada indefinidamente.
+**Componentes y servicios clave:**
+1. `imageLoaderQueue` (`apps/web/src/services/imageLoaderQueue.ts`):
+   - Concurrencia acotada a 6 descargas simultáneas en vuelo (`maxConcurrency = 6`).
+   - Reintento con backoff exponencial (300 ms, 600 ms, 1200 ms) sin retener slots activos de descarga.
+   - Timeout por imagen de 8000 ms.
+   - Notificación reactiva mediante patrón Observer (`subscribe(listener)`).
+   - Métodos de reintento global (`retryFailed()`) e individual (`retryUrl(url)`).
+2. `cardImageResolver` (`apps/web/src/services/cardImageResolver.ts`):
+   - Mapeo en memoria y resolución de URLs directas desde `cards.scryfall.io` sin llamar al endpoint `/cards/named`.
+   - Soporte para cartas de doble cara (`faces[0]` y `faces[1]`).
+3. `VirtualizedCardGrid` (`apps/web/src/components/VirtualizedCardGrid.tsx`):
+   - Cuadrícula virtualizada para el modal inspector de biblioteca (100 cartas).
+   - Renderiza únicamente filas visibles con buffers de sobre-escaneo (overscan de 2 filas) y espaciadores superior e inferior que mantienen la barra de scroll precisa.
+4. `CardDisplay` (`apps/web/src/components/CardDisplay.tsx`):
+   - Suscripción al estado de carga en la cola (`idle | pending | loading | loaded | failed`).
+   - Muestra esqueletos animados (`card-image-skeleton`) durante la espera/carga.
+   - Muestra marco de respaldo legible con botón de reintento explícito si se agotan los reintentos.
 
 ### COMP-5 Game Server
 **Responsabilidad:** mantener y difundir el estado autoritativo de cada mesa.

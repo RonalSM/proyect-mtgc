@@ -10,13 +10,16 @@ import {
   AlertTriangle,
   Eye,
   Search,
+  RefreshCw,
 } from 'lucide-react';
 import { HandFan } from './HandFan';
 import { CardDisplay } from './CardDisplay';
 import { CardContextMenu } from './CardContextMenu';
 import { Portal } from './Portal';
+import { VirtualizedCardGrid } from './VirtualizedCardGrid';
 import { useCardPreview } from '../context/CardPreviewContext';
 import { scryfallQueue } from '../services/scryfallQueue';
+import { imageLoaderQueue, type ImageQueueStats } from '../services/imageLoaderQueue';
 
 const CARD_TYPE_FILTERS = [
   'Criaturas',
@@ -276,6 +279,22 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const [librarySearchQuery, setLibrarySearchQuery] = useState('');
   const [libraryTypeFilter, setLibraryTypeFilter] = useState<string | null>(null);
   const [syncQueueCount, setSyncQueueCount] = useState(0);
+  const [imageStats, setImageStats] = useState<ImageQueueStats>(() => imageLoaderQueue.getStats());
+
+  useEffect(() => {
+    return imageLoaderQueue.subscribe(setImageStats);
+  }, []);
+
+  useEffect(() => {
+    if (activePileModal === 'library' && zones.library.length > 0) {
+      for (const card of zones.library) {
+        const url = card.definition?.imageUrlSmall || card.definition?.imageUrlNormal;
+        if (url) {
+          imageLoaderQueue.enqueue(url, 1);
+        }
+      }
+    }
+  }, [activePileModal, zones.library]);
 
   useEffect(() => {
     if (activePileModal === 'library') {
@@ -963,6 +982,43 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                       <span>Sincronizando cartas... ({syncQueueCount} en cola)</span>
                     </div>
                   )}
+                  {/* Indicador de cola y progreso de carga de imágenes (Punto 4) */}
+                  {activePileModal === 'library' && (
+                    <div className="flex items-center space-x-2">
+                      {imageStats.inFlight + imageStats.pending > 0 ? (
+                        <div
+                          data-testid="image-queue-progress"
+                          className="flex items-center space-x-1.5 text-[11px] text-amber-300 bg-amber-950/70 border border-amber-800/80 px-2.5 py-0.5 rounded-full animate-pulse shadow-sm"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                          <span className="font-mono font-medium">
+                            Cargando {imageStats.loaded} de {imageStats.total || zones.library.length}
+                          </span>
+                        </div>
+                      ) : imageStats.loaded > 0 ? (
+                        <div
+                          data-testid="image-queue-complete"
+                          className="text-[10px] text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full flex items-center gap-1"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          <span>Imágenes listas ({imageStats.loaded}/{imageStats.total || zones.library.length})</span>
+                        </div>
+                      ) : null}
+
+                      {imageStats.failed > 0 && (
+                        <button
+                          type="button"
+                          data-testid="image-queue-retry-btn"
+                          onClick={() => imageLoaderQueue.retryFailed()}
+                          className="flex items-center space-x-1 text-[11px] text-rose-300 bg-rose-950/80 hover:bg-rose-900 border border-rose-800 px-2.5 py-0.5 rounded-full font-bold cursor-pointer transition-colors shadow-sm"
+                          title="Reintentar carga de imágenes fallidas"
+                        >
+                          <RefreshCw className="w-2.5 h-2.5" />
+                          <span>Reintentar {imageStats.failed} fallida{imageStats.failed > 1 ? 's' : ''}</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <button
                   data-testid="close-pile-modal-btn"
@@ -1035,27 +1091,48 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                 </div>
               )}
 
-              <div className="flex-1 overflow-y-auto p-4 grid grid-cols-3 sm:grid-cols-4 gap-3">
-                {filteredModalCards.map((card, i) => (
-                  <ModalCardItem
-                    key={card.instanceId || i}
-                    card={card}
-                    zone={activePileModal}
-                    onAction={onAction}
-                    localPlayerId={localPlayerId}
-                    roomState={roomState}
-                    allBattlefieldCards={allBattlefieldCards}
-                    onCloseModal={() => setActivePileModal(null)}
-                  />
-                ))}
-                {filteredModalCards.length === 0 && (
-                  <div className="col-span-full text-center py-8 text-slate-500 text-xs italic">
-                    {activePileModal === 'library' && (librarySearchQuery || libraryTypeFilter)
+              {activePileModal === 'library' ? (
+                <VirtualizedCardGrid
+                  items={filteredModalCards}
+                  emptyMessage={
+                    librarySearchQuery || libraryTypeFilter
                       ? 'No se encontraron cartas con los filtros seleccionados'
-                      : 'Esta zona está vacía'}
-                  </div>
-                )}
-              </div>
+                      : 'Esta zona está vacía'
+                  }
+                  renderItem={(card) => (
+                    <ModalCardItem
+                      key={card.instanceId}
+                      card={card}
+                      zone={activePileModal}
+                      onAction={onAction}
+                      localPlayerId={localPlayerId}
+                      roomState={roomState}
+                      allBattlefieldCards={allBattlefieldCards}
+                      onCloseModal={() => setActivePileModal(null)}
+                    />
+                  )}
+                />
+              ) : (
+                <div className="flex-1 overflow-y-auto p-4 grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {filteredModalCards.map((card, i) => (
+                    <ModalCardItem
+                      key={card.instanceId || i}
+                      card={card}
+                      zone={activePileModal}
+                      onAction={onAction}
+                      localPlayerId={localPlayerId}
+                      roomState={roomState}
+                      allBattlefieldCards={allBattlefieldCards}
+                      onCloseModal={() => setActivePileModal(null)}
+                    />
+                  ))}
+                  {filteredModalCards.length === 0 && (
+                    <div className="col-span-full text-center py-8 text-slate-500 text-xs italic">
+                      Esta zona está vacía
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </Portal>
