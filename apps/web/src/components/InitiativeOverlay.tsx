@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { RoomState, GameActionType } from '@mtgc/shared';
 import { Dices, Sparkles, Crown } from 'lucide-react';
+import { imageLoaderQueue } from '../services/imageLoaderQueue';
 
 interface InitiativeOverlayProps {
   roomState: RoomState;
@@ -20,6 +21,33 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
 
   const seatedPlayers = Object.values(roomState.players).filter(p => !p.isSpectator);
   const localHasRolled = initiative?.rolls[localPlayerId] !== undefined;
+
+  // Priority Preloading during Initiative phase (Punto 5):
+  // (1) Initial hand (7 cards) and commander in normal version (priority 10)
+  // (2) Rest of library in small version (priority 1)
+  useEffect(() => {
+    const pZones = roomState.playerZones[localPlayerId];
+    if (pZones) {
+      if (pZones.hand) {
+        for (const card of pZones.hand) {
+          const url = card.definition?.imageUrlNormal || card.definition?.imageUrlSmall;
+          if (url) imageLoaderQueue.enqueue(url, 10);
+        }
+      }
+      if (pZones.command) {
+        for (const card of pZones.command) {
+          const url = card.definition?.imageUrlNormal || card.definition?.imageUrlSmall;
+          if (url) imageLoaderQueue.enqueue(url, 10);
+        }
+      }
+      if (pZones.library) {
+        for (const card of pZones.library) {
+          const smallUrl = card.definition?.imageUrlSmall || card.definition?.imageUrlNormal?.replace('/normal/', '/small/');
+          if (smallUrl) imageLoaderQueue.enqueue(smallUrl, 1);
+        }
+      }
+    }
+  }, [roomState.playerZones, localPlayerId]);
 
   // Countdown timer for 15s deadline
   useEffect(() => {

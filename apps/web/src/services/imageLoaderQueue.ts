@@ -2,6 +2,7 @@
  * Concurrency-limited image loader queue with exponential backoff, timeouts, and observable progress.
  * Concurrency limited to 6-8 simultaneous requests to respect browser limits and Scryfall CDN.
  */
+import { persistentImageCache } from './persistentImageCache';
 
 export type ImageLoadStatus = 'idle' | 'pending' | 'loading' | 'loaded' | 'failed';
 
@@ -221,7 +222,28 @@ class ImageLoaderQueue {
     }
   }
 
-  private loadSingleImage(url: string): Promise<void> {
+  private async loadSingleImage(url: string): Promise<void> {
+    // 1. Check persistent browser Cache API first (Cache API / disk cache)
+    if (await persistentImageCache.has(url)) {
+      await persistentImageCache.getBlobUrl(url);
+      return;
+    }
+
+    // 2. Fetch and store in persistent Cache API with timeout
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    try {
+      await persistentImageCache.fetchAndCache(url, controller.signal);
+    } catch {
+      // 3. Fallback to standard Image loading if fetch failed
+      await this.loadViaHtmlImage(url);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  private loadViaHtmlImage(url: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       if (typeof window === 'undefined' || typeof Image === 'undefined') {
         // Node / SSR / Test environment simulation

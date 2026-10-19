@@ -3,6 +3,7 @@ import { inferCardTypeLine, type CardDefinition } from '@mtgc/shared';
 import { Layers, RefreshCw } from 'lucide-react';
 import { cardImageResolver } from '../services/cardImageResolver';
 import { imageLoaderQueue, type ImageLoadStatus } from '../services/imageLoaderQueue';
+import { persistentImageCache } from '../services/persistentImageCache';
 
 interface CardDisplayProps {
   card: CardDefinition;
@@ -115,6 +116,20 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
     return unsub;
   }, [resolvedImageUrl, isFaceDown, size]);
 
+  const [cachedBlobUrl, setCachedBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (resolvedImageUrl && !isFaceDown) {
+      persistentImageCache.getBlobUrl(resolvedImageUrl).then(bUrl => {
+        if (bUrl) setCachedBlobUrl(bUrl);
+      });
+    } else {
+      setCachedBlobUrl(null);
+    }
+  }, [resolvedImageUrl, isFaceDown]);
+
+  const activeDisplayUrl = cachedBlobUrl || resolvedImageUrl;
+
   const toggleFace = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (hasMultipleFaces) {
@@ -177,9 +192,9 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
           </div>
         </div>
       ) : isImageReady ? (
-        /* 2. Direct cards.scryfall.io image when loaded */
+        /* 2. Direct cards.scryfall.io image (or persistent blob: URL from Cache API) when loaded */
         <img
-          src={resolvedImageUrl}
+          src={activeDisplayUrl}
           alt={cardName}
           width={size === 'small' ? 146 : 488}
           height={size === 'small' ? 204 : 680}

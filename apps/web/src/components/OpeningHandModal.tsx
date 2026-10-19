@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { RoomState, GameActionType } from '@mtgc/shared';
 import { CardDisplay } from './CardDisplay';
 import { RotateCcw, Check, UserX, Crown, ShieldAlert, Sparkles, Layers } from 'lucide-react';
+import { imageLoaderQueue } from '../services/imageLoaderQueue';
 
 interface OpeningHandModalProps {
   roomState: RoomState;
@@ -28,6 +29,28 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
   const cardsToBottomCount = myMulligan?.cardsToBottomCount ?? 0;
 
   const localHand = roomState.playerZones[localPlayerId]?.hand || [];
+
+  // Priority Preloading during Opening Hand / Mulligan phase (Punto 5):
+  // (1) 7 cards in initial hand and commander in normal version (priority 10)
+  // (2) Rest of library in small version (priority 1)
+  useEffect(() => {
+    for (const card of localHand) {
+      const url = card.definition?.imageUrlNormal || card.definition?.imageUrlSmall;
+      if (url) imageLoaderQueue.enqueue(url, 10);
+    }
+
+    const cmdrList = roomState.playerZones[localPlayerId]?.command || [];
+    for (const cmdr of cmdrList) {
+      const url = cmdr.definition?.imageUrlNormal || cmdr.definition?.imageUrlSmall;
+      if (url) imageLoaderQueue.enqueue(url, 10);
+    }
+
+    const libraryCards = roomState.playerZones[localPlayerId]?.library || [];
+    for (const card of libraryCards) {
+      const smallUrl = card.definition?.imageUrlSmall || card.definition?.imageUrlNormal?.replace('/normal/', '/small/');
+      if (smallUrl) imageLoaderQueue.enqueue(smallUrl, 1);
+    }
+  }, [localHand, roomState.playerZones, localPlayerId]);
 
   const [selectedBottomCardIds, setSelectedBottomCardIds] = useState<string[]>([]);
 

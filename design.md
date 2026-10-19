@@ -219,6 +219,14 @@ Fase 1 solo enlaza a Discord/Meet. Fase 2 evalúa LiveKit.
    - Suscripción al estado de carga en la cola (`idle | pending | loading | loaded | failed`).
    - Muestra esqueletos animados (`card-image-skeleton`) durante la espera/carga.
    - Muestra marco de respaldo legible con botón de reintento explícito si se agotan los reintentos.
+5. `persistentImageCache` (`apps/web/src/services/persistentImageCache.ts`):
+   - Almacenamiento local persistente en el navegador mediante Cache API (`caches.open('mtgc-card-images-v1')`).
+   - Sin almacenamiento, reflejo ni proxy en el servidor backend (estricto cumplimiento legal de Scryfall).
+   - Generación de Object URLs locales (`blob:`) para despliegue instantáneo con 0 ms de latencia en partidas sucesivas con el mismo mazo.
+6. **Estrategia de precarga con prioridad por fases:**
+   - *Sala de espera (`LobbyWaitingRoom.tsx`):* Al seleccionar mazo, precarga el comandante en `normal` (prioridad 10) y la biblioteca en `small` (prioridad 1).
+   - *Iniciativa (`InitiativeOverlay.tsx`):* Precarga anticipada de la mano inicial (7 cartas) y comandante en `normal` (prioridad 10), y biblioteca en `small` (prioridad 1).
+   - *Apertura y Mulligan (`OpeningHandModal.tsx`):* Precarga con máxima prioridad de las 7 cartas activas en `normal` (prioridad 10), garantizando nitidez completa y tiempo de respuesta cero al decidir quedarse o mulligan.
 
 ### COMP-5 Game Server
 **Responsabilidad:** mantener y difundir el estado autoritativo de cada mesa.

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { RoomState, GameActionType, CardDefinition, DeckCardWithQuantity } from '@mtgc/shared';
 import { parseDecklist, validateCommanderDeck, toArtCropUrl, inferCardTypeLine } from '@mtgc/shared';
+import { imageLoaderQueue } from '../services/imageLoaderQueue';
 import {
   Users,
   Copy,
@@ -71,6 +72,17 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
     };
     fetchDecks();
   }, []);
+
+  // Priority Preloading during Lobby phase (Punto 5):
+  // (1) Commander in normal version (priority 10)
+  useEffect(() => {
+    const deck = localPlayer?.selectedDeck;
+    if (!deck) return;
+
+    if (deck.commanderImageUrl) {
+      imageLoaderQueue.enqueue(deck.commanderImageUrl, 10);
+    }
+  }, [localPlayer?.selectedDeck]);
 
   const copyCode = () => {
     navigator.clipboard.writeText(roomState.code);
@@ -222,6 +234,25 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         });
       } catch {
         // Graceful fallback
+      }
+    }
+
+    // Priority Preloading when deck is selected (Punto 5):
+    // (1) Commander in normal version (priority 10)
+    // (2) Rest of library in small version (priority 1)
+    if (deck.commanderImageUrl) {
+      imageLoaderQueue.enqueue(deck.commanderImageUrl, 10);
+    }
+    if (deck.commanderCards) {
+      for (const cmdr of deck.commanderCards) {
+        const url = cmdr.imageUrlNormal || cmdr.imageUrlSmall;
+        if (url) imageLoaderQueue.enqueue(url, 10);
+      }
+    }
+    if (deck.maindeckCards) {
+      for (const card of deck.maindeckCards) {
+        const smallUrl = card.imageUrlSmall || card.imageUrlNormal?.replace('/normal/', '/small/');
+        if (smallUrl) imageLoaderQueue.enqueue(smallUrl, 1);
       }
     }
 
