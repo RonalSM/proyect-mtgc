@@ -183,42 +183,42 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       onTouchMove={handleTouchEnd}
       onMouseEnter={(e) => !card.isFaceDown && !isDragging && showPreview(card.definition, e)}
       onMouseLeave={hidePreview}
-      className={`absolute group select-none pointer-events-auto transition-[width,height] duration-150 ${
+      className={`card-slot-container absolute group select-none pointer-events-auto flex items-center justify-center ${
         canMove ? 'cursor-pointer' : 'cursor-not-allowed'
       } ${
         isDragging || isRemoteDragging ? 'opacity-0 pointer-events-none' : ''
       }`}
       style={{
-        left: `${posX}%`,
-        top: `${posY}%`,
+        left: `calc(${posX}% + var(--card-w) / 2)`,
+        top: `calc(${posY}% + var(--card-h) / 2)`,
+        transform: 'translate(-50%, -50%)',
         zIndex: isSelected ? 50 : zIndex,
         width: cardW,
         height: cardH,
       }}
     >
-      {/* Card Frame */}
+      {/* Rotating Card Body (Punto 7: rotación 90° alrededor del centro invariante) */}
       <div
-        className={`w-full h-full rounded-md overflow-hidden border shadow-md relative bg-slate-900 flex items-center justify-center ${
+        data-card-rotator="true"
+        className={`card-rotator rounded-md overflow-hidden border shadow-md relative bg-slate-900 flex-shrink-0 ${
           isSelected
             ? 'border-amber-400 ring-2 ring-amber-400/50 shadow-amber-500/20'
             : 'border-slate-800 hover:border-slate-600'
         }`}
+        style={{
+          width: 'var(--card-w)',
+          height: 'var(--card-h)',
+          transform: isTapped ? 'rotate(90deg)' : 'rotate(0deg)',
+          transformOrigin: 'center center',
+        }}
       >
-        <div
-          style={{
-            width: 'var(--card-w)',
-            height: 'var(--card-h)',
-          }}
-          className={`flex-shrink-0 origin-center transition-transform duration-150 ${isTapped ? 'rotate-90' : ''}`}
-        >
-          <CardDisplay
-            card={card.definition}
-            isFaceDown={card.isFaceDown}
-            isTapped={isTapped}
-          />
-        </div>
+        <CardDisplay
+          card={card.definition}
+          isFaceDown={card.isFaceDown}
+          isTapped={isTapped}
+        />
 
-        {/* Counter Badges (REQ-5.3) */}
+        {/* Counter Badges (REQ-5.3): Acompañan a la carta durante la rotación sin saltos */}
         {card.counters && Object.entries(card.counters).length > 0 && (
           <div className="absolute top-0.5 right-0.5 flex flex-col space-y-0.5 pointer-events-none z-10">
             {Object.entries(card.counters).map(([type, count]) => (
@@ -273,38 +273,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   };
 
   const handleTap = (card: CardInstance) => {
-    // Rotación alrededor del centro: ajustar la posición para conservar el centro geométrico (xc, yc)
-    if (typeof window !== 'undefined' && card.position) {
-      const winW = window.innerWidth;
-      const winH = window.innerHeight;
-      const el = document.querySelector(`[data-card-instance-id="${card.instanceId}"]`) as HTMLElement | null;
-      if (el) {
-        const rect = el.getBoundingClientRect();
-        const centerX = rect.x + rect.width / 2;
-        const centerY = rect.y + rect.height / 2;
-        // La nueva dimensión tras girar invierte ancho y alto
-        const newW = rect.height;
-        const newH = rect.width;
-        const newLeft = centerX - newW / 2;
-        const newTop = centerY - newH / 2;
-        const rawNormX = Math.max(0, Math.min(winW - newW, newLeft)) / winW;
-        const rawNormY = Math.max(0, Math.min(winH - newH, newTop)) / winH;
-        const newNormX = viewFraming?.isExpanded
-          ? viewFraming.xMin + rawNormX * viewFraming.width
-          : rawNormX;
-        const newNormY = viewFraming?.isExpanded
-          ? viewFraming.yMin + rawNormY * viewFraming.height
-          : rawNormY;
-
-        onAction('MOVE_CARD', {
-          cardInstanceId: card.instanceId,
-          fromZone: 'battlefield',
-          toZone: 'battlefield',
-          position: { x: newNormX, y: newNormY, zIndex: card.position.zIndex ?? 5 },
-        });
-      }
-    }
-
+    // Punto 7: Girar o enderezar NO recalcula holderId ni envía MOVE_CARD
     onAction('TAP_CARD', {
       cardInstanceId: card.instanceId,
       isTapped: !card.isTapped,
@@ -401,21 +370,28 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
               data-remote-card-ghost="true"
               data-card-instance-id={item.cardInstanceId}
               data-player-id={item.playerId}
-              className={`absolute pointer-events-none select-none z-40 origin-center ${
-                item.isTapped ? 'rotate-90' : ''
-              } ${
+              className={`absolute pointer-events-none select-none z-40 flex items-center justify-center ${
                 item.isFirstMessage || (item as any).pendingSync
                   ? 'transition-none'
                   : 'transition-[left,top] duration-75 ease-linear'
               }`}
               style={{
-                left: `${posX}%`,
-                top: `${posY}%`,
-                width: 'var(--card-w)',
-                height: 'var(--card-h)',
+                left: `calc(${posX}% + var(--card-w) / 2)`,
+                top: `calc(${posY}% + var(--card-h) / 2)`,
+                transform: 'translate(-50%, -50%)',
+                width: item.isTapped ? 'var(--card-h)' : 'var(--card-w)',
+                height: item.isTapped ? 'var(--card-w)' : 'var(--card-h)',
               }}
             >
-              <div className="w-full h-full rounded-md overflow-hidden border border-amber-400/80 shadow-lg shadow-amber-500/25 bg-slate-900 relative">
+              <div
+                style={{
+                  width: 'var(--card-w)',
+                  height: 'var(--card-h)',
+                  transform: item.isTapped ? 'rotate(90deg)' : 'rotate(0deg)',
+                  transformOrigin: 'center center',
+                }}
+                className="w-full h-full rounded-md overflow-hidden border border-amber-400/80 shadow-lg shadow-amber-500/25 bg-slate-900 relative"
+              >
                 {item.cardDefinition ? (
                   <CardDisplay card={item.cardDefinition} isTapped={item.isTapped} />
                 ) : (

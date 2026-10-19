@@ -63,3 +63,22 @@ body {
 .dark-custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #f59e0b;
 }
+
+/* Animación de girar y enderezar sobre el centro invariante (Punto 7) */
+.card-slot-container {
+  transition: width 180ms cubic-bezier(0, 0, 0.2, 1), height 180ms cubic-bezier(0, 0, 0.2, 1);
+  will-change: width, height;
+}
+
+.card-rotator {
+  transition: transform 180ms cubic-bezier(0, 0, 0.2, 1);
+  will-change: transform;
+  transform-origin: center center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-slot-container,
+  .card-rotator {
+    transition: none !important;
+  }
+}

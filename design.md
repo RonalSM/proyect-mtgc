@@ -440,6 +440,14 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
      - Bitácora (`logs`): revelar a todos genera `${fromPlayerName} reveló "${card.name}" a todos`; revelar privado genera `${fromPlayerName} reveló una carta a ${targetPlayerName}` (sin revelar el nombre de la carta al resto de la mesa).
 
 
+15. **Animación de girar y enderezar sobre centro invariante y slot apaisado (Punto 7):**
+    - **Estructura jerárquica slot-rotador:** Cada carta en el campo de batalla (`BattlefieldCanvas`) se compone de un contenedor exterior (*slot*, `.card-slot-container`) y un cuerpo de carta giratorio interior (`.card-rotator`).
+    - **Anclaje e invarianza matemática del centro:** El slot exterior se posiciona mediante `left: calc(${posX}% + var(--card-w) / 2)`, `top: calc(${posY}% + var(--card-h) / 2)` y `transform: translate(-50%, -50%)`. Durante el giro, el ancho y alto del slot se intercambian (`cardW = isTapped ? 'var(--card-h)' : 'var(--card-w)'`, `cardH = isTapped ? 'var(--card-w)' : 'var(--card-h)'`) con transición CSS `cubic-bezier(0, 0, 0.2, 1)` de 180 ms. Debido a que `translate(-50%, -50%)` centra el slot respecto a las coordenadas invariantes, el centro geométrico permanece matemáticamente constante ($\Delta x = 0.00\text{ px}, \Delta y = 0.00\text{ px}$) en todos los fotogramas muestreados con `requestAnimationFrame` tanto en el cliente emisor como en clientes remotos.
+    - **Rotación interior por camino más corto:** El cuerpo interior contiene la carátula, badges de contadores (+1/+1, etc.) y el contorno de selección. Rota de $0^\circ \to 90^\circ$ al girar (monótonamente sin sobrepasarse) y de $90^\circ \to 0^\circ$ al enderezar (camino más corto de $-90^\circ$, nunca $270^\circ$). Contadores e insignias giran conjuntamente con la carta sin saltos ni desfases.
+    - **Respeto a prefers-reduced-motion:** La media query `@media (prefers-reduced-motion: reduce)` desactiva la animación con `transition: none !important`, realizando el intercambio dimensional y la rotación de forma instantánea.
+    - **Desacoplamiento de holderId y MOVE_CARD:** La acción de girar o enderezar despacha exclusivamente `TAP_CARD`. El servidor no recalcula `holderId` (que solo se computa al mover o soltar cartas en la mesa).
+    - **Análisis de posición por centro en el modelo:** Al guardar o anclar la posición de la carta por su centro, las rotaciones no alteran las coordenadas de la carta, eliminando cualquier desfase entre clientes locales y remotos.
+
 ### Privacidad y Reglas de Visibilidad de Mensajes
 1. **Fase de Mulligan y Regla de Londres:**
    - La estructura de mano inicial de cada jugador (`mulliganState.players[playerId].cards`) se transmite de forma autoritativa y privada únicamente al socket del propio jugador.
