@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
 import { toArtCropUrl } from '@mtgc/shared';
-import type { PlayerState, GameActionType, CardInstance, RoomState } from '@mtgc/shared';
+import type { PlayerState, GameActionType, CardInstance, CardDefinition, RoomState } from '@mtgc/shared';
 import {
   Heart,
   Skull,
@@ -11,6 +11,9 @@ import {
   Eye,
   Search,
   RefreshCw,
+  User,
+  BookOpen,
+  X,
 } from 'lucide-react';
 import { HandFan } from './HandFan';
 import { CardDisplay } from './CardDisplay';
@@ -272,6 +275,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   onAction,
   onExpandCell,
 }) => {
+  const { openCardDetails } = useCardPreview();
   const [showLifeControls, setShowLifeControls] = useState(false);
   const [damageInput, setDamageInput] = useState('');
   const [healInput, setHealInput] = useState('');
@@ -411,6 +415,93 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   React.useEffect(() => {
     setPlaymatError(false);
   }, [playmatImage]);
+
+  // URL del playmat para previsualización (reactivo a lo que el usuario escribe en el input)
+  const previewPlaymatUrl = customPlaymatInput.trim()
+    ? toArtCropUrl(customPlaymatInput.trim())
+    : playmatImage;
+
+  // Resolver carta y atribución del playmat (REQ-18, REQ-22.3, Punto 7)
+  const activePlaymatCard = useMemo<CardDefinition | null>(() => {
+    const currentUrl = previewPlaymatUrl;
+    const allPlayerCards: CardInstance[] = [
+      ...(zones.command || []),
+      ...(zones.battlefield || []),
+      ...(zones.graveyard || []),
+      ...(zones.exile || []),
+      ...(zones.hand || []),
+      ...(zones.library || []),
+      ...(allBattlefieldCards || []),
+    ];
+
+    if (currentUrl) {
+      const match = allPlayerCards.find(c => {
+        const d = c.definition;
+        if (!d) return false;
+        if (d.imageUrlArtCrop && toArtCropUrl(d.imageUrlArtCrop) === currentUrl) return true;
+        if (d.imageUrlNormal && toArtCropUrl(d.imageUrlNormal) === currentUrl) return true;
+        if (d.imageUrlLarge && toArtCropUrl(d.imageUrlLarge) === currentUrl) return true;
+        return false;
+      });
+      if (match?.definition) return match.definition;
+    }
+
+    // Comandante del jugador
+    const cmd =
+      zones.command?.[0] ||
+      allBattlefieldCards?.find(c => c.isCommander && c.ownerId === player.id) ||
+      zones.battlefield?.find(c => c.isCommander && c.ownerId === player.id) ||
+      zones.graveyard?.find(c => c.isCommander && c.ownerId === player.id) ||
+      zones.exile?.find(c => c.isCommander && c.ownerId === player.id) ||
+      zones.hand?.find(c => c.isCommander && c.ownerId === player.id);
+
+    if (cmd?.definition) return cmd.definition;
+
+    // Deck comandante o fallback sintetizado
+    if (player.selectedDeck?.commanderName) {
+      return {
+        scryfallId: 'playmat-commander-' + player.id,
+        name: player.selectedDeck.commanderName,
+        cmc: 0,
+        typeLine: 'Comandante',
+        colors: [],
+        colorIdentity: [],
+        artist: 'Artista Oficial',
+        copyright: '™ & © Wizards of the Coast',
+        imageUrlArtCrop: currentUrl,
+        imageUrlLarge: currentUrl,
+        imageUrlNormal: currentUrl,
+      };
+    }
+
+    if (currentUrl) {
+      return {
+        scryfallId: 'playmat-art-' + player.id,
+        name: 'Arte de Playmat',
+        cmc: 0,
+        typeLine: 'Fondo de Terreno de Juego',
+        colors: [],
+        colorIdentity: [],
+        artist: 'Artista Oficial',
+        copyright: '™ & © Wizards of the Coast',
+        imageUrlArtCrop: currentUrl,
+        imageUrlLarge: currentUrl,
+        imageUrlNormal: currentUrl,
+      };
+    }
+
+    return null;
+  }, [previewPlaymatUrl, zones, allBattlefieldCards, player.id, player.selectedDeck]);
+
+  const isUsingArtCrop = Boolean(
+    previewPlaymatUrl &&
+    (previewPlaymatUrl.includes('art_crop') ||
+     previewPlaymatUrl.includes('cards.scryfall.io') ||
+     Boolean(activePlaymatCard))
+  );
+
+  const playmatArtist = activePlaymatCard?.artist || 'Wizards of the Coast';
+  const playmatCopyright = activePlaymatCard?.copyright || '™ & © Wizards of the Coast';
 
   const adjustLife = (delta: number) => {
     onAction('ADJUST_LIFE', { playerId: player.id, delta });
@@ -554,6 +645,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       {isLocalPlayer && (
         <div className="absolute top-2 right-2 z-20 pointer-events-auto">
           <button
+            data-testid="playmat-custom-btn"
+            data-player-playmat-btn={player.id}
             onClick={() => setIsPlaymatModalOpen(true)}
             className="p-1 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer shadow-sm"
             title="Cambiar imagen de Playmat"
@@ -1138,10 +1231,13 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         </Portal>
       )}
 
-      {/* Playmat Selector Modal (REQ-22.3) */}
+      {/* Playmat Selector Modal (REQ-22.3, REQ-18, Punto 7) */}
       {isPlaymatModalOpen && (
         <Portal>
-          <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div
+            data-testid="playmat-modal-overlay"
+            className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
+          >
             <form
               onSubmit={handleSavePlaymat}
               className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl"
@@ -1153,18 +1249,82 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                 </h3>
                 <button
                   type="button"
+                  data-testid="close-playmat-modal-btn"
                   onClick={() => setIsPlaymatModalOpen(false)}
-                  className="text-slate-400 hover:text-white font-bold"
+                  className="text-slate-400 hover:text-white font-bold p-1 rounded-lg hover:bg-slate-800 transition-colors"
                 >
-                  &times;
+                  <X className="w-4 h-4" />
                 </button>
               </div>
+
+              {/* Vista previa del playmat y Atribución (Punto 7) */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Fondo del Playmat
+                </span>
+                <div className="relative w-full h-36 rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shadow-inner group">
+                  {previewPlaymatUrl ? (
+                    <>
+                      <img
+                        src={previewPlaymatUrl}
+                        alt="Playmat actual"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent pointer-events-none" />
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-xs text-slate-500">
+                      Sin imagen
+                    </div>
+                  )}
+
+                  {/* Atribución mientras se use art_crop como fondo (Punto 7) */}
+                  {isUsingArtCrop && (
+                    <div
+                      data-testid="playmat-attribution-box"
+                      className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-auto bg-slate-950/90 backdrop-blur-md px-3 py-2 rounded-lg border border-slate-800/80 text-[11px] shadow-lg"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div
+                          data-testid="playmat-artist"
+                          className="font-bold text-amber-300 truncate flex items-center space-x-1"
+                          title={playmatArtist}
+                        >
+                          <User className="w-3 h-3 text-amber-400 flex-shrink-0 inline mr-1" />
+                          <span>Ilustrado por {playmatArtist}</span>
+                        </div>
+                        <div
+                          data-testid="playmat-copyright"
+                          className="text-[9px] text-slate-400 truncate mt-0.5"
+                        >
+                          {playmatCopyright}
+                        </div>
+                      </div>
+
+                      {activePlaymatCard && (
+                        <button
+                          type="button"
+                          data-testid="playmat-view-card-btn"
+                          onClick={() => openCardDetails(activePlaymatCard)}
+                          className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-amber-200 border border-amber-500/40 rounded-lg font-bold text-[10px] transition-all cursor-pointer flex-shrink-0 shadow"
+                          title="Ver detalles de la carta (Oracle, Dictámenes, etc.)"
+                        >
+                          <BookOpen className="w-3.5 h-3.5" />
+                          <span>Ver carta</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1">
                   URL de imagen / Art Crop (Scryfall o enlace directo)
                 </label>
                 <input
                   type="url"
+                  data-testid="playmat-url-input"
                   value={customPlaymatInput}
                   onChange={e => setCustomPlaymatInput(e.target.value)}
                   placeholder="https://cards.scryfall.io/art_crop/..."
@@ -1172,17 +1332,36 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   autoFocus
                 />
               </div>
-              <div className="flex space-x-2">
+
+              {/* Botón para restablecer al Comandante si hay uno */}
+              {player.selectedDeck?.commanderImageUrl && (
                 <button
                   type="button"
+                  data-testid="playmat-reset-commander-btn"
+                  onClick={() => {
+                    const cmdUrl = toArtCropUrl(player.selectedDeck?.commanderImageUrl);
+                    onAction('SET_PLAYMAT', { playmatUrl: cmdUrl });
+                    setCustomPlaymatInput('');
+                  }}
+                  className="text-[11px] text-amber-400 hover:text-amber-300 font-bold underline cursor-pointer inline-block"
+                >
+                  Restablecer a arte del Comandante ({player.selectedDeck.commanderName})
+                </button>
+              )}
+
+              <div className="flex space-x-2 pt-1">
+                <button
+                  type="button"
+                  data-testid="playmat-cancel-btn"
                   onClick={() => setIsPlaymatModalOpen(false)}
-                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-2 rounded-xl"
+                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-2 rounded-xl transition-colors cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2 rounded-xl"
+                  data-testid="playmat-save-btn"
+                  className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2 rounded-xl transition-colors cursor-pointer"
                 >
                   Guardar Playmat
                 </button>

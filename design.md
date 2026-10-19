@@ -591,6 +591,14 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Filtro `isVisible`:** En [`CardContextMenu.tsx`](apps/web/src/components/CardContextMenu.tsx), la opción "Ver carta" se calcula con `!card.isFaceDown && !isPrivateHand && (fromZone === 'command' || card.isCommander || (fromZone === 'hand' && card.ownerId === targetPlayerId) || fromZone === 'battlefield' || fromZone === 'graveyard' || fromZone === 'exile')`.
   - **Anonimización de títulos:** Si `card.isFaceDown` es true, el encabezado muestra exclusivamente `"Carta boca abajo"`. Si es mano ajena, muestra `"Carta oculta"`, impidiendo cualquier filtración de nombre o tipo.
   - **Inspección de lectura sin mutación:** Al hacer clic derecho sobre permanentes ajenos en el campo de batalla, se abre el menú contextual mostrando "Ver carta" (si está boca arriba, conforme a información pública de MTG) mientras se bloquean con `canMutate` todas las acciones de girar, contadores, o traslados a zonas. Cartas ajenas boca abajo no ofrecen "Ver carta".
+- **Atribución en el Selector de Playmat y Enlace a "Ver Carta" (Punto 7 de Correcciones del Cliente):**
+  - **Identificación de carta de fondo:** En [`PlayerCell.tsx`](apps/web/src/components/PlayerCell.tsx), se resuelve `activePlaymatCard` comparando la URL de fondo (`previewPlaymatUrl` o `playmatImage`) con las ilustraciones `art_crop`, `normal` y `large` de las cartas del jugador, recurriendo al comandante en zona de comando/campo o sintetizando la carta oficial del mazo.
+  - **Detección de `art_crop`:** Con `isUsingArtCrop`, si el fondo corresponde a una ilustración recortada de Magic (Scryfall `art_crop`), se expone un bloque de atribución destacado (`data-testid="playmat-attribution-box"`).
+  - **Atribución legal:**
+    - Artista: `data-testid="playmat-artist"` con formato `"Ilustrado por [artista]"`.
+    - Copyright oficial: `data-testid="playmat-copyright"` con `"™ & © Wizards of the Coast"`.
+  - **Enlace de inspección directa:** Botón interactivo `"Ver carta"` (`data-testid="playmat-view-card-btn"`) que invoca `openCardDetails(activePlaymatCard)`, desplegando el panel con texto Oracle, símbolos y dictámenes.
+  - **Restablecer comandante:** Opción rápida (`data-testid="playmat-reset-commander-btn"`) para volver a la ilustración del comandante asignado.
 
 
 

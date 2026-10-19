@@ -330,6 +330,9 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
         - *Verificación de renderizado completo:* Jugador 1: 93/93; Jugador 2: 93/93; Jugador 3: 93/93; Jugador 4: 93/93 con `naturalWidth > 0` (372/372 cartas cargadas con éxito, 0 fallidas).
         - *Segunda apertura con Cache API persistente:* **185 ms** (notablemente más rápida que la apertura en frío de 845 ms, PASS).
         - *Verificación de cartas DFC y marco de respaldo:* Comprobados al 100% en vivo.
+   3.9. **Atribución de artista y copyright en el selector de playmat (Punto 7):**
+       - WHILE se use una ilustración `art_crop` de Scryfall como fondo de playmat (sea por defecto el comandante del mazo o una URL directa), THE modal de personalización de playmat SHALL mostrar de forma destacada el nombre del artista («Ilustrado por [artista]») y el copyright oficial de Wizards («™ & © Wizards of the Coast»).
+       - THE modal SHALL incluir un botón interactivo «Ver carta» (`data-testid="playmat-view-card-btn"`) que abre el panel de inspección detallada de la carta con sus dictámenes oficiales, además de permitir restablecer en un clic al arte del comandante asignado.
 4. THE contenedor de nombre SHALL ubicarse centrado en el borde superior de cada división conteniendo únicamente el nombre del jugador y el botón de expandir celda (Punto 8):
    4.1. WHILE sea el turno de un jugador, THE sistema SHALL resaltar este contenedor con fondo ámbar y borde iluminado, además de resaltar el contorno de la división.
    4.2. THE orden de iniciativa (1.º, 2.º…), corona de anfitrión 👑, píldora 'Tú' y punto indicador de conexión se trasladan a la barra superior desplegable (FloatingToolbar), con dropdown interactivo de jugadores.

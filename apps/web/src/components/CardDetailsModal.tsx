@@ -173,7 +173,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
   return (
     <div
       data-testid="card-details-modal"
-      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto select-none"
+      className="fixed inset-0 z-[60] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto select-none"
       onClick={onClose}
     >
       <div
