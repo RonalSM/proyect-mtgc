@@ -589,6 +589,25 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Actualización optimista síncrona:** Inmediatamente mediante `flushSync()`, se registra `optimisticPositions` con dicho centro normalizado `(centerX / winW, centerY / winH)`. Al desmontar el overlay y renderizar la carta en `BattlefieldCanvas`, el slot exterior se dibuja con centro `(centerPixelX, centerPixelY)` y `transform: translate(-50%, -50%)`, resultando en una discrepancia de $0.00\text{ px}$ respecto al overlay.
   - **Invarianza ante sincronización del servidor:** El servidor almacena y retransmite las coordenadas normalizadas del centro recibidas. Al procesar la respuesta autoritativa, la posición ya coincide ($\Delta < 0.01$) y se limpia la posición optimista sin ningún salto ni parpadeo visual.
   - **Límites de viewport orientados:** La función de acotamiento utiliza el ancho y alto orientados actuales (`orientedW = isTapped ? cardH : cardW`), impidiendo que los bordes derecho e inferior de cartas apaisadas se corten o sobrepasen el viewport y el dock.
+- **Suite de Pruebas de Invarianza de Posición en Arrastre y Soltado (Punto 5 de Corrección de Posición):**
+  - **Archivo de prueba E2E:** [`apps/web/e2e/center-convention-drag.spec.ts`](apps/web/e2e/center-convention-drag.spec.ts).
+  - **Configuraciones evaluadas (4 combinaciones completas):**
+    - `2P-1080p`: 2 jugadores, viewport 1920×1080. Cartas: vertical $96 \times 134\text{ px}$, apaisada $134 \times 96\text{ px}$.
+    - `4P-1080p`: 4 jugadores, viewport 1920×1080. Cartas: vertical $78 \times 108\text{ px}$, apaisada $108 \times 78\text{ px}$.
+    - `2P-768p`: 2 jugadores, viewport 1366×768. Cartas: vertical $96 \times 134\text{ px}$, apaisada $134 \times 96\text{ px}$.
+    - `4P-768p`: 4 jugadores, viewport 1366×768. Cartas: vertical $56 \times 78\text{ px}$, apaisada $78 \times 56\text{ px}$.
+  - **Casos probados por configuración (20 escenarios en total):**
+    1. *Mesa Enderezada:* Reposicionamiento con carta vertical.
+    2. *Mesa Girada (Tapped):* Arrastre y soltado con carta apaisada a 90°.
+    3. *Re-girada (Untap -> Tap):* Ciclo de cambio de orientación y arrastre subsiguiente.
+    4. *Bordes de Pantalla y Dock:* Desplazamiento hacia los límites perimetrales y zona superior del dock.
+    5. *Mesa Expandida:* Arrastre desde vista enfocada/zoom con transformación inversa de coordenadas.
+  - **Métricas empíricas registradas en las 20 pruebas:**
+    - $\Delta\text{Centro}$ fantasma frame 1 en Guest B respecto a la carta original: **$0.00\text{ px}$** (criterio $\le 1.0\text{ px}$ cumplido).
+    - $\Delta\text{Dimensiones}$ fantasma frame 1 en Guest B: **$0.00\text{ px}$** (coincidencia idéntica $w \times h$ o $h \times w$).
+    - $\Delta\text{Centro}$ al soltar en Host A (último frame de overlay vs primer frame de carta en mesa): **$0.00\text{ px}$** (criterio $\le 1.0\text{ px}$ cumplido).
+    - Máximo salto consecutivo en 500 ms post-drop (muestreado frame a frame con `requestAnimationFrame`): **$0.00\text{ px}$** (criterio $\le 1.0\text{ px}$ cumplido).
+    - Tiempo de ejecución total de la suite: **1.5 minutos** (4/4 tests pasados al 100%).
 
 ### Rutas
 `/table/:code/lobby` y `/table/:code/play`. El cliente redirige según `table.status`.

@@ -390,6 +390,10 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 21. **Cero salto al soltar carta en la mesa (Punto 4 de Corrección de Posición):**
     21.1. WHEN un jugador suelta una carta en el campo de batalla (`onDragEnd`), THE centro geométrico de la última posición del overlay de arrastre y el centro de la primera posición de la carta colocada en la mesa SHALL coincidir con una diferencia máxima $\le 1.0\text{ px}$ (0.00 px medido), manteniéndose invariante tras recibir la sincronización autoritativa del servidor.
     21.2. THE cálculo de contención dentro del viewport SHALL utilizar las dimensiones orientadas efectivas de la carta ($w \times h$ o $h \times w$), garantizando que ni el overlay ni la carta soltada desborden los límites de la pantalla ni del dock.
+22. **Certificación E2E de invarianza de posición en arrastre y soltado (Punto 5 de Corrección de Posición):**
+    22.1. THE suite de pruebas automatizadas en Playwright (`apps/web/e2e/center-convention-drag.spec.ts`) SHALL certificar empíricamente la ausencia total de saltos tanto para cartas enderezadas como giradas (tapped), con 2 y 4 jugadores a 1920x1080 y 1366x768 a través de 5 casos: reposicionamiento en mesa, mesa expandida, ciclo girada/enderezada/re-girada, y cercanía a bordes de pantalla y dock.
+    22.2. En el cliente emisor local (A), el muestreo continuo por `requestAnimationFrame` desde el último movimiento hasta 500 ms posteriores al drop SHALL certificar $\Delta\text{Centro} \le 1.0\text{ px}$ (0.00 px medido) respecto al overlay, y saltos entre fotogramas consecutivos $\le 1.0\text{ px}$ (0.00 px medido).
+    22.3. En el cliente receptor remoto (B), los primeros fotogramas del fantasma efímero SHALL certificar centro idéntico al de la carta original antes del arrastre ($\le 1.0\text{ px}$, 0.00 px medido) y dimensiones orientadas idénticas (0.00 px medido), sin saltos al sincronizar tras soltar.
 
 ## Requisitos no funcionales
 

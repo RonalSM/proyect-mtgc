@@ -270,6 +270,9 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         fromZone: data.fromZone,
         isTapped,
       });
+
+      // Punto 3 & Punto 5(b): Reservar los primeros 5 frames (~85ms) para que el fantasma remoto nazca con la posición y orientación original exacta antes de emitir movimiento
+      lastDragMoveTimeRef.current = Date.now() + 85;
     }
   };
 
