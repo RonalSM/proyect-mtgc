@@ -199,7 +199,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
           width={size === 'small' ? 146 : 488}
           height={size === 'small' ? 204 : 680}
           data-image-size={size}
-          loading="lazy"
+          loading="eager"
           decoding="async"
           onError={() => setImageError(true)}
           className={`w-full h-full object-fill pointer-events-none rounded-[6px] aspect-[5/7] ${imageClassName}`}

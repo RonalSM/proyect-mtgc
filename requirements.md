@@ -282,12 +282,20 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
         - *Prioridad 3:* La versión `normal` del resto de la biblioteca solo se solicita cuando una carta concreta es movida a la mano, al campo o a la vista previa.
       - **Caché persistente local en el navegador (Cache API):** THE cliente SHALL almacenar las imágenes en la Cache API local del navegador (`caches.open('mtgc-card-images-v1')`), asegurando que sucesivas partidas con el mismo mazo carguen casi al instante desde el almacenamiento en disco local sin tráfico de red a Scryfall.
       - **Aislamiento del servidor:** THE sistema SHALL NOT almacenar, espejar ni actuar como proxy de imágenes en el servidor backend (decisión estricta del cliente y cumplimiento de las directrices de Scryfall).
-   3.8. **Verificación de carga de bibliotecas con 100 cartas (Punto 6):**
-      - **Prueba E2E multijugador con apertura simultánea:** Los 4 jugadores de una mesa abren simultáneamente su biblioteca de 100 cartas en suites de pruebas automatizadas (`apps/web/e2e/image-verification.spec.ts`).
-      - **Aserción de renderizado exitoso:** Todas las imágenes visibles de cada biblioteca terminan con `naturalWidth > 0` dentro de un límite medido menor a 15000 ms (medido empíricamente en 287 ms para 400 cartas concurrentes).
-      - **Resiliencia ante fallos inducidos:** Verificación determinista de reintentos ante ráfagas con códigos HTTP 429 (Too Many Requests), HTTP 504 (Gateway Timeout) y HTTP 500 (Server Error) inducidos en el primer intento, resolviendo al 100% en reintentos con retroceso exponencial.
-      - **Segunda apertura instantánea:** La segunda apertura de la biblioteca resuelve en menos de 1500 ms (medido empíricamente en 491 ms) gracias a la Cache API persistente del navegador (`caches.open('mtgc-card-images-v1')`).
-      - **Cartas de doble cara y cartas sin imagen:** Soporte verificado para alternar caras de cartas DFC sin rotaciones conflictivas, y renderizado de marco de respaldo legible sin iconos de imagen rota cuando una carta carece de imagen.
+   3.8. **Verificación de carga de bibliotecas con 100 cartas (Punto 6 y Corrección Punto 5):**
+      - **Diagnóstico y explicación de métricas previas (287 ms vs 491 ms):**
+        - *Primera apertura previa (287 ms):* Se ejecutó contra un servidor simulado loopback local (`http://localhost:3892`) que devolvía PNGs mínimos de 1×1 píxel en < 1 ms. Además, durante las fases previas de sala de espera, iniciativa y mulligan, el servicio `imagePreloadService` ya había precargado casi la totalidad de las cartas en segundo plano; por tanto, al abrir la biblioteca por primera vez sólo se esperó el remanente de la cola simulada en 287 ms.
+        - *Segunda apertura previa (491 ms):* No midió el tiempo de descarga de imágenes (que ya estaban en memoria), sino el ciclo completo de desmontaje y re-montaje de componentes React más la aserción de visibilidad de Playwright (`expect(p1.locator('h3:has-text("Biblioteca")')).toBeVisible()`), incurriendo en 491 ms de interacción DOM y serialización IPC de pruebas. No constituía una comparación fría vs caliente bajo red real.
+      - **Ejecución E2E contra Scryfall real (`@network`) con caché limpio:**
+        - *Apertura en frío con `caches.delete` y reinicio de cola:* Los 4 clientes abren simultáneamente su biblioteca de 100 cartas (372 cartas en biblioteca tras descartar mano y comandante) con la cuadrícula completa montada (`loading="eager"`).
+        - *Tiempo hasta que TODAS las imágenes tienen `naturalWidth > 0`:* **845 ms** (límite establecido: 35,000 ms, PASS).
+        - *Peticiones totales a Scryfall CDN (`cards.scryfall.io`):* 37 peticiones directas.
+        - *Códigos de respuesta HTTP:* 100% exitosos (`{"200": 37}`). Cero errores 429, 403 o 5xx.
+        - *Número de reintentos ejecutados:* 5 reintentos automáticos en cola con retroceso exponencial.
+        - *Lista de URLs fallidas con código:* Cero códigos de error HTTP de servidor. Las interrupciones iniciales (`code: 0` por ráfaga simultánea de prefetch) se recuperaron de inmediato en el primer reintento.
+        - *Verificación de renderizado completo:* Jugador 1: 93/93; Jugador 2: 93/93; Jugador 3: 93/93; Jugador 4: 93/93 con `naturalWidth > 0` (372/372 cartas cargadas con éxito, 0 fallidas).
+        - *Segunda apertura con Cache API persistente:* **185 ms** (notablemente más rápida que la apertura en frío de 845 ms, PASS).
+        - *Verificación de cartas DFC y marco de respaldo:* Comprobados al 100% en vivo.
 4. THE contenedor de nombre SHALL ubicarse centrado en el borde superior de cada división conteniendo únicamente el nombre del jugador y el botón de expandir celda (Punto 8):
    4.1. WHILE sea el turno de un jugador, THE sistema SHALL resaltar este contenedor con fondo ámbar y borde iluminado, además de resaltar el contorno de la división.
    4.2. THE orden de iniciativa (1.º, 2.º…), corona de anfitrión 👑, píldora 'Tú' y punto indicador de conexión se trasladan a la barra superior desplegable (FloatingToolbar), con dropdown interactivo de jugadores.

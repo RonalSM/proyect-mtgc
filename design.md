@@ -227,6 +227,11 @@ Fase 1 solo enlaza a Discord/Meet. Fase 2 evalúa LiveKit.
    - *Sala de espera (`LobbyWaitingRoom.tsx`):* Al seleccionar mazo, precarga el comandante en `normal` (prioridad 10) y la biblioteca en `small` (prioridad 1).
    - *Iniciativa (`InitiativeOverlay.tsx`):* Precarga anticipada de la mano inicial (7 cartas) y comandante en `normal` (prioridad 10), y biblioteca en `small` (prioridad 1).
    - *Apertura y Mulligan (`OpeningHandModal.tsx`):* Precarga con máxima prioridad de las 7 cartas activas en `normal` (prioridad 10), garantizando nitidez completa y tiempo de respuesta cero al decidir quedarse o mulligan.
+7. **Verificación de Red en Vivo y Telemetría de Caché Limpio (Punto 5):**
+   - *Carga ansiosa (`loading="eager"`):* `CardDisplay` utiliza `loading="eager"` para permitir a Chromium decodificar y renderizar inmediatamente las imágenes alimentadas desde la Cache API / `imageLoaderQueue` sin bloqueos de renderizado diferido fuera de pantalla.
+   - *Apertura en frío certificada:* Vaciado de caché (`caches.delete`) y reinicio de cola en los 4 clientes previo a la apertura simultánea de bibliotecas (372 cartas). Tiempo de resolución: **845 ms** (< 35 s).
+   - *Peticiones CDN y códigos de respuesta:* 37 peticiones directas a `cards.scryfall.io`, 100% con código 200 OK (`{"200": 37}`), 5 reintentos automáticos, 0 fallos 4xx/5xx de servidor. 372/372 cartas con `naturalWidth > 0`.
+   - *Reapertura con Cache API persistente:* **185 ms** (sustancialmente menor a la apertura en frío).
 
 ### COMP-5 Game Server
 **Responsabilidad:** mantener y difundir el estado autoritativo de cada mesa.
@@ -574,7 +579,7 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
 
 - **Unitarias (cobertura ≥ 80 %):** `DeckParser`, `CommanderValidator`, `VisibilityFilter`, lógica de acciones, `Shuffler`, d20 y desempates con pruebas de distribución (chi-cuadrado).
 - **Integración:** flujo crear mesa → sala de espera → iniciativa d20 → partida → mover carta → reconectar; importación con Scryfall simulado.
-- **End-to-end (Playwright):** 4 clientes simultáneos: elegir mazo → listo → iniciar → d20 → orden correcto → primer turno → partida completa; apertura concurrente de bibliotecas de 100 cartas con 4 clientes simultáneos, simulación determinista de ráfagas HTTP 429, 504 y 500, reintentos con backoff y caché persistente de navegador con Cache API (`apps/web/e2e/image-verification.spec.ts`).
+- **End-to-end (Playwright):** 4 clientes simultáneos: elegir mazo → listo → iniciar → d20 → orden correcto → primer turno → partida completa; apertura concurrente de bibliotecas de 100 cartas con 4 clientes simultáneos, simulación determinista de ráfagas HTTP 429, 504 y 500, reintentos con backoff y caché persistente de navegador con Cache API (`apps/web/e2e/image-verification.spec.ts`); verificación de red en vivo contra Scryfall real (`@network`) con caché limpio: 845 ms apertura en frío (37 peticiones CDN 200 OK, 5 reintentos, 372/372 cartas renderizadas con `naturalWidth > 0`) y 185 ms segunda apertura con caché persistente.
 - **Rendimiento (k6/Artillery):** 500 mesas con 4 jugadores; medir p95 de latencia de extremo a extremo (emisor a receptor).
 - **Seguridad:** pruebas de autorización, fuga de información oculta en lobby y partida.
 
