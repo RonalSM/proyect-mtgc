@@ -38,7 +38,10 @@ export const GameLogAndChat: React.FC<GameLogAndChatProps> = ({ logs, onAction, 
     activeTab === 'chat' ? logs.filter(l => l.actionText.startsWith('💬')) : logs;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl flex flex-col h-full shadow-2xl overflow-hidden">
+    <div
+      data-testid="chat-log-panel"
+      className="bg-slate-900 border border-slate-800 rounded-2xl flex flex-col h-full shadow-2xl overflow-hidden"
+    >
       {/* Header */}
       <div className="p-3 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
         <div className="flex space-x-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800">

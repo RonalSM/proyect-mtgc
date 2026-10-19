@@ -185,6 +185,13 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
         - **Opciones autoritativas de biblioteca:** El menú contextual ofrece exactamente tres opciones: "Arriba", "Abajo" y "Aleatoria".
         - **CSPRNG uniforme en servidor:** La opción "Aleatoria" (`randomPosition: true`) selecciona de forma uniforme un índice entre $0$ y la longitud de la biblioteca inclusive mediante `crypto.randomInt(0, library.length + 1)`.
         - **Registro sin filtrado en bitácora:** Para preservar la incertidumbre estratégica, cualquier envío de cartas a la biblioteca se registra en la bitácora pública como `X envió una carta a su biblioteca`, sin exponer a los rivales si quedó arriba, abajo o en qué posición se insertó.
+    7.26. **Certificación E2E de menú contextual inline, pausas diagonales y privacidad de biblioteca y revelado (Punto 3 de Correcciones del Menú Contextual):**
+        - **Invarianza ante movimientos diagonales y pausas:** THE sistema SHALL mantener el menú contextual y sus opciones desplegadas 100% abiertas ante trayectorias del puntero arbitrarias o diagonales con desvíos laterales (+35 px) y pausas prolongadas (0 ms, 300 ms y 800 ms), sin cerrarse por falsos eventos de `mouseleave` ni depender de la velocidad del puntero del ratón o trackpad.
+        - **Verificación de colocación Arriba:** La carta enviada al tope (`destinationIndex: 0`) SHALL ser la carta inmediatamente devuelta al ejecutar la acción de robar (`DRAW_CARDS`).
+        - **Verificación de colocación Abajo:** La carta enviada al fondo (`destinationIndex: library.length`) SHALL permanecer en el fondo y NO ser entregada en el siguiente robo individual de la biblioteca.
+        - **Verificación de colocación Aleatoria:** La carta insertada de forma aleatoria mediante CSPRNG SHALL entrar a la biblioteca y salir de la mano del jugador emisor; la bitácora pública en clientes remotos SHALL registrar `"X envió una carta a su biblioteca"` sin exponer jamás el índice numérico ni la posición elegida.
+        - **Verificación de Revelado Privado:** La acción de revelar a un jugador rival SHALL transmitir la identidad de la carta exclusivamente al destinatario especificado (`RevealedCardModal`), sin difundir la identidad a terceros ni mover la carta de su zona.
+
 
 ### REQ-10 Sincronización y reconexión
 **Historia:** Como jugador, quiero volver a la partida si se cae mi conexión.

@@ -562,6 +562,14 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Opciones de Biblioteca:** El submenú en línea de Biblioteca ofrece 3 opciones directas: "Arriba" (`destinationIndex: 0`), "Abajo" (`destinationIndex: library.length`), y "Aleatoria" (`randomPosition: true`).
   - **Distribución uniforme con CSPRNG:** Al recibir `randomPosition: true`, el servidor ejecuta `crypto.randomInt(0, library.length + 1)` para insertar la carta en una posición estrictamente equiprobable entre todas las disponibles ($0$ a $L$).
   - **Bitácora opaca:** El servidor registra el evento público `X envió una carta a su biblioteca`, sin filtrar la posición (cima, fondo o índice) a ningún cliente.
+- **Certificación de Menú Contextual Inline, Pausas Diagonales, Biblioteca y Revelado (Punto 3 de Correcciones del Menú Contextual):**
+  - **Suite E2E de Playwright:** [`apps/web/e2e/context-menu-inline.spec.ts`](apps/web/e2e/context-menu-inline.spec.ts).
+  - **Invarianza ante movimientos diagonales y pausas:** Muestreo de trayectorias sinusoidales con desvío lateral (+35 px) y pausas de 0 ms, 300 ms y 800 ms hacia los submenús de "Biblioteca" y "Revelar". El menú permanece visible sin cerrarse por hover.
+  - **Biblioteca Arriba:** Carta enviada al tope (`destinationIndex: 0`) confirmada como la siguiente robada (`DRAW_CARDS`) con coincidencia exacta de `instanceId`.
+  - **Biblioteca Abajo:** Carta enviada al fondo (`destinationIndex: library.length`) confirmada que NO es entregada en el siguiente robo individual.
+  - **Biblioteca Aleatoria:** Carta insertada en posición aleatoria con CSPRNG autoritativo; verificada la remoción de la mano y la recepción en el cliente rival (`GameLogAndChat`) de la entrada `"envió una carta a su biblioteca"` sin filtrar índices ni posiciones.
+  - **Revelado Privado:** La acción de revelar a un jugador rival emite `REVEAL_CARD` con `targetPlayerId`; el cliente objetivo muestra `RevealedCardModal` con el nombre de la carta mientras los demás clientes no reciben la identidad.
+
 - Etiqueta de nombre: píldora pequeña con icono de ampliar; turno activo con borde de color y brillo suave.
 - Ranuras de pilas: rectángulos con proporción de carta; vacías con contorno punteado y etiqueta de zona.
 - Animaciones breves (robar, d20, pasar turno) solo con `transform` y `opacity`, desactivadas con `prefers-reduced-motion`.

@@ -226,6 +226,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               {/* Chat & Logs button */}
               <button
                 onClick={onToggleChat}
+                data-testid="toggle-chat-log"
                 className="flex items-center space-x-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1 rounded-xl text-slate-200 transition-colors"
                 title="Historial de acciones y chat"
               >
