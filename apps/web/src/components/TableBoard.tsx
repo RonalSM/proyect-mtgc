@@ -152,6 +152,20 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     initialBox: { left: number; top: number; width: number; height: number };
   } | null>(null);
 
+  const latestPointerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handlePointerMove = (e: PointerEvent | MouseEvent) => {
+      latestPointerRef.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener('pointermove', handlePointerMove, { passive: true, capture: true });
+    window.addEventListener('mousemove', handlePointerMove, { passive: true, capture: true });
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove, { capture: true });
+      window.removeEventListener('mousemove', handlePointerMove, { capture: true });
+    };
+  }, []);
+
   // Modificador con única fuente de verdad: preserva exactamente el desplazamiento entre el puntero y la caja visual (Punto 2)
   const snapToVisualBoxModifier = ({
     transform,
@@ -162,12 +176,16 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   }) => {
     if (!dragOffsetRef.current || !activeNodeRect) return transform;
 
-    const { initialBox } = dragOffsetRef.current;
+    const { initialBox, grabOffsetFromTopLeft } = dragOffsetRef.current;
     const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
     const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
 
-    const targetLeft = initialBox.left + transform.x;
-    const targetTop = initialBox.top + transform.y;
+    // Posición del cursor en tiempo real para eliminar saltos en el frame donde se supera el umbral de 8px
+    const currentPointerX = latestPointerRef.current.x || (initialBox.left + grabOffsetFromTopLeft.x + transform.x);
+    const currentPointerY = latestPointerRef.current.y || (initialBox.top + grabOffsetFromTopLeft.y + transform.y);
+
+    const targetLeft = currentPointerX - grabOffsetFromTopLeft.x;
+    const targetTop = currentPointerY - grabOffsetFromTopLeft.y;
 
     const clampedLeft = Math.max(0, Math.min(winW - initialBox.width, targetLeft));
     const clampedTop = Math.max(0, Math.min(winH - initialBox.height, targetTop));
@@ -276,8 +294,11 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     let overlayTop = 0;
 
     if (dragOffsetRef.current) {
-      overlayLeft = dragOffsetRef.current.initialBox.left + (event.delta?.x ?? 0);
-      overlayTop = dragOffsetRef.current.initialBox.top + (event.delta?.y ?? 0);
+      const { initialBox, grabOffsetFromTopLeft } = dragOffsetRef.current;
+      const curX = latestPointerRef.current.x || (initialBox.left + grabOffsetFromTopLeft.x + (event.delta?.x ?? 0));
+      const curY = latestPointerRef.current.y || (initialBox.top + grabOffsetFromTopLeft.y + (event.delta?.y ?? 0));
+      overlayLeft = curX - grabOffsetFromTopLeft.x;
+      overlayTop = curY - grabOffsetFromTopLeft.y;
     } else if (event.active.rect.current?.translated) {
       overlayLeft = event.active.rect.current.translated.left;
       overlayTop = event.active.rect.current.translated.top;
@@ -351,8 +372,11 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     let overlayTop = 0;
 
     if (dragOffsetRef.current) {
-      overlayLeft = dragOffsetRef.current.initialBox.left + (event.delta?.x ?? 0);
-      overlayTop = dragOffsetRef.current.initialBox.top + (event.delta?.y ?? 0);
+      const { initialBox, grabOffsetFromTopLeft } = dragOffsetRef.current;
+      const curX = latestPointerRef.current.x || (initialBox.left + grabOffsetFromTopLeft.x + (event.delta?.x ?? 0));
+      const curY = latestPointerRef.current.y || (initialBox.top + grabOffsetFromTopLeft.y + (event.delta?.y ?? 0));
+      overlayLeft = curX - grabOffsetFromTopLeft.x;
+      overlayTop = curY - grabOffsetFromTopLeft.y;
     } else if (translated) {
       overlayLeft = translated.left;
       overlayTop = translated.top;
@@ -640,7 +664,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
         {/* Drag Overlay visual en portal a document.body con estructura idéntica de slot y rotador (Punto 2) */}
         <Portal>
-          <DragOverlay modifiers={[snapToVisualBoxModifier]} dropAnimation={null}>
+          <DragOverlay dropAnimation={null}>
             {activeDragItem ? (
               <div
                 data-drag-overlay="true"

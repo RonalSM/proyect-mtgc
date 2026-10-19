@@ -463,6 +463,11 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
       - *Estabilidad dimensional de la mano:* En `HandFan.tsx`, las cartas arrastradas conservan su anchura de slot (`var(--card-w)`) aplicando `opacity: 0` en lugar de colapsar la anchura a 0, evitando saltos del abanico o alteraciones de rectángulos durante el arrastre.
       - *Coordenadas de mesa desde el overlay:* Al soltar (`handleDragEnd`), las coordenadas de mesa se derivan estrictamente de la caja visual delimitada del overlay (`centerScreenX = clampedX + overlayWidth / 2`, `centerScreenY = clampedY + overlayHeight / 2`), asegurando continuidad perfecta entre la experiencia visual y el estado del servidor.
 
+    - **Seguimiento estricto del puntero durante el arrastre (Corrección Punto 3):**
+      - *Sincronización en tiempo real con `latestPointerRef`:* Para eliminar el salto inicial de 8 px inherente a la activación del sensor de `@dnd-kit`, `TableBoard` mantiene un listener nativo global de `pointermove` en fase de captura (`latestPointerRef`). `snapToVisualBoxModifier` calcula `targetLeft = currentPointerX - grabOffsetFromTopLeft.x` y `targetTop = currentPointerY - grabOffsetFromTopLeft.y`, asegurando que el punto agarrado del overlay visual (`puntero - overlayCorner`) se conserve matemáticamente invariante con $\Delta \le 1.0\text{ px}$.
+      - *Muestreo continuo y certificación E2E:* Validado en `apps/web/e2e/pointer-tracking.spec.ts` en 16 combinaciones (carta enderezada y girada; desde mano, mesa y mesa expandida; a 1920x1080 y 1366x768; en pods de 2 y 4 jugadores):
+        - Desviación en el frame del umbral de 8 px: $\Delta x = 0.00\text{ px}, \Delta y = 0.00\text{ px}$ en todas las combinaciones.
+        - Desviación máxima a lo largo de toda la trayectoria: $\Delta x = 0.00\text{ px}, \Delta y = 0.00\text{ px}$ en todas las combinaciones (criterio $\le 1.0\text{ px}$ cumplido al 100%).
 ### Privacidad y Reglas de Visibilidad de Mensajes
 1. **Fase de Mulligan y Regla de Londres:**
    - La estructura de mano inicial de cada jugador (`mulliganState.players[playerId].cards`) se transmite de forma autoritativa y privada únicamente al socket del propio jugador.

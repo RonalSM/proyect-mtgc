@@ -71,6 +71,7 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
       {...listeners}
       data-hand-card="true"
       data-from-zone="hand"
+      data-card-instance-id={card.instanceId}
       data-card-name={card.definition.name}
       onClick={onSelect}
       onDoubleClick={onZoom}
