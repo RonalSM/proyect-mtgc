@@ -202,7 +202,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
           loading="lazy"
           decoding="async"
           onError={() => setImageError(true)}
-          className={`w-full h-full object-fill pointer-events-none rounded-[6px] aspect-[5/7] transition-transform duration-150 ${imageClassName}`}
+          className={`w-full h-full object-fill pointer-events-none rounded-[6px] aspect-[5/7] ${imageClassName}`}
         />
       ) : (
         /* 3. Fallback Card Frame: High-contrast legible MTG card frame with name, mana, type, P/T and retry button (Punto 4) */

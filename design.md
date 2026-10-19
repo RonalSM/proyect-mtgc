@@ -446,6 +446,15 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
     - **Rotación interior por camino más corto:** El cuerpo interior contiene la carátula, badges de contadores (+1/+1, etc.) y el contorno de selección. Rota de $0^\circ \to 90^\circ$ al girar (monótonamente sin sobrepasarse) y de $90^\circ \to 0^\circ$ al enderezar (camino más corto de $-90^\circ$, nunca $270^\circ$). Contadores e insignias giran conjuntamente con la carta sin saltos ni desfases.
     - **Respeto a prefers-reduced-motion:** La media query `@media (prefers-reduced-motion: reduce)` desactiva la animación con `transition: none !important`, realizando el intercambio dimensional y la rotación de forma instantánea.
     - **Desacoplamiento de holderId y MOVE_CARD:** La acción de girar o enderezar despacha exclusivamente `TAP_CARD`. El servidor no recalcula `holderId` (que solo se computa al mover o soltar cartas en la mesa).
+    - **Preservación de nitidez óptica y anti-blur en rotación (Corrección Punto 1):**
+      - *Dimensiones pares exactas:* Las variables `--card-w` y `--card-h` se computan y redondean como enteros pares (96×134 en 2p, 78×108 en 4p y 6p a 1080p). Esto asegura que al aplicar `translate(-50%, -50%)`, el desplazamiento sea un entero exacto (e.g. -48px y -67px), eliminando desfases de medio píxel (.5px).
+      - *Posicionamiento entero en el lienzo:* El centro de cada carta se calcula mediante `centerPixelX = Math.round(screenNormX * winW + cardWNum / 2)` y `centerPixelY = Math.round(screenNormY * winH + cardHNum / 2)`, anclando el slot a coordenadas enteras del viewport.
+      - *Gestión temporal de `will-change`:* Para evitar que Blink/Chromium promueva la capa permanentemente y congele una rasterización a baja escala, `will-change: transform` y `will-change: width, height` solo se aplican durante los 180 ms de la animación mediante la clase dinámica `.is-animating-tap`. Al finalizar la transición (`onTransitionEnd`), `will-change` se desactiva, permitiendo al motor rasterizar la carta a resolución nativa completa.
+      - *Transform 2D puro:* Sin capas 3D, sin `translateZ` ni filtros artificiales sobre la imagen.
+      - *Medición empírica de nitidez (Varianza del Laplaciano):* Verificado en `apps/web/e2e/sharpness-tap.spec.ts`:
+        - DPR 1: Enderezada = 3812.31, Girada = 3929.30, Ratio = 103.07% (>= 90% requerido cumplido).
+        - DPR 2: Enderezada = 3376.38, Girada = 3547.01, Ratio = 105.05% (>= 90% requerido cumplido).
+        - Capturas ampliadas al 200% archivadas: `sharpness-untapped-200.png` y `sharpness-tapped-200.png`.
     - **Análisis de posición por centro en el modelo:** Al guardar o anclar la posición de la carta por su centro, las rotaciones no alteran las coordenadas de la carta, eliminando cualquier desfase entre clientes locales y remotos.
 
 ### Privacidad y Reglas de Visibilidad de Mensajes

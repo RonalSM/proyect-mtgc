@@ -23,6 +23,8 @@ interface BattlefieldCanvasProps {
   localPlayerId?: string;
   roomState?: RoomState;
   viewFraming?: ViewFraming;
+  cardPixelWidth?: number;
+  cardPixelHeight?: number;
   onUnauthorizedAttempt?: (card: CardInstance) => void;
   onAction: (type: GameActionType, payload: unknown) => void;
 }
@@ -37,6 +39,8 @@ interface BattlefieldCardItemProps {
   viewFraming?: ViewFraming;
   roomState?: RoomState;
   allBattlefieldCards?: CardInstance[];
+  cardPixelWidth?: number;
+  cardPixelHeight?: number;
   onAction: (type: GameActionType, payload: unknown) => void;
   onUnauthorizedAttempt?: (card: CardInstance) => void;
   onCardClick: () => void;
@@ -61,6 +65,8 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   viewFraming,
   roomState,
   allBattlefieldCards,
+  cardPixelWidth,
+  cardPixelHeight,
   onAction,
   onUnauthorizedAttempt,
   onCardClick,
@@ -153,13 +159,41 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     }
   }
 
-  const posX = Math.max(0, Math.min(1, screenNormX)) * 100;
-  const posY = Math.max(0, Math.min(1, screenNormY)) * 100;
-  const zIndex = optimisticPosition?.zIndex ?? (card.position?.zIndex ?? 5);
-
   const isTapped = !!card.isTapped;
-  const cardW = isTapped ? 'var(--card-h)' : 'var(--card-w)';
-  const cardH = isTapped ? 'var(--card-w)' : 'var(--card-h)';
+  const [isAnimatingTap, setIsAnimatingTap] = useState(false);
+  const prevTappedRef = React.useRef(isTapped);
+
+  React.useEffect(() => {
+    if (prevTappedRef.current !== isTapped) {
+      prevTappedRef.current = isTapped;
+      setIsAnimatingTap(true);
+      const timer = setTimeout(() => {
+        setIsAnimatingTap(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isTapped]);
+
+  const handleTransitionEnd = (e: React.TransitionEvent) => {
+    if (e.propertyName === 'transform' || e.propertyName === 'width' || e.propertyName === 'height') {
+      setIsAnimatingTap(false);
+    }
+  };
+
+  const cardWNum = cardPixelWidth || 96;
+  const cardHNum = cardPixelHeight || 134;
+
+  const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+  const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
+
+  const clampedNormX = Math.max(0, Math.min(1, screenNormX));
+  const clampedNormY = Math.max(0, Math.min(1, screenNormY));
+
+  // Redondeo del centro de la carta a píxeles enteros exactos para eliminar subpíxeles y carta borrosa (Punto 1)
+  const centerPixelX = Math.round(clampedNormX * winW + cardWNum / 2);
+  const centerPixelY = Math.round(clampedNormY * winH + cardHNum / 2);
+
+  const zIndex = optimisticPosition?.zIndex ?? (card.position?.zIndex ?? 5);
 
   return (
     <div
@@ -183,31 +217,36 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       onTouchMove={handleTouchEnd}
       onMouseEnter={(e) => !card.isFaceDown && !isDragging && showPreview(card.definition, e)}
       onMouseLeave={hidePreview}
+      onTransitionEnd={handleTransitionEnd}
       className={`card-slot-container absolute group select-none pointer-events-auto flex items-center justify-center ${
+        isAnimatingTap ? 'is-animating-tap' : ''
+      } ${
         canMove ? 'cursor-pointer' : 'cursor-not-allowed'
       } ${
         isDragging || isRemoteDragging ? 'opacity-0 pointer-events-none' : ''
       }`}
       style={{
-        left: `calc(${posX}% + var(--card-w) / 2)`,
-        top: `calc(${posY}% + var(--card-h) / 2)`,
+        left: `${centerPixelX}px`,
+        top: `${centerPixelY}px`,
         transform: 'translate(-50%, -50%)',
         zIndex: isSelected ? 50 : zIndex,
-        width: cardW,
-        height: cardH,
+        width: isTapped ? `${cardHNum}px` : `${cardWNum}px`,
+        height: isTapped ? `${cardWNum}px` : `${cardHNum}px`,
       }}
     >
-      {/* Rotating Card Body (Punto 7: rotación 90° alrededor del centro invariante) */}
+      {/* Rotating Card Body (Punto 7: rotación 90° alrededor del centro invariante, nítida y sin 3D) */}
       <div
         data-card-rotator="true"
         className={`card-rotator rounded-md overflow-hidden border shadow-md relative bg-slate-900 flex-shrink-0 ${
+          isAnimatingTap ? 'is-animating-tap' : ''
+        } ${
           isSelected
             ? 'border-amber-400 ring-2 ring-amber-400/50 shadow-amber-500/20'
             : 'border-slate-800 hover:border-slate-600'
         }`}
         style={{
-          width: 'var(--card-w)',
-          height: 'var(--card-h)',
+          width: `${cardWNum}px`,
+          height: `${cardHNum}px`,
           transform: isTapped ? 'rotate(90deg)' : 'rotate(0deg)',
           transformOrigin: 'center center',
         }}
@@ -262,6 +301,8 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   localPlayerId,
   roomState,
   viewFraming,
+  cardPixelWidth,
+  cardPixelHeight,
   onUnauthorizedAttempt,
   onAction,
 }) => {
@@ -333,6 +374,8 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
             viewFraming={viewFraming}
             roomState={roomState}
             allBattlefieldCards={cards}
+            cardPixelWidth={cardPixelWidth}
+            cardPixelHeight={cardPixelHeight}
             onAction={onAction}
             onUnauthorizedAttempt={onUnauthorizedAttempt}
             onCardClick={() => handleCardClick(card)}
@@ -360,8 +403,14 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
               return null;
             }
           }
-          const posX = Math.max(0, Math.min(1, screenNormX)) * 100;
-          const posY = Math.max(0, Math.min(1, screenNormY)) * 100;
+          const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+          const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
+          const cardWNum = cardPixelWidth || 96;
+          const cardHNum = cardPixelHeight || 134;
+          const clampedX = Math.max(0, Math.min(1, screenNormX));
+          const clampedY = Math.max(0, Math.min(1, screenNormY));
+          const ghostCenterX = Math.round(clampedX * winW + cardWNum / 2);
+          const ghostCenterY = Math.round(clampedY * winH + cardHNum / 2);
 
           return (
             <div
@@ -376,17 +425,17 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
                   : 'transition-[left,top] duration-75 ease-linear'
               }`}
               style={{
-                left: `calc(${posX}% + var(--card-w) / 2)`,
-                top: `calc(${posY}% + var(--card-h) / 2)`,
+                left: `${ghostCenterX}px`,
+                top: `${ghostCenterY}px`,
                 transform: 'translate(-50%, -50%)',
-                width: item.isTapped ? 'var(--card-h)' : 'var(--card-w)',
-                height: item.isTapped ? 'var(--card-w)' : 'var(--card-h)',
+                width: item.isTapped ? `${cardHNum}px` : `${cardWNum}px`,
+                height: item.isTapped ? `${cardWNum}px` : `${cardHNum}px`,
               }}
             >
               <div
                 style={{
-                  width: 'var(--card-w)',
-                  height: 'var(--card-h)',
+                  width: `${cardWNum}px`,
+                  height: `${cardHNum}px`,
                   transform: item.isTapped ? 'rotate(90deg)' : 'rotate(0deg)',
                   transformOrigin: 'center center',
                 }}

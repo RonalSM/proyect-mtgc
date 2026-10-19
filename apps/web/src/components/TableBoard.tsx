@@ -105,8 +105,17 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   const maxHByCellWidth = maxWByCellWidth / 0.714;
 
   // El tamaño de carta debe ser el MENOR entre el límite por alto y el límite por ancho (Punto 9)
-  const cardPixelHeight = Math.round(Math.max(65, Math.min(135, Math.min(maxHByCellHeight, maxHByCellWidth))));
-  const cardPixelWidth = Math.round(cardPixelHeight * 0.714);
+  let rawH = Math.round(Math.max(65, Math.min(135, Math.min(maxHByCellHeight, maxHByCellWidth))));
+  // Asegurar dimensiones enteras y pares para el slot y la carta (Punto 1 / Correcciones)
+  if (rawH % 2 !== 0) {
+    rawH = rawH < 135 ? rawH + 1 : rawH - 1;
+  }
+  let rawW = Math.round(rawH * 0.714);
+  if (rawW % 2 !== 0) {
+    rawW = rawW + 1;
+  }
+  const cardPixelHeight = rawH;
+  const cardPixelWidth = rawW;
 
   // Pointer sensor con activationConstraint de 8px para distinguir clic de arrastre (REQ-9.2, REQ-22)
   const sensors = useSensors(
@@ -589,6 +598,8 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           viewFraming={viewFraming}
           localPlayerId={localPlayerId}
           roomState={roomState}
+          cardPixelWidth={cardPixelWidth}
+          cardPixelHeight={cardPixelHeight}
           onUnauthorizedAttempt={() =>
             showPermissionWarning(
               'No puedes mover una carta ajena sin ser su titular temporal.',
