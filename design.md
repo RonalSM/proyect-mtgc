@@ -279,6 +279,13 @@ resolveCards(lines: ParsedLine[]): Promise<ResolvedDeck>
 validateCommander(deck: ResolvedDeck): ValidationReport
 ```
 
+### COMP-8 Gestión de Imágenes y Diagnóstico de Red (Punto 1)
+- **Diagnóstico empírico de fallos en biblioteca:**
+  - Las imágenes no cargadas en la biblioteca procedían del endpoint de la API `api.scryfall.com/cards/named?exact=...&format=image` en lugar del CDN estático.
+  - Al abrir la biblioteca con ~60–92 cartas simultáneas, `api.scryfall.com` respondió con **HTTP 429 Too Many Requests** en el 100 % de las solicitudes en ráfaga (`{"429": 60}`). En solicitudes individuales no espaciadas retornó `HTTP 302` (Redirect temporal a Cloudflare).
+  - Por su parte, el CDN directo `cards.scryfall.io` con User-Agent de navegador respondió con **HTTP 200 OK** en el 100 % de las solicitudes concurrentes (`{"200": 60}`).
+- **Directriz de diseño:** Prohibición estricta de invocar `api.scryfall.com/cards/named` en cliente para renderizar cartas en la mesa o biblioteca. Todas las URLs deben consumirse directamente desde `cards.scryfall.io` guardadas en base de datos.
+
 ### COMP-4 Room Manager
 Crea y cierra mesas, gestiona códigos, asientos, anfitrión, expiración (mesa inactiva > 2 h se cierra) y `LobbyManager`.
 

@@ -305,8 +305,9 @@
       8. **Punto 8 (Sincronización de especificaciones)**: Actualización completa y rigurosa de `requirements.md` (REQ-21, REQ-23, REQ-9.7.22, REQ-9.7.23), `design.md` (máquina de estados con fase mulligan, flujos y privacidad) y `tasks.md`. Commit `27e8f58`.
       9. **Punto 9 (Verificación formal de requisitos y matriz honesta)**: Auditoría con grep de REQ-22.2.1, REQ-22.6.1 y Flujo 2 sin coordenadas relativas a celda; clasificación honesta de REQ-2, REQ-10, REQ-15, REQ-17 y REQ-19 como "Parcial" con evidencia explícita de pendientes de certificación de red real y accesibilidad externa. Commit `468ed78`.
       10. **Punto 10 (Suite Playwright E2E y mediciones)**: 7 pruebas E2E en `apps/web/e2e/client-corrections.spec.ts` pasando al 100% (2.3m). Mediciones numéricas capturadas, capturas de pantalla archivadas en el directorio de artefactos (`auto-initiative-overlay.png`, `opening-hand-modal-mulligan.png`, `test-p1-ghost-first-frame.png`, `test-p2-field-cascade-2p.png`, `test-p2-field-cascade-4p.png`, `test-p2-field-cascade-6p.png`, `test-library-positioning.png`, `test-reveal-card.png`). Commit actual.
-    - _Requisitos: REQ-9, REQ-20, REQ-21, REQ-22, REQ-23_
-    - _Dependencias: 8.1 a 8.11_
+  - [x] 8.13 Correcciones del Cliente - Ronda 2: Carga de Imágenes y Animación de Giro (Puntos 1 al 9)
+    - Nueva tanda de correcciones del cliente implementadas con 1 commit por punto:
+      1. **Punto 1 (Diagnóstico de Carga de Imágenes en Biblioteca)**: Medición empírica de red en Playwright y peticiones HTTP. Diagnóstico confirmado: las imágenes fallaban porque procedían del endpoint de la API `api.scryfall.com/cards/named?exact=...&format=image` en lugar del CDN estático. Al abrir la biblioteca con ~60–92 cartas, `api.scryfall.com` saturó su límite de cuota (10 req/s, 50-100 ms) devolviendo **HTTP 429 Too Many Requests** en el 100% de las peticiones en ráfaga (`{"429": 60}`) y HTTP 302 en peticiones individuales. En contraposición, el CDN `cards.scryfall.io` con User-Agent de navegador respondió con **HTTP 200 OK** en el 100% de las solicitudes directas (`{"200": 60}`). Documentado en `requirements.md` (REQ-22.3.5) y `design.md` (COMP-8). Commit actual.
 
 ## Fases posteriores (post-MVP)
 
