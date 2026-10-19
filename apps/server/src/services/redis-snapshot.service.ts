@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import { RoomState } from '@mtgc/shared';
+import { RoomState, getCardDimensions } from '@mtgc/shared';
 
 export interface SnapshotStorage {
   save(roomCode: string, state: RoomState): Promise<void>;
@@ -56,6 +56,7 @@ export class RedisSnapshotService implements SnapshotStorage {
    */
   public async save(roomCode: string, state: RoomState): Promise<void> {
     const code = roomCode.toUpperCase();
+    (state as any).positionConvention = 'center';
     const serialized = JSON.stringify(state);
 
     if (this.redis && this.isConnected) {
@@ -74,16 +75,38 @@ export class RedisSnapshotService implements SnapshotStorage {
   }
 
   /**
-   * Loads a snapshot by room code
+   * Loads a snapshot by room code and migrates/validates center position convention (Punto 2)
    */
   public async load(roomCode: string): Promise<RoomState | null> {
     const code = roomCode.toUpperCase();
+
+    const migrateState = (state: RoomState): RoomState => {
+      if ((state as any).positionConvention !== 'center') {
+        const totalPlayers = Object.keys(state.players || {}).length || 4;
+        const cardDims = getCardDimensions(totalPlayers, { width: 1920, height: 1080 });
+        for (const zones of Object.values(state.playerZones || {})) {
+          if (zones?.battlefield) {
+            for (const card of zones.battlefield) {
+              if (card.position) {
+                const orientedW = card.isTapped ? cardDims.height : cardDims.width;
+                const orientedH = card.isTapped ? cardDims.width : cardDims.height;
+                card.position.x += (orientedW / 2) / 1920;
+                card.position.y += (orientedH / 2) / 1080;
+              }
+            }
+          }
+        }
+        (state as any).positionConvention = 'center';
+      }
+      return state;
+    };
 
     if (this.redis && this.isConnected) {
       try {
         const data = await this.redis.get(`mtgc:table:${code}`);
         if (data) {
-          return JSON.parse(data) as RoomState;
+          const parsed = JSON.parse(data) as RoomState;
+          return migrateState(parsed);
         }
       } catch {
         // Fall back to memory
@@ -93,7 +116,8 @@ export class RedisSnapshotService implements SnapshotStorage {
     const memoryData = this.fallbackMemory.get(code);
     if (memoryData) {
       try {
-        return JSON.parse(memoryData) as RoomState;
+        const parsed = JSON.parse(memoryData) as RoomState;
+        return migrateState(parsed);
       } catch {
         return null;
       }

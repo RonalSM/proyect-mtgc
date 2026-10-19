@@ -186,12 +186,19 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
   const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
 
-  const clampedNormX = Math.max(0, Math.min(1, screenNormX));
-  const clampedNormY = Math.max(0, Math.min(1, screenNormY));
+  const orientedW = isTapped ? cardHNum : cardWNum;
+  const orientedH = isTapped ? cardWNum : cardHNum;
+
+  // Convención única (Punto 2): la posición normalizada (x, y) es el centro de la carta.
+  // El límite al viewport utiliza las dimensiones orientadas actuales (w x h o h x w).
+  const rawCenterX = screenNormX * winW;
+  const rawCenterY = screenNormY * winH;
+  const clampedCenterX = Math.max(orientedW / 2, Math.min(winW - orientedW / 2, rawCenterX));
+  const clampedCenterY = Math.max(orientedH / 2, Math.min(winH - orientedH / 2, rawCenterY));
 
   // Redondeo del centro de la carta a píxeles enteros exactos para eliminar subpíxeles y carta borrosa (Punto 1)
-  const centerPixelX = Math.round(clampedNormX * winW + cardWNum / 2);
-  const centerPixelY = Math.round(clampedNormY * winH + cardHNum / 2);
+  const centerPixelX = Math.round(clampedCenterX);
+  const centerPixelY = Math.round(clampedCenterY);
 
   const zIndex = optimisticPosition?.zIndex ?? (card.position?.zIndex ?? 5);
 
@@ -407,10 +414,17 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
           const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
           const cardWNum = cardPixelWidth || 96;
           const cardHNum = cardPixelHeight || 134;
-          const clampedX = Math.max(0, Math.min(1, screenNormX));
-          const clampedY = Math.max(0, Math.min(1, screenNormY));
-          const ghostCenterX = Math.round(clampedX * winW + cardWNum / 2);
-          const ghostCenterY = Math.round(clampedY * winH + cardHNum / 2);
+          const ghostW = item.isTapped ? cardHNum : cardWNum;
+          const ghostH = item.isTapped ? cardWNum : cardHNum;
+
+          // Convención única (Punto 2 & Punto 3): la posición es el centro con dimensiones orientadas
+          const rawGhostCenterX = screenNormX * winW;
+          const rawGhostCenterY = screenNormY * winH;
+          const clampedGhostCenterX = Math.max(ghostW / 2, Math.min(winW - ghostW / 2, rawGhostCenterX));
+          const clampedGhostCenterY = Math.max(ghostH / 2, Math.min(winH - ghostH / 2, rawGhostCenterY));
+
+          const ghostCenterX = Math.round(clampedGhostCenterX);
+          const ghostCenterY = Math.round(clampedGhostCenterY);
 
           return (
             <div

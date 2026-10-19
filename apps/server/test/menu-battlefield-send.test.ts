@@ -171,11 +171,11 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
       const expectedCenterY = (expectedRow === 0 ? 0.0 : 0.5) + (0.5 - 0.125) / 2;
 
       assert.ok(
-        Math.abs(card.position!.x - (expectedCenterX - 0.0225)) < 0.05,
+        Math.abs(card.position!.x - expectedCenterX) < 0.05,
         `Posición X de ${pId} debe coincidir con su cuadrante`,
       );
       assert.ok(
-        Math.abs(card.position!.y - (expectedCenterY - 0.0475)) < 0.05,
+        Math.abs(card.position!.y - expectedCenterY) < 0.05,
         `Posición Y de ${pId} debe coincidir con su sección jugable`,
       );
     }
@@ -205,11 +205,11 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
       const expectedCenterY = (expectedRow === 0 ? 0.0 : 0.5) + (0.5 - 0.125) / 2;
 
       assert.ok(
-        Math.abs(card.position!.x - (expectedCenterX - 0.0225)) < 0.05,
+        Math.abs(card.position!.x - expectedCenterX) < 0.05,
         `Posición X de ${pId} (${card.position!.x}) debe coincidir con centro col ${expectedCol} (${expectedCenterX})`,
       );
       assert.ok(
-        Math.abs(card.position!.y - (expectedCenterY - 0.0475)) < 0.05,
+        Math.abs(card.position!.y - expectedCenterY) < 0.05,
         `Posición Y de ${pId} (${card.position!.y}) debe coincidir con centro row ${expectedRow} (${expectedCenterY})`,
       );
     }
@@ -230,13 +230,9 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
           const cardDims = getCardDimensions(numPlayers, { width: res.width, height: res.height });
           const centerPos = session.computePlayerDivisionCenter(pId, { width: res.width, height: res.height });
 
-          // La carta se ubica en top-left:
-          const cardPixelX = centerPos.x * res.width;
-          const cardPixelY = centerPos.y * res.height;
-
-          // Centro calculado de la carta:
-          const cardCenterX = cardPixelX + cardDims.width / 2;
-          const cardCenterY = cardPixelY + cardDims.height / 2;
+          // Convención única (Punto 2): la posición retornada es directamente el centro de la carta
+          const cardCenterX = centerPos.x * res.width;
+          const cardCenterY = centerPos.y * res.height;
 
           // Centro de la sección jugable:
           const cols = numPlayers === 2 ? 2 : Math.min(3, Math.max(2, Math.ceil(numPlayers / 2)));

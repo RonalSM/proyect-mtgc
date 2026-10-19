@@ -194,12 +194,12 @@ describe('Punto 5: Propietario original (ownerId) y temporal (holderId)', () => 
   test('Carta entre dos divisiones deja holderId vacío; solo ownerId puede moverla', () => {
     const { session, cardA } = setup2PlayerSession();
 
-    // Colocar carta straddling la división central x = 0.5 (ej. x = 0.48, con ancho 0.045 sobrepasa a 0.525)
+    // Colocar carta straddling la división central x = 0.5 (convención de centro)
     session.moveCard('p_alice', {
       cardInstanceId: cardA.instanceId,
       fromZone: 'battlefield',
       toZone: 'battlefield',
-      position: { x: 0.48, y: 0.4, zIndex: 1 },
+      position: { x: 0.5, y: 0.4, zIndex: 1 },
     });
 
     const straddlingCard = session.findBattlefieldCard(cardA.instanceId)?.card;

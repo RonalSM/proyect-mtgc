@@ -568,6 +568,15 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
     - Elementos dentro de la división de su jugador (`cellRect.left - 2 <= el.left && el.right <= cellRect.right + 2`).
     - Mano dentro del viewport (`handCard.bottom <= window.innerHeight`).
     - Cero scroll en document (`html.scrollWidth === innerWidth && html.scrollHeight === innerHeight`).
+- **Convención Única de Posición: El Centro con Dimensiones Orientadas (Punto 2 de Corrección de Posición):**
+  - **Convención universal:** La posición normalizada $(x, y \in [0, 1])$ de una carta representa estrictamente su centro geométrico en cualquier orientación.
+  - **Dimensiones orientadas dinámicas:** Para una carta vertical de dimensiones $w \times h$ ($96 \times 134\text{ px}$ en 2p a 1080p), al girarse 90° (`isTapped === true`), sus dimensiones orientadas efectivas son $h \times w$ ($134 \times 96\text{ px}$).
+  - **Límites de Viewport y Clamping:**
+    - Clamping en cliente: `clampedCenterX = Math.max(orientedW / 2, Math.min(winW - orientedW / 2, rawCenterX))`, asegurando que la carta nunca se salga del viewport ni en vertical ni en apaisado.
+    - Renderizado en canvas: el contenedor slot `.card-slot-container` se ancla en `(centerPixelX, centerPixelY)` con `transform: translate(-50%, -50%)`, eliminando cálculos de esquina superior izquierda con mitades de dimensiones fijas.
+  - **Contención 100% para `holderId`:** En servidor, la caja delimitadora se calcula restando y sumando las semidimensiones orientadas normalizadas al centro: `cardLeft = position.x - cardHalfWNorm`, `cardRight = position.x + cardHalfWNorm`, `cardTop = position.y - cardHalfHNorm`, `cardBottom = position.y + cardHalfHNorm`.
+  - **Centrado en división jugable y cascada:** `computePlayerDivisionCenter` y `getPlayerBattlefieldCascadePosition` calculan y devuelven directamente el centro acotado de la sección jugable con cascada $+0.015$, eliminando offsets manuales en el emisor.
+  - **Migración de instantáneas de Redis:** `RedisSnapshotService.save()` etiqueta el estado con `positionConvention: 'center'`. Al recuperar instantáneas heredadas sin esta etiqueta, `load()` migra automáticamente las coordenadas de las cartas en el campo sumando las semidimensiones orientadas normalizadas.
 
 ### Rutas
 `/table/:code/lobby` y `/table/:code/play`. El cliente redirige según `table.status`.

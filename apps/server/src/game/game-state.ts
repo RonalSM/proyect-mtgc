@@ -525,6 +525,7 @@ export class GameStateSession {
   public computeHolderId(
     position: { x: number; y: number },
     isTapped: boolean,
+    viewport: { width: number; height: number } = { width: 1920, height: 1080 }
   ): string | undefined {
     const allSeated = Object.values(this.state.players).filter(p => !p.isSpectator);
     const totalPlayers = Math.max(2, allSeated.length);
@@ -532,14 +533,17 @@ export class GameStateSession {
     const cols = isTwoPlayerMode ? 2 : Math.min(3, Math.max(2, Math.ceil(totalPlayers / 2)));
     const seatedPlayers = [...allSeated].sort((a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0));
 
-    // Normalized card dimensions (5:7 ratio or rotated 7:5)
-    const cardNormW = isTapped ? 0.08 : 0.045;
-    const cardNormH = isTapped ? 0.055 : 0.095;
+    // Exact oriented card dimensions (Punto 2: posición = centro, dimensiones orientadas)
+    const cardDims = getCardDimensions(totalPlayers, viewport);
+    const orientedW = isTapped ? cardDims.height : cardDims.width;
+    const orientedH = isTapped ? cardDims.width : cardDims.height;
+    const cardHalfWNorm = (orientedW / 2) / viewport.width;
+    const cardHalfHNorm = (orientedH / 2) / viewport.height;
 
-    const cardLeft = position.x;
-    const cardTop = position.y;
-    const cardRight = position.x + cardNormW;
-    const cardBottom = position.y + cardNormH;
+    const cardLeft = position.x - cardHalfWNorm;
+    const cardTop = position.y - cardHalfHNorm;
+    const cardRight = position.x + cardHalfWNorm;
+    const cardBottom = position.y + cardHalfHNorm;
 
     for (let i = 0; i < seatedPlayers.length; i++) {
       const p = seatedPlayers[i];
@@ -624,7 +628,7 @@ export class GameStateSession {
     const centerX = xMin + width * 0.5;
     const centerY = yMin + playableHeight * 0.5;
 
-    // Tamaño real de la carta para que quede exactamente centrada en la sección jugable (Punto 4)
+    // Tamaño real de la carta para que quede exactamente centrada en la sección jugable (Punto 4 & Punto 2)
     const cardDims = getCardDimensions(totalPlayers, viewport);
     const cardHalfWNorm = (cardDims.width / 2) / viewport.width;
     const cardHalfHNorm = (cardDims.height / 2) / viewport.height;
@@ -632,9 +636,15 @@ export class GameStateSession {
     const existingCount = this.state.playerZones[targetPlayerId]?.battlefield?.length ?? 0;
     const cascadeOffset = (existingCount % 5) * 0.015;
 
+    // Convención única (Punto 2): la posición retornada es el centro de la carta
+    const minX = xMin + cardHalfWNorm + 0.01;
+    const maxX = xMin + width - cardHalfWNorm - 0.01;
+    const minY = yMin + cardHalfHNorm + 0.01;
+    const maxY = yMin + playableHeight - cardHalfHNorm - 0.01;
+
     return {
-      x: centerX - cardHalfWNorm + cascadeOffset,
-      y: centerY - cardHalfHNorm + cascadeOffset,
+      x: Math.max(minX, Math.min(maxX, centerX + cascadeOffset)),
+      y: Math.max(minY, Math.min(maxY, centerY + cascadeOffset)),
     };
   }
 

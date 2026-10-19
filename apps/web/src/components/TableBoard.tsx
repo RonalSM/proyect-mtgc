@@ -250,8 +250,10 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       } else {
         const clampedX = Math.max(0, Math.min(winW - overlayWidth, boxLeft));
         const clampedY = Math.max(0, Math.min(winH - overlayHeight, boxTop));
-        const uScreen = clampedX / winW;
-        const vScreen = clampedY / winH;
+        const centerX = clampedX + overlayWidth / 2;
+        const centerY = clampedY + overlayHeight / 2;
+        const uScreen = centerX / winW;
+        const vScreen = centerY / winH;
         normX = viewFraming?.isExpanded
           ? Math.max(0, Math.min(1, viewFraming.xMin + uScreen * viewFraming.width))
           : uScreen;
@@ -307,8 +309,11 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const clampedX = Math.max(0, Math.min(winW - overlayWidth, overlayLeft));
     const clampedY = Math.max(0, Math.min(winH - overlayHeight, overlayTop));
 
-    const uScreen = clampedX / winW;
-    const vScreen = clampedY / winH;
+    const centerX = clampedX + overlayWidth / 2;
+    const centerY = clampedY + overlayHeight / 2;
+
+    const uScreen = centerX / winW;
+    const vScreen = centerY / winH;
     const normX = viewFraming?.isExpanded
       ? Math.max(0, Math.min(1, viewFraming.xMin + uScreen * viewFraming.width))
       : uScreen;
@@ -397,9 +402,13 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const clampedX = Math.max(0, Math.min(winW - overlayWidth, overlayLeft));
     const clampedY = Math.max(0, Math.min(winH - overlayHeight, overlayTop));
 
+    // Centro del overlay visual al soltar (Punto 2 & Punto 4: la posición es el centro)
+    const centerX = clampedX + overlayWidth / 2;
+    const centerY = clampedY + overlayHeight / 2;
+
     // Coordenadas globales normalizadas mediante transformación inversa si la mesa está expandida (Punto 3)
-    const uScreen = clampedX / winW;
-    const vScreen = clampedY / winH;
+    const uScreen = centerX / winW;
+    const vScreen = centerY / winH;
     const normX = viewFraming?.isExpanded
       ? Math.max(0, Math.min(1, viewFraming.xMin + uScreen * viewFraming.width))
       : uScreen;

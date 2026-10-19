@@ -64,25 +64,20 @@ export function getPlayerBattlefieldCascadePosition(
   const cardHalfWNorm = (cardDims.width / 2) / viewport.width;
   const cardHalfHNorm = (cardDims.height / 2) / viewport.height;
 
-  const baseX = centerX - cardHalfWNorm;
-  const baseY = centerY - cardHalfHNorm;
-
   const playerBattlefield = battlefieldCards
     ? battlefieldCards.filter(c => c.holderId === playerId || (!c.holderId && c.ownerId === playerId))
     : (roomState.playerZones[playerId]?.battlefield ?? []);
   const cascadeIndex = playerBattlefield.length % 5;
   const cascadeOffset = cascadeIndex * 0.015;
 
-  const cardWNorm = cardDims.width / viewport.width;
-  const cardHNorm = cardDims.height / viewport.height;
+  // Convención única (Punto 2): la posición retornada es el centro de la carta
+  const minX = framing.xMin + cardHalfWNorm + 0.01;
+  const maxX = framing.xMin + framing.width - cardHalfWNorm - 0.01;
+  const minY = framing.yMin + cardHalfHNorm + 0.01;
+  const maxY = framing.yMin + playableHeight - cardHalfHNorm - 0.01;
 
-  const minX = framing.xMin + 0.01;
-  const maxX = framing.xMin + framing.width - cardWNorm - 0.01;
-  const minY = framing.yMin + 0.01;
-  const maxY = framing.yMin + playableHeight - cardHNorm - 0.01;
-
-  const x = Math.max(minX, Math.min(maxX, baseX + cascadeOffset));
-  const y = Math.max(minY, Math.min(maxY, baseY + cascadeOffset));
+  const x = Math.max(minX, Math.min(maxX, centerX + cascadeOffset));
+  const y = Math.max(minY, Math.min(maxY, centerY + cascadeOffset));
 
   return { x, y };
 }

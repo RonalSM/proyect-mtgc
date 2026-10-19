@@ -379,6 +379,11 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
     18.3. Todas las cartas de la mano visibles y contenidas dentro del viewport sin desbordes.
     18.4. Cero scroll vertical u horizontal en el documento (`window.scrollX === 0`, `window.scrollY === 0`, `overflow: hidden`).
     18.5. Tamaño de cartas homogéneo e idéntico entre todas las zonas (mano, campo, comandante, drag overlay) calculado con relación de aspecto MTG (0.714) y acotado entre 65 px y 135 px de alto para optimizar el espacio útil según la cuadrícula y resolución.
+19. **Convención única de posición normalizada en el centro (Punto 2 de Corrección de Posición):**
+    19.1. THE posición global normalizada $(x, y \in [0, 1])$ de una carta en el campo de batalla SHALL representar estrictamente su **centro geométrico**, sin importar si la carta está enderezada o girada (tapped).
+    19.2. Toda operación de coordenadas en cliente y servidor (renderizado en canvas, overlay de arrastre, fantasma remoto, cálculo final al soltar, contención 100% para `holderId`, límites al viewport, centrado al enviar al campo y cascada) SHALL basarse en el centro junto con las dimensiones orientadas actuales ($w \times h$ en vertical, $h \times w$ en horizontal).
+    19.3. THE sistema SHALL eliminar cualquier convención que trate $(x, y)$ como la esquina superior izquierda de la caja vertical, eliminando la discrepancia $(h - w) / 2$ (~19 px).
+    19.4. THE instantáneas de mesa persistidas en Redis anteriores a esta convención SHALL ser migradas automáticamente sumando el semiancho y semialto orientados, marcándose con `positionConvention: 'center'`.
 
 ## Requisitos no funcionales
 
