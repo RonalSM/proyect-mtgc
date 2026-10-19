@@ -21,7 +21,7 @@ import {
   getCardDimensions,
 } from '@mtgc/shared';
 import { secureShuffle, secureRoll } from './csprng.js';
-import { randomUUID } from 'crypto';
+import { randomUUID, randomInt } from 'crypto';
 import { redisSnapshotService } from '../services/redis-snapshot.service.js';
 import { LobbyManager } from './lobby-manager.js';
 import { GameStarter } from './game-starter.js';
@@ -788,11 +788,20 @@ export class GameStateSession {
     const toArray = toZones[payload.toZone];
     if (!toArray) return;
 
-    if (payload.destinationIndex !== undefined && payload.destinationIndex >= 0) {
+    if (payload.toZone === 'library') {
+      if (payload.randomPosition || payload.isRandom) {
+        // Punto 2: "Aleatoria" inserta la carta en una posición al azar uniforme (0 a toArray.length) con CSPRNG
+        const randomIndex = randomInt(0, toArray.length + 1);
+        toArray.splice(randomIndex, 0, card);
+      } else if (payload.destinationIndex !== undefined && payload.destinationIndex >= 0) {
+        const destIdx = Math.min(payload.destinationIndex, toArray.length);
+        toArray.splice(destIdx, 0, card);
+      } else {
+        // Punto 6: Arrastrar una carta a la biblioteca la deja ARRIBA (índice 0, es la próxima que se roba)
+        toArray.unshift(card);
+      }
+    } else if (payload.destinationIndex !== undefined && payload.destinationIndex >= 0) {
       toArray.splice(payload.destinationIndex, 0, card);
-    } else if (payload.toZone === 'library') {
-      // Punto 6: Arrastrar una carta a la biblioteca la deja ARRIBA (índice 0, es la próxima que se roba)
-      toArray.unshift(card);
     } else {
       toArray.push(card);
     }
@@ -808,6 +817,13 @@ export class GameStateSession {
       this.addLog(
         playerId,
         `devolvió su comandante "${card.definition.name}" a la zona de comando`,
+        true,
+      );
+    } else if (payload.toZone === 'library') {
+      // Punto 2: La bitácora registra "X envió una carta a su biblioteca" sin revelar la posición
+      this.addLog(
+        playerId,
+        'envió una carta a su biblioteca',
         true,
       );
     } else if (payload.fromZone === 'battlefield' && payload.toZone === 'battlefield') {

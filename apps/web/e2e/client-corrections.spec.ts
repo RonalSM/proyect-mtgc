@@ -554,24 +554,18 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
       console.log(`[Punto 6/7] Carta robada tras enviar arriba: ${drawnName}`);
       expect(drawnName).toBe(cardName);
 
-      // Probar enviar a posición específica (Posición 2)
+      // Probar enviar a posición aleatoria (Aleatoria)
       const handCard2 = page.locator('[data-from-zone="hand"]').last();
       const cardName2 = (await handCard2.getAttribute('data-card-name')) || 'Carta2';
       await handCard2.click({ button: 'right', force: true });
       await page.locator('[data-testid="context-to-library-menu"]').click();
-      await page.locator('[data-testid="context-to-library-pos-btn"]').click();
-      await page.locator('[data-testid="library-pos-input"]').fill('2');
-      await page.locator('[data-testid="confirm-library-pos-btn"]').click();
+      await page.locator('[data-testid="context-to-library-random"]').click();
       await page.waitForTimeout(600);
 
-      // Robar 1 carta (no es cardName2) y luego robar la 2da carta (es cardName2)
-      await librarySlot.click();
-      await page.waitForTimeout(400);
-      await librarySlot.click();
-      await page.waitForTimeout(400);
-      const drawnName2 = await page.locator('[data-from-zone="hand"]').last().getAttribute('data-card-name');
-      console.log(`[Punto 6/7] Carta robada en posición 2: ${drawnName2}`);
-      expect(drawnName2).toBe(cardName2);
+      // Comprobar que la carta se retiró de la mano y quedó en la biblioteca
+      const handCardsRemaining = await page.locator('[data-from-zone="hand"]').filter({ hasText: cardName2 }).count();
+      expect(handCardsRemaining).toBe(0);
+      console.log(`[Punto 2] Carta ${cardName2} insertada en biblioteca con posición aleatoria CSPRNG`);
 
       // Captura
       await page.screenshot({

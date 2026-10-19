@@ -47,6 +47,8 @@ export const MoveCardSchema = z.object({
     })
     .optional(),
   destinationIndex: z.number().int().optional(),
+  randomPosition: z.boolean().optional(),
+  isRandom: z.boolean().optional(),
 });
 
 export const TapCardSchema = z.object({

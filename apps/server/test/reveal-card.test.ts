@@ -200,6 +200,26 @@ test('Punto 7: Submenú Biblioteca (Arriba, Abajo, Posición N) e inserción en 
   assert.strictEqual(lib.length, 4);
   assert.strictEqual(lib[3]!.instanceId, 'hand_c');
 
+  // Deshacer movimiento para probar Aleatoria
+  session.undoLast('p1');
+  lib = session.state.playerZones['p1']!.library;
+  assert.strictEqual(lib.length, 3);
+  assert.strictEqual(session.state.playerZones['p1']!.hand.length, 1);
+
+  // B2. Enviar a biblioteca Aleatoria (Punto 2)
+  session.moveCard('p1', {
+    cardInstanceId: 'hand_c',
+    fromZone: 'hand',
+    toZone: 'library',
+    randomPosition: true,
+  });
+
+  lib = session.state.playerZones['p1']!.library;
+  assert.strictEqual(lib.length, 4);
+  assert.ok(lib.some(c => c.instanceId === 'hand_c'), 'hand_c debe estar en la biblioteca');
+  const lastLog = session.state.logs[session.state.logs.length - 1];
+  assert.strictEqual(lastLog?.actionText, 'envió una carta a su biblioteca');
+
   // C. Enviar al Cementerio siempre queda arriba (unshift al índice 0)
   session.moveCard('p1', {
     cardInstanceId: 'hand_c',

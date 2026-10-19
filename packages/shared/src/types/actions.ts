@@ -94,6 +94,8 @@ export interface MoveCardPayload {
     zIndex?: number;
   };
   destinationIndex?: number; // e.g. 0 for top of library, -1 for bottom
+  randomPosition?: boolean;
+  isRandom?: boolean;
 }
 
 export interface TapCardPayload {

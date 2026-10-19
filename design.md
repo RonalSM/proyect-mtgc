@@ -557,6 +557,11 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Eliminación de submenús flotantes desconectados:** Se erradicaron los contenedores flotantes posicionados con `absolute left-full` y los manejadores `onMouseEnter`/`onMouseLeave` que causaban cierres accidentales al cruzar el puntero por el espacio intersticial o con movimientos diagonales.
   - **Expansión en línea dentro del mismo menú:** Los submenús de "Biblioteca" y "Revelar" se expanden verticalmente dentro del mismo contenedor de [`CardContextMenu.tsx`](apps/web/src/components/CardContextMenu.tsx) con indentación visual (`border-l-2`), manteniéndose abiertos de forma estable e independiente de la velocidad del puntero.
   - **Navegación completa por teclado:** Focus inicial en el primer elemento al abrir, navegación cíclica con flechas arriba/abajo (`ArrowUp`, `ArrowDown`), activación/expansión con `Enter`, y cierre con `Escape` o clic fuera en el backdrop.
+- **Inserción Aleatoria en Biblioteca y Privacidad en Bitácora (Punto 2 de Correcciones del Menú Contextual):**
+  - **Eliminación de posición específica N:** Se eliminó la opción interactiva de posición específica y el input numérico en [`CardContextMenu.tsx`](apps/web/src/components/CardContextMenu.tsx).
+  - **Opciones de Biblioteca:** El submenú en línea de Biblioteca ofrece 3 opciones directas: "Arriba" (`destinationIndex: 0`), "Abajo" (`destinationIndex: library.length`), y "Aleatoria" (`randomPosition: true`).
+  - **Distribución uniforme con CSPRNG:** Al recibir `randomPosition: true`, el servidor ejecuta `crypto.randomInt(0, library.length + 1)` para insertar la carta en una posición estrictamente equiprobable entre todas las disponibles ($0$ a $L$).
+  - **Bitácora opaca:** El servidor registra el evento público `X envió una carta a su biblioteca`, sin filtrar la posición (cima, fondo o índice) a ningún cliente.
 - Etiqueta de nombre: píldora pequeña con icono de ampliar; turno activo con borde de color y brillo suave.
 - Ranuras de pilas: rectángulos con proporción de carta; vacías con contorno punteado y etiqueta de zona.
 - Animaciones breves (robar, d20, pasar turno) solo con `transform` y `opacity`, desactivadas con `prefers-reduced-motion`.

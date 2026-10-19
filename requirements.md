@@ -167,10 +167,10 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
          - *Enviar a Cementerio:* Inserta la carta en la parte superior del cementerio (índice 0).
          - *Enviar a Exilio:* Inserta la carta en la parte superior del exilio (índice 0).
          - *Enviar a Mesa:* Mueve la carta al centro de la sección jugable del propio jugador en la cuadrícula sin contar el dock con desplazamiento en cascada (+0.015 en x, y), asignando `ownerId` inmutable y `holderId` del jugador local (Punto 2 y Punto 8: 2p en (436.80, 407.70), 4p en (436.80, 151.20) y 6p en (276.80, 151.20)).
-         - *Enviar a Biblioteca:* Despliega un submenú con opciones de colocación:
+         - *Enviar a Biblioteca:* Despliega opciones de colocación (Arriba, Abajo, Aleatoria):
            - "Arriba": Inserta la carta en el índice 0 (próxima carta a ser robada).
            - "Abajo": Inserta la carta en el fondo (`zones.library.length`).
-           - "Posición": Abre un campo numérico interactivo (1 a N, donde 1 es la cima) para insertar la carta con exactitud en el índice indicado.
+           - "Aleatoria": Inserta la carta en una posición al azar uniforme entre todas las posiciones posibles ($0$ a $L$) mediante CSPRNG criptográficamente seguro en el servidor (`crypto.randomInt(0, library.length + 1)`). La bitácora registra autoritativamente "X envió una carta a su biblioteca" sin revelar la posición.
          - *Revelar:* Despliega un submenú con opciones de destino:
            - "A toda la mesa": Emite `REVEAL_CARD` sin destinatario específico; el servidor difunde la identidad a todos los clientes y registra en la bitácora `X reveló "[Nombre]" a todos`.
            - "A [Jugador X]": Emite `REVEAL_CARD` con `targetPlayerId`; el servidor envía la identidad exclusivamente al jugador objetivo y al emisor (`VisibilityFilter`). En la bitácora pública registra `X reveló una carta a Y` (sin exponer el nombre a los rivales).
@@ -180,6 +180,11 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
         - **Expansión en línea dentro del mismo menú:** Al pulsar sobre "Biblioteca" se despliegan sus opciones de colocación directamente debajo en el mismo flujo vertical del menú (`data-testid="context-library-submenu"`). Al pulsar sobre "Revelar", se despliegan debajo la opción "A toda la mesa" y un botón por cada jugador rival conectado (`data-testid="context-reveal-submenu"`).
         - **Permanencia y cierre estricto:** El menú contextual permanece abierto de forma estable e independiente de la velocidad del puntero, cerrándose únicamente al hacer clic fuera (backdrop), al pulsar la tecla Escape (`Esc`), o al seleccionar una opción de acción.
         - **Navegación completa por teclado:** Al abrir el menú, el foco se sitúa en el primer botón disponible. Las teclas de flecha abajo (`ArrowDown`) y flecha arriba (`ArrowUp`) permiten recorrer cíclicamente todos los elementos interactivos visibles (incluyendo las opciones expandidas en línea). La tecla `Enter` activa el elemento enfocado (desplegando las opciones o ejecutando la acción), y la tecla `Escape` cierra el menú.
+    7.25. **Colocación aleatoria en biblioteca y privacidad de posición (Punto 2 de Correcciones del Menú Contextual):**
+        - **Eliminación de posición específica N:** Se retiran por completo la opción de posición específica y el campo numérico del cliente y servidor para evitar microgestión y fugas de información.
+        - **Opciones autoritativas de biblioteca:** El menú contextual ofrece exactamente tres opciones: "Arriba", "Abajo" y "Aleatoria".
+        - **CSPRNG uniforme en servidor:** La opción "Aleatoria" (`randomPosition: true`) selecciona de forma uniforme un índice entre $0$ y la longitud de la biblioteca inclusive mediante `crypto.randomInt(0, library.length + 1)`.
+        - **Registro sin filtrado en bitácora:** Para preservar la incertidumbre estratégica, cualquier envío de cartas a la biblioteca se registra en la bitácora pública como `X envió una carta a su biblioteca`, sin exponer a los rivales si quedó arriba, abajo o en qué posición se insertó.
 
 ### REQ-10 Sincronización y reconexión
 **Historia:** Como jugador, quiero volver a la partida si se cae mi conexión.

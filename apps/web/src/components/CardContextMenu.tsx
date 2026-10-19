@@ -13,7 +13,7 @@ import {
   BookOpen,
   ArrowUp,
   ArrowDown,
-  Hash,
+  Shuffle,
   Share2,
   Users,
   User,
@@ -56,8 +56,6 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<'library' | 'reveal' | null>(null);
-  const [libraryPosInput, setLibraryPosInput] = useState<string>('1');
-  const [showPosInput, setShowPosInput] = useState<boolean>(false);
 
   const targetPlayerId = localPlayerId || card.ownerId;
   const currentLibraryLength =
@@ -165,24 +163,18 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
     onClose();
   };
 
-  // Destino: Biblioteca (Arriba, Abajo o Posición N, Punto 7)
-  const handleSendToLibrary = (destIndex: number) => {
+  // Destino: Biblioteca (Arriba, Abajo o Aleatoria, Punto 2)
+  const handleSendToLibrary = (destIndex?: number, isRandom?: boolean) => {
     onAction('MOVE_CARD', {
       cardInstanceId: card.instanceId,
       fromZone,
       toZone: 'library',
       toPlayerId: targetPlayerId,
       destinationIndex: destIndex,
+      randomPosition: isRandom,
+      isRandom,
     });
     onClose();
-  };
-
-  const handleCustomPosSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const val = parseInt(libraryPosInput, 10);
-    const parsedPos = isNaN(val) ? 1 : Math.max(1, Math.min(currentLibraryLength + 1, val));
-    // 1 = arriba (índice 0)
-    handleSendToLibrary(parsedPos - 1);
   };
 
   // Revelar: a todos o a un jugador específico (Punto 7)
@@ -397,7 +389,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                 <button
                   type="button"
                   data-testid="context-to-library-top"
-                  onClick={() => handleSendToLibrary(0)}
+                  onClick={() => handleSendToLibrary(0, false)}
                   className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
                 >
                   <ArrowUp className="w-3.5 h-3.5 text-emerald-400" />
@@ -406,47 +398,21 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                 <button
                   type="button"
                   data-testid="context-to-library-bottom"
-                  onClick={() => handleSendToLibrary(currentLibraryLength)}
+                  onClick={() => handleSendToLibrary(currentLibraryLength, false)}
                   className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
                 >
                   <ArrowDown className="w-3.5 h-3.5 text-blue-400" />
                   <span>Abajo (fondo)</span>
                 </button>
-
-                {!showPosInput ? (
-                  <button
-                    type="button"
-                    data-testid="context-to-library-pos-btn"
-                    onClick={() => setShowPosInput(true)}
-                    className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
-                  >
-                    <Hash className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Posición específica...</span>
-                  </button>
-                ) : (
-                  <form onSubmit={handleCustomPosSubmit} className="p-1 flex flex-col space-y-1 bg-slate-950/80 rounded-lg border border-slate-800">
-                    <div className="flex items-center space-x-1">
-                      <span className="text-[10px] text-slate-400">Pos (1-{currentLibraryLength + 1}):</span>
-                      <input
-                        type="number"
-                        min="1"
-                        max={currentLibraryLength + 1}
-                        value={libraryPosInput}
-                        autoFocus
-                        onChange={e => setLibraryPosInput(e.target.value)}
-                        data-testid="library-pos-input"
-                        className="w-12 bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-xs text-white focus:outline-none focus:border-amber-500 font-mono"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      data-testid="confirm-library-pos-btn"
-                      className="w-full px-2 py-0.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded text-[11px] cursor-pointer"
-                    >
-                      Poner en posición
-                    </button>
-                  </form>
-                )}
+                <button
+                  type="button"
+                  data-testid="context-to-library-random"
+                  onClick={() => handleSendToLibrary(undefined, true)}
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
+                >
+                  <Shuffle className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Aleatoria</span>
+                </button>
               </div>
             )}
           </div>
