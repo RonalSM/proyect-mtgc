@@ -587,6 +587,10 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Comprobación de fecha:** Compara `updated_at` contra `lastRulingsUpdatedAt` y omite la descarga cuando el archivo no ha sido modificado en el CDN de Scryfall (`skipped: true, reason: 'not_modified'`).
   - **Aislamiento en tiempo real:** Cero llamadas a APIs externas en caliente; la consulta desde la UI invoca `GET /api/cards/:oracleId/rulings` sirviendo datos desde la base de datos local o caché en memoria. Gatherer no es utilizado.
   - **Integración con Cron Nocturno:** Sincronización conjunta de cartas Oracle y dictámenes oficiales a las 03:00 UTC.
+- **Aislamiento de Privacidad en Menús y Visualización (Punto 6 de Correcciones del Cliente):**
+  - **Filtro `isVisible`:** En [`CardContextMenu.tsx`](apps/web/src/components/CardContextMenu.tsx), la opción "Ver carta" se calcula con `!card.isFaceDown && !isPrivateHand && (fromZone === 'command' || card.isCommander || (fromZone === 'hand' && card.ownerId === targetPlayerId) || fromZone === 'battlefield' || fromZone === 'graveyard' || fromZone === 'exile')`.
+  - **Anonimización de títulos:** Si `card.isFaceDown` es true, el encabezado muestra exclusivamente `"Carta boca abajo"`. Si es mano ajena, muestra `"Carta oculta"`, impidiendo cualquier filtración de nombre o tipo.
+  - **Inspección de lectura sin mutación:** Al hacer clic derecho sobre permanentes ajenos en el campo de batalla, se abre el menú contextual mostrando "Ver carta" (si está boca arriba, conforme a información pública de MTG) mientras se bloquean con `canMutate` todas las acciones de girar, contadores, o traslados a zonas. Cartas ajenas boca abajo no ofrecen "Ver carta".
 
 
 

@@ -203,6 +203,11 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
         - **Comprobación de fecha para evitar descargas redundantes:** Verificación del campo `updated_at` contra la última sincronización (`lastRulingsUpdatedAt`); si no hay cambios, se omite la descarga retornando `skipped: true`.
         - **Cabeceras obligatorias:** Uso estricto de cabeceras `User-Agent` identificado y `Accept: application/json` en todas las consultas al catálogo bulk de Scryfall.
         - **Cartas sin dictámenes:** Si una carta no registra dictámenes en la base de datos local, la interfaz presenta el estado visual accesible "Sin dictámenes".
+    7.29. **Restricción estricta de privacidad en "Ver carta" y anonimización de información oculta (Punto 6 de Correcciones del Cliente):**
+        - **Condición de visibilidad estricta:** THE sistema SHALL restringir la opción "Ver carta" (`data-testid="context-view-card"`) exclusivamente a cartas públicas o de información ya conocida por el jugador local.
+        - **Cartas boca abajo:** Para cualquier carta boca abajo (`isFaceDown: true`) —sea propia o ajena en el campo de batalla, cementerio o exilio—, THE sistema SHALL NEVER ofrecer "Ver carta", ocultar la opción en el menú contextual y mostrar el encabezado `"Carta boca abajo"`.
+        - **Manos ajenas:** Para cartas en manos de jugadores rivales, THE sistema SHALL NEVER ofrecer "Ver carta" y mostrar el encabezado anonimizado `"Carta oculta"`.
+        - **Protección contra mutación de cartas rivales:** Cuando el menú contextual se activa sobre permanentes boca arriba de un oponente, THE sistema SHALL suprimir todas las opciones de mutación (girar, contadores, clonar, voltear o traslados a zonas), permitiendo exclusivamente la lectura de información pública mediante "Ver carta".
 
 
 ### REQ-10 Sincronización y reconexión

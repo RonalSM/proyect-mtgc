@@ -92,15 +92,11 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     disabled: !canMove,
   });
 
-  // Clic derecho abre menú contextual si tiene permiso, sino muestra aviso de restricción
+  // Clic derecho abre menú contextual (inspección de lectura para cartas ajenas o mutación para propias)
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (canMove) {
-      setContextMenuPos({ x: e.clientX, y: e.clientY });
-    } else {
-      onUnauthorizedAttempt?.(card);
-    }
+    setContextMenuPos({ x: e.clientX, y: e.clientY });
   };
 
   // Doble clic gira o endereza si tiene permiso
@@ -280,7 +276,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       </div>
 
       {/* Menú contextual unificado con destinos (mano, cementerio, exilio, biblioteca) y revelar (Punto 7) */}
-      {canMove && contextMenuPos && (
+      {contextMenuPos && (
         <CardContextMenu
           card={card}
           fromZone="battlefield"

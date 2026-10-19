@@ -60,8 +60,18 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
   const { openCardDetails } = useCardPreview();
 
   const targetPlayerId = localPlayerId || card.ownerId;
+  const canMutate = card.ownerId === targetPlayerId || card.holderId === targetPlayerId;
+  const isPrivateHand = fromZone === 'hand' && card.ownerId !== targetPlayerId;
+
+  const cardDisplayName = card.isFaceDown
+    ? 'Carta boca abajo'
+    : isPrivateHand
+      ? 'Carta oculta'
+      : card.definition.name;
+
   const isVisible =
     !card.isFaceDown &&
+    !isPrivateHand &&
     (fromZone === 'command' ||
       card.isCommander ||
       (fromZone === 'hand' && card.ownerId === targetPlayerId) ||
@@ -231,9 +241,9 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
           onPointerDown={e => e.stopPropagation()}
           className="fixed bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 min-w-[190px] max-h-[85vh] overflow-y-auto z-[110] backdrop-blur-md text-xs text-slate-200 select-none"
         >
-          {/* Header con nombre de carta */}
+          {/* Header con nombre de carta (o Carta oculta / Carta boca abajo) */}
           <div className="px-2 py-1 text-[11px] font-bold text-amber-400 border-b border-slate-800 truncate max-w-[200px]">
-            {card.definition.name}
+            {cardDisplayName}
           </div>
 
           {/* Opción 'Ver carta' (Punto 4, REQ-7.27): disponible para cartas visibles para el jugador */}
@@ -252,8 +262,11 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             </button>
           )}
 
-          {/* Opciones exclusivas de campo de batalla */}
-          {fromZone === 'battlefield' && (
+          {/* Opciones de mutación y movimiento (exclusivas del dueño o controlador de la carta) */}
+          {canMutate && (
+            <>
+              {/* Opciones exclusivas de campo de batalla */}
+              {fromZone === 'battlefield' && (
             <>
               {onTap && (
                 <button
@@ -503,8 +516,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
               </div>
             )}
           </div>
-        </div>
-      </div>
-    </Portal>
+        </>
+      )}
+    </div>
+  </div>
+</Portal>
   );
 };
