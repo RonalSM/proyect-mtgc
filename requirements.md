@@ -341,6 +341,18 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
         - **Centrado exacto al enviar al campo con dimensiones reales de carta (Corrección Punto 4):**
           - *Dimensiones reales dinámicas:* THE cálculo de la posición centrada al enviar una carta al campo de batalla (`computePlayerDivisionCenter` en servidor y `getPlayerBattlefieldCascadePosition` en cliente) SHALL basarse en las dimensiones exactas de la carta en el pod y resolución correspondientes (`getCardDimensions(totalPlayers, viewport)`), en lugar de constantes estáticas fijas (43.2 px × 51.3 px).
           - *Convergencia exacta al centro de la sección jugable:* THE centro geométrico resultante de la carta enviada al campo SHALL coincidir con el centro de la sección jugable (descontando el dock inferior) con un error <= 1.0 px en pods de 2, 4 y 6 jugadores, tanto a 1920x1080 como a 1366x768 (verificado empíricamente con <= 0.50 px en Playwright E2E y 0.00 px en tests unitarios del servidor).
+        - **Diagnóstico y medición empírica del salto de carta girada (Corrección Posición Punto 1):**
+          - *Síntoma reproducido:* Al arrastrar una carta girada (tapped), el overlay se desplaza de la posición del cursor al soltar, cayendo hacia abajo y a la izquierda en el emisor local A; y en el receptor remoto B, el fantasma salta de posición en el primer fotograma tras iniciar el arrastre.
+          - *Medición empírica en emisor A:*
+            - Overlay durante arrastre: Centro `(540.00, 499.00)`, Top-Left `(473.00, 451.00)`.
+            - Carta colocada tras soltar: Centro `(521.00, 518.00)`, Top-Left `(454.00, 470.00)`.
+            - Discrepancia medida: $\Delta\text{Centro}: dx = -19.00\text{ px}, dy = +19.00\text{ px}$; $\Delta\text{TopLeft}: dLeft = -19.00\text{ px}, dTop = +19.00\text{ px}$.
+            - Correspondencia con la hipótesis: La diferencia es matemáticamente idéntica a $(h - w) / 2 = (134 - 96) / 2 = 19.00\text{ px}$, confirmando la mezcla de dos convenciones (esquina superior izquierda de la caja vertical sumándole mitades fijas $w/2, h/2$ a una caja apaisada de $h \times w$).
+          - *Medición empírica en receptor B (primeros 5 fotogramas del fantasma):*
+            - Carta original antes de mover: Centro `(480.00, 459.00)`.
+            - Fotogramas 1 a 4 del fantasma: Centro `(473.00, 486.00)` ($dx = -7.00\text{ px}, dy = +27.00\text{ px}$).
+            - Fotograma 5 del fantasma: Centro `(481.02, 491.34)` ($dx = +1.02\text{ px}, dy = +32.34\text{ px}$).
+            - Confirmación del salto: El fantasma remoto nace desplazado debido a que la posición inicial transmitida se interpreta con las dimensiones verticales en vez de las orientadas actuales.
 7. THE mano SHALL mostrarse en el borde inferior de cada celda, parcialmente asomada:
    7.1. La mano del jugador local, boca arriba; sube al pasar el cursor y las cartas se arrastran al campo de batalla.
    7.2. La mano de los oponentes, como reversos de cartas junto al texto "N cartas en mano"; THE sistema SHALL NOT enviar su contenido (REQ-16.3).

@@ -328,6 +328,10 @@ interface LobbySeat {
   - Función `getCardDimensions(podSize, viewport)` compartida entre cliente (`table-framing.ts`) y servidor (`game-state.ts`).
   - Reemplazo de constantes fijas (43.2×51.3) por la mitad de las dimensiones normalizadas de la carta (`cardHalfWNorm`, `cardHalfHNorm`).
   - Coincidencia con el centro de la sección jugable propia (descontando el dock inferior) $\le 1.0\text{ px}$ en 2p, 4p y 6p a 1080p y 768p (0.00 px en unit tests y $\le 0.50\text{ px}$ en E2E Playwright).
+- **Diagnóstico y medición empírica del salto de carta girada (Corrección Posición Punto 1):**
+  - Discrepancia empírica medida en emisor local A: overlay en arrastre `(540.00, 499.00)` vs carta colocada al soltar `(521.00, 518.00)`, produciendo una diferencia de $dx = -19.00\text{ px}, dy = +19.00\text{ px}$ ($\Delta = (h - w) / 2 = (134 - 96) / 2 = 19.00\text{ px}$).
+  - Salto en receptor remoto B: carta original en `(480.00, 459.00)` vs primeros frames del fantasma en `(473.00, 486.00)` ($dy = +27.00\text{ px}$).
+  - Causa raíz confirmada: uso de la esquina superior izquierda de la caja vertical sumándole mitades estáticas no orientadas ($w/2, h/2$) al renderizar una carta orientada en horizontal ($h \times w$).
 
 ### COMP-6 Card Service
 **Clases:** `ScryfallClient` (cola con rate limit), `DeckParser`, `CommanderValidator`, `CardCache`.
