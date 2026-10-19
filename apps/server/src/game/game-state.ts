@@ -610,8 +610,14 @@ export class GameStateSession {
       }
     }
 
+    // Altura del dock inferior normalizada en viewport 1080p:
+    // En 2 jugadores (1080p completo): dock ~162px => 0.15
+    // En 4 y 6 jugadores (celda 540px): dock ~135px => 0.125
+    const dockHeightNorm = isTwoPlayerMode ? 0.15 : 0.125;
+    const playableHeight = height - dockHeightNorm;
+
     const centerX = xMin + width * 0.5;
-    const centerY = yMin + height * 0.5;
+    const centerY = yMin + playableHeight * 0.5;
 
     const existingCount = this.state.playerZones[targetPlayerId]?.battlefield?.length ?? 0;
     const cascadeOffset = (existingCount % 5) * 0.015;

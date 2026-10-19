@@ -122,7 +122,7 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
 
     // Player 0 está en la mitad izquierda (x in [0, 0.5])
     assert.ok(c1.position!.x >= 0.15 && c1.position!.x <= 0.35, `c1 x (${c1.position!.x}) debe estar cerca del centro de player 0 (0.25)`);
-    assert.ok(c1.position!.y >= 0.40 && c1.position!.y <= 0.60, `c1 y (${c1.position!.y}) debe estar cerca del centro de player 0 (0.50)`);
+    assert.ok(c1.position!.y >= 0.30 && c1.position!.y <= 0.50, `c1 y (${c1.position!.y}) debe estar cerca del centro jugable de player 0 (0.425 - 0.0475 = 0.3775)`);
     assert.strictEqual(c1.ownerId, 'player_0');
     assert.strictEqual(c1.holderId, 'player_0');
 
@@ -147,7 +147,7 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
     assert.strictEqual(cBob.holderId, 'player_1');
   });
 
-  test('4 Jugadores: cartas enviadas desde el menú van al centro de su división (2 filas x 2 cols) con cascada', () => {
+  test('4 Jugadores: cartas enviadas desde el menú van al centro de su división jugable (2 filas x 2 cols, sin dock) con cascada', () => {
     const session = createRoomWithPlayers(4);
 
     for (let i = 0; i < 4; i++) {
@@ -164,11 +164,11 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
       assert.strictEqual(card.ownerId, pId);
       assert.strictEqual(card.holderId, pId);
 
-      // Comprobar cuadrícula 2x2
+      // Comprobar cuadrícula 2x2 sin dock (playableHeight = 0.5 - 0.125 = 0.375)
       const expectedCol = i % 2;
       const expectedRow = Math.floor(i / 2);
       const expectedCenterX = (expectedCol + 0.5) / 2;
-      const expectedCenterY = (expectedRow + 0.5) / 2;
+      const expectedCenterY = (expectedRow === 0 ? 0.0 : 0.5) + (0.5 - 0.125) / 2;
 
       assert.ok(
         Math.abs(card.position!.x - (expectedCenterX - 0.0225)) < 0.05,
@@ -176,12 +176,12 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
       );
       assert.ok(
         Math.abs(card.position!.y - (expectedCenterY - 0.0475)) < 0.05,
-        `Posición Y de ${pId} debe coincidir con su cuadrante`,
+        `Posición Y de ${pId} debe coincidir con su sección jugable`,
       );
     }
   });
 
-  test('6 Jugadores: cartas enviadas desde el menú van al centro de su división (2 filas x 3 cols) con cascada', () => {
+  test('6 Jugadores: cartas enviadas desde el menú van al centro de su división jugable (2 filas x 3 cols, sin dock) con cascada', () => {
     const session = createRoomWithPlayers(6);
 
     for (let i = 0; i < 6; i++) {
@@ -198,11 +198,11 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
       assert.strictEqual(card.ownerId, pId);
       assert.strictEqual(card.holderId, pId);
 
-      // Comprobar cuadrícula 2x3
+      // Comprobar cuadrícula 2x3 sin dock
       const expectedCol = i % 3;
       const expectedRow = Math.floor(i / 3);
       const expectedCenterX = (expectedCol + 0.5) / 3;
-      const expectedCenterY = (expectedRow + 0.5) / 2;
+      const expectedCenterY = (expectedRow === 0 ? 0.0 : 0.5) + (0.5 - 0.125) / 2;
 
       assert.ok(
         Math.abs(card.position!.x - (expectedCenterX - 0.0225)) < 0.05,

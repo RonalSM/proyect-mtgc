@@ -449,8 +449,27 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
         expect(box2).not.toBeNull();
         const diffX = Math.abs(box2!.x - box1!.x);
         const diffY = Math.abs(box2!.y - box1!.y);
+        console.log(`[Punto 2 - ${podSize}p] Carta 1 box: (${box1!.x.toFixed(2)}, ${box1!.y.toFixed(2)}), Carta 2 box: (${box2!.x.toFixed(2)}, ${box2!.y.toFixed(2)})`);
         console.log(`[Punto 2 - ${podSize}p] Desplazamiento medido en cascada: diffX = ${diffX.toFixed(2)} px, diffY = ${diffY.toFixed(2)} px`);
         expect(diffX + diffY).toBeGreaterThan(5);
+
+        // Verificación de que el centro vertical de la sección jugable NO está en y = 810 ni es idéntico entre 2p y 4p (Punto 8)
+        if (podSize === 2) {
+          // 2p: columna vertical completa, centro jugable sin dock (Y ~ 459px, box top ~ 407.7px)
+          expect(Math.abs(box1!.x - 436.80)).toBeLessThan(5);
+          expect(Math.abs(box1!.y - 407.70)).toBeLessThan(10);
+          expect(box1!.y).toBeLessThan(600); // Demuestra que NO está en 810
+        } else if (podSize === 4) {
+          // 4p: cuadrícula 2x2, cuadrante superior Col 0 Fila 0 (Y ~ 202.5px, box top ~ 151.2px)
+          expect(Math.abs(box1!.x - 436.80)).toBeLessThan(5);
+          expect(Math.abs(box1!.y - 151.20)).toBeLessThan(10);
+          expect(box1!.y).toBeLessThan(300); // Demuestra que NO está en 810
+        } else if (podSize === 6) {
+          // 6p: cuadrícula 2x3, Col 0 Fila 0 (X ~ 320px, Y ~ 202.5px, box top-left ~ 276.8px, 151.2px)
+          expect(Math.abs(box1!.x - 276.80)).toBeLessThan(5);
+          expect(Math.abs(box1!.y - 151.20)).toBeLessThan(10);
+          expect(box1!.y).toBeLessThan(300);
+        }
 
         // Verificar ownerId y holderId asignados al jugador local
         const owner1 = await bfCards.nth(0).getAttribute('data-card-owner');

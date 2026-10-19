@@ -42,8 +42,18 @@ export function getPlayerBattlefieldCascadePosition(
   battlefieldCards?: CardInstance[],
 ): { x: number; y: number } {
   const framing = getPlayerFraming(playerId, roomState);
+  const allSeated = Object.values(roomState.players).filter(p => !p.isSpectator);
+  const totalPlayers = Math.max(2, allSeated.length);
+  const isTwoPlayerMode = totalPlayers === 2;
+
+  // Altura del dock inferior normalizada en viewport 1080p:
+  // En 2 jugadores (1080p completo): dock ~162px => 0.15
+  // En 4 y 6 jugadores (celda 540px): dock ~135px => 0.125
+  const dockHeightNorm = isTwoPlayerMode ? 0.15 : 0.125;
+  const playableHeight = framing.height - dockHeightNorm;
+
   const centerX = framing.xMin + framing.width * 0.5;
-  const centerY = framing.yMin + framing.height * 0.5;
+  const centerY = framing.yMin + playableHeight * 0.5;
 
   // Normalized card dimensions: ~0.045 x 0.095
   const baseX = centerX - 0.0225;
@@ -58,7 +68,7 @@ export function getPlayerBattlefieldCascadePosition(
   const minX = framing.xMin + 0.01;
   const maxX = framing.xMin + framing.width - 0.055;
   const minY = framing.yMin + 0.01;
-  const maxY = framing.yMin + framing.height - 0.11;
+  const maxY = framing.yMin + playableHeight - 0.06;
 
   const x = Math.max(minX, Math.min(maxX, baseX + cascadeOffset));
   const y = Math.max(minY, Math.min(maxY, baseY + cascadeOffset));
