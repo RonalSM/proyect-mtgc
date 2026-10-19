@@ -79,7 +79,14 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
     }
   }, [directUrl, cardName, isFaceDown, size]);
 
-  const resolvedImageUrl = directUrl || asyncResolvedUrl || '';
+  const rawImageUrl = directUrl || asyncResolvedUrl || '';
+  const resolvedImageUrl = (() => {
+    if (!rawImageUrl) return '';
+    if (size === 'small') {
+      return rawImageUrl.replace('/normal/', '/small/').replace('version=normal', 'version=small');
+    }
+    return rawImageUrl.replace('/small/', '/normal/').replace('version=small', 'version=normal');
+  })();
 
   const toggleFace = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -98,6 +105,8 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
         <img
           src="https://cards.scryfall.io/back.png"
           alt="Reverso de carta"
+          width={size === 'small' ? 146 : 488}
+          height={size === 'small' ? 204 : 680}
           loading="lazy"
           decoding="async"
           onError={e => {
@@ -119,11 +128,14 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
     <div
       className={`w-full h-full rounded-[6px] overflow-hidden relative select-none shadow-md aspect-[5/7] bg-slate-900 ${className}`}
     >
-      {/* 1. If image is available and hasn't failed, display <img> sin recortar arte (Punto 4: aspecto 5:7 exacto) */}
+      {/* 1. If image is available and hasn't failed, display <img> sin recortar arte (Punto 3: small 146x204, normal en mesa/mano) */}
       {resolvedImageUrl && !imageError ? (
         <img
           src={resolvedImageUrl}
           alt={cardName}
+          width={size === 'small' ? 146 : 488}
+          height={size === 'small' ? 204 : 680}
+          data-image-size={size}
           loading="lazy"
           decoding="async"
           onError={() => setImageError(true)}

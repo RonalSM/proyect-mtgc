@@ -191,8 +191,8 @@ const ModalCardItem: React.FC<{
       className="space-y-1 relative group cursor-context-menu"
       title="Clic derecho para opciones (Enviar a la mano, Enviar al campo)"
     >
-      <div className="aspect-[2.5/3.5] rounded-lg overflow-hidden border border-slate-700 bg-slate-950 group-hover:border-amber-400/80 transition-colors">
-        <CardDisplay card={card.definition} />
+      <div className="aspect-[146/204] rounded-lg overflow-hidden border border-slate-700 bg-slate-950 group-hover:border-amber-400/80 transition-colors">
+        <CardDisplay card={card.definition} size={zone === 'library' ? 'small' : 'normal'} />
       </div>
       <div className="text-[10px] font-bold text-slate-300 truncate" title={card.definition.name}>
         {card.definition.name}
