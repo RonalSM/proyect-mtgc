@@ -599,6 +599,16 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
     - Copyright oficial: `data-testid="playmat-copyright"` con `"™ & © Wizards of the Coast"`.
   - **Enlace de inspección directa:** Botón interactivo `"Ver carta"` (`data-testid="playmat-view-card-btn"`) que invoca `openCardDetails(activePlaymatCard)`, desplegando el panel con texto Oracle, símbolos y dictámenes.
   - **Restablecer comandante:** Opción rápida (`data-testid="playmat-reset-commander-btn"`) para volver a la ilustración del comandante asignado.
+- **Certificación Automatizada E2E de Ver Carta, Dictámenes, DFC, Privacidad y Atribución Playmat (Punto 8 de Correcciones del Cliente):**
+  - **Suite Playwright E2E:** Implementada en [`apps/web/e2e/card-details.spec.ts`](apps/web/e2e/card-details.spec.ts) ejecutando el ciclo de validación completo en pod multijugador real (1920x1080).
+  - **Resultados de certificación:**
+    1. *Carta con dictámenes oficiales:* Sol Ring verificado con todos sus metadatos (imagen grande, coste {1}, tipo Artifact, Oracle con símbolos `{T} -> ↷` y `{C}{C} -> CC`, artista "Titus Lunter", copyright "Wizards of the Coast", legalidad en Commander "Legal", y 2 dictámenes oficiales con fecha `2023-09-01` y fuente `wotc`).
+    2. *Carta de doble cara (DFC):* Delver of Secrets verificado alternando caras con selector interactivo (`data-testid="card-details-face-switcher"`): Cara 1 (Delver of Secrets, Creature — Human Wizard, 1/1, maná {U}) a Cara 2 (Insectile Aberration, Creature — Human Insect, 3/2 con Flying, sin coste de maná), y reversión a Cara 1.
+    3. *Carta sin dictámenes:* Delver / Cultivate verificado con estado visual accesible `"Sin dictámenes"` (`data-testid="card-details-rulings-empty"`).
+    4. *Aislamiento de privacidad:* Carta boca abajo de Alice en el campo de batalla inspeccionada por Bob; el menú contextual muestra `"Carta boca abajo"` y el botón `"Ver carta"` (`data-testid="context-view-card"`) tiene conteo 0.
+    5. *Comprobación de fecha de sincronización:* Endpoint `POST /api/cards/sync-rulings` verificado con `skipped: true, reason: 'not_modified', syncedCount: 0` ejecutado en 149 ms sin descargas redundantes.
+    6. *Atribución en selector de playmat:* Modal de personalización de playmat verificado con bloque de atribución (`data-testid="playmat-attribution-box"`), artista ("Ilustrado por ..."), copyright ("Wizards of the Coast"), y botón "Ver carta" abriendo `CardDetailsModal` sobre el selector.
+    7. *Artefactos generados:* Capturas al 200% archivadas en el directorio de artefactos: [`card-details-single-faced.png`](card-details-single-faced.png) y [`card-details-double-faced.png`](card-details-double-faced.png).
 
 
 

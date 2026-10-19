@@ -1,3 +1,4 @@
+import zlib from 'node:zlib';
 import { prisma } from '../db.js';
 import { scryfallService } from './scryfall.service.js';
 
@@ -247,8 +248,9 @@ export class BulkSyncService {
 
     const bulkMeta = (await response.json()) as BulkDataResponse;
     const rulingsDataInfo = bulkMeta.data.find(item => item.type === 'rulings');
+    const downloadUri = rulingsDataInfo?.download_uri || (rulingsDataInfo as any)?.jsonl_download_uri;
 
-    if (!rulingsDataInfo?.download_uri) {
+    if (!rulingsDataInfo || !downloadUri) {
       throw new Error('No se encontró el archivo bulk "rulings" en Scryfall.');
     }
 
@@ -265,8 +267,8 @@ export class BulkSyncService {
       };
     }
 
-    console.log(`⬇️ [BulkSync] Descargando Rulings desde: ${rulingsDataInfo.download_uri}`);
-    const rulingsResponse = await fetch(rulingsDataInfo.download_uri, {
+    console.log(`⬇️ [BulkSync] Descargando Rulings desde: ${downloadUri}`);
+    const rulingsResponse = await fetch(downloadUri, {
       headers: {
         'User-Agent': userAgent,
         Accept: 'application/json',
@@ -277,7 +279,33 @@ export class BulkSyncService {
       throw new Error(`Error al descargar archivo bulk rulings: ${rulingsResponse.statusText}`);
     }
 
-    const rawRulings = (await rulingsResponse.json()) as any[];
+    const arrayBuf = await rulingsResponse.arrayBuffer();
+    const buf = Buffer.from(arrayBuf);
+    let text: string;
+    if (buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b) {
+      text = zlib.gunzipSync(buf).toString('utf-8');
+    } else {
+      text = buf.toString('utf-8');
+    }
+
+    let rawRulings: any[] = [];
+    const trimmedText = text.trim();
+    if (trimmedText.startsWith('[')) {
+      rawRulings = JSON.parse(trimmedText);
+    } else {
+      const lines = trimmedText.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed) {
+          try {
+            rawRulings.push(JSON.parse(trimmed));
+          } catch {
+            // omitir línea malformada
+          }
+        }
+      }
+    }
+
     const totalToProcess = limit ? Math.min(rawRulings.length, limit) : rawRulings.length;
     console.log(`📦 [BulkSync] Procesando ${totalToProcess} dictámenes oficiales de Scryfall...`);
 

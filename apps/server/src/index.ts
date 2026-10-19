@@ -422,6 +422,19 @@ server.get('/api/cards/:oracleId/rulings', async (request, reply) => {
   }
 });
 
+// Seed test rulings in memory for local test/verification (Punto 5 / 8)
+server.post('/api/cards/seed-test-rulings', async (request, reply) => {
+  const body = request.body as {
+    oracleId?: string;
+    rulings?: Array<{ publishedAt: string; source: string; comment: string }>;
+  };
+  if (body.oracleId && body.rulings) {
+    bulkSyncService.setRulingsForOracleId(body.oracleId, body.rulings);
+    return reply.send({ success: true, oracleId: body.oracleId, count: body.rulings.length });
+  }
+  return reply.status(400).send({ error: 'Falta oracleId o rulings' });
+});
+
 // Parse and validate decklist
 server.post('/api/decks/parse', async (request, reply) => {
   const body = request.body as { decklist?: string };
@@ -466,22 +479,41 @@ server.post('/api/decks/parse', async (request, reply) => {
   };
 
   // 2. Fetch definitions for missing commander and maindeck cards via Scryfall Collection API
+  const toScryfallLookupName = (rawName: string) => {
+    return rawName.includes(' // ') ? (rawName.split(' // ')[0] || rawName).trim() : rawName.trim();
+  };
+
   const missingCmdr = parsed.commanderEntries
     .filter(e => !findInDb(e.cardName))
-    .map(e => ({ name: e.cardName }));
+    .map(e => ({ name: toScryfallLookupName(e.cardName) }));
   const missingMain = parsed.maindeckEntries
     .filter(e => !findInDb(e.cardName))
-    .map(e => ({ name: e.cardName }));
+    .map(e => ({ name: toScryfallLookupName(e.cardName) }));
 
   const [cmdCollection, mainCollection] = await Promise.all([
     missingCmdr.length > 0 ? scryfallService.getCollection(missingCmdr) : { found: [], notFound: [] },
     missingMain.length > 0 ? scryfallService.getCollection(missingMain) : { found: [], notFound: [] },
   ]);
 
+  const matchCard = (entryName: string) => {
+    const q = entryName.toLowerCase().trim();
+    const qFront = q.includes(' // ') ? (q.split(' // ')[0] || q).trim() : q;
+    return (c: any) => {
+      const cName = (c.name || '').toLowerCase();
+      const cFront = cName.includes(' // ') ? (cName.split(' // ')[0] || cName).trim() : cName;
+      return (
+        cName === q ||
+        cFront === q ||
+        cFront === qFront ||
+        (c.faces && c.faces[0]?.name.toLowerCase() === qFront)
+      );
+    };
+  };
+
   const commanderCards = parsed.commanderEntries.map(entry => {
     const foundCard =
       findInDb(entry.cardName) ||
-      cmdCollection.found.find(c => c.name.toLowerCase() === entry.cardName.toLowerCase());
+      cmdCollection.found.find(matchCard(entry.cardName));
     return {
       card: foundCard || {
         scryfallId: `custom_${entry.cardName}`,
@@ -502,7 +534,7 @@ server.post('/api/decks/parse', async (request, reply) => {
   const maindeckCards = parsed.maindeckEntries.map(entry => {
     const foundCard =
       findInDb(entry.cardName) ||
-      mainCollection.found.find(c => c.name.toLowerCase() === entry.cardName.toLowerCase());
+      mainCollection.found.find(matchCard(entry.cardName));
     return {
       card: foundCard || {
         scryfallId: `custom_${entry.cardName}`,

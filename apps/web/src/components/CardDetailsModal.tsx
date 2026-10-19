@@ -379,6 +379,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                   rulings.map((ruling, idx) => (
                     <div
                       key={idx}
+                      data-testid="card-ruling-item"
                       className="bg-slate-950/70 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 space-y-1"
                     >
                       <div className="flex items-center justify-between text-[10px] text-slate-400">

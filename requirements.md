@@ -208,6 +208,14 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
         - **Cartas boca abajo:** Para cualquier carta boca abajo (`isFaceDown: true`) —sea propia o ajena en el campo de batalla, cementerio o exilio—, THE sistema SHALL NEVER ofrecer "Ver carta", ocultar la opción en el menú contextual y mostrar el encabezado `"Carta boca abajo"`.
         - **Manos ajenas:** Para cartas en manos de jugadores rivales, THE sistema SHALL NEVER ofrecer "Ver carta" y mostrar el encabezado anonimizado `"Carta oculta"`.
         - **Protección contra mutación de cartas rivales:** Cuando el menú contextual se activa sobre permanentes boca arriba de un oponente, THE sistema SHALL suprimir todas las opciones de mutación (girar, contadores, clonar, voltear o traslados a zonas), permitiendo exclusivamente la lectura de información pública mediante "Ver carta".
+    7.30. **Certificación automatizada E2E de Ver Carta, Dictámenes, DFC, Privacidad y Atribución Playmat (Punto 8 de Correcciones del Cliente):**
+        - **Carta con dictámenes oficiales:** THE suite de pruebas SHALL verificar que una carta con dictámenes (p. ej. Sol Ring) exponga en el panel modal todos sus campos oficiales: imagen en alta resolución, nombre, coste de maná, tipo, texto Oracle con símbolos formateados, artista, copyright legal y la lista completa de dictámenes con fecha y fuente oficial.
+        - **Cartas de doble cara (DFC):** THE suite de pruebas SHALL certificar que una carta de doble cara (p. ej. Delver of Secrets // Insectile Aberration) permita alternar dinámicamente entre caras con el selector interactivo, actualizando en tiempo real la imagen, nombre, tipo, estadísticas P/T (1/1 a 3/2 con Flying) y texto Oracle.
+        - **Cartas sin dictámenes:** THE suite de pruebas SHALL validar que una carta sin dictámenes registrados presente de manera visible y accesible el estado "Sin dictámenes".
+        - **Privacidad y anonimización:** THE suite de pruebas SHALL validar que al interactuar con una carta boca abajo ajena en el campo de batalla, el menú contextual NO ofrezca "Ver carta" y anonimice el título a "Carta boca abajo".
+        - **Comprobación de fecha en sync nocturno:** THE suite de pruebas SHALL verificar que la sincronización de dictámenes omita la descarga si la fecha del archivo bulk no ha cambiado (`skipped: true, reason: 'not_modified'`).
+        - **Atribución en selector de playmat:** THE suite de pruebas SHALL certificar que en el modal de personalización de playmat con fondo art_crop se muestren el artista, el copyright oficial y el botón "Ver carta" que abre el panel de inspección.
+        - **Artefactos visuales:** THE suite de pruebas SHALL capturar y preservar capturas al 200% de la carta simple y de la DFC con dictámenes en el directorio de artefactos (`card-details-single-faced.png` y `card-details-double-faced.png`).
 
 
 ### REQ-10 Sincronización y reconexión

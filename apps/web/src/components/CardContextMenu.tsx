@@ -75,6 +75,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
     (fromZone === 'command' ||
       card.isCommander ||
       (fromZone === 'hand' && card.ownerId === targetPlayerId) ||
+      (fromZone === 'library' && card.ownerId === targetPlayerId) ||
       fromZone === 'battlefield' ||
       fromZone === 'graveyard' ||
       fromZone === 'exile');
