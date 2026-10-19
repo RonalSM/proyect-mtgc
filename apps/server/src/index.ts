@@ -407,6 +407,21 @@ server.get('/api/cards/search', async (request, reply) => {
   return reply.send(card);
 });
 
+// Get official card rulings from local DB (REQ-7, Punto 4/5)
+server.get('/api/cards/:oracleId/rulings', async (request, reply) => {
+  const { oracleId } = request.params as { oracleId: string };
+  if (!oracleId) {
+    return reply.status(400).send({ error: 'Falta oracleId' });
+  }
+
+  try {
+    const rulings = await bulkSyncService.getRulingsByOracleId(oracleId);
+    return reply.send({ oracleId, rulings });
+  } catch {
+    return reply.send({ oracleId, rulings: [] });
+  }
+});
+
 // Parse and validate decklist
 server.post('/api/decks/parse', async (request, reply) => {
   const body = request.body as { decklist?: string };

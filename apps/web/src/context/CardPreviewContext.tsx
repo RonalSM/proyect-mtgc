@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import type { CardDefinition } from '@mtgc/shared';
 import { CardDisplay } from '../components/CardDisplay';
+import { CardDetailsModal } from '../components/CardDetailsModal';
 import { Portal } from '../components/Portal';
 
 interface CardPreviewContextType {
@@ -10,12 +11,15 @@ interface CardPreviewContextType {
   ) => void;
   hidePreview: () => void;
   setIsDragging: (isDragging: boolean) => void;
+  openCardDetails: (card: CardDefinition) => void;
+  closeCardDetails: () => void;
 }
 
 const CardPreviewContext = createContext<CardPreviewContextType | null>(null);
 
 export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeCard, setActiveCard] = useState<CardDefinition | null>(null);
+  const [detailsCard, setDetailsCard] = useState<CardDefinition | null>(null);
   const [previewSide, setPreviewSide] = useState<'left' | 'right'>('right');
   const [isDragging, setIsDraggingState] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -80,8 +84,19 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   };
 
+  const openCardDetails = (card: CardDefinition) => {
+    hidePreview();
+    setDetailsCard(card);
+  };
+
+  const closeCardDetails = () => {
+    setDetailsCard(null);
+  };
+
   return (
-    <CardPreviewContext.Provider value={{ showPreview, hidePreview, setIsDragging }}>
+    <CardPreviewContext.Provider
+      value={{ showPreview, hidePreview, setIsDragging, openCardDetails, closeCardDetails }}
+    >
       {children}
       {/* Vista previa de carta centrada en la mitad opuesta sin contenedor ni marcos (Punto 9) */}
       {activeCard && !isDragging && (
@@ -122,6 +137,16 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
           </div>
         </Portal>
       )}
+
+      {/* Modal / Panel 'Ver carta' detallado con dictámenes oficiales, artista y copyright (Punto 4) */}
+      {detailsCard && (
+        <Portal>
+          <CardDetailsModal
+            card={detailsCard}
+            onClose={closeCardDetails}
+          />
+        </Portal>
+      )}
     </CardPreviewContext.Provider>
   );
 };
@@ -133,6 +158,8 @@ export const useCardPreview = () => {
       showPreview: () => {},
       hidePreview: () => {},
       setIsDragging: () => {},
+      openCardDetails: () => {},
+      closeCardDetails: () => {},
     };
   }
   return ctx;

@@ -569,6 +569,19 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Biblioteca Abajo:** Carta enviada al fondo (`destinationIndex: library.length`) confirmada que NO es entregada en el siguiente robo individual.
   - **Biblioteca Aleatoria:** Carta insertada en posición aleatoria con CSPRNG autoritativo; verificada la remoción de la mano y la recepción en el cliente rival (`GameLogAndChat`) de la entrada `"envió una carta a su biblioteca"` sin filtrar índices ni posiciones.
   - **Revelado Privado:** La acción de revelar a un jugador rival emite `REVEAL_CARD` con `targetPlayerId`; el cliente objetivo muestra `RevealedCardModal` con el nombre de la carta mientras los demás clientes no reciben la identidad.
+- **Panel Detallado "Ver Carta" con Símbolos, Metadatos, Artista y Dictámenes (Punto 4 de Correcciones del Cliente):**
+  - **Componente:** [`CardDetailsModal.tsx`](apps/web/src/components/CardDetailsModal.tsx) integrado mediante portal en [`CardPreviewContext.tsx`](apps/web/src/context/CardPreviewContext.tsx) con la función `openCardDetails(card)`.
+  - **Activación:** Opción "Ver carta" (`data-testid="context-view-card"`) en [`CardContextMenu.tsx`](apps/web/src/components/CardContextMenu.tsx), expuesta para cartas visibles (mano propia, campo de batalla boca arriba, cementerio, exilio y zona de comando).
+  - **Estructura y metadatos:**
+    - Imagen grande en alta resolución (`large` o `normal`).
+    - Renderizador de símbolos MTG (`FormattedSymbol`) con badges circulares para maná `{W, U, B, R, G, C}`, coste numérico `{0..20}`, símbolos de acción `{T, X}` y maná híbrido/partido.
+    - Línea de tipo, texto Oracle original en inglés formateado con símbolos y párrafos.
+    - Estadísticas dinámicas de fuerza/resistencia ($P/T$) o lealtad inicial de planeswalker.
+    - Edición/Set, rareza con código cromático, número de coleccionista e identidad de color.
+    - Atribución de artista ("Ilustrado por [artista]") y aviso de copyright oficial ("™ & © Wizards of the Coast") conforme a las directrices de Scryfall.
+    - Selector interactivo de caras (`card-details-face-switcher`) para cartas de doble cara (DFC).
+    - Sección de dictámenes oficiales (rulings) alimentada por la base de datos local vía `GET /api/cards/:oracleId/rulings`, con fecha, fuente oficial y comentario o estado "Sin dictámenes".
+
 
 - Etiqueta de nombre: píldora pequeña con icono de ampliar; turno activo con borde de color y brillo suave.
 - Ranuras de pilas: rectángulos con proporción de carta; vacías con contorno punteado y etiqueta de zona.

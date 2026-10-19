@@ -21,6 +21,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
+import { useCardPreview } from '../context/CardPreviewContext';
 
 export interface CardContextMenuProps {
   card: CardInstance;
@@ -56,8 +57,18 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<'library' | 'reveal' | null>(null);
+  const { openCardDetails } = useCardPreview();
 
   const targetPlayerId = localPlayerId || card.ownerId;
+  const isVisible =
+    !card.isFaceDown &&
+    (fromZone === 'command' ||
+      card.isCommander ||
+      (fromZone === 'hand' && card.ownerId === targetPlayerId) ||
+      fromZone === 'battlefield' ||
+      fromZone === 'graveyard' ||
+      fromZone === 'exile');
+
   const currentLibraryLength =
     (roomState && targetPlayerId && roomState.playerZones?.[targetPlayerId]?.library?.length) ||
     (roomState && targetPlayerId && roomState.players?.[targetPlayerId]?.libraryCount) ||
@@ -224,6 +235,22 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
           <div className="px-2 py-1 text-[11px] font-bold text-amber-400 border-b border-slate-800 truncate max-w-[200px]">
             {card.definition.name}
           </div>
+
+          {/* Opción 'Ver carta' (Punto 4, REQ-7.27): disponible para cartas visibles para el jugador */}
+          {isVisible && (
+            <button
+              type="button"
+              data-testid="context-view-card"
+              onClick={() => {
+                onClose();
+                openCardDetails(card.definition);
+              }}
+              className="w-full flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-800 rounded-lg text-sky-300 hover:text-white cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5 text-sky-400" />
+              <span>Ver carta</span>
+            </button>
+          )}
 
           {/* Opciones exclusivas de campo de batalla */}
           {fromZone === 'battlefield' && (

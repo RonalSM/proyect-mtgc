@@ -191,6 +191,11 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
         - **Verificación de colocación Abajo:** La carta enviada al fondo (`destinationIndex: library.length`) SHALL permanecer en el fondo y NO ser entregada en el siguiente robo individual de la biblioteca.
         - **Verificación de colocación Aleatoria:** La carta insertada de forma aleatoria mediante CSPRNG SHALL entrar a la biblioteca y salir de la mano del jugador emisor; la bitácora pública en clientes remotos SHALL registrar `"X envió una carta a su biblioteca"` sin exponer jamás el índice numérico ni la posición elegida.
         - **Verificación de Revelado Privado:** La acción de revelar a un jugador rival SHALL transmitir la identidad de la carta exclusivamente al destinatario especificado (`RevealedCardModal`), sin difundir la identidad a terceros ni mover la carta de su zona.
+    7.27. **Panel modal "Ver carta" con metadatos oficiales, símbolos, artista, copyright y dictámenes (Punto 4 de Correcciones del Cliente):**
+        - **Disponibilidad:** THE sistema SHALL presentar la opción "Ver carta" (`data-testid="context-view-card"`) en el menú contextual de cartas visibles (mano propia, campo de batalla boca arriba, cementerio, exilio y comandantes).
+        - **Contenido del panel:** Al activarse, THE sistema SHALL desplegar el modal `CardDetailsModal` (`data-testid="card-details-modal"`) con imagen de alta definición (large o normal), nombre, coste de maná con insignias MTG, línea de tipo, texto Oracle en inglés con símbolos formateados, fuerza/resistencia o lealtad, identidad de color, edición/set, rareza, número de coleccionista, atribución al artista, aviso de copyright oficial ("™ & © Wizards of the Coast"), indicador de legalidad en Commander y sección de dictámenes oficiales (rulings) con fecha y fuente, o "Sin dictámenes" si no registra entradas.
+        - **Cartas de doble cara (DFC):** Selector interactivo (`card-details-face-switcher`) que conmuta entre cara frontal y posterior actualizando imagen, estadísticas y texto Oracle.
+        - **Cierre:** Cierra mediante clic en backdrop, botón de aspas o tecla `Escape`.
 
 
 ### REQ-10 Sincronización y reconexión

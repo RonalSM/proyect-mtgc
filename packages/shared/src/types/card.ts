@@ -1,5 +1,11 @@
 export type CardColor = 'W' | 'U' | 'B' | 'R' | 'G';
 
+export interface CardRuling {
+  publishedAt: string;
+  source: string;
+  comment: string;
+}
+
 export interface CardFace {
   name: string;
   manaCost?: string;
@@ -7,8 +13,11 @@ export interface CardFace {
   oracleText?: string;
   power?: string;
   toughness?: string;
+  loyalty?: string;
+  artist?: string;
   imageUrlSmall?: string;
   imageUrlNormal?: string;
+  imageUrlLarge?: string;
   imageUrlArtCrop?: string;
 }
 
@@ -25,8 +34,17 @@ export interface CardDefinition {
   legalities?: Record<string, string>;
   power?: string;
   toughness?: string;
+  loyalty?: string;
+  set?: string;
+  setName?: string;
+  rarity?: string;
+  collectorNumber?: string;
+  artist?: string;
+  copyright?: string;
+  rulings?: CardRuling[];
   imageUrlSmall?: string;
   imageUrlNormal?: string;
+  imageUrlLarge?: string;
   imageUrlArtCrop?: string;
   isTwoFaced?: boolean;
   faces?: CardFace[];

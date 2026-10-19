@@ -7,9 +7,12 @@ interface ScryfallCardFace {
   oracle_text?: string;
   power?: string;
   toughness?: string;
+  loyalty?: string;
+  artist?: string;
   image_uris?: {
     small?: string;
     normal?: string;
+    large?: string;
     art_crop?: string;
   };
 }
@@ -26,10 +29,17 @@ interface ScryfallCardRaw {
   color_identity?: string[];
   power?: string;
   toughness?: string;
+  loyalty?: string;
+  set?: string;
+  set_name?: string;
+  rarity?: string;
+  collector_number?: string;
+  artist?: string;
   card_faces?: ScryfallCardFace[];
   image_uris?: {
     small?: string;
     normal?: string;
+    large?: string;
     art_crop?: string;
   };
   layout?: string;
@@ -126,6 +136,7 @@ export class ScryfallService {
 
     const imageUrlSmall = raw.image_uris?.small || primaryFace?.image_uris?.small;
     const imageUrlNormal = raw.image_uris?.normal || primaryFace?.image_uris?.normal;
+    const imageUrlLarge = raw.image_uris?.large || primaryFace?.image_uris?.large;
     const imageUrlArtCrop = raw.image_uris?.art_crop || primaryFace?.image_uris?.art_crop;
 
     return {
@@ -141,8 +152,16 @@ export class ScryfallService {
       legalities: raw.legalities,
       power: raw.power || primaryFace?.power,
       toughness: raw.toughness || primaryFace?.toughness,
+      loyalty: raw.loyalty || primaryFace?.loyalty,
+      set: raw.set,
+      setName: raw.set_name,
+      rarity: raw.rarity,
+      collectorNumber: raw.collector_number,
+      artist: raw.artist || primaryFace?.artist,
+      copyright: '© Wizards of the Coast',
       imageUrlSmall,
       imageUrlNormal,
+      imageUrlLarge,
       imageUrlArtCrop,
       isTwoFaced,
       faces: isTwoFaced
@@ -153,8 +172,11 @@ export class ScryfallService {
             oracleText: f.oracle_text,
             power: f.power,
             toughness: f.toughness,
+            loyalty: f.loyalty,
+            artist: f.artist || raw.artist,
             imageUrlSmall: f.image_uris?.small || raw.image_uris?.small,
             imageUrlNormal: f.image_uris?.normal || raw.image_uris?.normal,
+            imageUrlLarge: f.image_uris?.large || raw.image_uris?.large,
             imageUrlArtCrop: f.image_uris?.art_crop || raw.image_uris?.art_crop,
           }))
         : undefined,

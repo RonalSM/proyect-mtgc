@@ -16,6 +16,47 @@ export class BulkSyncService {
   private lastSyncTime: Date | null = null;
   private cronTimer: NodeJS.Timeout | null = null;
   private isNightlyCronActive = false;
+  private rulingsByOracleId: Map<
+    string,
+    Array<{ publishedAt: string; source: string; comment: string }>
+  > = new Map();
+
+  public setRulingsForOracleId(
+    oracleId: string,
+    rulings: Array<{ publishedAt: string; source: string; comment: string }>,
+  ): void {
+    this.rulingsByOracleId.set(oracleId, rulings);
+  }
+
+  public async getRulingsByOracleId(
+    oracleId: string,
+  ): Promise<Array<{ publishedAt: string; source: string; comment: string }>> {
+    const cached = this.rulingsByOracleId.get(oracleId);
+    if (cached) return cached;
+
+    try {
+      const dbRulings = await (prisma as any).ruling?.findMany({
+        where: { oracleId },
+        orderBy: { publishedAt: 'desc' },
+      });
+      if (dbRulings && dbRulings.length > 0) {
+        const mapped = dbRulings.map((r: any) => ({
+          publishedAt:
+            typeof r.publishedAt === 'string'
+              ? r.publishedAt
+              : r.publishedAt.toISOString().slice(0, 10),
+          source: r.source || 'wotc',
+          comment: r.comment,
+        }));
+        this.rulingsByOracleId.set(oracleId, mapped);
+        return mapped;
+      }
+    } catch {
+      // DB offline or table not present
+    }
+
+    return [];
+  }
 
   /**
    * Triggers synchronization of Scryfall Oracle Cards bulk data
