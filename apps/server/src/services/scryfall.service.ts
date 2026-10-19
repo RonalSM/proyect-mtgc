@@ -120,7 +120,8 @@ export class ScryfallService {
    * Transform Scryfall raw card into standard CardDefinition
    */
   public toCardDefinition(raw: ScryfallCardRaw): CardDefinition {
-    const isTwoFaced = !!(raw.card_faces && raw.card_faces.length > 1 && !raw.image_uris);
+    const hasFaceImages = !!(raw.card_faces && raw.card_faces.some(f => f.image_uris));
+    const isTwoFaced = hasFaceImages || !!(raw.card_faces && raw.card_faces.length > 1 && !raw.image_uris);
     const primaryFace = isTwoFaced ? raw.card_faces![0] : undefined;
 
     const imageUrlSmall = raw.image_uris?.small || primaryFace?.image_uris?.small;
@@ -152,9 +153,9 @@ export class ScryfallService {
             oracleText: f.oracle_text,
             power: f.power,
             toughness: f.toughness,
-            imageUrlSmall: f.image_uris?.small,
-            imageUrlNormal: f.image_uris?.normal,
-            imageUrlArtCrop: f.image_uris?.art_crop,
+            imageUrlSmall: f.image_uris?.small || raw.image_uris?.small,
+            imageUrlNormal: f.image_uris?.normal || raw.image_uris?.normal,
+            imageUrlArtCrop: f.image_uris?.art_crop || raw.image_uris?.art_crop,
           }))
         : undefined,
     };

@@ -9,7 +9,7 @@ import { CreateRoomInputSchema, parseDecklist, validateCommanderDeck } from '@mt
 import { cardSearchService } from './services/card-search.service.js';
 import { scryfallService } from './services/scryfall.service.js';
 import { bulkSyncService } from './services/bulk-sync.service.js';
-import { connectDatabase } from './db.js';
+import { connectDatabase, prisma } from './db.js';
 import { roomManager } from './game/room-manager.js';
 import { wsHandler } from './game/ws-handler.js';
 
@@ -416,19 +416,57 @@ server.post('/api/decks/parse', async (request, reply) => {
 
   const parsed = parseDecklist(body.decklist);
 
-  // Fetch definitions for commander cards
-  const commanderIdentifiers = parsed.commanderEntries.map(e => ({ name: e.cardName }));
-  const maindeckIdentifiers = parsed.maindeckEntries.map(e => ({ name: e.cardName }));
+  // 1. Try local Prisma DB first (bulk data cache)
+  const allCardNames = [...parsed.commanderEntries, ...parsed.maindeckEntries].map(e => e.cardName);
+  let dbCards: any[] = [];
+  try {
+    dbCards = await prisma.card.findMany({
+      where: {
+        name: { in: allCardNames, mode: 'insensitive' },
+      },
+    });
+  } catch {
+    // Graceful fallback if DB is offline
+  }
+
+  const findInDb = (name: string): any | undefined => {
+    const found = dbCards.find(c => c.name.toLowerCase() === name.toLowerCase());
+    if (!found) return undefined;
+    return {
+      scryfallId: found.scryfallId,
+      oracleId: found.oracleId ?? undefined,
+      name: found.name,
+      manaCost: found.manaCost ?? undefined,
+      cmc: found.cmc,
+      typeLine: found.typeLine,
+      oracleText: found.oracleText ?? undefined,
+      colors: found.colors as any,
+      colorIdentity: found.colorIdentity as any,
+      power: found.power ?? undefined,
+      toughness: found.toughness ?? undefined,
+      imageUrlSmall: found.imageUrlSmall ?? undefined,
+      imageUrlNormal: found.imageUrlNormal ?? undefined,
+      imageUrlArtCrop: found.imageUrlArtCrop ?? undefined,
+    };
+  };
+
+  // 2. Fetch definitions for missing commander and maindeck cards via Scryfall Collection API
+  const missingCmdr = parsed.commanderEntries
+    .filter(e => !findInDb(e.cardName))
+    .map(e => ({ name: e.cardName }));
+  const missingMain = parsed.maindeckEntries
+    .filter(e => !findInDb(e.cardName))
+    .map(e => ({ name: e.cardName }));
 
   const [cmdCollection, mainCollection] = await Promise.all([
-    scryfallService.getCollection(commanderIdentifiers),
-    scryfallService.getCollection(maindeckIdentifiers),
+    missingCmdr.length > 0 ? scryfallService.getCollection(missingCmdr) : { found: [], notFound: [] },
+    missingMain.length > 0 ? scryfallService.getCollection(missingMain) : { found: [], notFound: [] },
   ]);
 
   const commanderCards = parsed.commanderEntries.map(entry => {
-    const foundCard = cmdCollection.found.find(
-      c => c.name.toLowerCase() === entry.cardName.toLowerCase(),
-    );
+    const foundCard =
+      findInDb(entry.cardName) ||
+      cmdCollection.found.find(c => c.name.toLowerCase() === entry.cardName.toLowerCase());
     return {
       card: foundCard || {
         scryfallId: `custom_${entry.cardName}`,
@@ -437,8 +475,9 @@ server.post('/api/decks/parse', async (request, reply) => {
         typeLine: 'Legendary Creature',
         colors: [],
         colorIdentity: [],
-        imageUrlNormal: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(entry.cardName)}&format=image`,
-        imageUrlArtCrop: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(entry.cardName)}&format=image&version=art_crop`,
+        imageUrlNormal: undefined,
+        imageUrlSmall: undefined,
+        imageUrlArtCrop: undefined,
       },
       quantity: entry.quantity,
       isCommander: true,
@@ -446,9 +485,9 @@ server.post('/api/decks/parse', async (request, reply) => {
   });
 
   const maindeckCards = parsed.maindeckEntries.map(entry => {
-    const foundCard = mainCollection.found.find(
-      c => c.name.toLowerCase() === entry.cardName.toLowerCase(),
-    );
+    const foundCard =
+      findInDb(entry.cardName) ||
+      mainCollection.found.find(c => c.name.toLowerCase() === entry.cardName.toLowerCase());
     return {
       card: foundCard || {
         scryfallId: `custom_${entry.cardName}`,
@@ -457,7 +496,8 @@ server.post('/api/decks/parse', async (request, reply) => {
         typeLine: 'Card',
         colors: [],
         colorIdentity: [],
-        imageUrlNormal: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(entry.cardName)}&format=image`,
+        imageUrlNormal: undefined,
+        imageUrlSmall: undefined,
       },
       quantity: entry.quantity,
       isCommander: false,

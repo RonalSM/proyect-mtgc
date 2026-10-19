@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { inferCardTypeLine, type CardDefinition } from '@mtgc/shared';
 import { Layers, RefreshCw } from 'lucide-react';
+import { cardImageResolver } from '../services/cardImageResolver';
 
 interface CardDisplayProps {
   card: CardDefinition;
@@ -9,6 +10,7 @@ interface CardDisplayProps {
   className?: string;
   imageClassName?: string;
   allowFaceToggle?: boolean;
+  size?: 'small' | 'normal';
 }
 
 export const CardDisplay: React.FC<CardDisplayProps> = ({
@@ -18,6 +20,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   className = '',
   imageClassName = '',
   allowFaceToggle = true,
+  size = 'normal',
 }) => {
   const [currentFaceIndex, setCurrentFaceIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
@@ -33,27 +36,50 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   const cardToughness = activeFace?.toughness ?? card.toughness;
   const cardOracle = activeFace?.oracleText || card.oracleText;
 
-  // Resolve best candidate image URL: siempre versión normal en alta definición (Punto 4)
-  const resolvedImageUrl = (() => {
-    let url = activeFace?.imageUrlNormal || card.imageUrlNormal || activeFace?.imageUrlSmall || card.imageUrlSmall || '';
+  // Direct cards.scryfall.io URL from active face or card definition (Punto 2 y 3)
+  const directUrl = (() => {
+    if (size === 'small') {
+      return (
+        activeFace?.imageUrlSmall ||
+        card.imageUrlSmall ||
+        activeFace?.imageUrlNormal ||
+        card.imageUrlNormal ||
+        ''
+      );
+    }
+    return (
+      activeFace?.imageUrlNormal ||
+      card.imageUrlNormal ||
+      activeFace?.imageUrlSmall ||
+      card.imageUrlSmall ||
+      ''
+    );
+  })();
+
+  const [asyncResolvedUrl, setAsyncResolvedUrl] = useState<string | null>(() => {
+    return directUrl || cardImageResolver.getCached(cardName, size);
+  });
+
+  useEffect(() => {
+    if (directUrl) {
+      setAsyncResolvedUrl(directUrl);
+      return;
+    }
     if (
-      !url &&
       cardName &&
+      !isFaceDown &&
       !cardName.startsWith('Carta #') &&
       !cardName.startsWith('Carta ') &&
       cardName !== 'Carta Desconocida' &&
       cardName !== 'Carta Oculta'
     ) {
-      url = `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(cardName)}&format=image&version=normal`;
+      cardImageResolver.resolve(cardName, size).then(url => {
+        if (url) setAsyncResolvedUrl(url);
+      });
     }
-    if (url) {
-      url = url.replace('/small/', '/normal/').replace('version=small', 'version=normal');
-      if (url.includes('format=image') && !url.includes('version=')) {
-        url += '&version=normal';
-      }
-    }
-    return url;
-  })();
+  }, [directUrl, cardName, isFaceDown, size]);
+
+  const resolvedImageUrl = directUrl || asyncResolvedUrl || '';
 
   const toggleFace = (e: React.MouseEvent) => {
     e.stopPropagation();

@@ -34,6 +34,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
   const [savedDecks, setSavedDecks] = useState<any[]>([]);
   const [isLoadingDecks, setIsLoadingDecks] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const [rawDeckText, setRawDeckText] = useState('');
   const [deckNameInput, setDeckNameInput] = useState('');
   const [saveToAccount, setSaveToAccount] = useState(false);
@@ -104,8 +105,41 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
     }
   };
 
-  const handleValidateText = () => {
+  const handleValidateText = async () => {
     if (!rawDeckText.trim()) return;
+    setIsValidating(true);
+
+    try {
+      const res = await fetch('/api/decks/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decklist: rawDeckText }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const commanderCards: CardDefinition[] = (data.commanderCards || []).flatMap((c: any) =>
+          Array.from({ length: c.quantity || 1 }, () => c.card),
+        );
+        const maindeckCards: CardDefinition[] = (data.maindeckCards || []).flatMap((c: any) =>
+          Array.from({ length: c.quantity || 1 }, () => c.card),
+        );
+
+        setValidationResult({
+          valid: data.validation.isValid,
+          errors: data.validation.errors,
+          warnings: data.validation.warnings,
+          commanderCards,
+          maindeckCards,
+        });
+        return;
+      }
+    } catch {
+      // Offline / fallback to local parser
+    } finally {
+      setIsValidating(false);
+    }
+
     const parsed = parseDecklist(rawDeckText);
     const mockCommanderCards: CardDefinition[] = parsed.commanderEntries.map((c, i) => ({
       scryfallId: `cmdr_${i}`,
@@ -114,9 +148,6 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
       typeLine: 'Legendary Creature',
       colors: ['W', 'U', 'B', 'R', 'G'] as any,
       colorIdentity: ['W', 'U', 'B', 'R', 'G'] as any,
-      imageUrlNormal: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.cardName)}&format=image`,
-      imageUrlSmall: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.cardName)}&format=image&version=small`,
-      imageUrlArtCrop: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.cardName)}&format=image&version=art_crop`,
     }));
 
     const mockMaindeckCards: CardDefinition[] = parsed.maindeckEntries.flatMap((c, i) =>
@@ -127,8 +158,6 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         typeLine: inferCardTypeLine(c.cardName),
         colors: [] as any,
         colorIdentity: [] as any,
-        imageUrlNormal: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.cardName)}&format=image`,
-        imageUrlSmall: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(c.cardName)}&format=image&version=small`,
       })),
     );
 
@@ -525,12 +554,8 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                                 typeLine: 'Legendary Creature',
                                 colors: d.colorIdentity || [],
                                 colorIdentity: d.colorIdentity || [],
-                                imageUrlNormal:
-                                  d.commanderImageUrl ||
-                                  `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(d.commanderName)}&format=image`,
-                                imageUrlArtCrop:
-                                  d.commanderImageUrl ||
-                                  `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(d.commanderName)}&format=image&version=art_crop`,
+                                imageUrlNormal: d.commanderImageUrl || undefined,
+                                imageUrlArtCrop: d.commanderImageUrl || undefined,
                               },
                             ],
                             maindeckCards: d.maindeckCards?.length
@@ -569,8 +594,8 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                                     typeLine: inferCardTypeLine(stapleName),
                                     colors: [],
                                     colorIdentity: [],
-                                    imageUrlNormal: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(stapleName)}&format=image`,
-                                    imageUrlSmall: `https://api.scryfall.com/cards/named?exact=${encodeURIComponent(stapleName)}&format=image&version=small`,
+                                    imageUrlNormal: undefined,
+                                    imageUrlSmall: undefined,
                                   };
                                 }),
                           })
@@ -643,9 +668,10 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
 
                   <button
                     onClick={handleValidateText}
-                    className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-xs py-2 rounded-xl transition-colors"
+                    disabled={isValidating}
+                    className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-xs py-2 rounded-xl transition-colors disabled:opacity-50"
                   >
-                    Validar lista
+                    {isValidating ? 'Validando lista con Scryfall...' : 'Validar lista'}
                   </button>
 
                   {validationResult && (
