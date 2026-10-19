@@ -531,7 +531,7 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
 
 - **Unitarias (cobertura ≥ 80 %):** `DeckParser`, `CommanderValidator`, `VisibilityFilter`, lógica de acciones, `Shuffler`, d20 y desempates con pruebas de distribución (chi-cuadrado).
 - **Integración:** flujo crear mesa → sala de espera → iniciativa d20 → partida → mover carta → reconectar; importación con Scryfall simulado.
-- **End-to-end (Playwright):** 4 clientes simultáneos: elegir mazo → listo → iniciar → d20 → orden correcto → primer turno → partida completa.
+- **End-to-end (Playwright):** 4 clientes simultáneos: elegir mazo → listo → iniciar → d20 → orden correcto → primer turno → partida completa; apertura concurrente de bibliotecas de 100 cartas con 4 clientes simultáneos, simulación determinista de ráfagas HTTP 429, 504 y 500, reintentos con backoff y caché persistente de navegador con Cache API (`apps/web/e2e/image-verification.spec.ts`).
 - **Rendimiento (k6/Artillery):** 500 mesas con 4 jugadores; medir p95 de latencia de extremo a extremo (emisor a receptor).
 - **Seguridad:** pruebas de autorización, fuga de información oculta en lobby y partida.
 
