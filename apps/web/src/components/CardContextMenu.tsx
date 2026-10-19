@@ -18,6 +18,7 @@ import {
   Users,
   User,
   ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 import { getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
 
@@ -64,20 +65,52 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
     (roomState && targetPlayerId && roomState.players?.[targetPlayerId]?.libraryCount) ||
     0;
 
-  // Cerrar al presionar Escape o clic fuera
+  // Navegación con teclado: Flechas (arriba/abajo), Enter (activar) y Esc (cerrar)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!menuRef.current) return;
+        const focusable = Array.from(
+          menuRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), input:not([disabled])'
+          )
+        );
+        if (focusable.length === 0) return;
+        const activeElem = document.activeElement as HTMLElement | null;
+        const currentIndex = activeElem ? focusable.indexOf(activeElem) : -1;
+        let nextIndex = 0;
+        if (e.key === 'ArrowDown') {
+          nextIndex = currentIndex >= 0 ? (currentIndex + 1) % focusable.length : 0;
+        } else {
+          nextIndex = currentIndex > 0 ? currentIndex - 1 : focusable.length - 1;
+        }
+        focusable[nextIndex]?.focus();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  // Enfoque inicial al abrir el menú para permitir navegación inmediata con teclado
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const firstBtn = menuRef.current?.querySelector('button') as HTMLButtonElement | null;
+      firstBtn?.focus();
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Ajustar posición para no desbordar los límites de la pantalla
-  const menuW = 200;
-  const menuH = 320;
-  const clampedX = typeof window !== 'undefined' ? Math.min(position.x, window.innerWidth - menuW - 10) : position.x;
-  const clampedY = typeof window !== 'undefined' ? Math.min(position.y, window.innerHeight - menuH - 10) : position.y;
+  const menuW = 220;
+  const menuH = 380;
+  const clampedX = typeof window !== 'undefined' ? Math.max(10, Math.min(position.x, window.innerWidth - menuW - 10)) : position.x;
+  const clampedY = typeof window !== 'undefined' ? Math.max(10, Math.min(position.y, window.innerHeight - menuH - 10)) : position.y;
 
   // Destino: Mesa (con posición en cascada en sección propia, Punto 2)
   const handleSendToBattlefield = () => {
@@ -193,7 +226,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
           onClick={e => e.stopPropagation()}
           onContextMenu={e => e.stopPropagation()}
           onPointerDown={e => e.stopPropagation()}
-          className="fixed bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 min-w-[180px] z-[110] backdrop-blur-md text-xs text-slate-200 select-none"
+          className="fixed bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 min-w-[190px] max-h-[85vh] overflow-y-auto z-[110] backdrop-blur-md text-xs text-slate-200 select-none"
         >
           {/* Header con nombre de carta */}
           <div className="px-2 py-1 text-[11px] font-bold text-amber-400 border-b border-slate-800 truncate max-w-[200px]">
@@ -334,40 +367,38 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             </button>
           )}
 
-          {/* Destino: Biblioteca con Submenú (Arriba, Abajo, Posición) */}
-          <div
-            className="relative"
-            onMouseEnter={() => setActiveSubmenu('library')}
-            onMouseLeave={() => {
-              if (!showPosInput) setActiveSubmenu(null);
-            }}
-          >
+          {/* Destino: Biblioteca con Expansión en Línea (Arriba, Abajo, Posición) */}
+          <div className="flex flex-col">
             <button
               type="button"
               data-testid="context-to-library-menu"
               onClick={() => setActiveSubmenu(activeSubmenu === 'library' ? null : 'library')}
-              className={`w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 rounded-lg cursor-pointer ${
-                activeSubmenu === 'library' ? 'bg-slate-800 text-white' : 'text-slate-200'
+              className={`w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg cursor-pointer transition-colors ${
+                activeSubmenu === 'library' ? 'bg-slate-800 text-amber-300' : 'text-slate-200'
               }`}
             >
               <div className="flex items-center space-x-2">
                 <BookOpen className="w-3.5 h-3.5 text-amber-400" />
                 <span>Biblioteca</span>
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              {activeSubmenu === 'library' ? (
+                <ChevronDown className="w-3.5 h-3.5 text-amber-400" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              )}
             </button>
 
-            {/* Submenú de Biblioteca */}
+            {/* Expansión en Línea de Biblioteca */}
             {activeSubmenu === 'library' && (
               <div
                 data-testid="context-library-submenu"
-                className="absolute left-full top-0 ml-1 bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-1 min-w-[150px] z-[120] backdrop-blur-md"
+                className="mt-1 ml-3 pl-2 border-l-2 border-amber-500/30 flex flex-col space-y-1 py-1"
               >
                 <button
                   type="button"
                   data-testid="context-to-library-top"
                   onClick={() => handleSendToLibrary(0)}
-                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer"
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
                 >
                   <ArrowUp className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Arriba (tope)</span>
@@ -376,7 +407,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   type="button"
                   data-testid="context-to-library-bottom"
                   onClick={() => handleSendToLibrary(currentLibraryLength)}
-                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer"
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
                 >
                   <ArrowDown className="w-3.5 h-3.5 text-blue-400" />
                   <span>Abajo (fondo)</span>
@@ -387,7 +418,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                     type="button"
                     data-testid="context-to-library-pos-btn"
                     onClick={() => setShowPosInput(true)}
-                    className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer"
+                    className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
                   >
                     <Hash className="w-3.5 h-3.5 text-amber-400" />
                     <span>Posición específica...</span>
@@ -420,38 +451,38 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             )}
           </div>
 
-          {/* Opción: Revelar con Submenú (A todos o a jugador específico, Punto 7) */}
-          <div
-            className="relative border-t border-slate-800 pt-0.5"
-            onMouseEnter={() => setActiveSubmenu('reveal')}
-            onMouseLeave={() => setActiveSubmenu(null)}
-          >
+          {/* Opción: Revelar con Expansión en Línea (A todos o a jugador específico, Punto 7) */}
+          <div className="flex flex-col border-t border-slate-800 pt-0.5">
             <button
               type="button"
               data-testid="context-reveal-menu"
               onClick={() => setActiveSubmenu(activeSubmenu === 'reveal' ? null : 'reveal')}
-              className={`w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 rounded-lg cursor-pointer ${
-                activeSubmenu === 'reveal' ? 'bg-slate-800 text-white' : 'text-slate-200'
+              className={`w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 rounded-lg cursor-pointer transition-colors ${
+                activeSubmenu === 'reveal' ? 'bg-slate-800 text-cyan-300' : 'text-slate-200'
               }`}
             >
               <div className="flex items-center space-x-2">
                 <Share2 className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Revelar</span>
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              {activeSubmenu === 'reveal' ? (
+                <ChevronDown className="w-3.5 h-3.5 text-cyan-400" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+              )}
             </button>
 
-            {/* Submenú de Revelar */}
+            {/* Expansión en Línea de Revelar */}
             {activeSubmenu === 'reveal' && (
               <div
                 data-testid="context-reveal-submenu"
-                className="absolute left-full top-0 ml-1 bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-1 min-w-[160px] z-[120] backdrop-blur-md"
+                className="mt-1 ml-3 pl-2 border-l-2 border-cyan-500/30 flex flex-col space-y-1 py-1"
               >
                 <button
                   type="button"
                   data-testid="context-reveal-all"
                   onClick={() => handleReveal(undefined)}
-                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer font-medium"
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer font-medium transition-colors"
                 >
                   <Users className="w-3.5 h-3.5 text-cyan-400" />
                   <span>A toda la mesa</span>
@@ -459,7 +490,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
 
                 {opponents.length > 0 && (
                   <>
-                    <div className="border-t border-slate-800 my-0.5 px-1 text-[9px] text-slate-400 uppercase tracking-wider">
+                    <div className="border-t border-slate-800 my-0.5 px-1 text-[9px] text-slate-400 uppercase tracking-wider font-semibold">
                       Jugador específico
                     </div>
                     {opponents.map(opp => (
@@ -468,7 +499,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                         type="button"
                         data-testid={`context-reveal-player-${opp.id}`}
                         onClick={() => handleReveal(opp.id)}
-                        className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white cursor-pointer truncate"
+                        className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 rounded-lg text-slate-300 hover:text-white cursor-pointer truncate transition-colors"
                       >
                         <User className="w-3.5 h-3.5 text-slate-400" />
                         <span className="truncate">{opp.name}</span>
