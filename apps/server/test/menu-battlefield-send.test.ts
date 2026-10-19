@@ -1,7 +1,7 @@
 import test, { describe } from 'node:test';
 import assert from 'node:assert';
 import { GameStateSession } from '../src/game/game-state.js';
-import type { RoomState, CardInstance, CardDefinition } from '@mtgc/shared';
+import { getCardDimensions, type RoomState, type CardInstance, type CardDefinition } from '@mtgc/shared';
 
 function createDummyCard(id: string, name: string, ownerId: string): CardInstance {
   const def: CardDefinition = {
@@ -214,4 +214,56 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
       );
     }
   });
+
+  describe('Punto 4: Centrado exacto (<= 1 px) usando dimensiones reales de carta', () => {
+    const resolutions = [
+      { name: '1920x1080', width: 1920, height: 1080 },
+      { name: '1366x768', width: 1366, height: 768 },
+    ];
+
+    for (const res of resolutions) {
+      for (const numPlayers of [2, 4, 6] as const) {
+        test(`${numPlayers}p a ${res.name}: el centro de la carta coincide con el centro de la sección jugable con <= 1 px`, () => {
+          const session = createRoomWithPlayers(numPlayers);
+          const pId = 'player_0';
+
+          const cardDims = getCardDimensions(numPlayers, { width: res.width, height: res.height });
+          const centerPos = session.computePlayerDivisionCenter(pId, { width: res.width, height: res.height });
+
+          // La carta se ubica en top-left:
+          const cardPixelX = centerPos.x * res.width;
+          const cardPixelY = centerPos.y * res.height;
+
+          // Centro calculado de la carta:
+          const cardCenterX = cardPixelX + cardDims.width / 2;
+          const cardCenterY = cardPixelY + cardDims.height / 2;
+
+          // Centro de la sección jugable:
+          const cols = numPlayers === 2 ? 2 : Math.min(3, Math.max(2, Math.ceil(numPlayers / 2)));
+          const isTwoPlayerMode = numPlayers === 2;
+          const dockHeightNorm = isTwoPlayerMode ? 0.15 : 0.125;
+          const cellWidth = res.width / cols;
+          const cellHeight = isTwoPlayerMode ? res.height : res.height / 2;
+          const playableHeight = cellHeight - dockHeightNorm * res.height;
+
+          const playableCenterX = cellWidth * 0.5;
+          const playableCenterY = playableHeight * 0.5;
+
+          const diffX = Math.abs(cardCenterX - playableCenterX);
+          const diffY = Math.abs(cardCenterY - playableCenterY);
+
+          console.log(
+            `[Punto 4 Test] ${numPlayers}p ${res.name}: Carta (${cardDims.width}x${cardDims.height}) ` +
+            `Centro carta=(${cardCenterX.toFixed(2)}, ${cardCenterY.toFixed(2)}), ` +
+            `Centro jugable=(${playableCenterX.toFixed(2)}, ${playableCenterY.toFixed(2)}), ` +
+            `Diff=(dX=${diffX.toFixed(2)}px, dY=${diffY.toFixed(2)}px)`
+          );
+
+          assert.ok(diffX <= 1.0, `diffX (${diffX.toFixed(3)} px) debe ser <= 1.0 px`);
+          assert.ok(diffY <= 1.0, `diffY (${diffY.toFixed(3)} px) debe ser <= 1.0 px`);
+        });
+      }
+    }
+  });
 });
+

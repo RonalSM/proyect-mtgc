@@ -1,4 +1,4 @@
-import type { RoomState, CardInstance } from '@mtgc/shared';
+import { type RoomState, type CardInstance, getCardDimensions } from '@mtgc/shared';
 import type { ViewFraming } from '../components/BattlefieldCanvas';
 
 export function getPlayerFraming(playerId: string, roomState: RoomState): ViewFraming {
@@ -40,6 +40,10 @@ export function getPlayerBattlefieldCascadePosition(
   playerId: string,
   roomState: RoomState,
   battlefieldCards?: CardInstance[],
+  viewport: { width: number; height: number } = {
+    width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+    height: typeof window !== 'undefined' ? window.innerHeight : 1080,
+  }
 ): { x: number; y: number } {
   const framing = getPlayerFraming(playerId, roomState);
   const allSeated = Object.values(roomState.players).filter(p => !p.isSpectator);
@@ -55,9 +59,13 @@ export function getPlayerBattlefieldCascadePosition(
   const centerX = framing.xMin + framing.width * 0.5;
   const centerY = framing.yMin + playableHeight * 0.5;
 
-  // Normalized card dimensions: ~0.045 x 0.095
-  const baseX = centerX - 0.0225;
-  const baseY = centerY - 0.0475;
+  // Tamaño real de la carta para que quede exactamente centrada en la sección jugable (Punto 4)
+  const cardDims = getCardDimensions(totalPlayers, viewport);
+  const cardHalfWNorm = (cardDims.width / 2) / viewport.width;
+  const cardHalfHNorm = (cardDims.height / 2) / viewport.height;
+
+  const baseX = centerX - cardHalfWNorm;
+  const baseY = centerY - cardHalfHNorm;
 
   const playerBattlefield = battlefieldCards
     ? battlefieldCards.filter(c => c.holderId === playerId || (!c.holderId && c.ownerId === playerId))
@@ -65,10 +73,13 @@ export function getPlayerBattlefieldCascadePosition(
   const cascadeIndex = playerBattlefield.length % 5;
   const cascadeOffset = cascadeIndex * 0.015;
 
+  const cardWNorm = cardDims.width / viewport.width;
+  const cardHNorm = cardDims.height / viewport.height;
+
   const minX = framing.xMin + 0.01;
-  const maxX = framing.xMin + framing.width - 0.055;
+  const maxX = framing.xMin + framing.width - cardWNorm - 0.01;
   const minY = framing.yMin + 0.01;
-  const maxY = framing.yMin + playableHeight - 0.06;
+  const maxY = framing.yMin + playableHeight - cardHNorm - 0.01;
 
   const x = Math.max(minX, Math.min(maxX, baseX + cascadeOffset));
   const y = Math.max(minY, Math.min(maxY, baseY + cascadeOffset));

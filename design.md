@@ -469,6 +469,21 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
         - Desviación en el frame del umbral de 8 px: $\Delta x = 0.00\text{ px}, \Delta y = 0.00\text{ px}$ en todas las combinaciones.
         - Desviación máxima a lo largo de toda la trayectoria: $\Delta x = 0.00\text{ px}, \Delta y = 0.00\text{ px}$ en todas las combinaciones (criterio $\le 1.0\text{ px}$ cumplido al 100%).
 ### Privacidad y Reglas de Visibilidad de Mensajes
+    - **Centrado exacto al enviar al campo con dimensiones reales de carta (Corrección Punto 4):**
+      - *Cálculo dinámico basado en dimensiones reales:* `packages/shared/src/utils/card-dimensions.ts` (`getCardDimensions`) calcula el tamaño entero y par de las cartas según el número de participantes (`podSize`) y la resolución del viewport.
+      - *Normalización en cliente y servidor:* Tanto `getPlayerBattlefieldCascadePosition` (`apps/web/src/utils/table-framing.ts`) como `computePlayerDivisionCenter` (`apps/server/src/game/game-state.ts`) reemplazan los valores estáticos (`0.0225` y `0.0475`, que asumían 86.4×102.6 px fijos) por `cardHalfWNorm = (cardDims.width / 2) / viewport.width` y `cardHalfHNorm = (cardDims.height / 2) / viewport.height`.
+      - *Centrado geométrico riguroso:* La carta queda ubicada en `(centerX - cardHalfWNorm, centerY - cardHalfHNorm)`, lo que garantiza que al renderizarse en pantalla su centro físico `(box.left + width / 2, box.top + height / 2)` coincida de forma idéntica con el centro de la sección jugable `(centerX * width, centerY * height)` con un error $\le 1.0\text{ px}$.
+      - *Resultados empíricos medidos:*
+        - **1920x1080 (Full HD):**
+          - 2p: Centro jugable = (480.00, 459.00), Carta (96×134) top-left = (432.00, 392.00) $\to$ Centro carta = (480.00, 459.00), Diferencia = (0.00 px, 0.00 px).
+          - 4p: Centro jugable = (480.00, 202.50), Carta (78×108) top-left = (441.00, 148.50) $\to$ Centro carta = (480.00, 203.00), Diferencia = (0.00 px, 0.50 px en render).
+          - 6p: Centro jugable = (320.00, 202.50), Carta (78×108) top-left = (281.00, 148.50) $\to$ Centro carta = (320.00, 203.00), Diferencia = (0.00 px, 0.50 px en render).
+        - **1366x768 (Laptop HD):**
+          - 2p: Centro jugable = (341.50, 326.40), Carta (96×134) top-left = (293.50, 259.40) $\to$ Centro carta = (341.50, 326.40), Diferencia = (0.00 px, 0.00 px).
+          - 4p: Centro jugable = (341.50, 144.00), Carta (56×78) top-left = (313.50, 105.00) $\to$ Centro carta = (341.50, 144.00), Diferencia = (0.00 px, 0.00 px).
+          - 6p: Centro jugable = (227.67, 144.00), Carta (56×78) top-left = (199.67, 105.00) $\to$ Centro carta = (227.67, 144.00), Diferencia = (0.00 px, 0.00 px).
+
+### Privacidad y Reglas de Visibilidad de Mensajes
 1. **Fase de Mulligan y Regla de Londres:**
    - La estructura de mano inicial de cada jugador (`mulliganState.players[playerId].cards`) se transmite de forma autoritativa y privada únicamente al socket del propio jugador.
    - A los rivales se les ocultan las identidades de las cartas (reciben la cuenta `cardsCount`, el estado de decisión `'deciding' | 'kept'`, el número de mulligans realizados y la cantidad de cartas devueltas al fondo, pero jamás los identificadores o nombres de las cartas).

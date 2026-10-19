@@ -11,3 +11,4 @@ export * from './utils/deck-parser.js';
 export * from './utils/commander-validator.js';
 export * from './utils/scryfall.js';
 export * from './utils/card-types.js';
+export * from './utils/card-dimensions.js';

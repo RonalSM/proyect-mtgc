@@ -31,7 +31,16 @@ async function setupTestPod(
 
   // 1. Host crea la sala
   await hostPage.goto('http://localhost:3000');
-  await expect(hostPage.locator('text=Servidor en línea')).toBeVisible({ timeout: 15000 });
+  const hostOnlineBadge = hostPage.locator('text=Servidor en línea');
+  const hostRetryBtn = hostPage.locator('button:has-text("Reverificar servidor")');
+  for (let attempt = 0; attempt < 10; attempt++) {
+    if (await hostOnlineBadge.isVisible().catch(() => false)) break;
+    if (await hostRetryBtn.isVisible().catch(() => false)) {
+      await hostRetryBtn.click().catch(() => {});
+    }
+    await hostPage.waitForTimeout(1000);
+  }
+  await expect(hostOnlineBadge).toBeVisible({ timeout: 15000 });
 
   await hostPage.fill('input[placeholder="Ej. Pod Casual 4 Jugadores"]', `${roomPrefix} ${podSize}p`);
   await hostPage.fill('input[placeholder="Ej. Planeswalker 1"]', 'Alice (Host)');
@@ -67,7 +76,16 @@ async function setupTestPod(
     await hostPage.waitForTimeout(300);
     const pPage = pages[pIdx];
     await pPage.goto('http://localhost:3000');
-    await expect(pPage.locator('text=Servidor en línea')).toBeVisible({ timeout: 15000 });
+    const onlineBadge = pPage.locator('text=Servidor en línea');
+    const retryBtn = pPage.locator('button:has-text("Reverificar servidor")');
+    for (let attempt = 0; attempt < 10; attempt++) {
+      if (await onlineBadge.isVisible().catch(() => false)) break;
+      if (await retryBtn.isVisible().catch(() => false)) {
+        await retryBtn.click().catch(() => {});
+      }
+      await pPage.waitForTimeout(1000);
+    }
+    await expect(onlineBadge).toBeVisible({ timeout: 15000 });
     await pPage.click('button:has-text("Unirse con Código")');
     await pPage.fill('input[placeholder="EJ: 5HQWNJ"]', roomCode);
     await pPage.fill('input[placeholder="Ej. Jugador Invitado"]', `${playerNames[pIdx - 1]} (P${pIdx + 1})`);
@@ -453,23 +471,38 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
         console.log(`[Punto 2 - ${podSize}p] Desplazamiento medido en cascada: diffX = ${diffX.toFixed(2)} px, diffY = ${diffY.toFixed(2)} px`);
         expect(diffX + diffY).toBeGreaterThan(5);
 
-        // Verificación de que el centro vertical de la sección jugable NO está en y = 810 ni es idéntico entre 2p y 4p (Punto 8)
+        // Verificación de centrado exacto con tamaño real de la carta (Punto 4):
+        // Centro de la carta = box1.x + box1.width / 2, box1.y + box1.height / 2
+        const cardCenterX = box1!.x + box1!.width / 2;
+        const cardCenterY = box1!.y + box1!.height / 2;
+
+        let expectedPlayableCenterX = 480;
+        let expectedPlayableCenterY = 202.5;
+
         if (podSize === 2) {
-          // 2p: columna vertical completa, centro jugable sin dock (Y ~ 459px, box top ~ 407.7px)
-          expect(Math.abs(box1!.x - 436.80)).toBeLessThan(5);
-          expect(Math.abs(box1!.y - 407.70)).toBeLessThan(10);
-          expect(box1!.y).toBeLessThan(600); // Demuestra que NO está en 810
+          // 2p: Columna izquierda (width=960, dock 15% => playable 918px)
+          // Playable center = (480.00, 459.00)
+          expectedPlayableCenterX = 480;
+          expectedPlayableCenterY = 459;
         } else if (podSize === 4) {
-          // 4p: cuadrícula 2x2, cuadrante superior Col 0 Fila 0 (Y ~ 202.5px, box top ~ 151.2px)
-          expect(Math.abs(box1!.x - 436.80)).toBeLessThan(5);
-          expect(Math.abs(box1!.y - 151.20)).toBeLessThan(10);
-          expect(box1!.y).toBeLessThan(300); // Demuestra que NO está en 810
+          // 4p: Cuadrante Col 0 Fila 0 (width=960, height 540, dock 12.5% => playable 405px)
+          // Playable center = (480.00, 202.50)
+          expectedPlayableCenterX = 480;
+          expectedPlayableCenterY = 202.5;
         } else if (podSize === 6) {
-          // 6p: cuadrícula 2x3, Col 0 Fila 0 (X ~ 320px, Y ~ 202.5px, box top-left ~ 276.8px, 151.2px)
-          expect(Math.abs(box1!.x - 276.80)).toBeLessThan(5);
-          expect(Math.abs(box1!.y - 151.20)).toBeLessThan(10);
-          expect(box1!.y).toBeLessThan(300);
+          // 6p: Cuadrante Col 0 Fila 0 (width=640, height 540, dock 12.5% => playable 405px)
+          // Playable center = (320.00, 202.50)
+          expectedPlayableCenterX = 320;
+          expectedPlayableCenterY = 202.5;
         }
+
+        const centerDiffX = Math.abs(cardCenterX - expectedPlayableCenterX);
+        const centerDiffY = Math.abs(cardCenterY - expectedPlayableCenterY);
+        console.log(`[Punto 4 - ${podSize}p] Dimensiones renderizadas: (${box1!.width.toFixed(2)}x${box1!.height.toFixed(2)})`);
+        console.log(`[Punto 4 - ${podSize}p] Centro medido carta: (${cardCenterX.toFixed(2)}, ${cardCenterY.toFixed(2)}) vs Centro jugable: (${expectedPlayableCenterX.toFixed(2)}, ${expectedPlayableCenterY.toFixed(2)})`);
+        console.log(`[Punto 4 - ${podSize}p] Diferencia al centro jugable: dX = ${centerDiffX.toFixed(2)} px, dY = ${centerDiffY.toFixed(2)} px`);
+        expect(centerDiffX).toBeLessThanOrEqual(1.0);
+        expect(centerDiffY).toBeLessThanOrEqual(1.0);
 
         // Verificar ownerId y holderId asignados al jugador local
         const owner1 = await bfCards.nth(0).getAttribute('data-card-owner');

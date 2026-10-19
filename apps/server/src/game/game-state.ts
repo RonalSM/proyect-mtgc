@@ -18,6 +18,7 @@ import {
   SetReadyPayload,
   RevealCardPayload,
   toArtCropUrl,
+  getCardDimensions,
 } from '@mtgc/shared';
 import { secureShuffle, secureRoll } from './csprng.js';
 import { randomUUID } from 'crypto';
@@ -579,9 +580,13 @@ export class GameStateSession {
   }
 
   /**
-   * Computes the normalized center coordinates of a player's division with cascade offset (Punto 2)
+   * Computes the normalized center coordinates of a player's division with cascade offset (Punto 2 & Punto 4)
+   * Uses actual rendered card dimensions to ensure exact centering (<= 1px) in the playable section.
    */
-  public computePlayerDivisionCenter(targetPlayerId: string): { x: number; y: number } {
+  public computePlayerDivisionCenter(
+    targetPlayerId: string,
+    viewport: { width: number; height: number } = { width: 1920, height: 1080 }
+  ): { x: number; y: number } {
     const allSeated = Object.values(this.state.players).filter(p => !p.isSpectator);
     const totalPlayers = Math.max(2, allSeated.length);
     const isTwoPlayerMode = totalPlayers === 2;
@@ -619,12 +624,17 @@ export class GameStateSession {
     const centerX = xMin + width * 0.5;
     const centerY = yMin + playableHeight * 0.5;
 
+    // Tamaño real de la carta para que quede exactamente centrada en la sección jugable (Punto 4)
+    const cardDims = getCardDimensions(totalPlayers, viewport);
+    const cardHalfWNorm = (cardDims.width / 2) / viewport.width;
+    const cardHalfHNorm = (cardDims.height / 2) / viewport.height;
+
     const existingCount = this.state.playerZones[targetPlayerId]?.battlefield?.length ?? 0;
     const cascadeOffset = (existingCount % 5) * 0.015;
 
     return {
-      x: centerX - 0.0225 + cascadeOffset,
-      y: centerY - 0.0475 + cascadeOffset,
+      x: centerX - cardHalfWNorm + cascadeOffset,
+      y: centerY - cardHalfHNorm + cascadeOffset,
     };
   }
 
