@@ -384,6 +384,9 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
     19.2. Toda operación de coordenadas en cliente y servidor (renderizado en canvas, overlay de arrastre, fantasma remoto, cálculo final al soltar, contención 100% para `holderId`, límites al viewport, centrado al enviar al campo y cascada) SHALL basarse en el centro junto con las dimensiones orientadas actuales ($w \times h$ en vertical, $h \times w$ en horizontal).
     19.3. THE sistema SHALL eliminar cualquier convención que trate $(x, y)$ como la esquina superior izquierda de la caja vertical, eliminando la discrepancia $(h - w) / 2$ (~19 px).
     19.4. THE instantáneas de mesa persistidas en Redis anteriores a esta convención SHALL ser migradas automáticamente sumando el semiancho y semialto orientados, marcándose con `positionConvention: 'center'`.
+20. **Fantasma remoto orientado desde el primer fotograma (Punto 3 de Corrección de Posición):**
+    20.1. WHEN un jugador inicia el arrastre de una carta (`onDragStart`), THE primer mensaje efímero de arrastre (`CARD_DRAG_MOVE`) emitido al servidor y retransmitido a los rivales SHALL incluir explícitamente el estado de giro (`isTapped`) y el centro exacto normalizado de la carta.
+    20.2. THE cliente receptor remoto (B) SHALL renderizar el fantasma (`data-remote-card-ghost="true"`) utilizando la estructura gemela de contenedor slot apaisado (`.card-slot-container`) y rotador interno (`.card-rotator`), naciendo girado 90° desde el primer fotograma, sin mutación dimensional ni salto visual de orientación.
 
 ## Requisitos no funcionales
 

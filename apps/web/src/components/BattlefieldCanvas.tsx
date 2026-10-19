@@ -433,7 +433,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
               data-remote-card-ghost="true"
               data-card-instance-id={item.cardInstanceId}
               data-player-id={item.playerId}
-              className={`absolute pointer-events-none select-none z-40 flex items-center justify-center ${
+              className={`card-slot-container absolute pointer-events-none select-none z-40 flex items-center justify-center ${
                 item.isFirstMessage || (item as any).pendingSync
                   ? 'transition-none'
                   : 'transition-[left,top] duration-75 ease-linear'
@@ -447,13 +447,14 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
               }}
             >
               <div
+                data-card-rotator="true"
                 style={{
                   width: `${cardWNum}px`,
                   height: `${cardHNum}px`,
                   transform: item.isTapped ? 'rotate(90deg)' : 'rotate(0deg)',
                   transformOrigin: 'center center',
                 }}
-                className="w-full h-full rounded-md overflow-hidden border border-amber-400/80 shadow-lg shadow-amber-500/25 bg-slate-900 relative"
+                className="card-rotator flex-shrink-0 rounded-md overflow-hidden border border-amber-400/80 shadow-lg shadow-amber-500/25 bg-slate-900 relative"
               >
                 {item.cardDefinition ? (
                   <CardDisplay card={item.cardDefinition} isTapped={item.isTapped} />

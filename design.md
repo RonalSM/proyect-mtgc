@@ -577,6 +577,13 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Contención 100% para `holderId`:** En servidor, la caja delimitadora se calcula restando y sumando las semidimensiones orientadas normalizadas al centro: `cardLeft = position.x - cardHalfWNorm`, `cardRight = position.x + cardHalfWNorm`, `cardTop = position.y - cardHalfHNorm`, `cardBottom = position.y + cardHalfHNorm`.
   - **Centrado en división jugable y cascada:** `computePlayerDivisionCenter` y `getPlayerBattlefieldCascadePosition` calculan y devuelven directamente el centro acotado de la sección jugable con cascada $+0.015$, eliminando offsets manuales en el emisor.
   - **Migración de instantáneas de Redis:** `RedisSnapshotService.save()` etiqueta el estado con `positionConvention: 'center'`. Al recuperar instantáneas heredadas sin esta etiqueta, `load()` migra automáticamente las coordenadas de las cartas en el campo sumando las semidimensiones orientadas normalizadas.
+- **Fantasma Remoto con Orientación Nativa desde el Primer Fotograma (Punto 3 de Corrección de Posición):**
+  - **Emisión en drag start:** Al iniciar el arrastre (`handleDragStart`), el emisor envía inmediatamente `CARD_DRAG_MOVE` con `isTapped` y las coordenadas de centro normalizadas exactas de la carta original en la mesa.
+  - **Estructura gemela en receptor B:** El fantasma se renderiza con la misma jerarquía de contenedor slot apaisado (`.card-slot-container`) y rotador interno (`.card-rotator`):
+    - Dimensiones del slot exterior: `width = isTapped ? cardHNum : cardWNum`, `height = isTapped ? cardWNum : cardHNum`.
+    - Dimensiones del rotador interior: `width = cardWNum`, `height = cardHNum`, con `transform = isTapped ? 'rotate(90deg)' : 'rotate(0deg)'`.
+    - Posición: anclada en `(ghostCenterX, ghostCenterY)` con `transform: translate(-50%, -50%)`.
+  - **Invarianza de tamaño y orientación:** El receptor B monta el fantasma directamente con su estado girado desde el fotograma 1 (sin rotación en vuelo desde 0° ni cambio de dimensiones de vertical a apaisado), garantizando que el centro inicial coincida de manera idéntica con el centro previo de la carta ($\le 1.0\text{ px}$).
 
 ### Rutas
 `/table/:code/lobby` y `/table/:code/play`. El cliente redirige según `table.status`.
