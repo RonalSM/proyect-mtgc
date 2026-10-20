@@ -1,0 +1,83 @@
+// Comandante
+1 Kozilek, the Great Distortion *CMDR*
+
+// Mazo
+1 Sol Ring
+1 Mana Vault
+1 Basalt Monolith
+1 Grim Monolith
+1 Thran Dynamo
+1 Worn Powerstone
+1 Hedron Archive
+1 Dreamstone Hedron
+1 Mind Stone
+1 Thought Vessel
+1 Everflowing Chalice
+1 Fractured Powerstone
+1 Prismatic Lens
+1 Guardian Idol
+1 Forsaken Monument
+1 Planar Bridge
+1 Lightning Greaves
+1 Swiftfoot Boots
+1 Shadowspear
+1 Commander's Plate
+1 Darksteel Plate
+1 Mirage Mirror
+1 Unwinding Clock
+1 Sculpting Steel
+1 Expedition Map
+1 Moonsilver Key
+1 Burnished Hart
+1 Solemn Simulacrum
+1 Conduit of Ruin
+1 Endbringer
+1 Oblivion Sower
+1 Void Winnower
+1 Artisan of Kozilek
+1 Ulamog, the Ceaseless Hunger
+1 Ulamog, the Infinite Gyre
+1 Kozilek, Butcher of Truth
+1 It That Betrays
+1 Emrakul, the Promised End
+1 Steel Hellkite
+1 Platinum Angel
+1 Wurmcoil Engine
+1 Duplicant
+1 Meteor Golem
+1 Cityscape Leveler
+1 Scuttling Doom Engine
+1 Phyrexian Triniform
+1 Not of This World
+1 Warping Wail
+1 Titan's Presence
+1 Spatial Contortion
+1 Scour from Existence
+1 Introduction to Annihilation
+1 All Is Dust
+1 Calamity of the Titans
+1 Ugin, the Ineffable
+1 Ugin, the Spirit Dragon
+1 Karn Liberated
+1 Karn, the Great Creator
+1 Mystic Forge
+1 Urza's Incubator
+1 Urza's Tower
+1 Urza's Power Plant
+1 Urza's Mine
+1 Eldrazi Temple
+1 Eye of Ugin
+1 Shrine of the Forsaken Gods
+1 Sanctum of Ugin
+1 Temple of the False God
+1 Tomb of the Spirit Dragon
+1 Zhalfirin Void
+1 Reliquary Tower
+1 Rogue's Passage
+1 War Room
+1 Blast Zone
+1 Scavenger Grounds
+1 Buried Ruin
+1 Inventors' Fair
+1 Darksteel Citadel
+21 Wastes

@@ -1,0 +1,76 @@
+// Comandante
+1 Brago, King Eternal *CMDR*
+
+// Mazo
+1 Sol Ring
+1 Arcane Signet
+1 Azorius Signet
+1 Talisman of Progress
+1 Mind Stone
+1 Thought Vessel
+1 Fellwar Stone
+1 Strionic Resonator
+1 Lithoform Engine
+1 Swiftfoot Boots
+1 Lightning Greaves
+1 Panharmonicon
+1 Teleportation Circle
+1 Conjurer's Closet
+1 Cloudshift
+1 Ephemerate
+1 Ghostly Flicker
+1 Eerie Interlude
+1 Semester's End
+1 Displace
+1 Swords to Plowshares
+1 Path to Exile
+1 Generous Gift
+1 Stroke of Midnight
+1 Counterspell
+1 Negate
+1 Dovin's Veto
+1 Arcane Denial
+1 Cyclonic Rift
+1 Supreme Verdict
+1 Cleansing Nova
+1 Time Wipe
+1 Mulldrifter
+1 Cloudblazer
+1 Spirited Companion
+1 Wall of Omens
+1 Sea Gate Oracle
+1 Reflector Mage
+1 Aether Channeler
+1 Skyclave Apparition
+1 Palace Jailer
+1 Solitude
+1 Sun Titan
+1 Karmic Guide
+1 Reveillark
+1 Peregrine Drake
+1 Knight of the White Orchid
+1 Kor Cartographer
+1 Solemn Simulacrum
+1 Lavinia of the Tenth
+1 Venser, Shaper Savant
+1 Agent of Treachery
+1 Diluvian Primordial
+1 Yorion, Sky Nomad
+1 Rhystic Study
+1 Mystic Remora
+1 Smothering Tithe
+1 Omen of the Sea
+1 Omen of the Sun
+1 Trial of Knowledge
+1 Command Tower
+1 Prairie Stream
+1 Glacial Fortress
+1 Hallowed Fountain
+1 Port Town
+1 Azorius Chancery
+1 Nimbus Maze
+1 Deserted Beach
+1 Sea of Clouds
+1 Exotic Orchard
+14 Plains
+15 Island

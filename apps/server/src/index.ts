@@ -677,6 +677,12 @@ server.post('/api/decks', async (request, reply) => {
   }
 });
 
+// List Preset Decks (Punto 8)
+server.get('/api/decks/presets', async (_request, reply) => {
+  const presets = await deckService.getPresetDecks();
+  return reply.send({ presets });
+});
+
 // List User Saved Decks (REQ-7.5 / Paso 2A.3)
 server.get('/api/decks', async (request, reply) => {
   const userId = extractUserId(request);
@@ -847,6 +853,10 @@ try {
 
   if (process.env.NODE_ENV !== 'test') {
     bulkSyncService.startNightlyCron();
+    // Carga de mazos listos (preset decks - Punto 8)
+    deckService.loadPresetDecks().catch(err => {
+      server.log.warn(`⚠️ [DeckService] Error al cargar mazos listos: ${err?.message || err}`);
+    });
     // Sincronización automática de dictámenes de Scryfall al arrancar si la tabla está vacía (Punto 6)
     bulkSyncService.syncRulingsIfEmpty().catch(err => {
       server.log.warn(`⚠️ [BulkSync] Error al sincronizar dictámenes de Scryfall al arrancar: ${err?.message || err}`);

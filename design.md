@@ -673,6 +673,30 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
     - Pruebas unitarias de servidor en [`apps/server/test/card-locale.test.ts`](apps/server/test/card-locale.test.ts) (6/6 aprobadas).
     - Prueba E2E en Playwright [`apps/web/e2e/card-locale.spec.ts`](apps/web/e2e/card-locale.spec.ts) (aprobada en 24.3s) validando mano inicial en español, fallback inglés, apertura de detalles en español, cambio dinámico a inglés en tiempo real y retorno reactivo a español. Artefactos archivados: [`audit-card-locale-es.png`](audit-card-locale-es.png) y [`audit-card-locale-en.png`](audit-card-locale-en.png).
 
+- **Mazos Listos de Commander (Presets), Selección Prioritaria y Soporte Multijugador (Punto 8 de Correcciones del Cliente - F.8):**
+  - **Catálogo de Mazos del Sistema:** 8 mazos balanceados y singleton de 100 cartas en `apps/server/prisma/seed/preset-decks/*.txt` cubriendo diversidad de arquetipos e identidades de color:
+    1. `01-krenko-mob-boss.txt` (Mono-R - Krenko, Mob Boss)
+    2. `02-goreclaw-terror-of-qal-sisma.txt` (Mono-G - Goreclaw, Terror of Qal Sisma)
+    3. `03-brago-king-eternal.txt` (Azorius W/U - Brago, King Eternal)
+    4. `04-meren-of-clan-nel-toth.txt` (Golgari B/G - Meren of Clan Nel Toth)
+    5. `05-wyleth-soul-of-steel.txt` (Boros R/W - Wyleth, Soul of Steel)
+    6. `06-niv-mizzet-parun.txt` (Izzet U/R - Niv-Mizzet, Parun)
+    7. `07-alela-artful-provocateur.txt` (Esper W/U/B - Alela, Artful Provocateur)
+    8. `08-kozilek-the-great-distortion.txt` (Incoloro - Kozilek, the Great Distortion)
+  - **Validación Automática y Enriquecimiento:**
+    - Carga en `DeckService.loadPresetDecks()` con validación mediante `validateCommanderDeck`. Falla si algún mazo incumple la regla de 100 cartas singleton o la identidad de color.
+    - Script de siembra `npm run seed:presets --workspace=@mtgc/server`.
+    - Enriquecimiento automático de cartas con traducciones en español (REQ-27 / Punto 5) vía `cardLocaleService.enrichCards()` y precalentamiento de fichas asociadas (REQ-26 / Punto 4) vía `tokenService.getTokensForCard()`.
+    - Endpoint público `GET /api/decks/presets` consumido por el cliente en el montaje de la sala de espera.
+  - **Experiencia de Usuario en la Sala de Espera (`LobbyWaitingRoom.tsx`):**
+    - Pestaña predeterminada y destacada en primera posición: **«Mazos Listos»** (`[data-testid="tab-preset-decks"]`), previa a «Mis Mazos Guardados» y «Importar Lista de Texto».
+    - Tarjetas con banner de arte de comandante (`art_crop`), insignias de color, recuento de 100 cartas, botón para desplegar lista plegable de cartas (`[data-testid^="toggle-cardlist-"]`) y botón de selección instantánea.
+    - Persistencia en navegador mediante `localStorage.setItem('mtgc_last_selected_deck', ...)` con restauración automática en visitas posteriores.
+    - Soporte multi-jugador sin conflictos: varios jugadores pueden elegir exactamente el mismo mazo en la misma partida sin colisiones.
+  - **Certificación Automatizada E2E y Unit:**
+    - Pruebas unitarias en `apps/server/test/deck.test.ts` (2/2 pruebas aprobadas).
+    - Prueba E2E en Playwright `apps/web/e2e/preset-decks.spec.ts` (aprobada en 2.4s) validando las 8 opciones de mazo, lista desplegable, selección concurrente del mismo mazo (Krenko) por dos jugadores, persistencia en localStorage y estado listo para iniciar partida. Artefacto archivado: [`audit-preset-decks-lobby.png`](audit-preset-decks-lobby.png).
+
 
 
 - **Aislamiento de Eventos en Menús Contextuales y Modales contra Doble Clic y Mutaciones Involuntarias (Punto 2 de Correcciones del Cliente - A.2):**

@@ -1,0 +1,69 @@
+// Comandante
+1 Niv-Mizzet, Parun *CMDR*
+
+// Mazo
+1 Sol Ring
+1 Arcane Signet
+1 Izzet Signet
+1 Talisman of Creativity
+1 Thought Vessel
+1 Mind Stone
+1 Fellwar Stone
+1 Decanter of Endless Water
+1 Swiftfoot Boots
+1 Lightning Greaves
+1 Curiosity
+1 Ophidian Eye
+1 Tandem Lookout
+1 Guttersnipe
+1 Electrostatic Field
+1 Thermo-Alchemist
+1 Archmage Emeritus
+1 Storm-Kiln Artist
+1 Talrand, Sky Summoner
+1 Young Pyromancer
+1 Murmuring Mystic
+1 Baral, Chief of Compliance
+1 Goblin Electromancer
+1 Veyran, Voice of Duality
+1 Birgi, God of Storytelling
+1 Counterspell
+1 Negate
+1 Arcane Denial
+1 Fierce Guardianship
+1 Deflecting Swat
+1 Chaos Warp
+1 Pongify
+1 Rapid Hybridization
+1 Cyclonic Rift
+1 Blasphemous Act
+1 Chain Reaction
+1 Vandalblast
+1 Brainstorm
+1 Ponder
+1 Preordain
+1 Serum Visions
+1 Opt
+1 Consider
+1 Frantic Search
+1 Faithless Looting
+1 Expressive Iteration
+1 Windfall
+1 Wheel of Misfortune
+1 Jeska's Will
+1 Big Score
+1 Unexpected Windfall
+1 Prismari Command
+1 Valakut Awakening
+1 Silundi Vision
+1 Command Tower
+1 Steam Vents
+1 Sulfur Falls
+1 Training Center
+1 Shivan Reef
+1 Izzet Boilerworks
+1 Stormcarved Coast
+1 Frostboil Snarl
+1 Exotic Orchard
+19 Island
+17 Mountain

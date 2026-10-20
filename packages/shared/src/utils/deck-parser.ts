@@ -39,13 +39,17 @@ export function parseDecklist(text: string): ParseDeckResult {
     const originalLine = lines[i]!.trim();
     if (!originalLine) continue;
 
-    // Detect section headers
+    // Detect section headers (English and Spanish)
     const lower = originalLine.toLowerCase();
     if (
       lower.startsWith('// commander') ||
       lower.startsWith('# commander') ||
+      lower.startsWith('// comandante') ||
+      lower.startsWith('# comandante') ||
       lower === 'commander' ||
-      lower === 'commanders'
+      lower === 'commanders' ||
+      lower === 'comandante' ||
+      lower === 'comandantes'
     ) {
       currentSection = 'commander';
       continue;
@@ -55,7 +59,9 @@ export function parseDecklist(text: string): ParseDeckResult {
       lower.startsWith('// companion') ||
       lower.startsWith('// sideboard') ||
       lower.startsWith('# sideboard') ||
-      lower === 'sideboard'
+      lower.startsWith('// banquillo') ||
+      lower === 'sideboard' ||
+      lower === 'banquillo'
     ) {
       currentSection = 'sideboard';
       continue;
@@ -65,8 +71,12 @@ export function parseDecklist(text: string): ParseDeckResult {
       lower.startsWith('// deck') ||
       lower.startsWith('// main') ||
       lower.startsWith('# main') ||
+      lower.startsWith('// mazo') ||
+      lower.startsWith('# mazo') ||
+      lower.startsWith('// cartas') ||
       lower === 'deck' ||
-      lower === 'mainboard'
+      lower === 'mainboard' ||
+      lower === 'mazo'
     ) {
       currentSection = 'main';
       continue;

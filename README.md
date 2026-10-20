@@ -147,6 +147,33 @@ npm run dev
 
 ---
 
+## 🃏 Mazos Listos de Commander (Presets)
+
+La plataforma incluye entre 6 y 8 mazos de Commander predeterminados, 100% legales y jugables (Mono-Red, Mono-Green, Azorius, Golgari, Boros, Izzet, Esper e Incoloro), listados de forma prioritaria en la sala de espera con arte de comandante, colores y lista plegable.
+
+### Cómo Añadir Nuevos Mazos Listos
+
+Para añadir nuevos mazos predeterminados a la plataforma:
+1. Crea un archivo `.txt` en la carpeta `apps/server/prisma/seed/preset-decks/` (por ejemplo `09-mi-nuevo-mazo.txt`).
+2. Sigue el formato estándar con encabezados en español o inglés:
+   ```txt
+   // Comandante
+   1 Nombre del Comandante *CMDR*
+
+   // Mazo
+   1 Sol Ring
+   1 Arcane Signet
+   ... (hasta completar 99 cartas de mazo)
+   ```
+3. Ejecuta la siembra y validación automática:
+   ```bash
+   npm run seed:presets --workspace=@mtgc/server
+   ```
+   El script validará automáticamente que el mazo tenga exactamente 100 cartas, respete la regla singleton y la identidad de color de Commander.
+4. Al reiniciar el servidor o entrar a la sala de espera, el nuevo mazo aparecerá inmediatamente en la pestaña **Mazos Listos** con su arte, colores e idioma en español.
+
+---
+
 ## 📊 Observabilidad y Monitoreo
 
 El servidor incluye endpoints de salud y observabilidad en tiempo real:

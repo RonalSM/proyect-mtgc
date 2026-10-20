@@ -415,6 +415,23 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Las imágenes en español provienen directamente de `cards.scryfall.io`.
    - La clave de caché en memoria de `cardImageResolver` y en `PersistentImageCache` incluye explícitamente el idioma (`${cardName}_${size}_${lang}`).
 
+### REQ-28 Mazos Listos de Commander (Presets) (Punto 8 de Correcciones del Cliente - F.8)
+1. **Catálogo de Mazos Predeterminados:**
+   - Entre 6 y 8 mazos predeterminados balanceados y de estilos diversos (Mono-R Krenko, Mono-G Goreclaw, W/U Brago, B/G Meren, R/W Wyleth, U/R Niv-Mizzet, W/U/B Alela e Incoloro Kozilek).
+   - Cada mazo contiene exactamente 100 cartas (1 comandante legal y 99 cartas de mazo) respetando estrictamente la regla singleton (salvo tierras básicas), legalidad en Commander e identidad de color respecto a su comandante.
+   - Almacenados en formato de texto plano estándar del importador en `apps/server/prisma/seed/preset-decks/*.txt` con encabezados de comandante y mazo en español o inglés.
+2. **Siembra, Validación Automática y Enriquecimiento:**
+   - El servicio `DeckService` y el script de siembra (`npm run seed:presets --workspace=@mtgc/server`) cargan los mazos como predeterminados del sistema (`isPreset: true, userId: null`).
+   - Validación estricta con `validateCommanderDeck`: la prueba automatizada falla si algún mazo no tiene exactamente 100 cartas, incluye cartas desconocidas o infringe la identidad de color.
+   - Resolución automática de impresiones en español (REQ-27 / Punto 5) y precalentamiento de fichas asociadas (REQ-26 / Punto 4).
+   - Extensibilidad: para agregar nuevos mazos basta copiar un archivo `.txt` en `apps/server/prisma/seed/preset-decks/` y ejecutar la siembra.
+3. **Experiencia en la Sala de Espera (Lobby):**
+   - La ventana modal de selección de mazo presenta como primera opción destacada la pestaña **«Mazos Listos»** (`[data-testid="tab-preset-decks"]`), previa a «Mis Mazos Guardados» e «Importar Lista de Texto».
+   - Tarjetas visuales con arte del comandante (`art_crop`), insignias de identidad de color (`W`, `U`, `B`, `R`, `G` o Incoloro), título del mazo, lista desplegable de las 100 cartas (`[data-testid^="toggle-cardlist-"]`) y botón de selección rápida en un clic.
+   - Múltiples jugadores pueden elegir simultáneamente el mismo mazo sin conflictos, instanciándose copias independientes para cada asiento.
+   - Persistencia en navegador: se almacena el último mazo seleccionado en `localStorage` (`mtgc_last_selected_deck`) y se restaura automáticamente en futuras visitas.
+   - Conservación íntegra de endpoints de importación, parseo y validación de texto para usuarios registrados e invitados.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
 **Historia:** Como jugador, quiero ver a todos en una cuadrícula a pantalla completa, cada uno con su propio fondo y su propio espacio, para sentir que estamos jugando juntos en una mesa.

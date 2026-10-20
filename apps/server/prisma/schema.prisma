@@ -98,6 +98,7 @@ model Deck {
   cardCount     Int        @default(0)
   rawDecklist   String?
   deckData      Json?
+  isPreset      Boolean    @default(false)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
