@@ -654,5 +654,8 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-23 | COMP-1, COMP-5 |
 | REQ-24 | COMP-1, COMP-5 |
 | REQ-25 | COMP-1, COMP-5 |
+| REQ-26 | COMP-1, COMP-5, COMP-6 |
+| REQ-27 | COMP-1, COMP-3, COMP-5, COMP-6 |
+| REQ-28 | COMP-1, COMP-2, COMP-3, COMP-5, COMP-6 |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

@@ -720,6 +720,33 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Resets CSS Universales:** En `index.css`, reglas para `:fullscreen`, `:-webkit-full-screen`, `::backdrop`, `html`, `body`, `#root` y `#mesa-total` fijando fondo `#000000`, ancho y alto 100% y `overflow: hidden`, eliminando parpadeos y márgenes erróneos.
   - **Certificación Visual Playwright E2E:** Suite automatizada en [`apps/web/e2e/fullscreen-visual.spec.ts`](apps/web/e2e/fullscreen-visual.spec.ts) validada en pods reales de 2, 4 y 6 jugadores a 1080p y 4 jugadores a 768p (4/4 pruebas aprobadas al 100%): playmat cargado con `naturalWidth > 0`, dock y mano visibles, cartas visibles en el campo, varianza de imagen $> 5400$, salida con botón y tecla Esc, y 0 errores de consola. Capturas archivadas: `fullscreen-fixed-expanded-2p-1080p.png`, `fullscreen-fixed-browser-2p-1080p.png`, `fullscreen-fixed-expanded-4p-1080p.png`, `fullscreen-fixed-browser-4p-1080p.png`, `fullscreen-fixed-expanded-6p-1080p.png`, `fullscreen-fixed-browser-6p-1080p.png`, `fullscreen-fixed-expanded-4p-768p.png`, `fullscreen-fixed-browser-4p-768p.png`.
 
+- **Certificación Playwright Integral de Correcciones del Cliente P1 a P8 (Punto 9 - G.9):**
+  - **Suite Automatizada de Certificación:** Implementada en [`apps/web/e2e/client-corrections-audit-p1-to-p8.spec.ts`](apps/web/e2e/client-corrections-audit-p1-to-p8.spec.ts), ejecutada de extremo a extremo con 3/3 pruebas aprobadas (27.8s) y 0 errores de consola:
+    1. *Punto 1 (Mulligan sin scroll):* Medición empírica del ancho de carta en mano inicial:
+       - Resolución 1920x1080: ancho de carta = **192.47 px** (requisito $\ge 190$ px), `scrollHeight = 1080 px, clientHeight = 1080 px` (0 px de scroll vertical).
+       - Resolución 1366x768: ancho de carta = **140.39 px** (requisito $\ge 140$ px), `scrollHeight = 768 px, clientHeight = 768 px` (0 px de scroll vertical).
+       - Controles y botones de decisión completamente visibles y accesibles sin recortes.
+       - Artefactos archivados: [`audit-p1-mulligan-1080p.png`](audit-p1-mulligan-1080p.png) y [`audit-p1-mulligan-768p.png`](audit-p1-mulligan-768p.png).
+    2. *Punto 2 (Doble clic en menú contextual):* Doble clic exhaustivo sobre opciones, campos de texto, inputs numéricos, bordes y separadores del menú contextual.
+       - La carta en mesa mantiene su rotación inicial inalterada (0°, sin giros accidentales ni cambios de estado).
+       - `stopPropagation` activo para `click`, `dblclick`, `pointerdown`, `mousedown` y `contextmenu`.
+    3. *Punto 3 (Poder y Resistencia):* Sección desplegada y visible por defecto en el menú contextual.
+       - Exactamente dos campos numéricos editables: `Poder` y `Resistencia`.
+       - Contadores $+1/+1$ y $-1/-1$ retirados de esta sección y mantenidos en Contadores.
+       - Cálculo efectivo automático (base + contadores $+1/+1$ − contadores $-1/-1$).
+       - Artefacto archivado: [`audit-p3-pt-section-unfolded.png`](audit-p3-pt-section-unfolded.png).
+    4. *Punto 4 (Fichas):* Creación contextual desde carta (solo fichas de la carta) y desde espacio vacío de división (fichas de mazo con buscador, 5 fichas comunes y personalizada).
+       - Fichas centradas en cascada, desaparecen al salir de la mesa y se registran en bitácora.
+       - Artefacto archivado: [`test-tokens-created-on-table.png`](test-tokens-created-on-table.png).
+    5. *Punto 5 (Español prioritario):* Traducción oficial de cartas desde Scryfall All Cards / `CardLocale`, fallback a inglés y selector dinámico en Ajustes.
+       - Artefactos archivados: [`audit-card-locale-es.png`](audit-card-locale-es.png) y [`audit-card-locale-en.png`](audit-card-locale-en.png).
+    6. *Punto 6 (Dictámenes oficiales):* Sincronización oficial al arranque con 79,706 dictámenes de WotC/Scryfall, indexación de Sol Ring y contenedor accesible "Sin dictámenes".
+       - Artefacto archivado: [`audit-card-rulings-real.png`](audit-card-rulings-real.png).
+    7. *Punto 7 (Pantalla completa):* Botón de ampliación de división a 100% de viewport y pantalla completa de navegador sobre `document.documentElement` sin pantalla azul, con varianza $> 5400$ y 0 errores de consola.
+       - Artefactos archivados: [`fullscreen-fixed-expanded-2p-1080p.png`](fullscreen-fixed-expanded-2p-1080p.png), [`fullscreen-fixed-browser-2p-1080p.png`](fullscreen-fixed-browser-2p-1080p.png), etc.
+    8. *Punto 8 (Mazos listos):* 8 mazos predeterminados y legales de 100 cartas, sección destacada «Mazos Listos» como primera opción en sala de espera, selección múltiple concurrente sin conflicto y memoria en `localStorage`.
+       - Artefacto archivado: [`audit-preset-decks-lobby.png`](audit-preset-decks-lobby.png).
+
 - **Certificación E2E Integral de Revelación, P/T, Contadores, Palabras Clave y Posición Exterior (Punto 8 de Correcciones del Cliente - E.8):**
   - **Suite Playwright E2E:** Implementada en [`apps/web/e2e/client-features-audit.spec.ts`](apps/web/e2e/client-features-audit.spec.ts), ejecutada de extremo a extremo en pod real de 3 participantes (1920x1080) en 23.5 segundos con 100% de aserciones aprobadas y cero errores de consola.
   - **Resultados de certificación verificados:**
