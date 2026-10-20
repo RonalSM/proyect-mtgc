@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { RoomState, GameActionType, PlayerState } from '@mtgc/shared';
-import { Maximize2, Minimize2 } from 'lucide-react';
 import { FloatingToolbar } from './FloatingToolbar';
 import { GameLogAndChat } from './GameLogAndChat';
 
@@ -33,40 +32,6 @@ export const TableGrid: React.FC<TableGridProps> = ({
   const [reduceBackgrounds, setReduceBackgrounds] = useState<boolean>(() => {
     return localStorage.getItem('mtgc_reduce_backgrounds') === 'true';
   });
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
-    };
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-    };
-  }, []);
-
-  const handleToggleBrowserFullscreen = async () => {
-    try {
-      if (!document.fullscreenElement) {
-        const rootEl = document.documentElement;
-        if (rootEl.requestFullscreen) {
-          await rootEl.requestFullscreen();
-        } else if ((rootEl as any).webkitRequestFullscreen) {
-          await (rootEl as any).webkitRequestFullscreen();
-        }
-      } else {
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen();
-        }
-      }
-    } catch (err) {
-      console.warn('Error al cambiar pantalla completa:', err);
-    }
-  };
 
   const handleToggleReduceBackgrounds = (val: boolean) => {
     setReduceBackgrounds(val);
@@ -147,34 +112,21 @@ export const TableGrid: React.FC<TableGridProps> = ({
       />
 
       {/* Botón de Pantalla Completa del Navegador y Controles de Vista Ampliada (REQ-22, Punto 6) */}
-      <div className="fixed top-2 right-4 z-40 flex items-center space-x-2">
-        {expandedPlayerId && roomState.players[expandedPlayerId] && (
-          <div className="flex items-center space-x-2 bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-xl shadow-xl backdrop-blur-md">
-            <span className="text-xs font-bold text-amber-300">
-              Vista Ampliada: {roomState.players[expandedPlayerId].name}
-            </span>
-            <button
-              onClick={onCloseExpanded}
-              data-testid="close-expanded-view"
-              className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold cursor-pointer flex items-center space-x-1"
-            >
-              <span>Cerrar (Esc)</span>
-            </button>
-          </div>
-        )}
-        <button
-          onClick={handleToggleBrowserFullscreen}
-          data-testid="fullscreen-btn"
-          className="p-1.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 rounded-xl text-slate-300 hover:text-white transition-colors cursor-pointer shadow-xl backdrop-blur-md flex items-center justify-center"
-          title={isFullscreen ? 'Salir de pantalla completa (Esc)' : 'Pantalla completa'}
-        >
-          {isFullscreen ? (
-            <Minimize2 className="w-4 h-4 text-amber-400" />
-          ) : (
-            <Maximize2 className="w-4 h-4 text-slate-300" />
-          )}
-        </button>
-      </div>
+      {/* Vista Ampliada Banner & Cerrar (Punto 1 / REQ-22) */}
+      {expandedPlayerId && roomState.players[expandedPlayerId] && (
+        <div className="fixed top-2 right-4 z-40 flex items-center space-x-2 bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-xl shadow-xl backdrop-blur-md">
+          <span className="text-xs font-bold text-amber-300">
+            Vista Ampliada: {roomState.players[expandedPlayerId].name}
+          </span>
+          <button
+            onClick={onCloseExpanded}
+            data-testid="close-expanded-view"
+            className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold cursor-pointer flex items-center space-x-1"
+          >
+            <span>Cerrar (Esc)</span>
+          </button>
+        </div>
+      )}
 
       {/* Grid: 1 fila x 2 columnas en 1v1; 2 filas x hasta 3 cols para >= 3 jugadores (Punto 4, REQ-22.1, 22.2) o Vista Ampliada (Punto 3) */}
       {expandedPlayerId && roomState.players[expandedPlayerId] ? (

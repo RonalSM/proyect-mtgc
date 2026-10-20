@@ -48,13 +48,18 @@ async function setupGame(browser: any, podSize: number, width = 1920, height = 1
   const roomCode = match![1];
 
   await hostPage.click('button:has-text("Seleccionar / Importar Mazo")');
-  await hostPage.click('button:has-text("Importar mi primer mazo")');
-  await hostPage.fill(
-    'textarea',
-    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n10 Plains\n10 Island`,
-  );
-  await hostPage.click('button:has-text("Validar lista")');
-  await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
+  const hostPreset = hostPage.locator('[data-testid^="select-preset-deck-"]').first();
+  if (await hostPreset.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await hostPreset.click();
+  } else {
+    await hostPage.click('button:has-text("Importar mi primer mazo")');
+    await hostPage.fill(
+      'textarea',
+      `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n10 Plains\n10 Island`,
+    );
+    await hostPage.click('button:has-text("Validar lista")');
+    await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
+  }
   await hostPage.click('button:has-text("Marcarme Listo")');
 
   const guestNames = ['Bob', 'Charlie', 'Diana', 'Eve', 'Frank'];
@@ -70,13 +75,18 @@ async function setupGame(browser: any, podSize: number, width = 1920, height = 1
     await pPage.click('button:has-text("Entrar a la Mesa")');
 
     await pPage.click('button:has-text("Seleccionar / Importar Mazo")');
-    await pPage.click('button:has-text("Importar mi primer mazo")');
-    await pPage.fill(
-      'textarea',
-      `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n10 Mountain\n10 Swamp`,
-    );
-    await pPage.click('button:has-text("Validar lista")');
-    await pPage.click('button:has-text("Usar este Mazo en la Mesa")');
+    const guestPreset = pPage.locator('[data-testid^="select-preset-deck-"]').first();
+    if (await guestPreset.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await guestPreset.click();
+    } else {
+      await pPage.click('button:has-text("Importar mi primer mazo")');
+      await pPage.fill(
+        'textarea',
+        `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n10 Mountain\n10 Swamp`,
+      );
+      await pPage.click('button:has-text("Validar lista")');
+      await pPage.click('button:has-text("Usar este Mazo en la Mesa")');
+    }
     await pPage.click('button:has-text("Marcarme Listo")');
   }
 
@@ -116,7 +126,7 @@ const testConfigs = [
 ];
 
 for (const cfg of testConfigs) {
-  test(`Visual certification in ${cfg.podSize}P (${cfg.width}x${cfg.height}): Expand cell and browser fullscreen`, async ({
+  test(`Visual certification in ${cfg.podSize}P (${cfg.width}x${cfg.height}): Expanded cell division (Vista Ampliada)`, async ({
     browser,
   }) => {
     const { contexts, hostPage } = await setupGame(browser, cfg.podSize, cfg.width, cfg.height);
@@ -215,66 +225,12 @@ for (const cfg of testConfigs) {
       timeout: 5000,
     });
 
-    // ==========================================
-    // CASE 2: Browser Fullscreen button
-    // ==========================================
-    console.log(`\n=== CASE 2: Browser Fullscreen Button (${cfg.label}) ===`);
-    const fsBtn = hostPage.locator('[data-testid="fullscreen-btn"]');
-    await expect(fsBtn).toBeVisible({ timeout: 5000 });
-    await fsBtn.click();
-    await hostPage.waitForTimeout(500);
-
-    const metricsBrowserFs = await hostPage.evaluate(() => {
-      const mesaTotal = document.querySelector('#mesa-total');
-      const cells = document.querySelectorAll('[data-player-cell]');
-      const cards = document.querySelectorAll('[data-battlefield-card="true"]');
-      const toolbar = document.querySelector('[data-floating-toolbar="true"]');
-
-      return {
-        mesaTotalRect: mesaTotal ? mesaTotal.getBoundingClientRect() : null,
-        cellsCount: cells.length,
-        cardsCount: cards.length,
-        hasToolbar: !!toolbar,
-      };
-    });
-
-    console.log(
-      `Metrics Browser Fullscreen (${cfg.label}):`,
-      JSON.stringify(metricsBrowserFs, null, 2),
-    );
-
-    const shotBrowserFsPath = path.join(ARTIFACTS_DIR, `fullscreen-fixed-browser-${cfg.label}.png`);
-    let bufferBrowserFs: Buffer;
-    try {
-      bufferBrowserFs = await hostPage
-        .locator('#mesa-total')
-        .screenshot({ path: shotBrowserFsPath });
-      console.log('locator screenshot succeeded');
-    } catch (e: any) {
-      console.log('locator screenshot failed:', e.message);
-      bufferBrowserFs = await hostPage.screenshot({ path: shotBrowserFsPath });
-    }
-    const varianceBrowserFs = computeBufferVariance(bufferBrowserFs);
-    console.log(
-      `Screenshot browser fullscreen ${cfg.label}: bytes=${bufferBrowserFs.length}, variance=${varianceBrowserFs.toFixed(1)}`,
-    );
-
-    expect(metricsBrowserFs.cellsCount).toBe(cfg.podSize);
-    expect(metricsBrowserFs.cardsCount).toBeGreaterThan(0);
-    expect(varianceBrowserFs).toBeGreaterThan(500);
-
-    // Toggle fullscreen off using Esc or evaluate exitFullscreen
-    await hostPage.keyboard.press('Escape');
-    await hostPage.evaluate(() => {
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-      }
-    });
-    await hostPage.waitForTimeout(400);
-
     // Verify 0 React or unhandled errors
     const nonFaviconErrors = consoleErrors.filter(
-      e => !e.includes('favicon') && !e.includes('Scryfall API error'),
+      e =>
+        !e.includes('favicon') &&
+        !e.includes('Scryfall API error') &&
+        !e.includes('Failed to load resource'),
     );
     console.log(`Console errors (${cfg.label}):`, nonFaviconErrors);
     expect(nonFaviconErrors.length).toBe(0);

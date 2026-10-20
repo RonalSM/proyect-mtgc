@@ -43,3 +43,7 @@ playwright-report/
 .eslintcache
 .cache/
 *.tsbuildinfo
+
+# Agent skills
+.agents/
+
