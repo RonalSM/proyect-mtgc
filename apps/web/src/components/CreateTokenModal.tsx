@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getCardDisplayData, type CardDefinition, type GameActionType, type RoomState, type CardColor } from '@mtgc/shared';
+import {
+  getCardDisplayData,
+  type CardDefinition,
+  type GameActionType,
+  type RoomState,
+  type CardColor,
+} from '@mtgc/shared';
 import { Portal } from './Portal';
 import { X, Search, Sparkles, Plus, Layers } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
@@ -13,16 +19,20 @@ export const COMMON_TOKENS_CLIENT: CardDefinition[] = [
     oracleText: '{T}, Sacrifice this token: Add one mana of any color.',
     colors: [],
     colorIdentity: [],
-    imageUrlNormal: 'https://cards.scryfall.io/normal/front/c/b/cb7b5024-3a0b-4f14-977e-ba6c4c2567c9.jpg?1783915244',
-    imageUrlSmall: 'https://cards.scryfall.io/small/front/c/b/cb7b5024-3a0b-4f14-977e-ba6c4c2567c9.jpg?1783915244',
+    imageUrlNormal:
+      'https://cards.scryfall.io/normal/front/c/b/cb7b5024-3a0b-4f14-977e-ba6c4c2567c9.jpg?1783915244',
+    imageUrlSmall:
+      'https://cards.scryfall.io/small/front/c/b/cb7b5024-3a0b-4f14-977e-ba6c4c2567c9.jpg?1783915244',
     artist: 'Alayna Danner',
     locales: {
       es: {
         printedName: 'Tesoro',
         printedTypeLine: 'Ficha de artefacto — Tesoro',
         printedText: '{T}, sacrificar esta ficha: Agrega un maná de cualquier color.',
-        imageUrlNormal: 'https://cards.scryfall.io/normal/front/c/b/cb7b5024-3a0b-4f14-977e-ba6c4c2567c9.jpg?1783915244',
-        imageUrlSmall: 'https://cards.scryfall.io/small/front/c/b/cb7b5024-3a0b-4f14-977e-ba6c4c2567c9.jpg?1783915244',
+        imageUrlNormal:
+          'https://cards.scryfall.io/normal/front/c/b/cb7b5024-3a0b-4f14-977e-ba6c4c2567c9.jpg?1783915244',
+        imageUrlSmall:
+          'https://cards.scryfall.io/small/front/c/b/cb7b5024-3a0b-4f14-977e-ba6c4c2567c9.jpg?1783915244',
       },
     },
   },
@@ -34,16 +44,20 @@ export const COMMON_TOKENS_CLIENT: CardDefinition[] = [
     oracleText: '{2}, {T}, Sacrifice this token: You gain 3 life.',
     colors: [],
     colorIdentity: [],
-    imageUrlNormal: 'https://cards.scryfall.io/normal/front/d/a/da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37.jpg?1783903567',
-    imageUrlSmall: 'https://cards.scryfall.io/small/front/d/a/da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37.jpg?1783903567',
+    imageUrlNormal:
+      'https://cards.scryfall.io/normal/front/d/a/da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37.jpg?1783903567',
+    imageUrlSmall:
+      'https://cards.scryfall.io/small/front/d/a/da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37.jpg?1783903567',
     artist: 'Titus Lunter',
     locales: {
       es: {
         printedName: 'Comida',
         printedTypeLine: 'Ficha de artefacto — Comida',
         printedText: '{2}, {T}, sacrificar esta ficha: Ganas 3 vidas.',
-        imageUrlNormal: 'https://cards.scryfall.io/normal/front/d/a/da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37.jpg?1783903567',
-        imageUrlSmall: 'https://cards.scryfall.io/small/front/d/a/da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37.jpg?1783903567',
+        imageUrlNormal:
+          'https://cards.scryfall.io/normal/front/d/a/da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37.jpg?1783903567',
+        imageUrlSmall:
+          'https://cards.scryfall.io/small/front/d/a/da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37.jpg?1783903567',
       },
     },
   },
@@ -55,16 +69,20 @@ export const COMMON_TOKENS_CLIENT: CardDefinition[] = [
     oracleText: '{2}, Sacrifice this token: Draw a card.',
     colors: [],
     colorIdentity: [],
-    imageUrlNormal: 'https://cards.scryfall.io/normal/front/1/4/1481e938-7763-4109-b313-2a21053a82df.jpg?1789754721',
-    imageUrlSmall: 'https://cards.scryfall.io/small/front/1/4/1481e938-7763-4109-b313-2a21053a82df.jpg?1789754721',
+    imageUrlNormal:
+      'https://cards.scryfall.io/normal/front/1/4/1481e938-7763-4109-b313-2a21053a82df.jpg?1789754721',
+    imageUrlSmall:
+      'https://cards.scryfall.io/small/front/1/4/1481e938-7763-4109-b313-2a21053a82df.jpg?1789754721',
     artist: 'Franz Vohwinkel',
     locales: {
       es: {
         printedName: 'Pista',
         printedTypeLine: 'Ficha de artefacto — Pista',
         printedText: '{2}, sacrificar esta ficha: Roba una carta.',
-        imageUrlNormal: 'https://cards.scryfall.io/normal/front/1/4/1481e938-7763-4109-b313-2a21053a82df.jpg?1789754721',
-        imageUrlSmall: 'https://cards.scryfall.io/small/front/1/4/1481e938-7763-4109-b313-2a21053a82df.jpg?1789754721',
+        imageUrlNormal:
+          'https://cards.scryfall.io/normal/front/1/4/1481e938-7763-4109-b313-2a21053a82df.jpg?1789754721',
+        imageUrlSmall:
+          'https://cards.scryfall.io/small/front/1/4/1481e938-7763-4109-b313-2a21053a82df.jpg?1789754721',
       },
     },
   },
@@ -76,16 +94,20 @@ export const COMMON_TOKENS_CLIENT: CardDefinition[] = [
     oracleText: '{1}, {T}, Discard a card, Sacrifice this token: Draw a card.',
     colors: [],
     colorIdentity: [],
-    imageUrlNormal: 'https://cards.scryfall.io/normal/front/9/2/92a3afe7-bd9f-43f9-adc3-4819e60dc7a5.jpg?1783907965',
-    imageUrlSmall: 'https://cards.scryfall.io/small/front/9/2/92a3afe7-bd9f-43f9-adc3-4819e60dc7a5.jpg?1783907965',
+    imageUrlNormal:
+      'https://cards.scryfall.io/normal/front/9/2/92a3afe7-bd9f-43f9-adc3-4819e60dc7a5.jpg?1783907965',
+    imageUrlSmall:
+      'https://cards.scryfall.io/small/front/9/2/92a3afe7-bd9f-43f9-adc3-4819e60dc7a5.jpg?1783907965',
     artist: 'Brian Valeza',
     locales: {
       es: {
         printedName: 'Sangre',
         printedTypeLine: 'Ficha de artefacto — Sangre',
         printedText: '{1}, {T}, descartar una carta, sacrificar esta ficha: Roba una carta.',
-        imageUrlNormal: 'https://cards.scryfall.io/normal/front/9/2/92a3afe7-bd9f-43f9-adc3-4819e60dc7a5.jpg?1783907965',
-        imageUrlSmall: 'https://cards.scryfall.io/small/front/9/2/92a3afe7-bd9f-43f9-adc3-4819e60dc7a5.jpg?1783907965',
+        imageUrlNormal:
+          'https://cards.scryfall.io/normal/front/9/2/92a3afe7-bd9f-43f9-adc3-4819e60dc7a5.jpg?1783907965',
+        imageUrlSmall:
+          'https://cards.scryfall.io/small/front/9/2/92a3afe7-bd9f-43f9-adc3-4819e60dc7a5.jpg?1783907965',
       },
     },
   },
@@ -94,19 +116,25 @@ export const COMMON_TOKENS_CLIENT: CardDefinition[] = [
     name: 'Map',
     cmc: 0,
     typeLine: 'Token Artifact — Map',
-    oracleText: '{1}, {T}, Sacrifice this artifact: Target creature you control explores. Activate only as a sorcery.',
+    oracleText:
+      '{1}, {T}, Sacrifice this artifact: Target creature you control explores. Activate only as a sorcery.',
     colors: [],
     colorIdentity: [],
-    imageUrlNormal: 'https://cards.scryfall.io/normal/front/9/1/91613970-c25c-4959-b5b0-b6e2a7657634.jpg?1789737819',
-    imageUrlSmall: 'https://cards.scryfall.io/small/front/9/1/91613970-c25c-4959-b5b0-b6e2a7657634.jpg?1789737819',
+    imageUrlNormal:
+      'https://cards.scryfall.io/normal/front/9/1/91613970-c25c-4959-b5b0-b6e2a7657634.jpg?1789737819',
+    imageUrlSmall:
+      'https://cards.scryfall.io/small/front/9/1/91613970-c25c-4959-b5b0-b6e2a7657634.jpg?1789737819',
     artist: 'Sam Burley',
     locales: {
       es: {
         printedName: 'Mapa',
         printedTypeLine: 'Ficha de artefacto — Mapa',
-        printedText: '{1}, {T}, sacrificar este artefacto: La criatura objetivo que controlas explora. Activa esto solo como un conjuro.',
-        imageUrlNormal: 'https://cards.scryfall.io/normal/front/9/1/91613970-c25c-4959-b5b0-b6e2a7657634.jpg?1789737819',
-        imageUrlSmall: 'https://cards.scryfall.io/small/front/9/1/91613970-c25c-4959-b5b0-b6e2a7657634.jpg?1789737819',
+        printedText:
+          '{1}, {T}, sacrificar este artefacto: La criatura objetivo que controlas explora. Activa esto solo como un conjuro.',
+        imageUrlNormal:
+          'https://cards.scryfall.io/normal/front/9/1/91613970-c25c-4959-b5b0-b6e2a7657634.jpg?1789737819',
+        imageUrlSmall:
+          'https://cards.scryfall.io/small/front/9/1/91613970-c25c-4959-b5b0-b6e2a7657634.jpg?1789737819',
       },
     },
   },
@@ -224,7 +252,10 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
       .map(group => {
         const matchesSource = group.sourceCard.toLowerCase().includes(q);
         const matchedTokens = group.tokens.filter(
-          t => matchesSource || t.name.toLowerCase().includes(q) || t.typeLine.toLowerCase().includes(q)
+          t =>
+            matchesSource ||
+            t.name.toLowerCase().includes(q) ||
+            t.typeLine.toLowerCase().includes(q),
         );
         if (matchedTokens.length > 0) {
           return { sourceCard: group.sourceCard, tokens: matchedTokens };
@@ -277,7 +308,9 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90">
             <div className="flex items-center space-x-2.5">
               <Sparkles className="w-5 h-5 text-amber-400" />
-              <h2 className="text-base font-bold tracking-tight text-white">Crear Ficha en la Mesa</h2>
+              <h2 className="text-base font-bold tracking-tight text-white">
+                Crear Ficha en la Mesa
+              </h2>
             </div>
             <button
               type="button"
@@ -302,7 +335,9 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>Fichas de mi mazo ({deckGroups.reduce((acc, g) => acc + g.tokens.length, 0)})</span>
+              <span>
+                Fichas de mi mazo ({deckGroups.reduce((acc, g) => acc + g.tokens.length, 0)})
+              </span>
             </button>
 
             <button
@@ -401,7 +436,8 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                                     <div className="text-[10px] text-slate-400 truncate">
                                       {display.typeLine}
                                     </div>
-                                    {(token.power !== undefined || token.toughness !== undefined) && (
+                                    {(token.power !== undefined ||
+                                      token.toughness !== undefined) && (
                                       <div className="text-[11px] font-mono font-bold text-amber-400">
                                         {token.power}/{token.toughness}
                                       </div>

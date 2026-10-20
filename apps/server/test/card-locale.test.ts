@@ -1,7 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { getCardDisplayData, CardDefinition } from '@mtgc/shared';
-import { cardLocaleService, PRESEEDED_SPANISH_LOCALES } from '../src/services/card-locale.service.js';
+import {
+  cardLocaleService,
+  PRESEEDED_SPANISH_LOCALES,
+} from '../src/services/card-locale.service.js';
 
 describe('Punto 5 (C.5) - Idioma Español Prioritario y Fallback en Inglés', () => {
   const sampleCardWithSpanish: CardDefinition = {
@@ -19,7 +22,8 @@ describe('Punto 5 (C.5) - Idioma Español Prioritario y Fallback en Inglés', ()
         printedName: 'Anillo solar',
         printedTypeLine: 'Artefacto',
         printedText: '{T}: Agrega {C}{C}.',
-        imageUrlNormal: 'https://cards.scryfall.io/normal/front/1/7/17726514-6296-4171-b6a3-2287f394c86b.jpg',
+        imageUrlNormal:
+          'https://cards.scryfall.io/normal/front/1/7/17726514-6296-4171-b6a3-2287f394c86b.jpg',
       },
     },
   };
@@ -41,7 +45,10 @@ describe('Punto 5 (C.5) - Idioma Español Prioritario y Fallback en Inglés', ()
     assert.equal(display.name, 'Anillo solar');
     assert.equal(display.typeLine, 'Artefacto');
     assert.equal(display.oracleText, '{T}: Agrega {C}{C}.');
-    assert.equal(display.imageUrlNormal, 'https://cards.scryfall.io/normal/front/1/7/17726514-6296-4171-b6a3-2287f394c86b.jpg');
+    assert.equal(
+      display.imageUrlNormal,
+      'https://cards.scryfall.io/normal/front/1/7/17726514-6296-4171-b6a3-2287f394c86b.jpg',
+    );
     assert.equal(display.isSpanish, true);
   });
 

@@ -19,7 +19,11 @@ export interface SentEmailRecord {
 export class DevEmailSender implements EmailSender {
   private sentEmails: SentEmailRecord[] = [];
 
-  public async sendVerificationEmail(to: string, token: string, verifyUrl: string): Promise<boolean> {
+  public async sendVerificationEmail(
+    to: string,
+    token: string,
+    verifyUrl: string,
+  ): Promise<boolean> {
     const record: SentEmailRecord = {
       to,
       token,

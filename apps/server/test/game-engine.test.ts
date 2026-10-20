@@ -846,6 +846,3 @@ test('InitiativeService - authoritative D20 roll, descending order and tie break
 
   session.cleanup();
 });
-
-
-

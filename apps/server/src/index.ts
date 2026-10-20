@@ -141,7 +141,12 @@ server.post('/api/auth/register', async (request, reply) => {
 
     // Short-lived access token (15m)
     const accessToken = server.jwt.sign(
-      { id: user.id, username: user.username, isGuest: false, isEmailVerified: user.isEmailVerified },
+      {
+        id: user.id,
+        username: user.username,
+        isGuest: false,
+        isEmailVerified: user.isEmailVerified,
+      },
       { expiresIn: '15m' },
     );
 
@@ -214,7 +219,12 @@ server.post('/api/auth/login', async (request, reply) => {
     });
 
     const accessToken = server.jwt.sign(
-      { id: user.id, username: user.username, isGuest: user.isGuest, isEmailVerified: user.isEmailVerified },
+      {
+        id: user.id,
+        username: user.username,
+        isGuest: user.isGuest,
+        isEmailVerified: user.isEmailVerified,
+      },
       { expiresIn: '15m' },
     );
 
@@ -268,10 +278,7 @@ server.post('/api/auth/refresh', async (request, reply) => {
     return reply.status(401).send({ error: 'Refresh token inválido o expirado' });
   }
 
-  const newAccessToken = server.jwt.sign(
-    { id: userId, isGuest: false },
-    { expiresIn: '15m' },
-  );
+  const newAccessToken = server.jwt.sign({ id: userId, isGuest: false }, { expiresIn: '15m' });
 
   reply.setCookie('token', newAccessToken, {
     path: '/',
@@ -446,7 +453,7 @@ server.post('/api/cards/locales', async (request, reply) => {
     oracleIds.map(async id => {
       const loc = await cardLocaleService.getLocale(id, lang);
       if (loc) results[id] = loc;
-    })
+    }),
   );
 
   return reply.send({ lang, locales: results });
@@ -542,8 +549,12 @@ server.post('/api/decks/parse', async (request, reply) => {
     .map(e => ({ name: toScryfallLookupName(e.cardName) }));
 
   const [cmdCollection, mainCollection] = await Promise.all([
-    missingCmdr.length > 0 ? scryfallService.getCollection(missingCmdr) : { found: [], notFound: [] },
-    missingMain.length > 0 ? scryfallService.getCollection(missingMain) : { found: [], notFound: [] },
+    missingCmdr.length > 0
+      ? scryfallService.getCollection(missingCmdr)
+      : { found: [], notFound: [] },
+    missingMain.length > 0
+      ? scryfallService.getCollection(missingMain)
+      : { found: [], notFound: [] },
   ]);
 
   const matchCard = (entryName: string) => {
@@ -563,8 +574,7 @@ server.post('/api/decks/parse', async (request, reply) => {
 
   const commanderCards = parsed.commanderEntries.map(entry => {
     const foundCard =
-      findInDb(entry.cardName) ||
-      cmdCollection.found.find(matchCard(entry.cardName));
+      findInDb(entry.cardName) || cmdCollection.found.find(matchCard(entry.cardName));
     return {
       card: foundCard || {
         scryfallId: `custom_${entry.cardName}`,
@@ -584,8 +594,7 @@ server.post('/api/decks/parse', async (request, reply) => {
 
   const maindeckCards = parsed.maindeckEntries.map(entry => {
     const foundCard =
-      findInDb(entry.cardName) ||
-      mainCollection.found.find(matchCard(entry.cardName));
+      findInDb(entry.cardName) || mainCollection.found.find(matchCard(entry.cardName));
     return {
       card: foundCard || {
         scryfallId: `custom_${entry.cardName}`,
@@ -609,14 +618,14 @@ server.post('/api/decks/parse', async (request, reply) => {
     commanderCards.map(async c => ({
       ...c,
       card: await cardLocaleService.enrichCardWithLocale(c.card, 'es'),
-    }))
+    })),
   );
 
   const enrichedMaindeckCards = await Promise.all(
     maindeckCards.map(async c => ({
       ...c,
       card: await cardLocaleService.enrichCardWithLocale(c.card, 'es'),
-    }))
+    })),
   );
 
   return reply.send({
@@ -645,7 +654,9 @@ function extractUserId(request: any): string | null {
 server.post('/api/decks', async (request, reply) => {
   const userId = extractUserId(request);
   if (!userId) {
-    return reply.status(401).send({ error: 'Debes iniciar sesión para guardar mazos en tu cuenta' });
+    return reply
+      .status(401)
+      .send({ error: 'Debes iniciar sesión para guardar mazos en tu cuenta' });
   }
 
   const body = request.body as {
@@ -859,7 +870,9 @@ try {
     });
     // Sincronización automática de dictámenes de Scryfall al arrancar si la tabla está vacía (Punto 6)
     bulkSyncService.syncRulingsIfEmpty().catch(err => {
-      server.log.warn(`⚠️ [BulkSync] Error al sincronizar dictámenes de Scryfall al arrancar: ${err?.message || err}`);
+      server.log.warn(
+        `⚠️ [BulkSync] Error al sincronizar dictámenes de Scryfall al arrancar: ${err?.message || err}`,
+      );
     });
   }
 } catch (err) {

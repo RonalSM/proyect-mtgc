@@ -365,11 +365,16 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded }) => {
                 <div className="space-y-2">
                   <span className="text-[11px] font-medium text-amber-400 block uppercase flex items-center space-x-1">
                     <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>Advertencias y cartas prohibidas ({validationResult.warnings.length})</span>
+                    <span>
+                      Advertencias y cartas prohibidas ({validationResult.warnings.length})
+                    </span>
                   </span>
                   <ul className="text-xs space-y-1.5 text-amber-200">
                     {validationResult.warnings.map((warn: string, i: number) => (
-                      <li key={i} className="bg-amber-950/20 p-2 rounded border border-amber-900/30">
+                      <li
+                        key={i}
+                        className="bg-amber-950/20 p-2 rounded border border-amber-900/30"
+                      >
                         &bull; {warn}
                       </li>
                     ))}

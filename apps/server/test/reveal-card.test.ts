@@ -116,7 +116,10 @@ test('Punto 7: Revelar carta no la mueve, registra en bitácora según destino y
   // En la bitácora dice "Alice reveló una carta a Bob" SIN decir el nombre de la carta
   const lastLog1 = session.state.logs[session.state.logs.length - 1];
   assert.ok(lastLog1);
-  assert.strictEqual(`${lastLog1.playerName} ${lastLog1.actionText}`, 'Alice reveló una carta a Bob');
+  assert.strictEqual(
+    `${lastLog1.playerName} ${lastLog1.actionText}`,
+    'Alice reveló una carta a Bob',
+  );
 
   // 2. Revelar a todos los jugadores
   const resultAll = session.revealCard('p1', {
@@ -134,7 +137,10 @@ test('Punto 7: Revelar carta no la mueve, registra en bitácora según destino y
   // En la bitácora dice "Alice reveló \"Black Lotus\" a todos"
   const lastLog2 = session.state.logs[session.state.logs.length - 1];
   assert.ok(lastLog2);
-  assert.strictEqual(`${lastLog2.playerName} ${lastLog2.actionText}`, 'Alice reveló "Black Lotus" a todos');
+  assert.strictEqual(
+    `${lastLog2.playerName} ${lastLog2.actionText}`,
+    'Alice reveló "Black Lotus" a todos',
+  );
 });
 
 test('Punto 7: Submenú Biblioteca (Arriba, Abajo, Posición N) e inserción en Cementerio/Exilio siempre arriba', () => {
@@ -143,23 +149,51 @@ test('Punto 7: Submenú Biblioteca (Arriba, Abajo, Posición N) e inserción en 
 
   const lib0: CardInstance = {
     instanceId: 'lib_0',
-    definition: { scryfallId: 's0', name: 'Plains', cmc: 0, typeLine: 'Basic Land', colors: [], colorIdentity: ['W'] },
+    definition: {
+      scryfallId: 's0',
+      name: 'Plains',
+      cmc: 0,
+      typeLine: 'Basic Land',
+      colors: [],
+      colorIdentity: ['W'],
+    },
     ownerId: 'p1',
   };
   const lib1: CardInstance = {
     instanceId: 'lib_1',
-    definition: { scryfallId: 's1', name: 'Island', cmc: 0, typeLine: 'Basic Land', colors: [], colorIdentity: ['U'] },
+    definition: {
+      scryfallId: 's1',
+      name: 'Island',
+      cmc: 0,
+      typeLine: 'Basic Land',
+      colors: [],
+      colorIdentity: ['U'],
+    },
     ownerId: 'p1',
   };
   const lib2: CardInstance = {
     instanceId: 'lib_2',
-    definition: { scryfallId: 's2', name: 'Swamp', cmc: 0, typeLine: 'Basic Land', colors: [], colorIdentity: ['B'] },
+    definition: {
+      scryfallId: 's2',
+      name: 'Swamp',
+      cmc: 0,
+      typeLine: 'Basic Land',
+      colors: [],
+      colorIdentity: ['B'],
+    },
     ownerId: 'p1',
   };
 
   const handCard: CardInstance = {
     instanceId: 'hand_c',
-    definition: { scryfallId: 'sh', name: 'Brainstorm', cmc: 1, typeLine: 'Instant', colors: ['U'], colorIdentity: ['U'] },
+    definition: {
+      scryfallId: 'sh',
+      name: 'Brainstorm',
+      cmc: 1,
+      typeLine: 'Instant',
+      colors: ['U'],
+      colorIdentity: ['U'],
+    },
     ownerId: 'p1',
   };
 
@@ -217,7 +251,10 @@ test('Punto 7: Submenú Biblioteca (Arriba, Abajo, Posición N) e inserción en 
 
   lib = session.state.playerZones['p1']!.library;
   assert.strictEqual(lib.length, 4);
-  assert.ok(lib.some(c => c.instanceId === 'hand_c'), 'hand_c debe estar en la biblioteca');
+  assert.ok(
+    lib.some(c => c.instanceId === 'hand_c'),
+    'hand_c debe estar en la biblioteca',
+  );
   const lastLog = session.state.logs[session.state.logs.length - 1];
   assert.strictEqual(lastLog?.actionText, 'envió una carta a su biblioteca');
 
@@ -279,13 +316,27 @@ test('Corrección A.1: Revelación persistente en mano, filtrado de destinatario
 
   const card1: CardInstance = {
     instanceId: 'c1',
-    definition: { scryfallId: 'sf1', name: 'Sol Ring', cmc: 1, typeLine: 'Artifact', colors: [], colorIdentity: [] },
+    definition: {
+      scryfallId: 'sf1',
+      name: 'Sol Ring',
+      cmc: 1,
+      typeLine: 'Artifact',
+      colors: [],
+      colorIdentity: [],
+    },
     ownerId: 'p1',
     controllerId: 'p1',
   };
   const card2: CardInstance = {
     instanceId: 'c2',
-    definition: { scryfallId: 'sf2', name: 'Mana Crypt', cmc: 0, typeLine: 'Artifact', colors: [], colorIdentity: [] },
+    definition: {
+      scryfallId: 'sf2',
+      name: 'Mana Crypt',
+      cmc: 0,
+      typeLine: 'Artifact',
+      colors: [],
+      colorIdentity: [],
+    },
     ownerId: 'p1',
     controllerId: 'p1',
   };
@@ -334,7 +385,10 @@ test('Corrección A.1: Revelación persistente en mano, filtrado de destinatario
 
   // Ahora Bob ya no ve card1
   const stateBobAfterUnreveal = filterRoomStateForPlayer(session.state, 'p2');
-  assert.strictEqual(stateBobAfterUnreveal.playerZones['p1']!.hand[0]!.definition.scryfallId, 'hidden_card');
+  assert.strictEqual(
+    stateBobAfterUnreveal.playerZones['p1']!.hand[0]!.definition.scryfallId,
+    'hidden_card',
+  );
 
   // 3. Revelar a todos
   session.revealCard('p1', {
@@ -363,8 +417,30 @@ test('Corrección A.1: Revelación persistente en mano, filtrado de destinatario
   assert.strictEqual(card2.revealedTo, 'all');
 
   session.state.playerZones['p1']!.library = [
-    { instanceId: 'l1', definition: { scryfallId: 'sl1', name: 'Forest', cmc: 0, typeLine: 'Basic Land', colors: [], colorIdentity: ['G'] }, ownerId: 'p1' },
-    { instanceId: 'l2', definition: { scryfallId: 'sl2', name: 'Forest', cmc: 0, typeLine: 'Basic Land', colors: [], colorIdentity: ['G'] }, ownerId: 'p1' },
+    {
+      instanceId: 'l1',
+      definition: {
+        scryfallId: 'sl1',
+        name: 'Forest',
+        cmc: 0,
+        typeLine: 'Basic Land',
+        colors: [],
+        colorIdentity: ['G'],
+      },
+      ownerId: 'p1',
+    },
+    {
+      instanceId: 'l2',
+      definition: {
+        scryfallId: 'sl2',
+        name: 'Forest',
+        cmc: 0,
+        typeLine: 'Basic Land',
+        colors: [],
+        colorIdentity: ['G'],
+      },
+      ownerId: 'p1',
+    },
   ];
   session.shuffleLibrary('p1');
   assert.strictEqual(card2.revealedTo, undefined);
@@ -405,7 +481,9 @@ test('Punto 2 & Punto 3: Reseteo de contadores y P/T al salir la carta del campo
     toZone: 'graveyard',
   });
 
-  const gyCard = session.state.playerZones['p1']!.graveyard.find(c => c.instanceId === 'creature_pt_1');
+  const gyCard = session.state.playerZones['p1']!.graveyard.find(
+    c => c.instanceId === 'creature_pt_1',
+  );
   assert.ok(gyCard, 'La carta debe estar en el cementerio');
   assert.deepStrictEqual(gyCard.counters, {}, 'Los contadores deben reiniciarse a {}');
   assert.strictEqual(gyCard.basePower, undefined, 'basePower debe ser eliminado');

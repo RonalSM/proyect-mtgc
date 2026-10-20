@@ -90,8 +90,8 @@ export class RedisSnapshotService implements SnapshotStorage {
               if (card.position) {
                 const orientedW = card.isTapped ? cardDims.height : cardDims.width;
                 const orientedH = card.isTapped ? cardDims.width : cardDims.height;
-                card.position.x += (orientedW / 2) / 1920;
-                card.position.y += (orientedH / 2) / 1080;
+                card.position.x += orientedW / 2 / 1920;
+                card.position.y += orientedH / 2 / 1080;
               }
             }
           }

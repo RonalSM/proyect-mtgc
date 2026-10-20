@@ -111,7 +111,11 @@ describe('Punto 4: Fichas (TokenService & GameStateSession)', () => {
   });
 
   it('TokenService - resolves and groups deck tokens by source card', async () => {
-    const deckTokens = await tokenService.getTokensForDeck(['Smothering Tithe', 'Sol Ring', 'Regal Caracal']);
+    const deckTokens = await tokenService.getTokensForDeck([
+      'Smothering Tithe',
+      'Sol Ring',
+      'Regal Caracal',
+    ]);
     assert.strictEqual(deckTokens.length, 2);
     assert.strictEqual(deckTokens[0].sourceCard, 'Smothering Tithe');
     assert.strictEqual(deckTokens[1].sourceCard, 'Regal Caracal');

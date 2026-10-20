@@ -1,6 +1,6 @@
 ---
 name: mtg-scryfall-integration
-description: "Cómo integrar la API de Scryfall: límites de uso, cabeceras, bulk data, caché, importación de listas de mazo, imágenes y playmats (art_crop) y atribución legal. Úsala siempre que busques cartas, importes o valides mazos, muestres imágenes de cartas, sincronices la base de cartas o uses arte de cartas como fondo."
+description: 'Cómo integrar la API de Scryfall: límites de uso, cabeceras, bulk data, caché, importación de listas de mazo, imágenes y playmats (art_crop) y atribución legal. Úsala siempre que busques cartas, importes o valides mazos, muestres imágenes de cartas, sincronices la base de cartas o uses arte de cartas como fondo.'
 ---
 
 # Integración con Scryfall
@@ -18,12 +18,12 @@ Scryfall es un servicio gratuito mantenido por terceros: respetar sus reglas evi
 
 ## Endpoints útiles
 
-| Necesidad | Endpoint |
-|---|---|
-| Carta por nombre | `GET /cards/named?exact=` o `?fuzzy=` |
-| Autocompletado | `GET /cards/autocomplete?q=` |
-| Varias cartas a la vez | `POST /cards/collection` con hasta 75 identificadores por llamada |
-| Base completa | `GET /bulk-data` → descargar `oracle_cards` y cargarlo a PostgreSQL |
+| Necesidad              | Endpoint                                                            |
+| ---------------------- | ------------------------------------------------------------------- |
+| Carta por nombre       | `GET /cards/named?exact=` o `?fuzzy=`                               |
+| Autocompletado         | `GET /cards/autocomplete?q=`                                        |
+| Varias cartas a la vez | `POST /cards/collection` con hasta 75 identificadores por llamada   |
+| Base completa          | `GET /bulk-data` → descargar `oracle_cards` y cargarlo a PostgreSQL |
 
 Prefiere el **bulk data nocturno** para consultas locales y deja la API para casos puntuales. Programa la sincronización con una tarea periódica (cron) y conserva un endpoint manual solo para administradores.
 

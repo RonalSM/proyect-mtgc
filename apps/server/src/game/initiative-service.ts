@@ -155,10 +155,7 @@ export class InitiativeService {
         if (state.players[pid]) {
           state.players[pid]!.initiativeRoll = auto;
         }
-        this.session.addLog(
-          pid,
-          `Servidor tiró D20 automático: 🎲 ${auto}`,
-        );
+        this.session.addLog(pid, `Servidor tiró D20 automático: 🎲 ${auto}`);
       }
     }
 
@@ -303,10 +300,7 @@ export class InitiativeService {
       .map((pid, idx) => `${idx + 1}.º ${state.players[pid]?.name || pid}`)
       .join(', ');
 
-    this.session.addLog(
-      state.hostId,
-      `Iniciativa resuelta. Orden de turnos: ${orderSummary}`,
-    );
+    this.session.addLog(state.hostId, `Iniciativa resuelta. Orden de turnos: ${orderSummary}`);
 
     const resolveDelay = options?.resolveDisplayMs ?? (autoAdvance ? 2500 : 0);
 

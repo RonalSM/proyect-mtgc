@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 
 const SCREENSHOT_DIR = path.resolve(
-  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
 );
 
 async function setupTestPod(
@@ -10,7 +10,7 @@ async function setupTestPod(
   podSize: number,
   width = 1920,
   height = 1080,
-  roomPrefix = 'MenuTest'
+  roomPrefix = 'MenuTest',
 ) {
   const contexts: any[] = [];
   const pages: any[] = [];
@@ -32,7 +32,10 @@ async function setupTestPod(
   const hostOnlineBadge = hostPage.locator('text=Servidor en línea');
   await expect(hostOnlineBadge).toBeVisible({ timeout: 15000 });
 
-  await hostPage.fill('input[placeholder="Ej. Pod Casual 4 Jugadores"]', `${roomPrefix} ${podSize}p`);
+  await hostPage.fill(
+    'input[placeholder="Ej. Pod Casual 4 Jugadores"]',
+    `${roomPrefix} ${podSize}p`,
+  );
   await hostPage.fill('input[placeholder="Ej. Planeswalker 1"]', 'Alice (Host)');
   await hostPage.selectOption('select', String(podSize));
   await hostPage.click('button:has-text("Crear Mesa y Obtener Código")');
@@ -54,7 +57,7 @@ async function setupTestPod(
   }
   await hostPage.fill(
     'textarea',
-    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Command Tower\n1 Cultivate\n1 Counterspell\n1 Swords to Plowshares\n1 Demonic Tutor\n1 Rhystic Study\n1 Smothering Tithe\n10 Plains\n10 Island\n10 Swamp\n10 Forest`
+    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Command Tower\n1 Cultivate\n1 Counterspell\n1 Swords to Plowshares\n1 Demonic Tutor\n1 Rhystic Study\n1 Smothering Tithe\n10 Plains\n10 Island\n10 Swamp\n10 Forest`,
   );
   await hostPage.click('button:has-text("Validar lista")');
   await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -82,7 +85,7 @@ async function setupTestPod(
     }
     await pPage.fill(
       'textarea',
-      `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Lightning Bolt\n1 Dark Ritual\n1 Vampiric Tutor\n1 Blood Artist\n10 Mountain\n10 Swamp\n10 Plains`
+      `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Lightning Bolt\n1 Dark Ritual\n1 Vampiric Tutor\n1 Blood Artist\n10 Mountain\n10 Swamp\n10 Plains`,
     );
     await pPage.click('button:has-text("Validar lista")');
     await pPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -94,7 +97,9 @@ async function setupTestPod(
   await startGameBtn.click();
 
   // Completar fase de mulligan
-  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 25000 });
+  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+    timeout: 25000,
+  });
   for (let step = 0; step < podSize; step++) {
     for (let attempt = 0; attempt < 30; attempt++) {
       let acted = false;
@@ -115,7 +120,9 @@ async function setupTestPod(
   }
 
   // Esperar a que la mesa esté activa
-  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toHaveCount(0, { timeout: 15000 });
+  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toHaveCount(0, {
+    timeout: 15000,
+  });
   await hostPage.waitForTimeout(1000);
 
   return { contexts, pages, hostPage, guestPage: pages[1], roomCode };
@@ -126,7 +133,7 @@ async function moveDiagonallyWithPause(
   page: any,
   fromLocator: any,
   toLocator: any,
-  pauseMs: number
+  pauseMs: number,
 ) {
   const fromBox = await fromLocator.boundingBox();
   const toBox = await toLocator.boundingBox();
@@ -168,14 +175,22 @@ test.describe('Punto 3: Menú Contextual Inline, Pausas Diagonales, Biblioteca y
     browser,
   }) => {
     test.setTimeout(180000);
-    const { contexts, pages, hostPage, guestPage } = await setupTestPod(browser, 2, 1920, 1080, 'MenuDiag');
+    const { contexts, pages, hostPage, guestPage } = await setupTestPod(
+      browser,
+      2,
+      1920,
+      1080,
+      'MenuDiag',
+    );
 
     try {
       const pauses = [0, 300, 800];
 
       // 1. Probar que las pausas y trayectorias diagonales NO cierran el menú expandido de Biblioteca
       for (const pauseMs of pauses) {
-        console.log(`[Punto 3] Evaluando movimiento diagonal hacia submenú Biblioteca con pausa de ${pauseMs} ms`);
+        console.log(
+          `[Punto 3] Evaluando movimiento diagonal hacia submenú Biblioteca con pausa de ${pauseMs} ms`,
+        );
 
         // Abrir menú contextual en carta de la mano
         const handCard = hostPage.locator('[data-from-zone="hand"]').first();
@@ -209,7 +224,9 @@ test.describe('Punto 3: Menú Contextual Inline, Pausas Diagonales, Biblioteca y
 
       // 2. Probar movimiento diagonal hacia "Revelar" con pausas (0, 300, 800 ms)
       for (const pauseMs of pauses) {
-        console.log(`[Punto 3] Evaluando movimiento diagonal hacia submenú Revelar con pausa de ${pauseMs} ms`);
+        console.log(
+          `[Punto 3] Evaluando movimiento diagonal hacia submenú Revelar con pausa de ${pauseMs} ms`,
+        );
 
         const handCard = hostPage.locator('[data-from-zone="hand"]').first();
         await handCard.click({ button: 'right', force: true });
@@ -255,7 +272,9 @@ test.describe('Punto 3: Menú Contextual Inline, Pausas Diagonales, Biblioteca y
       const drawnCard = hostPage.locator('[data-from-zone="hand"]').last();
       const drawnCardName = await drawnCard.getAttribute('data-card-name');
       const drawnCardInstanceId = await drawnCard.getAttribute('data-card-instance-id');
-      console.log(`[Punto 3] Carta enviada arriba: "${topCardName}" (${topCardInstanceId}), carta robada: "${drawnCardName}" (${drawnCardInstanceId})`);
+      console.log(
+        `[Punto 3] Carta enviada arriba: "${topCardName}" (${topCardInstanceId}), carta robada: "${drawnCardName}" (${drawnCardInstanceId})`,
+      );
       expect(drawnCardInstanceId).toBe(topCardInstanceId);
       expect(drawnCardName).toBe(topCardName);
 
@@ -275,7 +294,9 @@ test.describe('Punto 3: Menú Contextual Inline, Pausas Diagonales, Biblioteca y
       const drawnNotBottomCard = hostPage.locator('[data-from-zone="hand"]').last();
       const drawnNotBottomId = await drawnNotBottomCard.getAttribute('data-card-instance-id');
       const drawnNotBottomName = await drawnNotBottomCard.getAttribute('data-card-name');
-      console.log(`[Punto 3] Carta enviada abajo: "${bottomCardName}" (${bottomCardInstanceId}), siguiente robada: "${drawnNotBottomName}" (${drawnNotBottomId})`);
+      console.log(
+        `[Punto 3] Carta enviada abajo: "${bottomCardName}" (${bottomCardInstanceId}), siguiente robada: "${drawnNotBottomName}" (${drawnNotBottomId})`,
+      );
       expect(drawnNotBottomId).not.toBe(bottomCardInstanceId);
 
       // 5. Comprobar Aleatoria: la carta queda en la biblioteca y la posición NO se filtra a otros clientes
@@ -289,7 +310,9 @@ test.describe('Punto 3: Menú Contextual Inline, Pausas Diagonales, Biblioteca y
       await hostPage.waitForTimeout(600);
 
       // Verificar que salió de la mano de Host
-      const remainingInHand = await hostPage.locator(`[data-card-instance-id="${randomCardInstanceId}"]`).count();
+      const remainingInHand = await hostPage
+        .locator(`[data-card-instance-id="${randomCardInstanceId}"]`)
+        .count();
       expect(remainingInHand).toBe(0);
 
       // Comprobar la bitácora en Guest (Bob): registra "Alice (Host) envió una carta a su biblioteca"
@@ -311,7 +334,8 @@ test.describe('Punto 3: Menú Contextual Inline, Pausas Diagonales, Biblioteca y
       // 6. Comprobar Revelar: envía la identidad SOLO al destinatario (Bob), y NO a terceros
       console.log('[Punto 3] Comprobando Revelar: privacidad hacia destinatario');
       const handCardToReveal = hostPage.locator('[data-from-zone="hand"]').last();
-      const revealCardName = (await handCardToReveal.getAttribute('data-card-name')) || 'CartaRevelada';
+      const revealCardName =
+        (await handCardToReveal.getAttribute('data-card-name')) || 'CartaRevelada';
       await handCardToReveal.click({ button: 'right', force: true });
       await hostPage.locator('[data-testid="context-reveal-menu"]').click();
       const targetOppBtn = hostPage.locator('[data-testid^="context-reveal-player-"]').first();
@@ -323,7 +347,9 @@ test.describe('Punto 3: Menú Contextual Inline, Pausas Diagonales, Biblioteca y
       await expect(revealedModal).toBeVisible({ timeout: 10000 });
       const revealedText = await revealedModal.innerText();
       expect(revealedText).toContain(revealCardName);
-      console.log(`[Punto 3] Modal de carta revelada visible en Bob con nombre: "${revealCardName}"`);
+      console.log(
+        `[Punto 3] Modal de carta revelada visible en Bob con nombre: "${revealCardName}"`,
+      );
 
       // Cerrar la modal en Bob
       const closeRevealBtn = guestPage.locator('[data-testid="close-revealed-card-modal"]');
@@ -339,7 +365,9 @@ test.describe('Punto 3: Menú Contextual Inline, Pausas Diagonales, Biblioteca y
         path: path.join(SCREENSHOT_DIR, 'test-p3-context-menu-inline.png'),
       });
 
-      console.log('[Punto 3] Certificación E2E de menú contextual inline y opciones completada con éxito.');
+      console.log(
+        '[Punto 3] Certificación E2E de menú contextual inline y opciones completada con éxito.',
+      );
     } finally {
       for (const ctx of contexts) {
         await ctx.close().catch(() => {});

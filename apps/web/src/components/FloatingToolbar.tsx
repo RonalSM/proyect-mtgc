@@ -51,7 +51,9 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   const isMyTurn = roomState.activePlayerId === localPlayerId;
   const spectatorsCount = Object.values(roomState.players).filter(p => p.isSpectator).length;
   const allPlayers = Object.values(roomState.players);
-  const sortedPlayers = [...allPlayers].sort((a, b) => (a.initiativeOrder || 0) - (b.initiativeOrder || 0));
+  const sortedPlayers = [...allPlayers].sort(
+    (a, b) => (a.initiativeOrder || 0) - (b.initiativeOrder || 0),
+  );
 
   // Turn timer countdown
   useEffect(() => {
@@ -84,7 +86,10 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
 
   return (
     <>
-      <div data-floating-toolbar="true" className="fixed top-2 left-1/2 -translate-x-1/2 z-40 transition-all duration-300">
+      <div
+        data-floating-toolbar="true"
+        className="fixed top-2 left-1/2 -translate-x-1/2 z-40 transition-all duration-300"
+      >
         <div className="bg-slate-900/90 hover:bg-slate-900 backdrop-blur-md border border-slate-700/80 rounded-2xl shadow-2xl px-4 py-1.5 flex items-center space-x-3 text-xs text-slate-200 select-none">
           {/* Round & Active Player */}
           <div className="flex items-center space-x-2 pr-2 border-r border-slate-700/60">
@@ -117,7 +122,11 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                       {activePlayer.initiativeOrder}.º
                     </span>
                   )}
-                  <span className={activePlayer?.isConnected ? '' : 'opacity-40 text-slate-400 line-through'}>
+                  <span
+                    className={
+                      activePlayer?.isConnected ? '' : 'opacity-40 text-slate-400 line-through'
+                    }
+                  >
                     {isMyTurn ? '¡Tu Turno!' : activePlayer?.name || '---'}
                   </span>
                   {isMyTurn && (
@@ -337,7 +346,11 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors ml-1"
             title={isCollapsed ? 'Desplegar barra' : 'Plegar barra'}
           >
-            {isCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+            {isCollapsed ? (
+              <ChevronDown className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronUp className="w-3.5 h-3.5" />
+            )}
           </button>
         </div>
       </div>
@@ -459,11 +472,13 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             <div className="text-xs text-slate-300 space-y-2.5">
               <div>
                 <strong className="text-white block mb-0.5">🎮 Arrastrar y Soltar (DND):</strong>
-                Arrastra cartas desde tu mano al campo de batalla. También puedes moverlas libremente entre zonas (cementerio, exilio, comando).
+                Arrastra cartas desde tu mano al campo de batalla. También puedes moverlas
+                libremente entre zonas (cementerio, exilio, comando).
               </div>
               <div>
                 <strong className="text-white block mb-0.5">💖 Vidas y Contadores:</strong>
-                Haz clic en la pastilla de vida de tu esquina interior para modificar vidas (+1, −1, daño recibido, vida ganada) o gestionar daño de comandante y veneno.
+                Haz clic en la pastilla de vida de tu esquina interior para modificar vidas (+1, −1,
+                daño recibido, vida ganada) o gestionar daño de comandante y veneno.
               </div>
               <div>
                 <strong className="text-white block mb-0.5">🔍 Zoom de Cartas:</strong>
@@ -471,7 +486,8 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               </div>
               <div>
                 <strong className="text-white block mb-0.5">🖼️ Ampliar Celda:</strong>
-                Pulsa el botón de maximizar en la etiqueta de nombre de una celda para verla en pantalla completa.
+                Pulsa el botón de maximizar en la etiqueta de nombre de una celda para verla en
+                pantalla completa.
               </div>
             </div>
 

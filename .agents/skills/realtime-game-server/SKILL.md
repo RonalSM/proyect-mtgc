@@ -1,13 +1,13 @@
 ---
 name: realtime-game-server
-description: "Patrones para el servidor de juego en tiempo real por WebSocket: estado autoritativo, validación de acciones, versionado de eventos, filtrado de información oculta (manos y bibliotecas), reconexión, deshacer y aleatoriedad segura. Úsala al tocar apps/server, los mensajes de packages/shared, las salas, el estado de la mesa, el barajado, la sincronización o la reconexión."
+description: 'Patrones para el servidor de juego en tiempo real por WebSocket: estado autoritativo, validación de acciones, versionado de eventos, filtrado de información oculta (manos y bibliotecas), reconexión, deshacer y aleatoriedad segura. Úsala al tocar apps/server, los mensajes de packages/shared, las salas, el estado de la mesa, el barajado, la sincronización o la reconexión.'
 ---
 
 # Servidor de juego en tiempo real
 
 ## Principios
 
-1. **El servidor decide.** El cliente envía *intenciones* (`MOVE_CARD`, `ADJUST_LIFE`); nunca el estado resultante.
+1. **El servidor decide.** El cliente envía _intenciones_ (`MOVE_CARD`, `ADJUST_LIFE`); nunca el estado resultante.
 2. **Información oculta.** Antes de enviar cualquier evento o instantánea, pásalo por `viewFor(state, seat)`: las cartas de mano y biblioteca de otros jugadores viajan como `{ hidden: true }`, sin nombre ni `cardId`.
 3. **Un solo escritor por mesa.** Procesa las acciones de una mesa en una cola secuencial para evitar condiciones de carrera.
 4. **Todo es validable.** Cada mensaje entra por un esquema (Zod, unión discriminada por `type`); lo que no valida se rechaza con un código de error.

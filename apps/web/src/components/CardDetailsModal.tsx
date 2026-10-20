@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { getCardDisplayData, type CardDefinition, type CardRuling } from '@mtgc/shared';
-import { X, RefreshCw, ShieldCheck, ShieldAlert, Sparkles, User, Calendar, BookOpen } from 'lucide-react';
+import {
+  X,
+  RefreshCw,
+  ShieldCheck,
+  ShieldAlert,
+  Sparkles,
+  User,
+  Calendar,
+  BookOpen,
+} from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 interface CardDetailsModalProps {
@@ -49,7 +58,8 @@ export const FormattedSymbol: React.FC<{ symbol: string; size?: 'sm' | 'md' }> =
       if (/^\d+$/.test(cleanSym)) {
         colorClasses = 'bg-[#9D9D9F] text-slate-950 border-[#7D7D7F] font-bold';
       } else if (cleanSym.includes('/')) {
-        colorClasses = 'bg-gradient-to-r from-amber-200 to-sky-600 text-slate-950 text-[8px] font-bold border-slate-600';
+        colorClasses =
+          'bg-gradient-to-r from-amber-200 to-sky-600 text-slate-950 text-[8px] font-bold border-slate-600';
       }
       break;
   }
@@ -161,7 +171,8 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
   const displayType = display.typeLine;
   const displayOracle = display.oracleText;
   const displayPower = activeFace?.power !== undefined ? activeFace.power : card.power;
-  const displayToughness = activeFace?.toughness !== undefined ? activeFace.toughness : card.toughness;
+  const displayToughness =
+    activeFace?.toughness !== undefined ? activeFace.toughness : card.toughness;
   const displayLoyalty = activeFace?.loyalty !== undefined ? activeFace.loyalty : card.loyalty;
   const displayArtist = activeFace?.artist || card.artist || 'Unknown Artist';
   const displayImage =
@@ -249,7 +260,10 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                 className="text-[11px] text-slate-400 flex items-center justify-center space-x-1.5"
               >
                 <User className="w-3.5 h-3.5 text-amber-400/80" />
-                <span>Ilustrado por <strong className="text-slate-200 font-semibold">{displayArtist}</strong></span>
+                <span>
+                  Ilustrado por{' '}
+                  <strong className="text-slate-200 font-semibold">{displayArtist}</strong>
+                </span>
               </div>
               <div
                 data-testid="card-details-copyright"
@@ -305,28 +319,44 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
             {/* Metadatos: Set, Rareza, Número e Identidad de Color */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
               <div className="bg-slate-800/40 border border-slate-800 p-2 rounded-lg">
-                <span className="text-slate-400 block text-[9px] uppercase font-bold">Edición / Set</span>
-                <span data-testid="card-details-set" className="font-semibold text-slate-200 truncate block" title={card.setName || card.set}>
+                <span className="text-slate-400 block text-[9px] uppercase font-bold">
+                  Edición / Set
+                </span>
+                <span
+                  data-testid="card-details-set"
+                  className="font-semibold text-slate-200 truncate block"
+                  title={card.setName || card.set}
+                >
                   {card.setName || card.set?.toUpperCase() || 'Commander'}
                 </span>
               </div>
 
               <div className="bg-slate-800/40 border border-slate-800 p-2 rounded-lg">
                 <span className="text-slate-400 block text-[9px] uppercase font-bold">Rareza</span>
-                <span data-testid="card-details-rarity" className="font-semibold text-amber-300 capitalize">
+                <span
+                  data-testid="card-details-rarity"
+                  className="font-semibold text-amber-300 capitalize"
+                >
                   {card.rarity || 'Desconocida'}
                 </span>
               </div>
 
               <div className="bg-slate-800/40 border border-slate-800 p-2 rounded-lg">
-                <span className="text-slate-400 block text-[9px] uppercase font-bold">Coleccionista</span>
-                <span data-testid="card-details-collector-number" className="font-mono text-slate-300">
+                <span className="text-slate-400 block text-[9px] uppercase font-bold">
+                  Coleccionista
+                </span>
+                <span
+                  data-testid="card-details-collector-number"
+                  className="font-mono text-slate-300"
+                >
                   {card.collectorNumber ? `#${card.collectorNumber}` : '-'}
                 </span>
               </div>
 
               <div className="bg-slate-800/40 border border-slate-800 p-2 rounded-lg">
-                <span className="text-slate-400 block text-[9px] uppercase font-bold">Legalidad</span>
+                <span className="text-slate-400 block text-[9px] uppercase font-bold">
+                  Legalidad
+                </span>
                 <span
                   data-testid="card-details-legality"
                   className={`font-bold inline-flex items-center space-x-1 ${
@@ -404,11 +434,17 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                           <Calendar className="w-3 h-3 text-amber-500/70" />
                           <span>{ruling.publishedAt}</span>
                         </span>
-                        <span data-testid="ruling-source" className="uppercase font-mono text-[9px] bg-slate-800/80 px-1 rounded">
+                        <span
+                          data-testid="ruling-source"
+                          className="uppercase font-mono text-[9px] bg-slate-800/80 px-1 rounded"
+                        >
                           {ruling.source}
                         </span>
                       </div>
-                      <div data-testid="ruling-comment" className="text-slate-300 leading-relaxed select-text">
+                      <div
+                        data-testid="ruling-comment"
+                        className="text-slate-300 leading-relaxed select-text"
+                      >
                         <FormattedOracleText text={ruling.comment} />
                       </div>
                     </div>

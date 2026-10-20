@@ -35,7 +35,7 @@ function createMockRoomState(): RoomState {
         selectedDeck: {
           id: 'deck-1',
           name: 'Atraxa EDH',
-          commanderName: 'Atraxa, Praetors\' Voice',
+          commanderName: "Atraxa, Praetors' Voice",
           isValid: true,
           warnings: [],
           cardCount: 100,
@@ -110,8 +110,12 @@ test('Punto 4: Tirada de iniciativa automatica en servidor sin accion de cliente
   assert.strictEqual(session.state.players['p2']?.initiativeRoll, rollP2);
 
   // Logs recorded the rolls
-  const p1Log = session.state.logs.find(l => l.playerId === 'p1' && l.actionText.includes('tiró un D20 de iniciativa'));
-  const p2Log = session.state.logs.find(l => l.playerId === 'p2' && l.actionText.includes('tiró un D20 de iniciativa'));
+  const p1Log = session.state.logs.find(
+    l => l.playerId === 'p1' && l.actionText.includes('tiró un D20 de iniciativa'),
+  );
+  const p2Log = session.state.logs.find(
+    l => l.playerId === 'p2' && l.actionText.includes('tiró un D20 de iniciativa'),
+  );
   assert.ok(p1Log, 'Alice log recorded D20 roll');
   assert.ok(p2Log, 'Bob log recorded D20 roll');
 
@@ -183,7 +187,9 @@ test('Punto 4: Boton de dados libres en la barra continua siendo tirado por el s
   const rollCoin = session.rollDice('p1', 2);
   assert.ok(rollCoin === 1 || rollCoin === 2);
 
-  const diceLog = session.state.logs.find(l => l.playerId === 'p1' && l.actionText.includes('tiró un D20'));
+  const diceLog = session.state.logs.find(
+    l => l.playerId === 'p1' && l.actionText.includes('tiró un D20'),
+  );
   assert.ok(diceLog);
 
   session.cleanup();

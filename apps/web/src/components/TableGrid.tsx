@@ -184,7 +184,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
             1,
             0,
             expandedPlayerId === localPlayerId,
-            false
+            false,
           )}
         </div>
       ) : (
@@ -210,10 +210,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
                     <span className="text-[10px] text-amber-500 font-mono">EN VIVO</span>
                   </div>
                   <div className="flex-1 overflow-hidden p-2">
-                    <GameLogAndChat
-                      logs={roomState.logs}
-                      onAction={onAction}
-                    />
+                    <GameLogAndChat logs={roomState.logs} onAction={onAction} />
                   </div>
                 </div>
               );
@@ -221,10 +218,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
 
             if (slot.player) {
               return (
-                <div
-                  key={slot.player.id}
-                  className="h-full w-full relative bg-slate-950"
-                >
+                <div key={slot.player.id} className="h-full w-full relative bg-slate-950">
                   {renderPlayerCell(slot.player, slot.row, slot.col, isLocal, isTwoPlayerMode)}
                 </div>
               );

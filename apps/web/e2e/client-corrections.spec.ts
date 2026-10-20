@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 
 const SCREENSHOT_DIR = path.resolve(
-  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
 );
 
 // Helper para crear sala, unir jugadores, importar mazos y dejarlos listos
@@ -12,7 +12,7 @@ async function setupTestPod(
   width = 1920,
   height = 1080,
   roomPrefix = 'PodTest',
-  startGame = true
+  startGame = true,
 ) {
   const contexts: any[] = [];
   const pages: any[] = [];
@@ -42,7 +42,10 @@ async function setupTestPod(
   }
   await expect(hostOnlineBadge).toBeVisible({ timeout: 15000 });
 
-  await hostPage.fill('input[placeholder="Ej. Pod Casual 4 Jugadores"]', `${roomPrefix} ${podSize}p`);
+  await hostPage.fill(
+    'input[placeholder="Ej. Pod Casual 4 Jugadores"]',
+    `${roomPrefix} ${podSize}p`,
+  );
   await hostPage.fill('input[placeholder="Ej. Planeswalker 1"]', 'Alice (Host)');
   await hostPage.selectOption('select', String(podSize));
   await hostPage.click('button:has-text("Crear Mesa y Obtener Código")');
@@ -64,7 +67,7 @@ async function setupTestPod(
   }
   await hostPage.fill(
     'textarea',
-    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Command Tower\n1 Cultivate\n1 Counterspell\n1 Swords to Plowshares\n1 Demonic Tutor\n1 Rhystic Study\n1 Smothering Tithe\n10 Plains\n10 Island\n10 Swamp\n10 Forest`
+    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Command Tower\n1 Cultivate\n1 Counterspell\n1 Swords to Plowshares\n1 Demonic Tutor\n1 Rhystic Study\n1 Smothering Tithe\n10 Plains\n10 Island\n10 Swamp\n10 Forest`,
   );
   await hostPage.click('button:has-text("Validar lista")');
   await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -88,7 +91,10 @@ async function setupTestPod(
     await expect(onlineBadge).toBeVisible({ timeout: 15000 });
     await pPage.click('button:has-text("Unirse con Código")');
     await pPage.fill('input[placeholder="EJ: 5HQWNJ"]', roomCode);
-    await pPage.fill('input[placeholder="Ej. Jugador Invitado"]', `${playerNames[pIdx - 1]} (P${pIdx + 1})`);
+    await pPage.fill(
+      'input[placeholder="Ej. Jugador Invitado"]',
+      `${playerNames[pIdx - 1]} (P${pIdx + 1})`,
+    );
     await pPage.click('button:has-text("Entrar a la Mesa")');
 
     await pPage.click('button:has-text("Seleccionar / Importar Mazo")');
@@ -100,7 +106,7 @@ async function setupTestPod(
     }
     await pPage.fill(
       'textarea',
-      `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Lightning Bolt\n1 Dark Ritual\n1 Vampiric Tutor\n1 Blood Artist\n10 Mountain\n10 Swamp\n10 Plains`
+      `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Lightning Bolt\n1 Dark Ritual\n1 Vampiric Tutor\n1 Blood Artist\n10 Mountain\n10 Swamp\n10 Plains`,
     );
     await pPage.click('button:has-text("Validar lista")');
     await pPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -121,7 +127,9 @@ async function completeMulliganPhase(pages: any[]) {
   const podSize = pages.length;
 
   // 1. Esperar a que la fase de iniciativa concluya y se abra el modal de apertura en el host
-  await expect(pages[0].locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 25000 });
+  await expect(pages[0].locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+    timeout: 25000,
+  });
 
   // 2. Para cada jugador en orden, resolver su decisión de quedarse con la mano
   for (let step = 0; step < podSize; step++) {
@@ -146,8 +154,12 @@ async function completeMulliganPhase(pages: any[]) {
 
   // 3. Esperar a que el modal de mulligan y el overlay de iniciativa desaparezcan en todas las páginas
   for (const page of pages) {
-    await expect(page.locator('[data-testid="opening-hand-modal"]')).not.toBeVisible({ timeout: 15000 });
-    await expect(page.locator('[data-testid="initiative-overlay"]')).not.toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="opening-hand-modal"]')).not.toBeVisible({
+      timeout: 15000,
+    });
+    await expect(page.locator('[data-testid="initiative-overlay"]')).not.toBeVisible({
+      timeout: 15000,
+    });
   }
 
   // 4. Confirmar que la mesa total y las cartas de mano están presentes
@@ -156,11 +168,19 @@ async function completeMulliganPhase(pages: any[]) {
 }
 
 test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', () => {
-
-  test('Punto 4: Tirada de dados de iniciativa 100% automática en servidor, sin botones en cliente', async ({ browser }) => {
+  test('Punto 4: Tirada de dados de iniciativa 100% automática en servidor, sin botones en cliente', async ({
+    browser,
+  }) => {
     test.setTimeout(60000);
     // Iniciamos pod pero no iniciamos la partida en el helper para inspeccionar el clic y la transición
-    const { contexts, pages, hostPage } = await setupTestPod(browser, 2, 1920, 1080, 'DicePod', false);
+    const { contexts, pages, hostPage } = await setupTestPod(
+      browser,
+      2,
+      1920,
+      1080,
+      'DicePod',
+      false,
+    );
 
     try {
       const startGameBtn = hostPage.locator('button:has-text("INICIAR PARTIDA")');
@@ -168,7 +188,9 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
       await startGameBtn.click();
 
       // Verificar que durante la iniciativa NO existe ningún botón para tirar iniciativa en el cliente
-      const rollBtn = hostPage.locator('button:has-text("LANZAR D20"), button:has-text("Tirar D20")');
+      const rollBtn = hostPage.locator(
+        'button:has-text("LANZAR D20"), button:has-text("Tirar D20")',
+      );
       await expect(rollBtn).toHaveCount(0);
 
       // Si el overlay de iniciativa está presente, capturarlo
@@ -180,7 +202,9 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
       }
 
       // La fase avanza automáticamente hacia mulligan sin que ningún cliente presione nada
-      await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 15000 });
+      await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+        timeout: 15000,
+      });
 
       // Completamos mulligan para llegar a mesa
       await completeMulliganPhase(pages);
@@ -197,14 +221,20 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
     }
   });
 
-  test('Punto 5: Fase de Mulligan autoritativa con Regla de Londres, modal Opening Hand, privacidad y reconexión (2 jugadores)', async ({ browser }) => {
+  test('Punto 5: Fase de Mulligan autoritativa con Regla de Londres, modal Opening Hand, privacidad y reconexión (2 jugadores)', async ({
+    browser,
+  }) => {
     test.setTimeout(120000);
     const { contexts, pages } = await setupTestPod(browser, 2, 1920, 1080, 'MulliganPod2p', true);
 
     try {
       // 1. Esperar a que concluya iniciativa y se abra OpeningHandModal en ambos jugadores
-      await expect(pages[0].locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 20000 });
-      await expect(pages[1].locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 20000 });
+      await expect(pages[0].locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+        timeout: 20000,
+      });
+      await expect(pages[1].locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+        timeout: 20000,
+      });
 
       // Captura de modal de apertura
       await pages[0].screenshot({
@@ -220,7 +250,12 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
       // 3. Comprobar orden de decisión: exactamente un jugador tiene los botones activos
       let activeDecidingPage = pages[0];
       let waitingPage = pages[1];
-      if (!(await pages[0].locator('[data-testid="mulligan-btn"]').isVisible({ timeout: 1000 }).catch(() => false))) {
+      if (
+        !(await pages[0]
+          .locator('[data-testid="mulligan-btn"]')
+          .isVisible({ timeout: 1000 })
+          .catch(() => false))
+      ) {
         activeDecidingPage = pages[1];
         waitingPage = pages[0];
       }
@@ -229,7 +264,9 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
       await expect(waitingPage.locator('text=está decidiendo su mano')).toBeVisible();
 
       // Privacidad: comprobar que el rival (waitingPage) no tiene en su abanico ni DOM nombres de cartas del jugador activo
-      const activeHandCards = await activeDecidingPage.locator('[data-testid="mulligan-card"]').all();
+      const activeHandCards = await activeDecidingPage
+        .locator('[data-testid="mulligan-card"]')
+        .all();
       expect(activeHandCards.length).toBe(7);
 
       // 4. El jugador activo ve "El primer mulligan es gratis"
@@ -238,22 +275,32 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
       // Primer mulligan (gratis, k=1, devuelve 0 cartas al fondo)
       await activeDecidingPage.locator('[data-testid="mulligan-btn"]').click();
       await activeDecidingPage.waitForTimeout(1000);
-      await expect(activeDecidingPage.locator('text=Si te quedas, pondrás 0 carta(s) al fondo')).toBeVisible();
+      await expect(
+        activeDecidingPage.locator('text=Si te quedas, pondrás 0 carta(s) al fondo'),
+      ).toBeVisible();
 
       // Segundo mulligan (k=2, devuelve 1 carta al fondo)
       await activeDecidingPage.locator('[data-testid="mulligan-btn"]').click();
       await activeDecidingPage.waitForTimeout(1000);
-      await expect(activeDecidingPage.locator('text=Si te quedas, pondrás 1 carta(s) al fondo')).toBeVisible();
+      await expect(
+        activeDecidingPage.locator('text=Si te quedas, pondrás 1 carta(s) al fondo'),
+      ).toBeVisible();
 
       // Tercer mulligan (k=3, devuelve 2 cartas al fondo)
       await activeDecidingPage.locator('[data-testid="mulligan-btn"]').click();
       await activeDecidingPage.waitForTimeout(1000);
-      await expect(activeDecidingPage.locator('text=Si te quedas, pondrás 2 carta(s) al fondo')).toBeVisible();
+      await expect(
+        activeDecidingPage.locator('text=Si te quedas, pondrás 2 carta(s) al fondo'),
+      ).toBeVisible();
 
       // Reconexión durante la fase de mulligan: recargar la página del jugador activo y comprobar que se restaura el modal
       await activeDecidingPage.reload();
-      await expect(activeDecidingPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 15000 });
-      await expect(activeDecidingPage.locator('text=Si te quedas, pondrás 2 carta(s) al fondo')).toBeVisible();
+      await expect(activeDecidingPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+        timeout: 15000,
+      });
+      await expect(
+        activeDecidingPage.locator('text=Si te quedas, pondrás 2 carta(s) al fondo'),
+      ).toBeVisible();
 
       // Seleccionar 2 cartas para enviar al fondo
       const mulliganCards = activeDecidingPage.locator('[data-testid="mulligan-card"]');
@@ -274,7 +321,9 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
 
       // Transición automática a playing y la mano aparece en el abanico
       await expect(pages[0].locator('#mesa-total')).toBeVisible({ timeout: 15000 });
-      await expect(pages[0].locator('[data-dock-zone="hand"] [data-hand-card="true"]')).not.toHaveCount(0);
+      await expect(
+        pages[0].locator('[data-dock-zone="hand"] [data-hand-card="true"]'),
+      ).not.toHaveCount(0);
     } finally {
       for (const ctx of contexts) {
         await ctx.close().catch(() => {});
@@ -282,14 +331,18 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
     }
   });
 
-  test('Punto 5: Fase de Mulligan con 4 jugadores: orden de decisión secuencial y manos ocultas', async ({ browser }) => {
+  test('Punto 5: Fase de Mulligan con 4 jugadores: orden de decisión secuencial y manos ocultas', async ({
+    browser,
+  }) => {
     test.setTimeout(120000);
     const { contexts, pages } = await setupTestPod(browser, 4, 1920, 1080, 'MulliganPod4p', true);
 
     try {
       // 1. Esperar a que concluya iniciativa y se abra OpeningHandModal en las 4 páginas
       for (const p of pages) {
-        await expect(p.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 20000 });
+        await expect(p.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+          timeout: 20000,
+        });
       }
 
       // 2. Resolver decisiones en estricto orden de turno (1 a 4)
@@ -310,7 +363,12 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
         expect(decidingPage).not.toBeNull();
         // Verificar que exactamente 1 jugador tiene los controles de decisión activos
         const activeKeepButtons = await Promise.all(
-          pages.map(p => p.locator('[data-testid="keep-btn"]').isVisible().catch(() => false))
+          pages.map(p =>
+            p
+              .locator('[data-testid="keep-btn"]')
+              .isVisible()
+              .catch(() => false),
+          ),
         );
         const countActive = activeKeepButtons.filter(Boolean).length;
         expect(countActive).toBe(1);
@@ -329,9 +387,13 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
 
       // 3. Los 4 se quedaron: transición automática a playing en todas las páginas
       for (const p of pages) {
-        await expect(p.locator('[data-testid="opening-hand-modal"]')).not.toBeVisible({ timeout: 15000 });
+        await expect(p.locator('[data-testid="opening-hand-modal"]')).not.toBeVisible({
+          timeout: 15000,
+        });
         await expect(p.locator('#mesa-total')).toBeVisible({ timeout: 10000 });
-        await expect(p.locator('[data-dock-zone="hand"] [data-hand-card="true"]')).not.toHaveCount(0);
+        await expect(p.locator('[data-dock-zone="hand"] [data-hand-card="true"]')).not.toHaveCount(
+          0,
+        );
       }
     } finally {
       for (const ctx of contexts) {
@@ -340,7 +402,9 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
     }
   });
 
-  test('Punto 1: Fantasma remoto nace en la posición real de la carta (<= 2px) y sin frames en el centro de la mesa', async ({ browser }) => {
+  test('Punto 1: Fantasma remoto nace en la posición real de la carta (<= 2px) y sin frames en el centro de la mesa', async ({
+    browser,
+  }) => {
     test.setTimeout(60000);
     const { contexts, pages } = await setupTestPod(browser, 2, 1920, 1080, 'GhostPod', true);
 
@@ -360,7 +424,9 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
       console.log('[Test 3] Clicking right button on handCard (force: true)');
       await handCard.click({ button: 'right', force: true });
       console.log('[Test 3] Waiting for context-to-battlefield');
-      await pageA.locator('[data-testid="context-to-battlefield"]').waitFor({ state: 'visible', timeout: 5000 });
+      await pageA
+        .locator('[data-testid="context-to-battlefield"]')
+        .waitFor({ state: 'visible', timeout: 5000 });
       console.log('[Test 3] Clicking context-to-battlefield');
       await pageA.locator('[data-testid="context-to-battlefield"]').click();
       await pageA.waitForTimeout(1000);
@@ -395,7 +461,9 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
       // Contexto A arrastra la carta
       await pageA.mouse.move(rectA!.x + rectA!.width / 2, rectA!.y + rectA!.height / 2);
       await pageA.mouse.down();
-      await pageA.mouse.move(rectA!.x + rectA!.width / 2 + 50, rectA!.y + rectA!.height / 2 + 50, { steps: 5 });
+      await pageA.mouse.move(rectA!.x + rectA!.width / 2 + 50, rectA!.y + rectA!.height / 2 + 50, {
+        steps: 5,
+      });
       await pageA.waitForTimeout(300);
 
       // Comprobar frames grabados en B
@@ -405,19 +473,28 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
       if (frames.length > 0) {
         const firstFrame = frames[0];
         const centerDist = Math.hypot(firstFrame.x - 960, firstFrame.y - 540);
-        console.log(`[Punto 1] Primer frame fantasma: (${firstFrame.x.toFixed(1)}, ${firstFrame.y.toFixed(1)}), distancia al centro: ${centerDist.toFixed(1)} px`);
-        
+        console.log(
+          `[Punto 1] Primer frame fantasma: (${firstFrame.x.toFixed(1)}, ${firstFrame.y.toFixed(1)}), distancia al centro: ${centerDist.toFixed(1)} px`,
+        );
+
         // Coincidencia con la posición original de la carta
         const cardInitialCenterX = rectA!.x + rectA!.width / 2;
         const cardInitialCenterY = rectA!.y + rectA!.height / 2;
-        const initialDiff = Math.hypot(firstFrame.x - cardInitialCenterX, firstFrame.y - cardInitialCenterY);
-        console.log(`[Punto 1] Coincidencia de primer frame con posición original de la carta: ${initialDiff.toFixed(2)} px`);
+        const initialDiff = Math.hypot(
+          firstFrame.x - cardInitialCenterX,
+          firstFrame.y - cardInitialCenterY,
+        );
+        console.log(
+          `[Punto 1] Coincidencia de primer frame con posición original de la carta: ${initialDiff.toFixed(2)} px`,
+        );
         expect(initialDiff).toBeLessThanOrEqual(5); // medido exactamente en el primer frame
         expect(centerDist).toBeGreaterThan(50); // no nace en el centro de la mesa
 
         // Verificar que no hay frames intermedios cerca del centro de la mesa (960, 540)
         const centerFrames = frames.filter((f: any) => Math.hypot(f.x - 960, f.y - 540) < 30);
-        console.log(`[Punto 1] Frames intermedios cerca del centro de la mesa: ${centerFrames.length}`);
+        console.log(
+          `[Punto 1] Frames intermedios cerca del centro de la mesa: ${centerFrames.length}`,
+        );
         expect(centerFrames.length).toBe(0);
       }
 
@@ -434,10 +511,19 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
     }
   });
 
-  test('Punto 2: Enviar al campo desde el menú contextual posiciona en el centro de la sección propia con cascada (2, 4 y 6 jugadores)', async ({ browser }) => {
+  test('Punto 2: Enviar al campo desde el menú contextual posiciona en el centro de la sección propia con cascada (2, 4 y 6 jugadores)', async ({
+    browser,
+  }) => {
     test.setTimeout(180000);
     for (const podSize of [2, 4, 6]) {
-      const { contexts, pages } = await setupTestPod(browser, podSize, 1920, 1080, `FieldCascade${podSize}p`, true);
+      const { contexts, pages } = await setupTestPod(
+        browser,
+        podSize,
+        1920,
+        1080,
+        `FieldCascade${podSize}p`,
+        true,
+      );
       try {
         await completeMulliganPhase(pages);
 
@@ -467,8 +553,12 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
         expect(box2).not.toBeNull();
         const diffX = Math.abs(box2!.x - box1!.x);
         const diffY = Math.abs(box2!.y - box1!.y);
-        console.log(`[Punto 2 - ${podSize}p] Carta 1 box: (${box1!.x.toFixed(2)}, ${box1!.y.toFixed(2)}), Carta 2 box: (${box2!.x.toFixed(2)}, ${box2!.y.toFixed(2)})`);
-        console.log(`[Punto 2 - ${podSize}p] Desplazamiento medido en cascada: diffX = ${diffX.toFixed(2)} px, diffY = ${diffY.toFixed(2)} px`);
+        console.log(
+          `[Punto 2 - ${podSize}p] Carta 1 box: (${box1!.x.toFixed(2)}, ${box1!.y.toFixed(2)}), Carta 2 box: (${box2!.x.toFixed(2)}, ${box2!.y.toFixed(2)})`,
+        );
+        console.log(
+          `[Punto 2 - ${podSize}p] Desplazamiento medido en cascada: diffX = ${diffX.toFixed(2)} px, diffY = ${diffY.toFixed(2)} px`,
+        );
         expect(diffX + diffY).toBeGreaterThan(5);
 
         // Verificación de centrado exacto con tamaño real de la carta (Punto 4):
@@ -498,9 +588,15 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
 
         const centerDiffX = Math.abs(cardCenterX - expectedPlayableCenterX);
         const centerDiffY = Math.abs(cardCenterY - expectedPlayableCenterY);
-        console.log(`[Punto 4 - ${podSize}p] Dimensiones renderizadas: (${box1!.width.toFixed(2)}x${box1!.height.toFixed(2)})`);
-        console.log(`[Punto 4 - ${podSize}p] Centro medido carta: (${cardCenterX.toFixed(2)}, ${cardCenterY.toFixed(2)}) vs Centro jugable: (${expectedPlayableCenterX.toFixed(2)}, ${expectedPlayableCenterY.toFixed(2)})`);
-        console.log(`[Punto 4 - ${podSize}p] Diferencia al centro jugable: dX = ${centerDiffX.toFixed(2)} px, dY = ${centerDiffY.toFixed(2)} px`);
+        console.log(
+          `[Punto 4 - ${podSize}p] Dimensiones renderizadas: (${box1!.width.toFixed(2)}x${box1!.height.toFixed(2)})`,
+        );
+        console.log(
+          `[Punto 4 - ${podSize}p] Centro medido carta: (${cardCenterX.toFixed(2)}, ${cardCenterY.toFixed(2)}) vs Centro jugable: (${expectedPlayableCenterX.toFixed(2)}, ${expectedPlayableCenterY.toFixed(2)})`,
+        );
+        console.log(
+          `[Punto 4 - ${podSize}p] Diferencia al centro jugable: dX = ${centerDiffX.toFixed(2)} px, dY = ${centerDiffY.toFixed(2)} px`,
+        );
         expect(centerDiffX).toBeLessThanOrEqual(1.0);
         expect(centerDiffY).toBeLessThanOrEqual(1.0);
 
@@ -522,7 +618,9 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
     }
   });
 
-  test('Punto 6 y 7: Biblioteca con submenú Arriba (próxima a robar), Abajo y Posición', async ({ browser }) => {
+  test('Punto 6 y 7: Biblioteca con submenú Arriba (próxima a robar), Abajo y Posición', async ({
+    browser,
+  }) => {
     test.setTimeout(60000);
     const { contexts, pages } = await setupTestPod(browser, 2, 1920, 1080, 'LibraryPod', true);
 
@@ -563,9 +661,14 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
       await page.waitForTimeout(600);
 
       // Comprobar que la carta se retiró de la mano y quedó en la biblioteca
-      const handCardsRemaining = await page.locator('[data-from-zone="hand"]').filter({ hasText: cardName2 }).count();
+      const handCardsRemaining = await page
+        .locator('[data-from-zone="hand"]')
+        .filter({ hasText: cardName2 })
+        .count();
       expect(handCardsRemaining).toBe(0);
-      console.log(`[Punto 2] Carta ${cardName2} insertada en biblioteca con posición aleatoria CSPRNG`);
+      console.log(
+        `[Punto 2] Carta ${cardName2} insertada en biblioteca con posición aleatoria CSPRNG`,
+      );
 
       // Captura
       await page.screenshot({
@@ -578,7 +681,9 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
     }
   });
 
-  test('Punto 7: Revelar carta envía identidad solo al destinatario y genera bitácora según destino', async ({ browser }) => {
+  test('Punto 7: Revelar carta envía identidad solo al destinatario y genera bitácora según destino', async ({
+    browser,
+  }) => {
     test.setTimeout(120000);
     const { contexts, pages } = await setupTestPod(browser, 2, 1920, 1080, 'RevealPod', true);
 
@@ -643,12 +748,13 @@ test.describe('Puntos de Corrección del Cliente (1 a 7 & Playwright Suite)', ()
       }
 
       // Registro público dice 'reveló "Nombre" a todos'
-      await expect(pageB.locator(`text=reveló "${cardNameA2}" a todos`)).toBeVisible({ timeout: 5000 });
+      await expect(pageB.locator(`text=reveló "${cardNameA2}" a todos`)).toBeVisible({
+        timeout: 5000,
+      });
     } finally {
       for (const ctx of contexts) {
         await ctx.close().catch(() => {});
       }
     }
   });
-
 });

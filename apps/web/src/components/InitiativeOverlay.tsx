@@ -42,7 +42,9 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
       }
       if (pZones.library) {
         for (const card of pZones.library) {
-          const smallUrl = card.definition?.imageUrlSmall || card.definition?.imageUrlNormal?.replace('/normal/', '/small/');
+          const smallUrl =
+            card.definition?.imageUrlSmall ||
+            card.definition?.imageUrlNormal?.replace('/normal/', '/small/');
           if (smallUrl) imageLoaderQueue.enqueue(smallUrl, 1);
         }
       }
@@ -65,7 +67,10 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
   const isResolved = roomState.status === 'playing' || !!initiative?.resolvedOrder;
 
   return (
-    <div data-testid="initiative-overlay" className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 select-none">
+    <div
+      data-testid="initiative-overlay"
+      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 select-none"
+    >
       <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl p-6 shadow-2xl space-y-6 relative overflow-hidden">
         {/* Glow accent */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -115,7 +120,9 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
             {localHasRolled && !isSpectator && (
               <div className="flex items-center space-x-2 text-xs text-slate-400">
                 <span>Tu tirada de D20:</span>
-                <strong className="text-amber-400 font-mono text-sm">🎲 {initiative?.rolls[localPlayerId]}</strong>
+                <strong className="text-amber-400 font-mono text-sm">
+                  🎲 {initiative?.rolls[localPlayerId]}
+                </strong>
               </div>
             )}
           </div>
@@ -128,8 +135,7 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
             const hasRolled = roll !== undefined;
             const isLocal = player.id === localPlayerId;
             const isTied =
-              initiative?.activeTiedPlayerIds &&
-              initiative.activeTiedPlayerIds.includes(player.id);
+              initiative?.activeTiedPlayerIds && initiative.activeTiedPlayerIds.includes(player.id);
 
             return (
               <div
@@ -140,23 +146,17 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
               >
                 <div className="space-y-0.5">
                   <div className="flex items-center space-x-1.5">
-                    <span className="text-xs font-mono font-bold text-slate-500">
-                      #{idx + 1}
-                    </span>
+                    <span className="text-xs font-mono font-bold text-slate-500">#{idx + 1}</span>
                     <span className="font-bold text-sm text-white flex items-center space-x-1">
                       <span>{player.name}</span>
-                      {player.isHost && (
-                        <Crown className="w-3.5 h-3.5 text-amber-400 inline" />
-                      )}
+                      {player.isHost && <Crown className="w-3.5 h-3.5 text-amber-400 inline" />}
                     </span>
                   </div>
                   <div className="text-[11px] text-slate-400">
                     {player.selectedDeck?.commanderName || 'Comandante'}
                   </div>
                   {isTied && !isResolved && (
-                    <div className="text-[10px] font-bold text-amber-400">
-                      En desempate
-                    </div>
+                    <div className="text-[10px] font-bold text-amber-400">En desempate</div>
                   )}
                 </div>
 
@@ -200,7 +200,9 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
                   >
                     <span className="font-mono">{rank + 1}.º</span>
                     <span>{p?.name || pid}</span>
-                    {isFirst && <span className="text-[10px] font-black uppercase">(Juega 1.º)</span>}
+                    {isFirst && (
+                      <span className="text-[10px] font-black uppercase">(Juega 1.º)</span>
+                    )}
                   </div>
                 );
               })}

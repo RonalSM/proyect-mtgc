@@ -2,17 +2,22 @@ import { test, expect } from '@playwright/test';
 import path from 'node:path';
 import fs from 'node:fs';
 
-const ARTIFACTS_DIR = 'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa';
+const ARTIFACTS_DIR =
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa';
 
 test.describe('Punto 8: Mazos Listos de Commander', () => {
-  test('Lobby muestra mazos listos primero, con arte, colores, lista desplegable, memoria en localStorage y soporte multijugador del mismo mazo', async ({ browser }) => {
+  test('Lobby muestra mazos listos primero, con arte, colores, lista desplegable, memoria en localStorage y soporte multijugador del mismo mazo', async ({
+    browser,
+  }) => {
     const context1 = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
     const page1 = await context1.newPage();
 
     // 1. Host enters and creates a room
     await page1.goto('http://localhost:3000');
     await page1.waitForLoadState('networkidle');
-    await expect(page1.locator('h1')).toContainText('Mesa Virtual de Commander', { timeout: 15000 });
+    await expect(page1.locator('h1')).toContainText('Mesa Virtual de Commander', {
+      timeout: 15000,
+    });
 
     // Create room
     await page1.fill('input[placeholder="Ej. Pod Casual 4 Jugadores"]', 'Mesa Presets EDH');
@@ -38,13 +43,25 @@ test.describe('Punto 8: Mazos Listos de Commander', () => {
 
     // Verify presence of 8 preset decks
     const presetKrenko = page1.locator('[data-testid="select-preset-deck-preset-krenko-mob-boss"]');
-    const presetGoreclaw = page1.locator('[data-testid="select-preset-deck-preset-goreclaw-terror-of-qal-sisma"]');
-    const presetBrago = page1.locator('[data-testid="select-preset-deck-preset-brago-king-eternal"]');
-    const presetMeren = page1.locator('[data-testid="select-preset-deck-preset-meren-of-clan-nel-toth"]');
-    const presetWyleth = page1.locator('[data-testid="select-preset-deck-preset-wyleth-soul-of-steel"]');
+    const presetGoreclaw = page1.locator(
+      '[data-testid="select-preset-deck-preset-goreclaw-terror-of-qal-sisma"]',
+    );
+    const presetBrago = page1.locator(
+      '[data-testid="select-preset-deck-preset-brago-king-eternal"]',
+    );
+    const presetMeren = page1.locator(
+      '[data-testid="select-preset-deck-preset-meren-of-clan-nel-toth"]',
+    );
+    const presetWyleth = page1.locator(
+      '[data-testid="select-preset-deck-preset-wyleth-soul-of-steel"]',
+    );
     const presetNiv = page1.locator('[data-testid="select-preset-deck-preset-niv-mizzet-parun"]');
-    const presetAlela = page1.locator('[data-testid="select-preset-deck-preset-alela-artful-provocateur"]');
-    const presetKozilek = page1.locator('[data-testid="select-preset-deck-preset-kozilek-the-great-distortion"]');
+    const presetAlela = page1.locator(
+      '[data-testid="select-preset-deck-preset-alela-artful-provocateur"]',
+    );
+    const presetKozilek = page1.locator(
+      '[data-testid="select-preset-deck-preset-kozilek-the-great-distortion"]',
+    );
 
     await expect(presetKrenko).toBeVisible();
     await expect(presetGoreclaw).toBeVisible();
@@ -60,7 +77,9 @@ test.describe('Punto 8: Mazos Listos de Commander', () => {
     await expect(toggleListBtn).toBeVisible();
     await toggleListBtn.click();
 
-    const cardListContent = page1.locator('[data-testid="cardlist-content-preset-krenko-mob-boss"]');
+    const cardListContent = page1.locator(
+      '[data-testid="cardlist-content-preset-krenko-mob-boss"]',
+    );
     await expect(cardListContent).toBeVisible();
     await expect(cardListContent).toContainText('Krenko, Mob Boss');
     await expect(cardListContent).toContainText('Sol Ring');
@@ -89,14 +108,18 @@ test.describe('Punto 8: Mazos Listos de Commander', () => {
     const context2 = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
     const page2 = await context2.newPage();
     await page2.goto('http://localhost:3000');
-    await expect(page2.locator('h1')).toContainText('Mesa Virtual de Commander', { timeout: 15000 });
+    await expect(page2.locator('h1')).toContainText('Mesa Virtual de Commander', {
+      timeout: 15000,
+    });
 
     await page2.click('button:has-text("Unirse con Código")');
     await page2.fill('input[placeholder="EJ: 5HQWNJ"]', roomCode);
     await page2.fill('input[placeholder="Ej. Jugador Invitado"]', 'Jugador 2 (Rival)');
     await page2.click('button:has-text("Entrar a la Mesa")');
 
-    await expect(page2.locator('button:has-text("Código:")').first()).toBeVisible({ timeout: 15000 });
+    await expect(page2.locator('button:has-text("Código:")').first()).toBeVisible({
+      timeout: 15000,
+    });
 
     // Player 2 opens modal
     await page2.click('button:has-text("Seleccionar / Importar Mazo")');

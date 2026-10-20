@@ -76,21 +76,13 @@ export const RevealedCardModal: React.FC<RevealedCardModalProps> = ({
                 : `${fromPlayerName} reveló una carta a todos`}
             </span>
           </div>
-          <h3 className="text-base font-extrabold text-white">
-            {card.definition.name}
-          </h3>
-          <p className="text-xs text-slate-400 font-medium">
-            {card.definition.typeLine}
-          </p>
+          <h3 className="text-base font-extrabold text-white">{card.definition.name}</h3>
+          <p className="text-xs text-slate-400 font-medium">{card.definition.typeLine}</p>
         </div>
 
         {/* Imagen de la carta en alta resolución */}
         <div className="w-56 aspect-[5/7] rounded-xl overflow-hidden border border-slate-700 shadow-2xl relative bg-slate-950 flex-shrink-0">
-          <CardDisplay
-            card={card.definition}
-            isFaceDown={false}
-            allowFaceToggle={false}
-          />
+          <CardDisplay card={card.definition} isFaceDown={false} allowFaceToggle={false} />
         </div>
 
         {/* Botón de confirmación / cierre */}

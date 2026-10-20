@@ -6,7 +6,7 @@ async function setupPodForPointerTest(
   podSize: number,
   width: number,
   height: number,
-  roomPrefix: string
+  roomPrefix: string,
 ) {
   const contexts: any[] = [];
   const pages: any[] = [];
@@ -24,7 +24,10 @@ async function setupPodForPointerTest(
   await hostPage.goto('http://localhost:3000');
   await expect(hostPage.locator('text=Servidor en línea')).toBeVisible({ timeout: 15000 });
 
-  await hostPage.fill('input[placeholder="Ej. Pod Casual 4 Jugadores"]', `${roomPrefix} ${podSize}p ${width}x${height}`);
+  await hostPage.fill(
+    'input[placeholder="Ej. Pod Casual 4 Jugadores"]',
+    `${roomPrefix} ${podSize}p ${width}x${height}`,
+  );
   await hostPage.fill('input[placeholder="Ej. Planeswalker 1"]', 'Player 1 (Host)');
   await hostPage.selectOption('select', String(podSize));
   await hostPage.click('button:has-text("Crear Mesa y Obtener Código")');
@@ -45,7 +48,7 @@ async function setupPodForPointerTest(
   }
   await hostPage.fill(
     'textarea',
-    `// Comandante\n1 Sol Ring *CMDR*\n\n// Mazo\n1 Arcane Signet\n1 Command Tower\n10 Plains\n10 Island\n10 Swamp\n10 Forest\n10 Mountain`
+    `// Comandante\n1 Sol Ring *CMDR*\n\n// Mazo\n1 Arcane Signet\n1 Command Tower\n10 Plains\n10 Island\n10 Swamp\n10 Forest\n10 Mountain`,
   );
   await hostPage.click('button:has-text("Validar lista")');
   await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -60,7 +63,10 @@ async function setupPodForPointerTest(
     await expect(pPage.locator('text=Servidor en línea')).toBeVisible({ timeout: 15000 });
     await pPage.click('button:has-text("Unirse con Código")');
     await pPage.fill('input[placeholder="EJ: 5HQWNJ"]', roomCode);
-    await pPage.fill('input[placeholder="Ej. Jugador Invitado"]', `${guestNames[pIdx - 1]} (P${pIdx + 1})`);
+    await pPage.fill(
+      'input[placeholder="Ej. Jugador Invitado"]',
+      `${guestNames[pIdx - 1]} (P${pIdx + 1})`,
+    );
     await pPage.click('button:has-text("Entrar a la Mesa")');
 
     await pPage.click('button:has-text("Seleccionar / Importar Mazo")');
@@ -72,7 +78,7 @@ async function setupPodForPointerTest(
     }
     await pPage.fill(
       'textarea',
-      `// Comandante\n1 Sol Ring *CMDR*\n\n// Mazo\n1 Arcane Signet\n1 Command Tower\n10 Plains\n10 Island\n10 Swamp\n10 Forest\n10 Mountain`
+      `// Comandante\n1 Sol Ring *CMDR*\n\n// Mazo\n1 Arcane Signet\n1 Command Tower\n10 Plains\n10 Island\n10 Swamp\n10 Forest\n10 Mountain`,
     );
     await pPage.click('button:has-text("Validar lista")');
     await pPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -85,7 +91,9 @@ async function setupPodForPointerTest(
   await startGameBtn.click();
 
   // Completar mulligan para todos
-  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 25000 });
+  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+    timeout: 25000,
+  });
   for (let step = 0; step < podSize; step++) {
     for (let attempt = 0; attempt < 30; attempt++) {
       let clicked = false;
@@ -106,8 +114,12 @@ async function setupPodForPointerTest(
   }
 
   for (const page of pages) {
-    await expect(page.locator('[data-testid="opening-hand-modal"]')).not.toBeVisible({ timeout: 15000 });
-    await expect(page.locator('[data-testid="initiative-overlay"]')).not.toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="opening-hand-modal"]')).not.toBeVisible({
+      timeout: 15000,
+    });
+    await expect(page.locator('[data-testid="initiative-overlay"]')).not.toBeVisible({
+      timeout: 15000,
+    });
   }
 
   await expect(hostPage.locator('#mesa-total')).toBeVisible({ timeout: 10000 });
@@ -118,7 +130,7 @@ async function setupPodForPointerTest(
 async function measurePointerTracking(
   page: any,
   cardLocator: any,
-  testCaseName: string
+  testCaseName: string,
 ): Promise<{ maxDiffX: number; maxDiffY: number; thresholdDiffX: number; thresholdDiffY: number }> {
   await cardLocator.waitFor({ state: 'visible', timeout: 10000 });
   const preBox = await cardLocator.boundingBox();
@@ -151,7 +163,10 @@ async function measurePointerTracking(
 
   // 1. Desplazamiento inferior al umbral de 8px (3px en X y Y: distancia ~4.24px)
   await page.mouse.move(grabX + 3, grabY + 3);
-  const subThresholdOverlay = await page.locator('[data-drag-overlay="true"]').isVisible().catch(() => false);
+  const subThresholdOverlay = await page
+    .locator('[data-drag-overlay="true"]')
+    .isVisible()
+    .catch(() => false);
   expect(subThresholdOverlay).toBeFalsy();
 
   // 2. Comprobación del frame justo al superar el umbral de 8px (7px en X y Y: distancia ~9.9px > 8px)
@@ -225,16 +240,24 @@ async function measurePointerTracking(
   await page.waitForTimeout(300);
 
   console.log(
-    `[Punto 3 - ${testCaseName}] Umbral 8px: dx=${thresholdDiffX.toFixed(2)}px, dy=${thresholdDiffY.toFixed(2)}px | Trayectoria max: dx=${maxDiffX.toFixed(2)}px, dy=${maxDiffY.toFixed(2)}px (<= 1.0px PASS)`
+    `[Punto 3 - ${testCaseName}] Umbral 8px: dx=${thresholdDiffX.toFixed(2)}px, dy=${thresholdDiffY.toFixed(2)}px | Trayectoria max: dx=${maxDiffX.toFixed(2)}px, dy=${maxDiffY.toFixed(2)}px (<= 1.0px PASS)`,
   );
 
   return { maxDiffX, maxDiffY, thresholdDiffX, thresholdDiffY };
 }
 
 test.describe('Punto 3: Seguimiento estricto del puntero durante el arrastre (<= 1px)', () => {
-  test('2 Jugadores @ 1920x1080: Mano, Mesa (enderezada y girada) y Mesa Expandida', async ({ browser }) => {
+  test('2 Jugadores @ 1920x1080: Mano, Mesa (enderezada y girada) y Mesa Expandida', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
-    const { contexts, hostPage } = await setupPodForPointerTest(browser, 2, 1920, 1080, 'Ptr2p1080');
+    const { contexts, hostPage } = await setupPodForPointerTest(
+      browser,
+      2,
+      1920,
+      1080,
+      'Ptr2p1080',
+    );
 
     try {
       // 1. Desde la mano (enderezada, última carta de la mano sin solape)
@@ -274,9 +297,17 @@ test.describe('Punto 3: Seguimiento estricto del puntero durante el arrastre (<=
     }
   });
 
-  test('4 Jugadores @ 1920x1080: Mano, Mesa (enderezada y girada) y Mesa Expandida', async ({ browser }) => {
+  test('4 Jugadores @ 1920x1080: Mano, Mesa (enderezada y girada) y Mesa Expandida', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
-    const { contexts, hostPage } = await setupPodForPointerTest(browser, 4, 1920, 1080, 'Ptr4p1080');
+    const { contexts, hostPage } = await setupPodForPointerTest(
+      browser,
+      4,
+      1920,
+      1080,
+      'Ptr4p1080',
+    );
 
     try {
       // 1. Desde la mano
@@ -316,7 +347,9 @@ test.describe('Punto 3: Seguimiento estricto del puntero durante el arrastre (<=
     }
   });
 
-  test('2 Jugadores @ 1366x768: Mano, Mesa (enderezada y girada) y Mesa Expandida', async ({ browser }) => {
+  test('2 Jugadores @ 1366x768: Mano, Mesa (enderezada y girada) y Mesa Expandida', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, hostPage } = await setupPodForPointerTest(browser, 2, 1366, 768, 'Ptr2p768');
 
@@ -358,7 +391,9 @@ test.describe('Punto 3: Seguimiento estricto del puntero durante el arrastre (<=
     }
   });
 
-  test('4 Jugadores @ 1366x768: Mano, Mesa (enderezada y girada) y Mesa Expandida', async ({ browser }) => {
+  test('4 Jugadores @ 1366x768: Mano, Mesa (enderezada y girada) y Mesa Expandida', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, hostPage } = await setupPodForPointerTest(browser, 4, 1366, 768, 'Ptr4p768');
 

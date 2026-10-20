@@ -7,7 +7,10 @@ import { Play, Trash2, Sparkles, Maximize2, Eye } from 'lucide-react';
 import { useCardPreview } from '../context/CardPreviewContext';
 import { getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
 
-export function getRevealedTooltipForOwner(revealedTo: string[] | 'all' | undefined, roomState?: RoomState): string {
+export function getRevealedTooltipForOwner(
+  revealedTo: string[] | 'all' | undefined,
+  roomState?: RoomState,
+): string {
   if (!revealedTo) return '';
   if (revealedTo === 'all') return 'Revelada a todos';
   if (Array.isArray(revealedTo)) {
@@ -48,7 +51,7 @@ interface HandCardItemProps {
   onContextMenu: (e: React.MouseEvent) => void;
   showPreview: (
     card: CardDefinition,
-    posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent
+    posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent,
   ) => void;
   hidePreview: () => void;
 }
@@ -76,11 +79,8 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
   const offset = index - (totalCards - 1) / 2;
   const rot = Math.max(-15, Math.min(15, offset * 3.5));
   const transY = Math.abs(offset) * 2;
-  const overlapRatio = totalCards > 3
-    ? Math.min(0.85, 0.48 + (totalCards - 3) * 0.065)
-    : totalCards > 1
-    ? 0.35
-    : 0;
+  const overlapRatio =
+    totalCards > 3 ? Math.min(0.85, 0.48 + (totalCards - 3) * 0.065) : totalCards > 1 ? 0.35 : 0;
 
   return (
     <div
@@ -95,7 +95,7 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
       onClick={onSelect}
       onDoubleClick={onZoom}
       onContextMenu={onContextMenu}
-      onMouseEnter={(e) => !isDragging && showPreview(card.definition, e)}
+      onMouseEnter={e => !isDragging && showPreview(card.definition, e)}
       onMouseLeave={hidePreview}
       style={{
         zIndex: isSelected ? 60 : index + 5,
@@ -110,8 +110,8 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
         isSelected
           ? '-translate-y-7 z-[60] rotate-0'
           : !isDragging
-          ? 'hover:-translate-y-5 hover:rotate-0 hover:z-50 transition-all duration-200'
-          : ''
+            ? 'hover:-translate-y-5 hover:rotate-0 hover:z-50 transition-all duration-200'
+            : ''
       }`}
     >
       {/* Card Face & Frame */}
@@ -120,9 +120,7 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
           width: 'var(--card-w)',
           minWidth: 'var(--card-w)',
           height: '100%',
-          transform: !isSelected
-            ? `rotate(${rot}deg) translateY(${transY}px)`
-            : 'none',
+          transform: !isSelected ? `rotate(${rot}deg) translateY(${transY}px)` : 'none',
         }}
         className={`relative rounded-[6px] overflow-hidden border shadow-lg transition-transform duration-200 aspect-[5/7] bg-slate-900 ${
           isSelected
@@ -195,7 +193,10 @@ export const HandFan: React.FC<HandFanProps> = ({
 }) => {
   const { showPreview, hidePreview } = useCardPreview();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-  const [contextMenu, setContextMenu] = useState<{ card: CardInstance; pos: { x: number; y: number } } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    card: CardInstance;
+    pos: { x: number; y: number };
+  } | null>(null);
 
   // Play card from hand to battlefield (Punto 2: al centro de la sección del propio jugador con cascada)
   const handlePlayToBattlefield = (card: CardInstance, e?: React.MouseEvent) => {
@@ -258,11 +259,8 @@ export const HandFan: React.FC<HandFanProps> = ({
     }
 
     const cardsToShow = cards.length > 0 ? cards.length : Math.min(handCount, 7);
-    const oppOverlap = cardsToShow > 3
-      ? Math.min(0.85, 0.50 + (cardsToShow - 3) * 0.065)
-      : cardsToShow > 1
-      ? 0.40
-      : 0;
+    const oppOverlap =
+      cardsToShow > 3 ? Math.min(0.85, 0.5 + (cardsToShow - 3) * 0.065) : cardsToShow > 1 ? 0.4 : 0;
 
     return (
       <div className="relative flex items-end justify-center select-none pt-2 pb-0.5 overflow-visible">
@@ -278,7 +276,8 @@ export const HandFan: React.FC<HandFanProps> = ({
             const offset = i - (cardsToShow - 1) / 2;
             const rot = Math.max(-14, Math.min(14, offset * 4.5));
             const transY = Math.abs(offset) * 2;
-            const isRevealed = card && card.revealedTo && card.definition?.scryfallId !== 'hidden_card';
+            const isRevealed =
+              card && card.revealedTo && card.definition?.scryfallId !== 'hidden_card';
 
             if (isRevealed && card) {
               return (
@@ -289,10 +288,10 @@ export const HandFan: React.FC<HandFanProps> = ({
                   data-hand-card="true"
                   data-revealed-card="true"
                   data-from-zone="hand"
-                  onMouseEnter={(e) => showPreview(card.definition, e)}
+                  onMouseEnter={e => showPreview(card.definition, e)}
                   onMouseLeave={hidePreview}
                   onDoubleClick={() => onZoomCard && onZoomCard(card)}
-                  onContextMenu={(e) => {
+                  onContextMenu={e => {
                     e.preventDefault();
                     e.stopPropagation();
                     setContextMenu({ card, pos: { x: e.clientX, y: e.clientY } });
@@ -392,7 +391,9 @@ export const HandFan: React.FC<HandFanProps> = ({
             totalCards={numCards}
             isSelected={selectedCardId === card.instanceId}
             roomState={roomState}
-            onSelect={() => setSelectedCardId(selectedCardId === card.instanceId ? null : card.instanceId)}
+            onSelect={() =>
+              setSelectedCardId(selectedCardId === card.instanceId ? null : card.instanceId)
+            }
             onZoom={() => onZoomCard && onZoomCard(card)}
             onPlay={e => handlePlayToBattlefield(card, e)}
             onDiscard={e => handleDiscardToGraveyard(card, e)}

@@ -123,7 +123,9 @@ export class CardSearchService {
     // 2. Check if name is in Spanish (preseeded or DB locales)
     const lowerTrimmed = trimmed.toLowerCase();
     const preseededLocale = Object.values(PRESEEDED_SPANISH_LOCALES).find(l =>
-      exact ? l.printedName.toLowerCase() === lowerTrimmed : l.printedName.toLowerCase().includes(lowerTrimmed)
+      exact
+        ? l.printedName.toLowerCase() === lowerTrimmed
+        : l.printedName.toLowerCase().includes(lowerTrimmed),
     );
 
     let spanishOracleId: string | undefined = preseededLocale?.oracleId;

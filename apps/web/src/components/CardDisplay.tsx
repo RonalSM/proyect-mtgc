@@ -46,17 +46,9 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   // Direct cards.scryfall.io URL from localized display data or active face
   const directUrl = (() => {
     if (size === 'small') {
-      return (
-        display.imageUrlSmall ||
-        display.imageUrlNormal ||
-        ''
-      );
+      return display.imageUrlSmall || display.imageUrlNormal || '';
     }
-    return (
-      display.imageUrlNormal ||
-      display.imageUrlSmall ||
-      ''
-    );
+    return display.imageUrlNormal || display.imageUrlSmall || '';
   })();
 
   const [asyncResolvedUrl, setAsyncResolvedUrl] = useState<string | null>(() => {
@@ -167,8 +159,10 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
     );
   }
 
-  const isPendingOrLoading = resolvedImageUrl && (imageStatus === 'pending' || imageStatus === 'loading') && !imageError;
-  const isImageReady = resolvedImageUrl && !imageError && (imageStatus === 'loaded' || imageStatus === 'idle');
+  const isPendingOrLoading =
+    resolvedImageUrl && (imageStatus === 'pending' || imageStatus === 'loading') && !imageError;
+  const isImageReady =
+    resolvedImageUrl && !imageError && (imageStatus === 'loaded' || imageStatus === 'idle');
 
   return (
     <div
@@ -233,7 +227,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
               <button
                 type="button"
                 data-testid="card-retry-image-btn"
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
                   setImageError(false);
                   imageLoaderQueue.retryUrl(resolvedImageUrl);

@@ -154,6 +154,7 @@ La plataforma incluye entre 6 y 8 mazos de Commander predeterminados, 100% legal
 ### Cómo Añadir Nuevos Mazos Listos
 
 Para añadir nuevos mazos predeterminados a la plataforma:
+
 1. Crea un archivo `.txt` en la carpeta `apps/server/prisma/seed/preset-decks/` (por ejemplo `09-mi-nuevo-mazo.txt`).
 2. Sigue el formato estándar con encabezados en español o inglés:
    ```txt

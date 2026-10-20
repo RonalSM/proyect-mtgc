@@ -1,6 +1,6 @@
 ---
 name: mtg-commander-domain
-description: "Reglas y vocabulario del formato Commander (EDH) de Magic: The Gathering para modelar mazos, zonas, vida, daño de comandante, impuesto, identidad de color y validación de mazos. Úsala cuando trabajes con mazos, validación, zonas de juego, contadores, comandante, mulligan, orden de turnos o cualquier lógica del juego, aunque el usuario no mencione las reglas explícitamente."
+description: 'Reglas y vocabulario del formato Commander (EDH) de Magic: The Gathering para modelar mazos, zonas, vida, daño de comandante, impuesto, identidad de color y validación de mazos. Úsala cuando trabajes con mazos, validación, zonas de juego, contadores, comandante, mulligan, orden de turnos o cualquier lógica del juego, aunque el usuario no mencione las reglas explícitamente.'
 ---
 
 # Dominio: Magic: The Gathering, formato Commander

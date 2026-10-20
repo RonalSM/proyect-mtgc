@@ -44,7 +44,7 @@ async function setupTwoPlayerGame(browser: any) {
   }
   await hostPage.fill(
     'textarea',
-    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Command Tower\n1 Cultivate\n1 Counterspell\n1 Swords to Plowshares\n1 Demonic Tutor\n10 Plains\n10 Island\n10 Swamp\n10 Forest`
+    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Command Tower\n1 Cultivate\n1 Counterspell\n1 Swords to Plowshares\n1 Demonic Tutor\n10 Plains\n10 Island\n10 Swamp\n10 Forest`,
   );
   await hostPage.click('button:has-text("Validar lista")');
   await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -67,7 +67,7 @@ async function setupTwoPlayerGame(browser: any) {
   }
   await guestPage.fill(
     'textarea',
-    `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Lightning Bolt\n1 Dark Ritual\n10 Mountain\n10 Swamp\n10 Plains`
+    `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Lightning Bolt\n1 Dark Ritual\n10 Mountain\n10 Swamp\n10 Plains`,
   );
   await guestPage.click('button:has-text("Validar lista")');
   await guestPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -80,7 +80,9 @@ async function setupTwoPlayerGame(browser: any) {
 
   // Completar mulligan
   const pagesArr = [hostPage, guestPage];
-  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 25000 });
+  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+    timeout: 25000,
+  });
   for (let step = 0; step < 2; step++) {
     let clicked = false;
     for (let attempt = 0; attempt < 30; attempt++) {
@@ -115,7 +117,9 @@ test('Punto 1: Reproduce y mide el salto de la carta girada', async ({ browser }
     const handCard = hostPage.locator('[data-from-zone="hand"]').first();
     await handCard.waitFor({ state: 'visible', timeout: 10000 });
     await handCard.click({ button: 'right', force: true });
-    await hostPage.locator('[data-testid="context-to-battlefield"]').waitFor({ state: 'visible', timeout: 5000 });
+    await hostPage
+      .locator('[data-testid="context-to-battlefield"]')
+      .waitFor({ state: 'visible', timeout: 5000 });
     await hostPage.locator('[data-testid="context-to-battlefield"]').click();
     await hostPage.waitForTimeout(1000);
 
@@ -132,7 +136,7 @@ test('Punto 1: Reproduce y mide el salto de la carta girada', async ({ browser }
     await hostPage.waitForTimeout(400);
 
     // 3. MEDICIÓN 1: Antes de agarrar
-    const beforeGrabA = await cardSlotA.evaluate((el) => {
+    const beforeGrabA = await cardSlotA.evaluate(el => {
       const r = el.getBoundingClientRect();
       return {
         left: r.left,
@@ -144,7 +148,7 @@ test('Punto 1: Reproduce y mide el salto de la carta girada', async ({ browser }
       };
     });
 
-    const beforeGrabB = await cardSlotB.evaluate((el) => {
+    const beforeGrabB = await cardSlotB.evaluate(el => {
       const r = el.getBoundingClientRect();
       return {
         left: r.left,
@@ -197,11 +201,16 @@ test('Punto 1: Reproduce y mide el salto de la carta girada', async ({ browser }
     await hostPage.waitForTimeout(100);
 
     // 6. MEDICIÓN 2: Durante el arrastre (overlay en Host A)
-    const overlayLoc = hostPage.locator('[data-drag-overlay="true"] .card-slot-container, .card-slot-container.fixed, div[style*="pointer-events: none"] > .card-slot-container').first();
+    const overlayLoc = hostPage
+      .locator(
+        '[data-drag-overlay="true"] .card-slot-container, .card-slot-container.fixed, div[style*="pointer-events: none"] > .card-slot-container',
+      )
+      .first();
     const duringDragA = await hostPage.evaluate(() => {
       // Buscar el overlay activo
-      const overlayEl = document.querySelector('[data-card-rotator="true"]')?.closest('.card-slot-container') ||
-                        document.querySelector('[data-battlefield-card="true"]');
+      const overlayEl =
+        document.querySelector('[data-card-rotator="true"]')?.closest('.card-slot-container') ||
+        document.querySelector('[data-battlefield-card="true"]');
       // Mejor buscar el elemento con z-index más alto o el clon en body
       const overlays = Array.from(document.querySelectorAll('body > div .card-slot-container'));
       const activeOverlay = overlays[overlays.length - 1];
@@ -230,7 +239,7 @@ test('Punto 1: Reproduce y mide el salto de la carta girada', async ({ browser }
     // Esperar a que la posición optimista y el DOM se sincronicen
     await hostPage.waitForTimeout(200);
 
-    const justAfterDropA = await cardSlotA.evaluate((el) => {
+    const justAfterDropA = await cardSlotA.evaluate(el => {
       const r = el.getBoundingClientRect();
       return {
         left: r.left,
@@ -247,7 +256,9 @@ test('Punto 1: Reproduce y mide el salto de la carta girada', async ({ browser }
 
     // 8. MEDICIÓN 4: Primeros 5 frames del fantasma en Guest B
     const ghostFramesB = await guestPage.evaluate(() => (window as any).__ghostFrames.slice(0, 5));
-    console.log('\n================ MEDICIÓN 4: PRIMEROS 5 FRAMES DEL FANTASMA EN GUEST B ================');
+    console.log(
+      '\n================ MEDICIÓN 4: PRIMEROS 5 FRAMES DEL FANTASMA EN GUEST B ================',
+    );
     console.log('Guest B (primeros 5 frames):', JSON.stringify(ghostFramesB, null, 2));
 
     // 9. CÁLCULO DE DIFERENCIAS Y VERIFICACIÓN DE HIPÓTESIS: (h - w) / 2
@@ -266,24 +277,35 @@ test('Punto 1: Reproduce y mide el salto de la carta girada', async ({ browser }
       const overlayTopDiff = justAfterDropA.top - duringDragA.top;
 
       console.log(`\n[Host Local A al soltar]:`);
-      console.log(`  Overlay Center: (${duringDragA.centerX.toFixed(2)}, ${duringDragA.centerY.toFixed(2)})`);
-      console.log(`  Dropped Card Center: (${justAfterDropA.centerX.toFixed(2)}, ${justAfterDropA.centerY.toFixed(2)})`);
-      console.log(`  Diferencia Centro: dx = ${overlayCenterDiffX.toFixed(2)} px, dy = ${overlayCenterDiffY.toFixed(2)} px`);
-      console.log(`  Diferencia Esquina Superior Izquierda: dLeft = ${overlayLeftDiff.toFixed(2)} px, dTop = ${overlayTopDiff.toFixed(2)} px`);
+      console.log(
+        `  Overlay Center: (${duringDragA.centerX.toFixed(2)}, ${duringDragA.centerY.toFixed(2)})`,
+      );
+      console.log(
+        `  Dropped Card Center: (${justAfterDropA.centerX.toFixed(2)}, ${justAfterDropA.centerY.toFixed(2)})`,
+      );
+      console.log(
+        `  Diferencia Centro: dx = ${overlayCenterDiffX.toFixed(2)} px, dy = ${overlayCenterDiffY.toFixed(2)} px`,
+      );
+      console.log(
+        `  Diferencia Esquina Superior Izquierda: dLeft = ${overlayLeftDiff.toFixed(2)} px, dTop = ${overlayTopDiff.toFixed(2)} px`,
+      );
     }
 
     if (ghostFramesB && ghostFramesB.length > 0) {
       console.log(`\n[Guest Remoto B al iniciar arrastre]:`);
-      console.log(`  Carta original antes de mover: Center = (${beforeGrabB.centerX.toFixed(2)}, ${beforeGrabB.centerY.toFixed(2)}), TopLeft = (${beforeGrabB.left.toFixed(2)}, ${beforeGrabB.top.toFixed(2)})`);
+      console.log(
+        `  Carta original antes de mover: Center = (${beforeGrabB.centerX.toFixed(2)}, ${beforeGrabB.centerY.toFixed(2)}), TopLeft = (${beforeGrabB.left.toFixed(2)}, ${beforeGrabB.top.toFixed(2)})`,
+      );
       ghostFramesB.forEach((gf: any, idx: number) => {
         const dCenterX = gf.centerX - beforeGrabB.centerX;
         const dCenterY = gf.centerY - beforeGrabB.centerY;
         const dLeft = gf.left - beforeGrabB.left;
         const dTop = gf.top - beforeGrabB.top;
-        console.log(`  Frame ${gf.frame}: Center = (${gf.centerX.toFixed(2)}, ${gf.centerY.toFixed(2)}) [dx=${dCenterX.toFixed(2)}, dy=${dCenterY.toFixed(2)}], TopLeft = (${gf.left.toFixed(2)}, ${gf.top.toFixed(2)}) [dLeft=${dLeft.toFixed(2)}, dTop=${dTop.toFixed(2)}]`);
+        console.log(
+          `  Frame ${gf.frame}: Center = (${gf.centerX.toFixed(2)}, ${gf.centerY.toFixed(2)}) [dx=${dCenterX.toFixed(2)}, dy=${dCenterY.toFixed(2)}], TopLeft = (${gf.left.toFixed(2)}, ${gf.top.toFixed(2)}) [dLeft=${dLeft.toFixed(2)}, dTop=${dTop.toFixed(2)}]`,
+        );
       });
     }
-
   } finally {
     for (const ctx of contexts) {
       await ctx.close();

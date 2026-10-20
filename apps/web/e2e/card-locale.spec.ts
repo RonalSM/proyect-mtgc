@@ -2,11 +2,13 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 
 const SCREENSHOT_DIR = path.resolve(
-  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
 );
 
 test.describe('Punto 5 (C.5) - Español Prioritario con Fallback en Inglés', () => {
-  test('Verifica español prioritario en cartas, fallback en inglés y cambio reactivo de idioma', async ({ browser }) => {
+  test('Verifica español prioritario en cartas, fallback en inglés y cambio reactivo de idioma', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
 
     const contexts: any[] = [];
@@ -48,7 +50,7 @@ test.describe('Punto 5 (C.5) - Español Prioritario con Fallback en Inglés', ()
 
     await hostPage.fill(
       'textarea',
-      `// Comandante\n1 Kenrith, the Returned King *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Smothering Tithe\n97 Plains`
+      `// Comandante\n1 Kenrith, the Returned King *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Smothering Tithe\n97 Plains`,
     );
     await hostPage.click('button:has-text("Validar lista")');
     await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -72,7 +74,7 @@ test.describe('Punto 5 (C.5) - Español Prioritario con Fallback en Inglés', ()
     }
     await p2Page.fill(
       'textarea',
-      `// Comandante\n1 Kenrith, the Returned King *CMDR*\n\n// Mazo\n1 Sol Ring\n40 Plains\n40 Forest\n18 Island`
+      `// Comandante\n1 Kenrith, the Returned King *CMDR*\n\n// Mazo\n1 Sol Ring\n40 Plains\n40 Forest\n18 Island`,
     );
     await p2Page.click('button:has-text("Validar lista")');
     await p2Page.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -119,7 +121,11 @@ test.describe('Punto 5 (C.5) - Español Prioritario con Fallback en Inglés', ()
     await expect(cardTitle).toHaveText('Kenrith, el rey devuelto');
 
     // Verify rulings disclaimer in Spanish
-    await expect(hostPage.locator('text=Dictámenes oficiales emitidos por Wizards of the Coast en inglés original.')).toBeVisible();
+    await expect(
+      hostPage.locator(
+        'text=Dictámenes oficiales emitidos por Wizards of the Coast en inglés original.',
+      ),
+    ).toBeVisible();
 
     // Capture Spanish Card Details screenshot
     await hostPage.screenshot({

@@ -69,10 +69,7 @@ export const ExpandedCellView: React.FC<ExpandedCellViewProps> = ({
           onExpandCell={onClose}
         />
         {isLocal ? (
-          <BattlefieldCanvas
-            cards={zones.battlefield}
-            onAction={onAction}
-          />
+          <BattlefieldCanvas cards={zones.battlefield} onAction={onAction} />
         ) : (
           <div className="absolute inset-0 p-4 overflow-hidden pointer-events-auto z-15">
             <div className="flex flex-wrap gap-3">

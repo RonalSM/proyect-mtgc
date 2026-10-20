@@ -3,7 +3,8 @@ import * as path from 'path';
 
 test.describe.configure({ mode: 'serial', timeout: 90000 });
 
-const ARTIFACTS_DIR = 'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa';
+const ARTIFACTS_DIR =
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa';
 
 function computeBufferVariance(buffer: Buffer): number {
   let sum = 0;
@@ -31,9 +32,15 @@ test('Audit Punto 8: Persistent reveal, P/T effective with counters and bases, a
 
   // Listen for console errors
   const consoleErrors: string[] = [];
-  pageA.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(`[A] ${msg.text()}`); });
-  pageB.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(`[B] ${msg.text()}`); });
-  pageC.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(`[C] ${msg.text()}`); });
+  pageA.on('console', msg => {
+    if (msg.type() === 'error') consoleErrors.push(`[A] ${msg.text()}`);
+  });
+  pageB.on('console', msg => {
+    if (msg.type() === 'error') consoleErrors.push(`[B] ${msg.text()}`);
+  });
+  pageC.on('console', msg => {
+    if (msg.type() === 'error') consoleErrors.push(`[C] ${msg.text()}`);
+  });
 
   console.log('\n=== STEP 1: Creating Table and Joining Players ===');
   // 1. Host (Alice) creates table
@@ -54,7 +61,7 @@ test('Audit Punto 8: Persistent reveal, P/T effective with counters and bases, a
   await pageA.click('button:has-text("Importar mi primer mazo")');
   await pageA.fill(
     'textarea',
-    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Llanowar Elves\n1 Birds of Paradise\n10 Forest\n10 Plains`
+    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Llanowar Elves\n1 Birds of Paradise\n10 Forest\n10 Plains`,
   );
   await pageA.click('button:has-text("Validar lista")');
   await pageA.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -71,7 +78,7 @@ test('Audit Punto 8: Persistent reveal, P/T effective with counters and bases, a
   await pageB.click('button:has-text("Importar mi primer mazo")');
   await pageB.fill(
     'textarea',
-    `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n10 Mountain\n10 Swamp`
+    `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n10 Mountain\n10 Swamp`,
   );
   await pageB.click('button:has-text("Validar lista")');
   await pageB.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -88,7 +95,7 @@ test('Audit Punto 8: Persistent reveal, P/T effective with counters and bases, a
   await pageC.click('button:has-text("Importar mi primer mazo")');
   await pageC.fill(
     'textarea',
-    `// Comandante\n1 Urza, Lord High Artificer *CMDR*\n\n// Mazo\n1 Sol Ring\n10 Island\n10 Wastes`
+    `// Comandante\n1 Urza, Lord High Artificer *CMDR*\n\n// Mazo\n1 Sol Ring\n10 Island\n10 Wastes`,
   );
   await pageC.click('button:has-text("Validar lista")');
   await pageC.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -137,7 +144,9 @@ test('Audit Punto 8: Persistent reveal, P/T effective with counters and bases, a
   await revealMenuBtn.click();
 
   // Reveal inline suboptions appear: click Bob
-  const revealToBobBtn = pageA.locator('[data-testid^="context-reveal-player-"]:has-text("Bob")').first();
+  const revealToBobBtn = pageA
+    .locator('[data-testid^="context-reveal-player-"]:has-text("Bob")')
+    .first();
   await expect(revealToBobBtn).toBeVisible({ timeout: 5000 });
   await revealToBobBtn.click();
   await pageA.waitForTimeout(600);
@@ -163,7 +172,9 @@ test('Audit Punto 8: Persistent reveal, P/T effective with counters and bases, a
   // In Bob's view of Alice's hand: Bob sees the card face up persistently with real name and red eye badge!
   const aliceCellOnBob = pageB.locator('[data-player-cell]:has-text("Alice")').first();
   await expect(aliceCellOnBob).toBeVisible({ timeout: 5000 });
-  const bobSeesAliceCard = aliceCellOnBob.locator('[data-dock-zone="hand"] [data-revealed-card="true"]').first();
+  const bobSeesAliceCard = aliceCellOnBob
+    .locator('[data-dock-zone="hand"] [data-revealed-card="true"]')
+    .first();
   await expect(bobSeesAliceCard).toBeVisible({ timeout: 5000 });
   expect(await bobSeesAliceCard.getAttribute('data-card-name')).toBe(aliceCardName);
 
@@ -175,13 +186,17 @@ test('Audit Punto 8: Persistent reveal, P/T effective with counters and bases, a
 
   const shotBobPath = path.join(ARTIFACTS_DIR, 'audit-persistent-reveal-bob.png');
   const bufferBob = await pageB.screenshot({ path: shotBobPath });
-  console.log(`Screenshot Bob sees revealed card: bytes=${bufferBob.length}, variance=${computeBufferVariance(bufferBob).toFixed(1)}`);
+  console.log(
+    `Screenshot Bob sees revealed card: bytes=${bufferBob.length}, variance=${computeBufferVariance(bufferBob).toFixed(1)}`,
+  );
 
   // In Charlie's view of Alice's hand: Charlie is NOT a recipient!
   // Charlie MUST NOT receive the card name and MUST NOT see any card marked revealed!
   const aliceCellOnCharlie = pageC.locator('[data-player-cell]:has-text("Alice")').first();
   await expect(aliceCellOnCharlie).toBeVisible();
-  const charlieRevealedCards = aliceCellOnCharlie.locator('[data-dock-zone="hand"] [data-revealed-card="true"]');
+  const charlieRevealedCards = aliceCellOnCharlie.locator(
+    '[data-dock-zone="hand"] [data-revealed-card="true"]',
+  );
   expect(await charlieRevealedCards.count()).toBe(0);
 
   // Check Charlie's DOM: verify card name was not leaked to Charlie
@@ -191,7 +206,9 @@ test('Audit Punto 8: Persistent reveal, P/T effective with counters and bases, a
 
   const shotCharliePath = path.join(ARTIFACTS_DIR, 'audit-persistent-reveal-charlie.png');
   const bufferCharlie = await pageC.screenshot({ path: shotCharliePath });
-  console.log(`Screenshot Charlie non-recipient: bytes=${bufferCharlie.length}, variance=${computeBufferVariance(bufferCharlie).toFixed(1)}`);
+  console.log(
+    `Screenshot Charlie non-recipient: bytes=${bufferCharlie.length}, variance=${computeBufferVariance(bufferCharlie).toFixed(1)}`,
+  );
 
   // Alice chooses "Dejar de revelar"
   await aliceHandCard.click({ button: 'right', force: true });
@@ -201,10 +218,14 @@ test('Audit Punto 8: Persistent reveal, P/T effective with counters and bases, a
   await pageA.waitForTimeout(500);
 
   // Bob now sees 0 revealed cards from Alice
-  expect(await aliceCellOnBob.locator('[data-dock-zone="hand"] [data-revealed-card="true"]').count()).toBe(0);
+  expect(
+    await aliceCellOnBob.locator('[data-dock-zone="hand"] [data-revealed-card="true"]').count(),
+  ).toBe(0);
   console.log('Unreveal successfully removed visibility from Bob.');
 
-  console.log('\n=== PART 2: P/T Indicator, Counters, Bases, Colors, Asterisk and Negative Values ===');
+  console.log(
+    '\n=== PART 2: P/T Indicator, Counters, Bases, Colors, Asterisk and Negative Values ===',
+  );
   // Alice brings Atraxa from command zone to battlefield
   const cmdCard = pageA.locator('[data-dock-zone="command"] [data-commander-card="true"]').first();
   await expect(cmdCard).toBeVisible({ timeout: 5000 });
@@ -312,7 +333,9 @@ test('Audit Punto 8: Persistent reveal, P/T effective with counters and bases, a
   await pageA.mouse.move(10, 10);
   await pageA.waitForTimeout(200);
 
-  console.log('\n=== PART 4: Exterior Placement in Untapped (0°) and Tapped (90°) Orientations ===');
+  console.log(
+    '\n=== PART 4: Exterior Placement in Untapped (0°) and Tapped (90°) Orientations ===',
+  );
   // Untapped measurement on Atraxa (alone on battlefield): verify badge is strictly outside bottom border
   const untappedGeometry = await pageA.evaluate(() => {
     const card = document.querySelector('[data-battlefield-card="true"][data-card-name*="Atraxa"]');
@@ -386,7 +409,9 @@ test('Audit Punto 8: Persistent reveal, P/T effective with counters and bases, a
   await toBfBtn.click();
   await pageA.waitForTimeout(1000);
 
-  const animatedBfCard = pageA.locator(`[data-battlefield-card="true"][data-card-name="${noPtCardName}"]`).first();
+  const animatedBfCard = pageA
+    .locator(`[data-battlefield-card="true"][data-card-name="${noPtCardName}"]`)
+    .first();
   await expect(animatedBfCard).toBeVisible({ timeout: 5000 });
 
   // Initially has NO P/T indicator
@@ -439,7 +464,7 @@ test('Audit Punto 8: Persistent reveal, P/T effective with counters and bases, a
 
   console.log('\n=== VERIFY ZERO CONSOLE ERRORS ===');
   const cleanErrors = consoleErrors.filter(
-    e => !e.includes('favicon') && !e.includes('Scryfall API error') && !e.includes('401')
+    e => !e.includes('favicon') && !e.includes('Scryfall API error') && !e.includes('401'),
   );
   console.log('Console Errors caught:', cleanErrors);
   expect(cleanErrors.length).toBe(0);

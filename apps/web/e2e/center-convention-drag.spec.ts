@@ -3,7 +3,11 @@ import { test, expect } from '@playwright/test';
 test.describe.configure({ mode: 'serial' });
 
 // Helper para crear sala e iniciar partida con N jugadores en resolución dada
-async function setupGame(browser: any, podSize: number, viewport: { width: number; height: number }) {
+async function setupGame(
+  browser: any,
+  podSize: number,
+  viewport: { width: number; height: number },
+) {
   const contexts = [];
   const pages = [];
 
@@ -42,7 +46,7 @@ async function setupGame(browser: any, podSize: number, viewport: { width: numbe
   }
   await hostPage.fill(
     'textarea',
-    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Command Tower\n10 Plains\n10 Island\n10 Swamp\n10 Forest`
+    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Command Tower\n10 Plains\n10 Island\n10 Swamp\n10 Forest`,
   );
   await hostPage.click('button:has-text("Validar lista")');
   await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -57,7 +61,10 @@ async function setupGame(browser: any, podSize: number, viewport: { width: numbe
     await expect(pPage.locator('text=Servidor en línea')).toBeVisible({ timeout: 15000 });
     await pPage.click('button:has-text("Unirse con Código")');
     await pPage.fill('input[placeholder="EJ: 5HQWNJ"]', roomCode);
-    await pPage.fill('input[placeholder="Ej. Jugador Invitado"]', `${guestNames[pIdx - 1]} (P${pIdx + 1})`);
+    await pPage.fill(
+      'input[placeholder="Ej. Jugador Invitado"]',
+      `${guestNames[pIdx - 1]} (P${pIdx + 1})`,
+    );
     await pPage.click('button:has-text("Entrar a la Mesa")');
 
     await pPage.click('button:has-text("Seleccionar / Importar Mazo")');
@@ -69,7 +76,7 @@ async function setupGame(browser: any, podSize: number, viewport: { width: numbe
     }
     await pPage.fill(
       'textarea',
-      `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Lightning Bolt\n10 Mountain\n10 Swamp\n10 Plains`
+      `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Lightning Bolt\n10 Mountain\n10 Swamp\n10 Plains`,
     );
     await pPage.click('button:has-text("Validar lista")');
     await pPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -82,7 +89,9 @@ async function setupGame(browser: any, podSize: number, viewport: { width: numbe
   await startGameBtn.click();
 
   // Completar mulligan para todos
-  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 25000 });
+  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+    timeout: 25000,
+  });
   for (let step = 0; step < podSize; step++) {
     let clicked = false;
     for (let attempt = 0; attempt < 30; attempt++) {
@@ -115,7 +124,7 @@ async function runDragVerificationSuite(
   testCaseName: string,
   isTapped: boolean,
   targetOffset: { dx: number; dy: number },
-  isExpanded: boolean = false
+  isExpanded: boolean = false,
 ) {
   // Localizadores de la carta
   const cardSlotA = hostPage.locator('[data-battlefield-card="true"]').first();
@@ -249,10 +258,18 @@ async function runDragVerificationSuite(
   const ghostHeightDiff = Math.abs(firstGhostFrame.height - beforeGrabB.height);
 
   console.log(`\n--- [${testCaseName}] Verificación Remoto B (Primeros frames del fantasma) ---`);
-  console.log(`Carta antes: Center=(${beforeGrabB.centerX.toFixed(2)}, ${beforeGrabB.centerY.toFixed(2)}), Dims=${beforeGrabB.width}x${beforeGrabB.height}`);
-  console.log(`Fantasma Frame 1: Center=(${firstGhostFrame.centerX.toFixed(2)}, ${firstGhostFrame.centerY.toFixed(2)}), Dims=${firstGhostFrame.width}x${firstGhostFrame.height}`);
-  console.log(`Diff Centro: dx=${ghostCenterDiffX.toFixed(2)}px, dy=${ghostCenterDiffY.toFixed(2)}px (<= 1.0px)`);
-  console.log(`Diff Dims: dw=${ghostWidthDiff.toFixed(2)}px, dh=${ghostHeightDiff.toFixed(2)}px (0px)`);
+  console.log(
+    `Carta antes: Center=(${beforeGrabB.centerX.toFixed(2)}, ${beforeGrabB.centerY.toFixed(2)}), Dims=${beforeGrabB.width}x${beforeGrabB.height}`,
+  );
+  console.log(
+    `Fantasma Frame 1: Center=(${firstGhostFrame.centerX.toFixed(2)}, ${firstGhostFrame.centerY.toFixed(2)}), Dims=${firstGhostFrame.width}x${firstGhostFrame.height}`,
+  );
+  console.log(
+    `Diff Centro: dx=${ghostCenterDiffX.toFixed(2)}px, dy=${ghostCenterDiffY.toFixed(2)}px (<= 1.0px)`,
+  );
+  console.log(
+    `Diff Dims: dw=${ghostWidthDiff.toFixed(2)}px, dh=${ghostHeightDiff.toFixed(2)}px (0px)`,
+  );
 
   expect(ghostCenterDiffX).toBeLessThanOrEqual(1.0);
   expect(ghostCenterDiffY).toBeLessThanOrEqual(1.0);
@@ -273,9 +290,15 @@ async function runDragVerificationSuite(
   const dropDiffCenterY = Math.abs(firstDropped.centerY - lastOverlay.centerY);
 
   console.log(`--- [${testCaseName}] Verificación Local A (Overlay vs Landed Card al soltar) ---`);
-  console.log(`Último Overlay: Center=(${lastOverlay.centerX.toFixed(2)}, ${lastOverlay.centerY.toFixed(2)}), Dims=${lastOverlay.width}x${lastOverlay.height}`);
-  console.log(`Primer Landed:  Center=(${firstDropped.centerX.toFixed(2)}, ${firstDropped.centerY.toFixed(2)}), Dims=${firstDropped.width}x${firstDropped.height}`);
-  console.log(`Diff al soltar: dx=${dropDiffCenterX.toFixed(2)}px, dy=${dropDiffCenterY.toFixed(2)}px (<= 1.0px)`);
+  console.log(
+    `Último Overlay: Center=(${lastOverlay.centerX.toFixed(2)}, ${lastOverlay.centerY.toFixed(2)}), Dims=${lastOverlay.width}x${lastOverlay.height}`,
+  );
+  console.log(
+    `Primer Landed:  Center=(${firstDropped.centerX.toFixed(2)}, ${firstDropped.centerY.toFixed(2)}), Dims=${firstDropped.width}x${firstDropped.height}`,
+  );
+  console.log(
+    `Diff al soltar: dx=${dropDiffCenterX.toFixed(2)}px, dy=${dropDiffCenterY.toFixed(2)}px (<= 1.0px)`,
+  );
 
   expect(dropDiffCenterX).toBeLessThanOrEqual(1.0);
   expect(dropDiffCenterY).toBeLessThanOrEqual(1.0);
@@ -295,7 +318,9 @@ async function runDragVerificationSuite(
     expect(jy).toBeLessThanOrEqual(1.0);
   }
 
-  console.log(`Máximo salto consecutivo en 500ms post-drop: dx=${maxConsecutiveJumpX.toFixed(2)}px, dy=${maxConsecutiveJumpY.toFixed(2)}px (<= 1.0px PASS)`);
+  console.log(
+    `Máximo salto consecutivo en 500ms post-drop: dx=${maxConsecutiveJumpX.toFixed(2)}px, dy=${maxConsecutiveJumpY.toFixed(2)}px (<= 1.0px PASS)`,
+  );
 
   return {
     ghostCenterDiffX,
@@ -315,21 +340,31 @@ const configs = [
 ];
 
 for (const cfg of configs) {
-  test(`Punto 5: Suite Playwright de arrastre y soltado sin saltos - ${cfg.label}`, async ({ browser }) => {
+  test(`Punto 5: Suite Playwright de arrastre y soltado sin saltos - ${cfg.label}`, async ({
+    browser,
+  }) => {
     test.setTimeout(120000);
 
     console.log(`\n======================================================`);
-    console.log(`INICIANDO SUITE PUNTO 5: ${cfg.label} (${cfg.podSize} jugadores, ${cfg.viewport.width}x${cfg.viewport.height})`);
+    console.log(
+      `INICIANDO SUITE PUNTO 5: ${cfg.label} (${cfg.podSize} jugadores, ${cfg.viewport.width}x${cfg.viewport.height})`,
+    );
     console.log(`======================================================`);
 
-    const { contexts, pages, hostPage, guestPage } = await setupGame(browser, cfg.podSize, cfg.viewport);
+    const { contexts, pages, hostPage, guestPage } = await setupGame(
+      browser,
+      cfg.podSize,
+      cfg.viewport,
+    );
 
     try {
       // 1. Enviar una carta de la mano de Alice al campo de batalla
       const handCard = hostPage.locator('[data-from-zone="hand"]').first();
       await handCard.waitFor({ state: 'visible', timeout: 10000 });
       await handCard.click({ button: 'right', force: true });
-      await hostPage.locator('[data-testid="context-to-battlefield"]').waitFor({ state: 'visible', timeout: 5000 });
+      await hostPage
+        .locator('[data-testid="context-to-battlefield"]')
+        .waitFor({ state: 'visible', timeout: 5000 });
       await hostPage.locator('[data-testid="context-to-battlefield"]').click();
       await hostPage.waitForTimeout(600);
 
@@ -339,13 +374,10 @@ for (const cfg of configs) {
       await expect(cardSlotB).toBeVisible({ timeout: 5000 });
 
       // CASO 1: Carta Enderezada - Reposicionar en la mesa
-      await runDragVerificationSuite(
-        hostPage,
-        guestPage,
-        `${cfg.label} - Mesa Enderezada`,
-        false,
-        { dx: 45, dy: 35 }
-      );
+      await runDragVerificationSuite(hostPage, guestPage, `${cfg.label} - Mesa Enderezada`, false, {
+        dx: 45,
+        dy: 35,
+      });
 
       // CASO 2: Girar carta (Tap) -> Arrastre y soltado de carta girada
       await cardSlotA.dblclick({ force: true });
@@ -358,7 +390,7 @@ for (const cfg of configs) {
         guestPage,
         `${cfg.label} - Mesa Girada (Tapped)`,
         true,
-        { dx: 50, dy: -30 }
+        { dx: 50, dy: -30 },
       );
 
       // CASO 3: Enderezar y volver a girar (Untap -> Tap)
@@ -377,7 +409,7 @@ for (const cfg of configs) {
         guestPage,
         `${cfg.label} - Re-girada (Re-tapped)`,
         true,
-        { dx: -35, dy: 25 }
+        { dx: -35, dy: 25 },
       );
 
       // CASO 4: Cerca de bordes de pantalla y del dock
@@ -387,7 +419,7 @@ for (const cfg of configs) {
         guestPage,
         `${cfg.label} - Bordes de Pantalla y Dock`,
         true,
-        targetNearRight
+        targetNearRight,
       );
 
       // CASO 5: Desde mesa expandida
@@ -402,14 +434,13 @@ for (const cfg of configs) {
           `${cfg.label} - Mesa Expandida`,
           true,
           { dx: 30, dy: 20 },
-          true
+          true,
         );
 
         // Cerrar vista expandida con Escape
         await hostPage.keyboard.press('Escape');
         await hostPage.waitForTimeout(300);
       }
-
     } finally {
       for (const ctx of contexts) {
         await ctx.close().catch(() => {});

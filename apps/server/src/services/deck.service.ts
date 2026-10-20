@@ -39,7 +39,8 @@ const PRESET_METAS: PresetMeta[] = [
     name: 'Krenko - Marea de Trasgos',
     commander: 'Krenko, Mob Boss',
     colorIdentity: ['R'],
-    imageUrl: 'https://cards.scryfall.io/art_crop/front/c/d/cd9fec9d-23c8-4d35-97c1-9499527198fb.jpg',
+    imageUrl:
+      'https://cards.scryfall.io/art_crop/front/c/d/cd9fec9d-23c8-4d35-97c1-9499527198fb.jpg',
   },
   {
     filename: '02-goreclaw-terror-of-qal-sisma.txt',
@@ -47,7 +48,8 @@ const PRESET_METAS: PresetMeta[] = [
     name: 'Goreclaw - Poder Titánico',
     commander: 'Goreclaw, Terror of Qal Sisma',
     colorIdentity: ['G'],
-    imageUrl: 'https://cards.scryfall.io/art_crop/front/3/6/36d456c3-734b-4666-b85e-3405e758dd77.jpg',
+    imageUrl:
+      'https://cards.scryfall.io/art_crop/front/3/6/36d456c3-734b-4666-b85e-3405e758dd77.jpg',
   },
   {
     filename: '03-brago-king-eternal.txt',
@@ -55,7 +57,8 @@ const PRESET_METAS: PresetMeta[] = [
     name: 'Brago - Parpadeo Eterno',
     commander: 'Brago, King Eternal',
     colorIdentity: ['W', 'U'],
-    imageUrl: 'https://cards.scryfall.io/art_crop/front/0/a/0ac3fb08-741a-49e5-9fae-b26819677d24.jpg',
+    imageUrl:
+      'https://cards.scryfall.io/art_crop/front/0/a/0ac3fb08-741a-49e5-9fae-b26819677d24.jpg',
   },
   {
     filename: '04-meren-of-clan-nel-toth.txt',
@@ -63,7 +66,8 @@ const PRESET_METAS: PresetMeta[] = [
     name: 'Meren - Nigromancia Golgari',
     commander: 'Meren of Clan Nel Toth',
     colorIdentity: ['B', 'G'],
-    imageUrl: 'https://cards.scryfall.io/art_crop/front/3/4/3485ec02-1d5c-45eb-a085-e33469292c2e.jpg',
+    imageUrl:
+      'https://cards.scryfall.io/art_crop/front/3/4/3485ec02-1d5c-45eb-a085-e33469292c2e.jpg',
   },
   {
     filename: '05-wyleth-soul-of-steel.txt',
@@ -71,7 +75,8 @@ const PRESET_METAS: PresetMeta[] = [
     name: 'Wyleth - Armamento Boros',
     commander: 'Wyleth, Soul of Steel',
     colorIdentity: ['R', 'W'],
-    imageUrl: 'https://cards.scryfall.io/art_crop/front/7/c/7c5ada8c-98f2-4f9c-bcb5-dfa4f804fbe6.jpg',
+    imageUrl:
+      'https://cards.scryfall.io/art_crop/front/7/c/7c5ada8c-98f2-4f9c-bcb5-dfa4f804fbe6.jpg',
   },
   {
     filename: '06-niv-mizzet-parun.txt',
@@ -79,7 +84,8 @@ const PRESET_METAS: PresetMeta[] = [
     name: 'Niv-Mizzet - Curiosidad Izzet',
     commander: 'Niv-Mizzet, Parun',
     colorIdentity: ['U', 'R'],
-    imageUrl: 'https://cards.scryfall.io/art_crop/front/4/8/4825e7cb-53ae-4e4b-bb37-8d8eb414772c.jpg',
+    imageUrl:
+      'https://cards.scryfall.io/art_crop/front/4/8/4825e7cb-53ae-4e4b-bb37-8d8eb414772c.jpg',
   },
   {
     filename: '07-alela-artful-provocateur.txt',
@@ -87,7 +93,8 @@ const PRESET_METAS: PresetMeta[] = [
     name: 'Alela - Enjambre de Hadas Esper',
     commander: 'Alela, Artful Provocateur',
     colorIdentity: ['W', 'U', 'B'],
-    imageUrl: 'https://cards.scryfall.io/art_crop/front/a/b/abc9e41e-fd03-4b6f-8f44-17ba94fa44f5.jpg',
+    imageUrl:
+      'https://cards.scryfall.io/art_crop/front/a/b/abc9e41e-fd03-4b6f-8f44-17ba94fa44f5.jpg',
   },
   {
     filename: '08-kozilek-the-great-distortion.txt',
@@ -95,7 +102,8 @@ const PRESET_METAS: PresetMeta[] = [
     name: 'Kozilek - Devorador Incoloro',
     commander: 'Kozilek, the Great Distortion',
     colorIdentity: [],
-    imageUrl: 'https://cards.scryfall.io/art_crop/front/f/0/f06fc6e0-b22c-40d3-bb53-d5ec400d921c.jpg',
+    imageUrl:
+      'https://cards.scryfall.io/art_crop/front/f/0/f06fc6e0-b22c-40d3-bb53-d5ec400d921c.jpg',
   },
 ];
 
@@ -232,13 +240,18 @@ export class DeckService {
     // Support user dropping extra .txt decks into presetDir dynamically
     try {
       if (fs.existsSync(presetDir)) {
-        const extraFiles = fs.readdirSync(presetDir).filter(f => f.endsWith('.txt') && !PRESET_METAS.some(m => m.filename === f));
+        const extraFiles = fs
+          .readdirSync(presetDir)
+          .filter(f => f.endsWith('.txt') && !PRESET_METAS.some(m => m.filename === f));
         for (const filename of extraFiles) {
           const filePath = path.join(presetDir, filename);
           const rawText = fs.readFileSync(filePath, 'utf-8');
           const parsed = parseDecklist(rawText);
           const cmdrName = parsed.commanderEntries[0]?.cardName || 'Comandante';
-          const deckId = `preset-${filename.replace('.txt', '').toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+          const deckId = `preset-${filename
+            .replace('.txt', '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '-')}`;
           const cleanName = filename.replace(/^\d+-/, '').replace('.txt', '').replace(/-/g, ' ');
 
           const cmdrCards: CardDefinition[] = parsed.commanderEntries.flatMap(e =>
@@ -250,7 +263,7 @@ export class DeckService {
               colorIdentity: [],
               colors: [],
               legalities: { commander: 'legal' },
-            }))
+            })),
           );
           const mainCards: CardDefinition[] = parsed.maindeckEntries.flatMap(e =>
             Array.from({ length: e.quantity }, (_, q) => ({
@@ -261,7 +274,7 @@ export class DeckService {
               colorIdentity: [],
               colors: [],
               legalities: { commander: 'legal' },
-            }))
+            })),
           );
 
           const enrichedCmdr = await cardLocaleService.enrichCards(cmdrCards, 'es');
@@ -293,7 +306,9 @@ export class DeckService {
     }
 
     this.presetDecks = loadedPresets;
-    console.log(`✅ [DeckService] ${loadedPresets.length} mazos listos (presets) cargados exitosamente.`);
+    console.log(
+      `✅ [DeckService] ${loadedPresets.length} mazos listos (presets) cargados exitosamente.`,
+    );
     return loadedPresets;
   }
 

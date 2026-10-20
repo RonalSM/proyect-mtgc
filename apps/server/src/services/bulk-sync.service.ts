@@ -55,16 +55,11 @@ export class BulkSyncService {
     return this.rulingsByOracleId.size;
   }
 
-  public setRulingsForOracleId(
-    oracleId: string,
-    rulings: RulingItem[],
-  ): void {
+  public setRulingsForOracleId(oracleId: string, rulings: RulingItem[]): void {
     this.rulingsByOracleId.set(oracleId, rulings);
   }
 
-  public async getRulingsByOracleId(
-    oracleId: string,
-  ): Promise<RulingItem[]> {
+  public async getRulingsByOracleId(oracleId: string): Promise<RulingItem[]> {
     // Si la caché en memoria y la base de datos están vacías, sincronizar de inmediato (Punto 6)
     if (this.rulingsByOracleId.size === 0) {
       await this.syncRulingsIfEmpty().catch(() => {});
@@ -270,11 +265,16 @@ export class BulkSyncService {
 
       this.cronTimer = setTimeout(async () => {
         try {
-          console.log('🌙 [BulkSync Cron] Ejecutando sincronización nocturna de Scryfall (Cartas y Dictámenes)...');
+          console.log(
+            '🌙 [BulkSync Cron] Ejecutando sincronización nocturna de Scryfall (Cartas y Dictámenes)...',
+          );
           await this.syncOracleCards();
           await this.syncRulings();
         } catch (err: any) {
-          console.error('❌ [BulkSync Cron] Error en sincronización nocturna:', err?.message || err);
+          console.error(
+            '❌ [BulkSync Cron] Error en sincronización nocturna:',
+            err?.message || err,
+          );
         } finally {
           if (this.isNightlyCronActive) {
             scheduleNext();
@@ -335,7 +335,11 @@ export class BulkSyncService {
 
       const hasRows = dbCount > 0 || this.rulingsByOracleId.size > 0;
 
-      if (hasRows && this.lastRulingsUpdatedAt && this.lastRulingsUpdatedAt === rulingsDataInfo.updated_at) {
+      if (
+        hasRows &&
+        this.lastRulingsUpdatedAt &&
+        this.lastRulingsUpdatedAt === rulingsDataInfo.updated_at
+      ) {
         console.log(
           `⏭️ [BulkSync] El archivo bulk "rulings" no ha cambiado (${this.lastRulingsUpdatedAt}) y existen datos locales (${dbCount} en DB, ${this.rulingsByOracleId.size} en memoria). Omitiendo descarga innecesaria.`,
         );

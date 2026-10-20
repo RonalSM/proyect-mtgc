@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 
 const SCREENSHOT_DIR = path.resolve(
-  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
 );
 
 // Helper para crear sala, unir jugadores, importar mazos e iniciar partida
@@ -11,7 +11,7 @@ async function setupPod(
   podSize: number,
   width: number,
   height: number,
-  roomPrefix = 'Pod'
+  roomPrefix = 'Pod',
 ) {
   const contexts: any[] = [];
   const pages: any[] = [];
@@ -32,7 +32,10 @@ async function setupPod(
   await hostPage.goto('http://localhost:3000');
   await expect(hostPage.locator('text=Servidor en línea')).toBeVisible({ timeout: 10000 });
 
-  await hostPage.fill('input[placeholder="Ej. Pod Casual 4 Jugadores"]', `${roomPrefix} ${podSize}p ${width}x${height}`);
+  await hostPage.fill(
+    'input[placeholder="Ej. Pod Casual 4 Jugadores"]',
+    `${roomPrefix} ${podSize}p ${width}x${height}`,
+  );
   await hostPage.fill('input[placeholder="Ej. Planeswalker 1"]', 'Nero (Host)');
   await hostPage.selectOption('select', String(podSize));
   await hostPage.click('button:has-text("Crear Mesa y Obtener Código")');
@@ -55,7 +58,7 @@ async function setupPod(
   }
   await hostPage.fill(
     'textarea',
-    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Command Tower\n1 Cultivate\n1 Counterspell\n1 Swords to Plowshares\n1 Demonic Tutor\n10 Plains\n10 Island\n10 Swamp\n10 Forest`
+    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Command Tower\n1 Cultivate\n1 Counterspell\n1 Swords to Plowshares\n1 Demonic Tutor\n10 Plains\n10 Island\n10 Swamp\n10 Forest`,
   );
   await hostPage.click('button:has-text("Validar lista")');
   await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -90,7 +93,7 @@ async function setupPod(
     const cmdName = commanders[pIdx - 1] || 'Kess, Dissident Mage';
     await pPage.fill(
       'textarea',
-      `// Comandante\n1 ${cmdName} *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Lightning Bolt\n1 Dark Ritual\n10 Mountain\n10 Swamp\n10 Island`
+      `// Comandante\n1 ${cmdName} *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Lightning Bolt\n1 Dark Ritual\n10 Mountain\n10 Swamp\n10 Island`,
     );
     await pPage.click('button:has-text("Validar lista")');
     await pPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -151,7 +154,7 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
           podSize,
           res.width,
           res.height,
-          'Matrix'
+          'Matrix',
         );
 
         try {
@@ -213,7 +216,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
               );
             };
 
-            const toolbarEl = document.querySelector('[data-floating-toolbar]') || document.querySelector('.fixed.bottom-3');
+            const toolbarEl =
+              document.querySelector('[data-floating-toolbar]') ||
+              document.querySelector('.fixed.bottom-3');
             const toolbarBox = toolbarEl ? toolbarEl.getBoundingClientRect() : null;
 
             const playerCells = Array.from(document.querySelectorAll('[data-player-cell]'));
@@ -244,14 +249,21 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
                   return;
                 }
                 const r = z.el.getBoundingClientRect();
-                if (r.left < -1 || r.right > window.innerWidth + 2 || r.top < -1 || r.bottom > window.innerHeight + 2) {
+                if (
+                  r.left < -1 ||
+                  r.right > window.innerWidth + 2 ||
+                  r.top < -1 ||
+                  r.bottom > window.innerHeight + 2
+                ) {
                   issues.push(
-                    `Jugador ${playerId}: elemento ${z.name} fuera de viewport (L:${r.left}, R:${r.right}, T:${r.top}, B:${r.bottom})`
+                    `Jugador ${playerId}: elemento ${z.name} fuera de viewport (L:${r.left}, R:${r.right}, T:${r.top}, B:${r.bottom})`,
                   );
                 }
 
                 if (toolbarBox && z.name !== 'nombre' && overlaps(r, toolbarBox)) {
-                  issues.push(`Jugador ${playerId}: elemento ${z.name} solapa con la barra flotante`);
+                  issues.push(
+                    `Jugador ${playerId}: elemento ${z.name} solapa con la barra flotante`,
+                  );
                 }
               });
 
@@ -272,7 +284,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
                     const r1 = s1.el.getBoundingClientRect();
                     const r2 = s2.el.getBoundingClientRect();
                     if (overlaps(r1, r2)) {
-                      issues.push(`Jugador ${playerId}: ${s1.name} solapa horizontalmente con ${s2.name}`);
+                      issues.push(
+                        `Jugador ${playerId}: ${s1.name} solapa horizontalmente con ${s2.name}`,
+                      );
                     }
                   }
                 }
@@ -283,7 +297,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
                 if (s.el) {
                   const r = s.el.getBoundingClientRect();
                   if (r.left < cellRect.left - 2 || r.right > cellRect.right + 2) {
-                    issues.push(`Jugador ${playerId}: ${s.name} desborda división de celda (celda L:${cellRect.left.toFixed(1)}, R:${cellRect.right.toFixed(1)}; elemento L:${r.left.toFixed(1)}, R:${r.right.toFixed(1)})`);
+                    issues.push(
+                      `Jugador ${playerId}: ${s.name} desborda división de celda (celda L:${cellRect.left.toFixed(1)}, R:${cellRect.right.toFixed(1)}; elemento L:${r.left.toFixed(1)}, R:${r.right.toFixed(1)})`,
+                    );
                   }
                 }
               });
@@ -303,7 +319,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
             const handRect = handCard ? handCard.getBoundingClientRect() : null;
             const cmdRect = cmdCard ? cmdCard.getBoundingClientRect() : null;
             return {
-              hand: handRect ? { w: Math.round(handRect.width), h: Math.round(handRect.height) } : null,
+              hand: handRect
+                ? { w: Math.round(handRect.width), h: Math.round(handRect.height) }
+                : null,
               cmd: cmdRect ? { w: Math.round(cmdRect.width), h: Math.round(cmdRect.height) } : null,
             };
           });
@@ -318,7 +336,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
           // -------------------------------------------------------------
           const artifactPath = `C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa/matrix-${podSize}p-${res.name}.png`;
           await hostPage.screenshot({ path: artifactPath });
-          console.log(`[MATRIZ] ${podSize}p a ${res.name} validado. Carta: ${cardDimensions.hand?.w}x${cardDimensions.hand?.h} px. Captura: ${artifactPath}`);
+          console.log(
+            `[MATRIZ] ${podSize}p a ${res.name} validado. Carta: ${cardDimensions.hand?.w}x${cardDimensions.hand?.h} px. Captura: ${artifactPath}`,
+          );
 
           // -------------------------------------------------------------
           // ASSERTION D: Menús / Popovers dentro del viewport (Portal a document.body)
@@ -387,7 +407,7 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
 
           const screenshotPath = path.join(
             SCREENSHOT_DIR,
-            `screenshot-${podSize}p-${res.name}.png`
+            `screenshot-${podSize}p-${res.name}.png`,
           );
           await hostPage.screenshot({ path: screenshotPath, fullPage: false });
           console.log(`[E2E Visual] Captura guardada: screenshot-${podSize}p-${res.name}.png`);
@@ -534,13 +554,7 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     browser,
   }) => {
     test.setTimeout(90000);
-    const { contexts, pages, hostPage: pageA } = await setupPod(
-      browser,
-      2,
-      1920,
-      1080,
-      'Punto9-B'
-    );
+    const { contexts, pages, hostPage: pageA } = await setupPod(browser, 2, 1920, 1080, 'Punto9-B');
     const pageB = pages[1];
 
     try {
@@ -629,7 +643,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 7: Precision subpixel en soltado y dimensiones identicas de overlay (<= 2px)', async ({ browser }) => {
+  test('Punto 7: Precision subpixel en soltado y dimensiones identicas de overlay (<= 2px)', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'PrecTest');
     const page = pages[0];
@@ -675,7 +691,10 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
         width: Math.abs(placedBox1!.width - overlayBoxHand!.width),
         height: Math.abs(placedBox1!.height - overlayBoxHand!.height),
       };
-      console.log('MEDICION_MANO:', JSON.stringify({ overlay: overlayBoxHand, placed: placedBox1, diff: diffHand }));
+      console.log(
+        'MEDICION_MANO:',
+        JSON.stringify({ overlay: overlayBoxHand, placed: placedBox1, diff: diffHand }),
+      );
       expect(diffHand.x).toBeLessThanOrEqual(2);
       expect(diffHand.y).toBeLessThanOrEqual(2);
       expect(diffHand.width).toBeLessThanOrEqual(2);
@@ -705,7 +724,10 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
         width: Math.abs(placedBox2!.width - overlayBoxTable!.width),
         height: Math.abs(placedBox2!.height - overlayBoxTable!.height),
       };
-      console.log('MEDICION_MESA:', JSON.stringify({ overlay: overlayBoxTable, placed: placedBox2, diff: diffTable }));
+      console.log(
+        'MEDICION_MESA:',
+        JSON.stringify({ overlay: overlayBoxTable, placed: placedBox2, diff: diffTable }),
+      );
       expect(diffTable.x).toBeLessThanOrEqual(2);
       expect(diffTable.y).toBeLessThanOrEqual(2);
       expect(diffTable.width).toBeLessThanOrEqual(2);
@@ -736,7 +758,10 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
         width: Math.abs(placedBoxEdge!.width - overlayBoxEdge!.width),
         height: Math.abs(placedBoxEdge!.height - overlayBoxEdge!.height),
       };
-      console.log('MEDICION_BORDE:', JSON.stringify({ overlay: overlayBoxEdge, placed: placedBoxEdge, diff: diffEdge }));
+      console.log(
+        'MEDICION_BORDE:',
+        JSON.stringify({ overlay: overlayBoxEdge, placed: placedBoxEdge, diff: diffEdge }),
+      );
       expect(diffEdge.x).toBeLessThanOrEqual(2);
       expect(diffEdge.y).toBeLessThanOrEqual(2);
       expect(diffEdge.width).toBeLessThanOrEqual(2);
@@ -748,7 +773,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 8: Movimiento en vivo para rivales durante el arrastre multicontexto', async ({ browser }) => {
+  test('Punto 8: Movimiento en vivo para rivales durante el arrastre multicontexto', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'LiveDrag');
     const pageA = pages[0];
@@ -790,7 +817,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
         expect(remoteBoxB.y + remoteBoxB.height).toBeGreaterThanOrEqual(targetMidY - 10);
 
         // Capturas desde ambas perspectivas (Punto 9)
-        await pageA.screenshot({ path: path.join(SCREENSHOT_DIR, 'drag-live-contextA-sender.png') });
+        await pageA.screenshot({
+          path: path.join(SCREENSHOT_DIR, 'drag-live-contextA-sender.png'),
+        });
         await pageB.screenshot({ path: path.join(SCREENSHOT_DIR, 'drag-live-contextB-rival.png') });
       }
 
@@ -826,7 +855,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 1: Sin parpadeo en el jugador receptor B al soltar A (grabacion requestAnimationFrame en B)', async ({ browser }) => {
+  test('Punto 1: Sin parpadeo en el jugador receptor B al soltar A (grabacion requestAnimationFrame en B)', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'NoFlickerB');
     const [pageA, pageB] = pages;
@@ -853,7 +884,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       expect(cardId).toBeTruthy();
 
       // Verificar que Contexto B ve la carta en su posición inicial (500, 300)
-      const placedCardB = pageB.locator(`[data-battlefield-card="true"][data-card-instance-id="${cardId}"]`);
+      const placedCardB = pageB.locator(
+        `[data-battlefield-card="true"][data-card-instance-id="${cardId}"]`,
+      );
       await expect(placedCardB).toBeVisible({ timeout: 10000 });
       const startBoxB = await placedCardB.boundingBox();
       expect(startBoxB).not.toBeNull();
@@ -862,17 +895,27 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       await pageB.evaluate(cId => {
         (window as any).__rafFramesB = [];
         const track = () => {
-          const stationaryEl = document.querySelector(`[data-battlefield-card="true"][data-card-instance-id="${cId}"]`);
-          const ghostEl = document.querySelector(`[data-remote-drag="true"][data-card-instance-id="${cId}"]`);
+          const stationaryEl = document.querySelector(
+            `[data-battlefield-card="true"][data-card-instance-id="${cId}"]`,
+          );
+          const ghostEl = document.querySelector(
+            `[data-remote-drag="true"][data-card-instance-id="${cId}"]`,
+          );
 
           const stationaryRect = stationaryEl ? stationaryEl.getBoundingClientRect() : null;
           const ghostRect = ghostEl ? ghostEl.getBoundingClientRect() : null;
 
-          const stationaryOpacity = stationaryEl ? window.getComputedStyle(stationaryEl).opacity : '0';
+          const stationaryOpacity = stationaryEl
+            ? window.getComputedStyle(stationaryEl).opacity
+            : '0';
           const ghostOpacity = ghostEl ? window.getComputedStyle(ghostEl).opacity : '0';
 
-          const stationaryVisible = stationaryEl && stationaryOpacity !== '0' && (stationaryEl as HTMLElement).offsetWidth > 0;
-          const ghostVisible = ghostEl && ghostOpacity !== '0' && (ghostEl as HTMLElement).offsetWidth > 0;
+          const stationaryVisible =
+            stationaryEl &&
+            stationaryOpacity !== '0' &&
+            (stationaryEl as HTMLElement).offsetWidth > 0;
+          const ghostVisible =
+            ghostEl && ghostOpacity !== '0' && (ghostEl as HTMLElement).offsetWidth > 0;
 
           (window as any).__rafFramesB.push({
             stationaryVisible: !!stationaryVisible,
@@ -938,7 +981,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 2: Arrastrar carta girada (conserva giro, desplazamiento constante, overlay y carta soltada coinciden <= 2px)', async ({ browser }) => {
+  test('Punto 2: Arrastrar carta girada (conserva giro, desplazamiento constante, overlay y carta soltada coinciden <= 2px)', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'TappedDragPod');
     const [pageA, pageB] = pages;
@@ -970,7 +1015,12 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       await pageA.waitForTimeout(600);
 
       // Comprobar que la carta está girada con data-tapped o rotate-90
-      const isRotated = await placedCardA.evaluate(el => el.getAttribute('data-tapped') === 'true' || el.querySelector('.rotate-90') !== null || el.classList.contains('rotate-90'));
+      const isRotated = await placedCardA.evaluate(
+        el =>
+          el.getAttribute('data-tapped') === 'true' ||
+          el.querySelector('.rotate-90') !== null ||
+          el.classList.contains('rotate-90'),
+      );
       expect(isRotated).toBe(true);
 
       const tappedBoxInitial = await placedCardA.boundingBox();
@@ -1035,7 +1085,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       expect(Math.abs(finalPlacedBox!.height - finalOverlayBox!.height)).toBeLessThanOrEqual(2);
 
       // Y también en Contexto B la carta se ve girada y con las mismas dimensiones apaisadas
-      const placedCardB = pageB.locator(`[data-battlefield-card="true"][data-card-instance-id="${cardId}"]`);
+      const placedCardB = pageB.locator(
+        `[data-battlefield-card="true"][data-card-instance-id="${cardId}"]`,
+      );
       await expect(placedCardB).toBeVisible({ timeout: 5000 });
       const placedBoxB = await placedCardB.boundingBox();
       expect(placedBoxB).not.toBeNull();
@@ -1048,7 +1100,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 3: Mesa expandida (sacar carta de la mano, mover carta de la mesa, devolver a la mano)', async ({ browser }) => {
+  test('Punto 3: Mesa expandida (sacar carta de la mano, mover carta de la mesa, devolver a la mano)', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'ExpandedViewPod');
     const page = pages[0];
@@ -1123,7 +1177,11 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
 
       await page.mouse.move(cardBox3!.x + 20, cardBox3!.y + 20);
       await page.mouse.down();
-      await page.mouse.move(handDockBox!.x + handDockBox!.width / 2, handDockBox!.y + handDockBox!.height / 2, { steps: 15 });
+      await page.mouse.move(
+        handDockBox!.x + handDockBox!.width / 2,
+        handDockBox!.y + handDockBox!.height / 2,
+        { steps: 15 },
+      );
       await page.waitForTimeout(200);
       await page.mouse.up();
       await page.waitForTimeout(1000);
@@ -1144,7 +1202,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 4: Recortes en las cartas de la mano eliminados (aspecto 5:7, sin overflow-hidden, cartas completas dentro del viewport al elevarse, calidad normal, capturas zoom 200%)', async ({ browser }) => {
+  test('Punto 4: Recortes en las cartas de la mano eliminados (aspecto 5:7, sin overflow-hidden, cartas completas dentro del viewport al elevarse, calidad normal, capturas zoom 200%)', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'HandCardNoClippingPod');
     const page = pages[0];
@@ -1169,7 +1229,7 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
 
       // 3. Verificar calidad de imagen normal (no pequeña ampliada)
       const handImgs = handCards.locator('img');
-      if (await handImgs.count() > 0) {
+      if ((await handImgs.count()) > 0) {
         const firstImg = handImgs.first();
         const imgSrc = await firstImg.getAttribute('src');
         expect(imgSrc).toBeTruthy();
@@ -1183,7 +1243,7 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       expect(cardBox).not.toBeNull();
       const ratio = cardBox!.width / cardBox!.height;
       // Tolerancia estrecha: 5/7 = 0.714
-      expect(Math.abs(ratio - (5 / 7))).toBeLessThan(0.04);
+      expect(Math.abs(ratio - 5 / 7)).toBeLessThan(0.04);
 
       // 5. Verificar que la carta está completamente dentro del viewport en reposo
       expect(cardBox!.y).toBeGreaterThanOrEqual(0);
@@ -1222,7 +1282,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 5: Propietario original (ownerId) y temporal (holderId) con 2 clientes (transferencia al campo de B, movimiento por B, recuperacion por A y bloqueo a B)', async ({ browser }) => {
+  test('Punto 5: Propietario original (ownerId) y temporal (holderId) con 2 clientes (transferencia al campo de B, movimiento por B, recuperacion por A y bloqueo a B)', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'OwnershipPod');
     const [pageA, pageB] = pages;
@@ -1251,7 +1313,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       const cardId = await cardOnBfA.getAttribute('data-card-instance-id');
       expect(cardId).toBeTruthy();
 
-      const cardOnBfB = pageB.locator(`[data-battlefield-card="true"][data-card-instance-id="${cardId}"]`);
+      const cardOnBfB = pageB.locator(
+        `[data-battlefield-card="true"][data-card-instance-id="${cardId}"]`,
+      );
       await expect(cardOnBfB).toBeVisible({ timeout: 10000 });
 
       // 2. Verificar que en B, la carta tiene data-can-move="true" y clase cursor-pointer
@@ -1320,7 +1384,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 6: Zona de comando droppable, badge tax +/-2, auto-incremento de tax al devolver al comando y consistencia al sacar', async ({ browser }) => {
+  test('Punto 6: Zona de comando droppable, badge tax +/-2, auto-incremento de tax al devolver al comando y consistencia al sacar', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'CommandTaxPod');
     const [pageA] = pages;
@@ -1363,7 +1429,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       await pageA.waitForTimeout(600);
 
       // Comprobar que el comandante volvió a la zona de comando y el tax es +2
-      await expect(pageA.locator('[data-commander-card="true"]').first()).toBeVisible({ timeout: 10000 });
+      await expect(pageA.locator('[data-commander-card="true"]').first()).toBeVisible({
+        timeout: 10000,
+      });
       await expect(taxBadge).toContainText('Tax: +2');
 
       // 5. Subir tax manualmente a +4 usando el botón '+' del badge
@@ -1383,7 +1451,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
         await pageA.waitForTimeout(600);
       }
 
-      await expect(pageA.locator('[data-battlefield-card="true"]').first()).toBeVisible({ timeout: 10000 });
+      await expect(pageA.locator('[data-battlefield-card="true"]').first()).toBeVisible({
+        timeout: 10000,
+      });
       await expect(taxBadge).toContainText('Tax: +4');
 
       // 7. Devolverlo ahora arrastrándolo a la ranura de comando: tax sube automáticamente a +6
@@ -1394,12 +1464,16 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       if (bfBox && slotBox) {
         await pageA.mouse.move(bfBox.x + bfBox.width / 2, bfBox.y + bfBox.height / 2);
         await pageA.mouse.down();
-        await pageA.mouse.move(slotBox.x + slotBox.width / 2, slotBox.y + slotBox.height / 2, { steps: 20 });
+        await pageA.mouse.move(slotBox.x + slotBox.width / 2, slotBox.y + slotBox.height / 2, {
+          steps: 20,
+        });
         await pageA.mouse.up();
         await pageA.waitForTimeout(600);
       }
 
-      await expect(pageA.locator('[data-commander-card="true"]').first()).toBeVisible({ timeout: 10000 });
+      await expect(pageA.locator('[data-commander-card="true"]').first()).toBeVisible({
+        timeout: 10000,
+      });
       await expect(taxBadge).toContainText('Tax: +6');
     } finally {
       for (const ctx of contexts) {
@@ -1408,7 +1482,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 7-Nuevo: Panel de vida con Daño recibido y Vida ganada mediante Enter y comprobación de que +-5 ya no existe en el DOM', async ({ browser }) => {
+  test('Punto 7-Nuevo: Panel de vida con Daño recibido y Vida ganada mediante Enter y comprobación de que +-5 ya no existe en el DOM', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'LifePanelPod');
     const [pageA] = pages;
@@ -1469,7 +1545,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 8-Nuevo: Modal inspector de biblioteca con barra de búsqueda por nombre, filtros por tipo e indicador de sincronización Scryfall', async ({ browser }) => {
+  test('Punto 8-Nuevo: Modal inspector de biblioteca con barra de búsqueda por nombre, filtros por tipo e indicador de sincronización Scryfall', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'LibrarySearchPod');
     const [pageA] = pages;
@@ -1537,7 +1615,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 9-Nuevo: Vista previa de carta centrada en la mitad de pantalla opuesta al cursor sin contenedor, marco ni fondo, con cierre por Escape y retiro de puntero', async ({ browser }) => {
+  test('Punto 9-Nuevo: Vista previa de carta centrada en la mitad de pantalla opuesta al cursor sin contenedor, marco ni fondo, con cierre por Escape y retiro de puntero', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'CardPreviewPod');
     const [pageA] = pages;
@@ -1582,10 +1662,14 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       expect(Math.abs(centerY - 540)).toBeLessThan(60);
 
       // 4. Medir que NO hay caja ni fondo adicional detrás de la imagen (sin marco gris, sin contenedor, sin botón de cerrar)
-      const overlayBg = await previewOverlay.evaluate(el => window.getComputedStyle(el).backgroundColor);
+      const overlayBg = await previewOverlay.evaluate(
+        el => window.getComputedStyle(el).backgroundColor,
+      );
       expect(overlayBg).toMatch(/rgba\(0,\s*0,\s*0,\s*0\)|transparent/);
 
-      const overlayBorder = await previewOverlay.evaluate(el => window.getComputedStyle(el).borderWidth);
+      const overlayBorder = await previewOverlay.evaluate(
+        el => window.getComputedStyle(el).borderWidth,
+      );
       expect(overlayBorder).toBe('0px');
 
       const closeButtons = previewOverlay.locator('button');
@@ -1619,7 +1703,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 5-Legacy: Flujos zona a zona (comandante a mesa, mesa a mano, biblioteca a mesa y mano, pilas)', async ({ browser }) => {
+  test('Punto 5-Legacy: Flujos zona a zona (comandante a mesa, mesa a mano, biblioteca a mesa y mano, pilas)', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'ZoneFlows');
     const page = pages[0];
@@ -1659,7 +1745,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       // Arrastrar desde la mesa hacia el abanico de la mano
       await page.mouse.move(fieldBox!.x + 25, fieldBox!.y + 25);
       await page.mouse.down();
-      await page.mouse.move(handBox!.x + handBox!.width / 2, handBox!.y + handBox!.height / 2, { steps: 20 });
+      await page.mouse.move(handBox!.x + handBox!.width / 2, handBox!.y + handBox!.height / 2, {
+        steps: 20,
+      });
       await page.waitForTimeout(100);
       await page.mouse.up();
       await page.waitForTimeout(800);
@@ -1688,7 +1776,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       await page.waitForTimeout(800);
 
       // Debe haber cartas en el campo
-      await expect(page.locator('[data-battlefield-card="true"]').first()).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('[data-battlefield-card="true"]').first()).toBeVisible({
+        timeout: 5000,
+      });
     } finally {
       for (const ctx of contexts) {
         await ctx.close().catch(() => {});
@@ -1696,7 +1786,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 6: La mano como destino (resalte suave, devolucion a mano, manos ajenas no droppable)', async ({ browser }) => {
+  test('Punto 6: La mano como destino (resalte suave, devolucion a mano, manos ajenas no droppable)', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'HandDropPod');
     const page = pages[0];
@@ -1714,7 +1806,10 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       const handCardBox = await firstHandCard.boundingBox();
       expect(handCardBox).not.toBeNull();
 
-      await page.mouse.move(handCardBox!.x + handCardBox!.width / 2, handCardBox!.y + handCardBox!.height / 2);
+      await page.mouse.move(
+        handCardBox!.x + handCardBox!.width / 2,
+        handCardBox!.y + handCardBox!.height / 2,
+      );
       await page.mouse.down();
       await page.mouse.move(600, 350, { steps: 20 });
       await page.mouse.up();
@@ -1737,7 +1832,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       // Mover el puntero sobre la mano y verificar que se activa el resalte suave
       await page.mouse.move(cardBox!.x + 20, cardBox!.y + 20);
       await page.mouse.down();
-      await page.mouse.move(handBox!.x + handBox!.width / 2, handBox!.y + handBox!.height / 2, { steps: 20 });
+      await page.mouse.move(handBox!.x + handBox!.width / 2, handBox!.y + handBox!.height / 2, {
+        steps: 20,
+      });
       await page.waitForTimeout(200);
 
       // Verificar resalte suave (data-is-over = true)
@@ -1764,7 +1861,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 7 - Pilas (carta superior con imagen y contador, draggable, modal inspector con clic derecho y privacidad de biblioteca)', async ({ browser }) => {
+  test('Punto 7 - Pilas (carta superior con imagen y contador, draggable, modal inspector con clic derecho y privacidad de biblioteca)', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'PilesPod');
     const page = pages[0];
@@ -1786,7 +1885,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
 
       await page.mouse.move(handBox!.x + handBox!.width / 2, handBox!.y + handBox!.height / 2);
       await page.mouse.down();
-      await page.mouse.move(gydBox!.x + gydBox!.width / 2, gydBox!.y + gydBox!.height / 2, { steps: 20 });
+      await page.mouse.move(gydBox!.x + gydBox!.width / 2, gydBox!.y + gydBox!.height / 2, {
+        steps: 20,
+      });
       await page.mouse.up();
       await page.waitForTimeout(800);
 
@@ -1798,14 +1899,19 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       // 2. Arrastrar la carta superior del cementerio hacia la mesa
       const topGydBox = await topGydCard.boundingBox();
       expect(topGydBox).not.toBeNull();
-      await page.mouse.move(topGydBox!.x + topGydBox!.width / 2, topGydBox!.y + topGydBox!.height / 2);
+      await page.mouse.move(
+        topGydBox!.x + topGydBox!.width / 2,
+        topGydBox!.y + topGydBox!.height / 2,
+      );
       await page.mouse.down();
       await page.mouse.move(700, 450, { steps: 20 });
       await page.mouse.up();
       await page.waitForTimeout(800);
 
       // Ahora la carta está en el campo de batalla y el cementerio vuelve a estar vacío
-      await expect(page.locator('[data-battlefield-card="true"]').first()).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('[data-battlefield-card="true"]').first()).toBeVisible({
+        timeout: 5000,
+      });
       await expect(topGydCard).not.toBeVisible();
 
       // 3. Arrastrar la carta del campo al exilio
@@ -1820,7 +1926,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
 
       await page.mouse.move(placedBox!.x + 20, placedBox!.y + 20);
       await page.mouse.down();
-      await page.mouse.move(exileBox!.x + exileBox!.width / 2, exileBox!.y + exileBox!.height / 2, { steps: 20 });
+      await page.mouse.move(exileBox!.x + exileBox!.width / 2, exileBox!.y + exileBox!.height / 2, {
+        steps: 20,
+      });
       await page.mouse.up();
       await page.waitForTimeout(800);
 
@@ -1874,7 +1982,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 8 - Nombre del jugador centrado arriba, barra desplegable y desconectado', async ({ browser }) => {
+  test('Punto 8 - Nombre del jugador centrado arriba, barra desplegable y desconectado', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1920, 1080, 'PlayerHeaderPod');
     try {
@@ -1930,7 +2040,10 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       await page.waitForTimeout(1500);
 
       // El nombre del rival desconectado ahora tiene tooltip "(Desconectado)"
-      const rivalHeaderSpan = page.locator('[data-player-header]').nth(1).locator('span[title*="Desconectado"]');
+      const rivalHeaderSpan = page
+        .locator('[data-player-header]')
+        .nth(1)
+        .locator('span[title*="Desconectado"]');
       await expect(rivalHeaderSpan).toBeVisible();
       await expect(rivalHeaderSpan).toHaveClass(/opacity-40/);
     } finally {
@@ -1940,7 +2053,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 9 - Ancho del dock a 1366x768 con 2 jugadores sin solapamiento ni desborde', async ({ browser }) => {
+  test('Punto 9 - Ancho del dock a 1366x768 con 2 jugadores sin solapamiento ni desborde', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     // 2 jugadores en pantalla estrecha 1366x768
     const { contexts, pages } = await setupPod(browser, 2, 1366, 768, 'DockWidthPod');
@@ -2009,7 +2124,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 10 - Tamaño consistente de carta entre mano, mesa, comandante y overlay del arrastre', async ({ browser }) => {
+  test('Punto 10 - Tamaño consistente de carta entre mano, mesa, comandante y overlay del arrastre', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1366, 768, 'ConsistentSizePod');
     const page = pages[0];
@@ -2024,9 +2141,16 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
       expect(handBoxInitial).not.toBeNull();
 
       // Mover al campo (centro de la pantalla)
-      await page.mouse.move(handBoxInitial!.x + handBoxInitial!.width / 2, handBoxInitial!.y + handBoxInitial!.height / 2);
+      await page.mouse.move(
+        handBoxInitial!.x + handBoxInitial!.width / 2,
+        handBoxInitial!.y + handBoxInitial!.height / 2,
+      );
       await page.mouse.down();
-      await page.mouse.move(handBoxInitial!.x + handBoxInitial!.width / 2, handBoxInitial!.y - 200, { steps: 10 });
+      await page.mouse.move(
+        handBoxInitial!.x + handBoxInitial!.width / 2,
+        handBoxInitial!.y - 200,
+        { steps: 10 },
+      );
       await page.waitForTimeout(300);
 
       // 2. Medir overlay durante el arrastre
@@ -2073,7 +2197,9 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 
-  test('Punto 11 - Fallbacks elegantes de imagenes sin iconos de imagen rota bajo fallo de red o CSP', async ({ browser }) => {
+  test('Punto 11 - Fallbacks elegantes de imagenes sin iconos de imagen rota bajo fallo de red o CSP', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages } = await setupPod(browser, 2, 1366, 768, 'ImageFallbackPod');
     const page = pages[0];
@@ -2091,7 +2217,10 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
         const imgs = Array.from(document.querySelectorAll('img'));
         return imgs.filter(img => {
           const style = window.getComputedStyle(img);
-          const isVisible = style.display !== 'none' && style.visibility !== 'hidden' && (img.offsetWidth > 0 || img.offsetHeight > 0);
+          const isVisible =
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            (img.offsetWidth > 0 || img.offsetHeight > 0);
           return isVisible && img.complete && img.naturalWidth === 0;
         }).length;
       });
@@ -2111,8 +2240,3 @@ test.describe('Verificación Visual y de Interacción (REQ-9, REQ-22)', () => {
     }
   });
 });
-
-
-
-
-

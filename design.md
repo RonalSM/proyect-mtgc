@@ -2,7 +2,7 @@
 
 ## Visión general
 
-*CommanderTable* es una SPA con servidor de juego autoritativo. El navegador envía **intenciones** (por ejemplo "mover carta X al cementerio") por WebSocket; el servidor las valida, aplica al estado de la mesa y difunde el resultado. Decisiones clave:
+_CommanderTable_ es una SPA con servidor de juego autoritativo. El navegador envía **intenciones** (por ejemplo "mover carta X al cementerio") por WebSocket; el servidor las valida, aplica al estado de la mesa y difunde el resultado. Decisiones clave:
 
 1. **Servidor autoritativo**: evita trampas y garantiza información oculta (manos y bibliotecas).
 2. **Sandbox sin motor de reglas**: reduce complejidad; la mesa se pone de acuerdo como en persona.
@@ -13,17 +13,17 @@
 
 ### Mapa de componentes
 
-| ID | Nombre | Tipo | Responsabilidad | Se comunica con |
-|---|---|---|---|---|
-| COMP-1 | Web Client | Frontend (React + TS) | UI de mesa, trackers, zonas, chat, lobby, iniciativa | COMP-2, COMP-5 |
-| COMP-2 | API REST | Backend | Cuentas, mazos, mesas, historial | COMP-3, COMP-4, COMP-6 |
-| COMP-3 | Base de datos | PostgreSQL | Usuarios, mazos, partidas, caché de cartas | COMP-2 |
-| COMP-4 | Room Manager | Servicio | Ciclo de vida de mesas, asientos, códigos, LobbyManager | COMP-5, COMP-7 |
-| COMP-5 | Game Server | WebSocket | Estado autoritativo, acciones, sync, log, InitiativeService, GameStarter | COMP-1, COMP-7 |
-| COMP-6 | Card Service | Servicio | Integración Scryfall, parser de mazos, validador | Scryfall, COMP-3 |
-| COMP-7 | Estado en memoria | Redis | Estado de mesas activas, pub/sub, rate limit | COMP-4, COMP-5 |
-| COMP-8 | CDN / Imágenes | Infra | Caché de imágenes de cartas y playmats | COMP-1 |
-| COMP-9 | Observabilidad | Infra | Logs, métricas, alertas | Todos |
+| ID     | Nombre            | Tipo                  | Responsabilidad                                                          | Se comunica con        |
+| ------ | ----------------- | --------------------- | ------------------------------------------------------------------------ | ---------------------- |
+| COMP-1 | Web Client        | Frontend (React + TS) | UI de mesa, trackers, zonas, chat, lobby, iniciativa                     | COMP-2, COMP-5         |
+| COMP-2 | API REST          | Backend               | Cuentas, mazos, mesas, historial                                         | COMP-3, COMP-4, COMP-6 |
+| COMP-3 | Base de datos     | PostgreSQL            | Usuarios, mazos, partidas, caché de cartas                               | COMP-2                 |
+| COMP-4 | Room Manager      | Servicio              | Ciclo de vida de mesas, asientos, códigos, LobbyManager                  | COMP-5, COMP-7         |
+| COMP-5 | Game Server       | WebSocket             | Estado autoritativo, acciones, sync, log, InitiativeService, GameStarter | COMP-1, COMP-7         |
+| COMP-6 | Card Service      | Servicio              | Integración Scryfall, parser de mazos, validador                         | Scryfall, COMP-3       |
+| COMP-7 | Estado en memoria | Redis                 | Estado de mesas activas, pub/sub, rate limit                             | COMP-4, COMP-5         |
+| COMP-8 | CDN / Imágenes    | Infra                 | Caché de imágenes de cartas y playmats                                   | COMP-1                 |
+| COMP-9 | Observabilidad    | Infra                 | Logs, métricas, alertas                                                  | Todos                  |
 
 ### Diagrama de alto nivel
 
@@ -45,28 +45,29 @@
  └──────┬───────┘           └──────┬──────┘        └──────────────┘
         │                          │
         └────────────► Redis (COMP-7): estado de mesa + pub/sub
- 
+
  Imágenes de cartas ──► CDN/caché (COMP-8) ──► Web Client
 ```
 
 ## Stack propuesto
 
-| Capa | Tecnología | Motivo |
-|---|---|---|
-| Frontend | React + TypeScript + Vite, Zustand, Tailwind | Estado local simple, desarrollo rápido |
-| Drag & drop | dnd-kit o Konva (si se usa canvas) | Interacción fluida con cartas |
-| Backend | Node.js + Fastify + TypeScript | Mismo lenguaje que el cliente, tipos compartidos |
-| Tiempo real | Socket.IO o `ws` | Reconexión y salas integradas |
-| Datos | PostgreSQL + Prisma | Modelo relacional claro |
-| Estado vivo | Redis | Baja latencia y pub/sub para escalar |
-| Despliegue | Docker, Fly.io / Render / VPS | Costo bajo para el MVP |
-| CI/CD | GitHub Actions | Pruebas y despliegue automáticos |
+| Capa        | Tecnología                                   | Motivo                                           |
+| ----------- | -------------------------------------------- | ------------------------------------------------ |
+| Frontend    | React + TypeScript + Vite, Zustand, Tailwind | Estado local simple, desarrollo rápido           |
+| Drag & drop | dnd-kit o Konva (si se usa canvas)           | Interacción fluida con cartas                    |
+| Backend     | Node.js + Fastify + TypeScript               | Mismo lenguaje que el cliente, tipos compartidos |
+| Tiempo real | Socket.IO o `ws`                             | Reconexión y salas integradas                    |
+| Datos       | PostgreSQL + Prisma                          | Modelo relacional claro                          |
+| Estado vivo | Redis                                        | Baja latencia y pub/sub para escalar             |
+| Despliegue  | Docker, Fly.io / Render / VPS                | Costo bajo para el MVP                           |
+| CI/CD       | GitHub Actions                               | Pruebas y despliegue automáticos                 |
 
 Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 
 ## Flujos de datos
 
 ### Flujo 1: Crear mesa y unirse
+
 ```
 1. Anfitrión → Web Client: configura mesa (asientos, vida, privacidad)
 2. Web Client → API REST: POST /tables
@@ -78,6 +79,7 @@ Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 ```
 
 ### Flujo 2: Acción de juego (mover carta en MesaTotal con coordenadas globales, titularidad temporal y sincronización sin parpadeo)
+
 ```
 1. Jugador A inicia arrastre de carta (desde mano a mesa, o reposicionando en el campo de batalla de MesaTotal). Se verifica autorización: solo su ownerId o su holderId pueden moverla; de lo contrario el cursor muestra not-allowed y un aviso breve.
 2. DragOverlay se renderiza mediante Portal a document.body conservando el giro apaisado para cartas giradas (isTapped: true como caja apaisada con desplazamiento de puntero constante y coincidencia ≤ 2px al soltar).
@@ -93,6 +95,7 @@ Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 ```
 
 ### Flujo 3: Importar mazo
+
 ```
 1. Usuario pega lista de texto → Web Client → API REST: POST /decks/import
 2. Card Service: parsea líneas "cantidad + nombre"
@@ -103,6 +106,7 @@ Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 ```
 
 ### Flujo 4: Reconexión
+
 ```
 1. Cliente pierde WSS → reintenta con backoff exponencial
 2. Cliente → Game Server: RESUME { tableId, token, lastVersion }
@@ -111,6 +115,7 @@ Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 ```
 
 ### Flujo 5: Sala de espera → inicio de partida (v2)
+
 ```
 1. Jugador entra a la mesa → Game Server: estado lobby, evento LOBBY_UPDATED
 2. Jugador abre el selector → API REST: GET /decks (guardados) + mazos de sesión
@@ -123,6 +128,7 @@ Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 ```
 
 ### Flujo 6: Iniciativa Automática (Punto 4, REQ-21)
+
 ```
 1. Host inicia la partida → Game Server: transición a `status: "initiative"` y `startAutomaticInitiative()`.
 2. Game Server: genera autoritativamente con CSPRNG (`crypto.randomInt(1, 21)`) la tirada de D20 para todos los jugadores sentados (ningún jugador pulsa botones; el cliente no puede enviar acciones de tirada y cualquier intento es rechazado con error).
@@ -133,6 +139,7 @@ Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 ```
 
 ### Flujo 7: Fase de Mulligan y Mano Inicial (Punto 5, REQ-23)
+
 ```
 1. Al resolverse la iniciativa, Game Server pasa a `status: "mulligan"`.
 2. Servidor baraja bibliotecas (CSPRNG Fisher-Yates) y reparte 7 cartas a cada jugador en estado oculto (la mano no aparece en el abanico inferior hasta que el jugador se queda y concluye la fase).
@@ -163,46 +170,51 @@ lobby ──(todos listos + host inicia)──► initiative ──(orden resuel
 
 ## Componentes nuevos o ampliados (v2)
 
-| ID | Componente | Cambio |
-|---|---|---|
-| COMP-4 | Room Manager | Añade `LobbyManager`: asientos, mazo elegido, estado "Listo", reglas para habilitar "Iniciar" |
-| COMP-5 | Game Server | Añade `InitiativeService` (d20, desempates, tiempo límite) y `GameStarter` (barajar, comandante a zona de comando, mano de 7) |
-| COMP-6 | Card Service | Expone mazos guardados y de sesión; reutiliza el importador y el validador |
+| ID     | Componente                      | Cambio                                                                                                                            |
+| ------ | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| COMP-4 | Room Manager                    | Añade `LobbyManager`: asientos, mazo elegido, estado "Listo", reglas para habilitar "Iniciar"                                     |
+| COMP-5 | Game Server                     | Añade `InitiativeService` (d20, desempates, tiempo límite) y `GameStarter` (barajar, comandante a zona de comando, mano de 7)     |
+| COMP-6 | Card Service                    | Expone mazos guardados y de sesión; reutiliza el importador y el validador                                                        |
 | COMP-8 | Image Loading & Caching Service | Cola de descarga con concurrencia 6, reintentos exponenciales con timeout 8s, resolución directa CDN, esqueletos y virtualización |
-| COMP-1 | Web Client | Nuevas pantallas `LobbyView`, `InitiativeOverlay` y rediseño de `TableView` / `TableGrid` |
+| COMP-1 | Web Client                      | Nuevas pantallas `LobbyView`, `InitiativeOverlay` y rediseño de `TableView` / `TableGrid`                                         |
 
 ## Puntos de integración
 
 ### Internos
 
-| Origen | Destino | Protocolo | Formato | Propósito |
-|---|---|---|---|---|
-| Web Client | API REST | HTTPS | JSON | Cuentas, mazos, mesas |
-| Web Client | Game Server | WSS | JSON (mensajes tipados) | Acciones y eventos |
-| Game Server | Redis | TCP | Binario/JSON | Estado de mesa |
-| API REST | PostgreSQL | TCP | SQL | Persistencia |
+| Origen      | Destino     | Protocolo | Formato                 | Propósito             |
+| ----------- | ----------- | --------- | ----------------------- | --------------------- |
+| Web Client  | API REST    | HTTPS     | JSON                    | Cuentas, mazos, mesas |
+| Web Client  | Game Server | WSS       | JSON (mensajes tipados) | Acciones y eventos    |
+| Game Server | Redis       | TCP       | Binario/JSON            | Estado de mesa        |
+| API REST    | PostgreSQL  | TCP       | SQL                     | Persistencia          |
 
 ### Externos
 
 #### Scryfall API
+
 **Tipo:** REST. **Propósito:** datos, legalidad e imágenes de cartas.
 **Endpoints usados:** `GET /cards/named`, `GET /cards/autocomplete`, `POST /cards/collection`, bulk data (`/bulk-data`).
 **Autenticación:** ninguna, pero se deben enviar cabeceras `User-Agent` y `Accept` identificando la app.
 **Límites:** Scryfall pide un retardo mínimo de ~50–100 ms entre peticiones (unas 10 por segundo); hay que respetarlo desde el servidor, no desde cada cliente.
 **Manejo de errores:** reintento con backoff ante 429/5xx; si falla, usar la caché local y avisar de datos posiblemente desactualizados.
-**Estrategia:** descargar el *bulk data* (Oracle Cards) cada noche a PostgreSQL y consultar local; usar la API solo para casos puntuales.
+**Estrategia:** descargar el _bulk data_ (Oracle Cards) cada noche a PostgreSQL y consultar local; usar la API solo para casos puntuales.
 
 #### Importadores de mazos (fase 2)
+
 Moxfield / Archidekt: dependen de sus condiciones de uso y APIs disponibles; el MVP usa solo texto pegado.
 
 #### Videollamada externa (fase 1) / LiveKit o WebRTC (fase 2)
+
 Fase 1 solo enlaza a Discord/Meet. Fase 2 evalúa LiveKit.
 
 ## Componentes en detalle
 
 ### COMP-8 Image Loading & Caching Service
+
 **Responsabilidad:** Optimizar la carga de imágenes de cartas para evitar bloqueos HTTP 429 de Scryfall, asegurar fluidez en el cliente web y garantizar que ninguna carta quede colgada indefinidamente.
 **Componentes y servicios clave:**
+
 1. `imageLoaderQueue` (`apps/web/src/services/imageLoaderQueue.ts`):
    - Concurrencia acotada a 6 descargas simultáneas en vuelo (`maxConcurrency = 6`).
    - Reintento con backoff exponencial (300 ms, 600 ms, 1200 ms) sin retener slots activos de descarga.
@@ -224,85 +236,125 @@ Fase 1 solo enlaza a Discord/Meet. Fase 2 evalúa LiveKit.
    - Sin almacenamiento, reflejo ni proxy en el servidor backend (estricto cumplimiento legal de Scryfall).
    - Generación de Object URLs locales (`blob:`) para despliegue instantáneo con 0 ms de latencia en partidas sucesivas con el mismo mazo.
 6. **Estrategia de precarga con prioridad por fases:**
-   - *Sala de espera (`LobbyWaitingRoom.tsx`):* Al seleccionar mazo, precarga el comandante en `normal` (prioridad 10) y la biblioteca en `small` (prioridad 1).
-   - *Iniciativa (`InitiativeOverlay.tsx`):* Precarga anticipada de la mano inicial (7 cartas) y comandante en `normal` (prioridad 10), y biblioteca en `small` (prioridad 1).
-   - *Apertura y Mulligan (`OpeningHandModal.tsx`):* Precarga con máxima prioridad de las 7 cartas activas en `normal` (prioridad 10), garantizando nitidez completa y tiempo de respuesta cero al decidir quedarse o mulligan.
+   - _Sala de espera (`LobbyWaitingRoom.tsx`):_ Al seleccionar mazo, precarga el comandante en `normal` (prioridad 10) y la biblioteca en `small` (prioridad 1).
+   - _Iniciativa (`InitiativeOverlay.tsx`):_ Precarga anticipada de la mano inicial (7 cartas) y comandante en `normal` (prioridad 10), y biblioteca en `small` (prioridad 1).
+   - _Apertura y Mulligan (`OpeningHandModal.tsx`):_ Precarga con máxima prioridad de las 7 cartas activas en `normal` (prioridad 10), garantizando nitidez completa y tiempo de respuesta cero al decidir quedarse o mulligan.
 7. **Verificación de Red en Vivo y Telemetría de Caché Limpio (Punto 5):**
-   - *Carga ansiosa (`loading="eager"`):* `CardDisplay` utiliza `loading="eager"` para permitir a Chromium decodificar y renderizar inmediatamente las imágenes alimentadas desde la Cache API / `imageLoaderQueue` sin bloqueos de renderizado diferido fuera de pantalla.
-   - *Apertura en frío certificada:* Vaciado de caché (`caches.delete`) y reinicio de cola en los 4 clientes previo a la apertura simultánea de bibliotecas (372 cartas). Tiempo de resolución: **845 ms** (< 35 s).
-   - *Peticiones CDN y códigos de respuesta:* 37 peticiones directas a `cards.scryfall.io`, 100% con código 200 OK (`{"200": 37}`), 5 reintentos automáticos, 0 fallos 4xx/5xx de servidor. 372/372 cartas con `naturalWidth > 0`.
-   - *Reapertura con Cache API persistente:* **185 ms** (sustancialmente menor a la apertura en frío).
+   - _Carga ansiosa (`loading="eager"`):_ `CardDisplay` utiliza `loading="eager"` para permitir a Chromium decodificar y renderizar inmediatamente las imágenes alimentadas desde la Cache API / `imageLoaderQueue` sin bloqueos de renderizado diferido fuera de pantalla.
+   - _Apertura en frío certificada:_ Vaciado de caché (`caches.delete`) y reinicio de cola en los 4 clientes previo a la apertura simultánea de bibliotecas (372 cartas). Tiempo de resolución: **845 ms** (< 35 s).
+   - _Peticiones CDN y códigos de respuesta:_ 37 peticiones directas a `cards.scryfall.io`, 100% con código 200 OK (`{"200": 37}`), 5 reintentos automáticos, 0 fallos 4xx/5xx de servidor. 372/372 cartas con `naturalWidth > 0`.
+   - _Reapertura con Cache API persistente:_ **185 ms** (sustancialmente menor a la apertura en frío).
 
 ### COMP-5 Game Server
+
 **Responsabilidad:** mantener y difundir el estado autoritativo de cada mesa.
 **Clases clave:** `TableSession`, `ActionHandler`, `VisibilityFilter`, `ActionLog`, `Shuffler`, `InitiativeService`, `GameStarter`.
 **Interfaz de mensajes:**
+
 ```ts
 type ClientAction =
-  | { type: "ADJUST_LIFE"; targetSeat?: number; delta: number; playerId?: string }
-  | { type: "COMMANDER_DAMAGE"; targetSeat?: number; sourceSeat?: number; commanderId: string; delta: number }
-  | { type: "SET_COUNTER"; scope: "player" | "card"; id: string; counter: string; value: number }
-  | { type: "MOVE_CARD"; cardInstanceId: string; fromZone: ZoneRef; toZone: ZoneRef; position?: { x: number; y: number }; holderId?: string; destinationIndex?: number }
-  | { type: "TAP_CARD"; cardInstanceId: string; isTapped?: boolean }
-  | { type: "DRAW_CARDS"; count: number }
-  | { type: "SHUFFLE_LIBRARY" }
-  | { type: "END_TURN" }
-  | { type: "UNDO_LAST" }
-  | { type: "CHAT"; text: string }
-  | { type: "ROLL_DICE"; sides: number }
+  | { type: 'ADJUST_LIFE'; targetSeat?: number; delta: number; playerId?: string }
+  | {
+      type: 'COMMANDER_DAMAGE';
+      targetSeat?: number;
+      sourceSeat?: number;
+      commanderId: string;
+      delta: number;
+    }
+  | { type: 'SET_COUNTER'; scope: 'player' | 'card'; id: string; counter: string; value: number }
+  | {
+      type: 'MOVE_CARD';
+      cardInstanceId: string;
+      fromZone: ZoneRef;
+      toZone: ZoneRef;
+      position?: { x: number; y: number };
+      holderId?: string;
+      destinationIndex?: number;
+    }
+  | { type: 'TAP_CARD'; cardInstanceId: string; isTapped?: boolean }
+  | { type: 'DRAW_CARDS'; count: number }
+  | { type: 'SHUFFLE_LIBRARY' }
+  | { type: 'END_TURN' }
+  | { type: 'UNDO_LAST' }
+  | { type: 'CHAT'; text: string }
+  | { type: 'ROLL_DICE'; sides: number }
   | MulliganAction
   | RevealAction
   | LobbyAction
   | PlaymatAction;
 
 type MulliganAction =
-  | { type: "MULLIGAN_DECISION"; decision: "keep" | "mulligan" }
-  | { type: "PUT_CARDS_ON_BOTTOM"; cardInstanceIds: string[] }
-  | { type: "HOST_FORCE_KEEP_MULLIGAN"; targetPlayerId: string };
+  | { type: 'MULLIGAN_DECISION'; decision: 'keep' | 'mulligan' }
+  | { type: 'PUT_CARDS_ON_BOTTOM'; cardInstanceIds: string[] }
+  | { type: 'HOST_FORCE_KEEP_MULLIGAN'; targetPlayerId: string };
 
-type RevealAction =
-  | { type: "REVEAL_CARD"; cardInstanceId: string; targetPlayerId?: string; fromZone?: ZoneRef };
+type RevealAction = {
+  type: 'REVEAL_CARD';
+  cardInstanceId: string;
+  targetPlayerId?: string;
+  fromZone?: ZoneRef;
+};
 
 type LobbyAction =
-  | { type: "SELECT_DECK"; source: "saved" | "session"; deckId: string }
-  | { type: "SET_READY"; ready: boolean }
-  | { type: "START_GAME" }                       // solo anfitrión
-  | { type: "KICK_PLAYER"; seat: number }        // solo anfitrión
-  | { type: "TRANSFER_HOST"; seat: number };     // solo anfitrión
+  | { type: 'SELECT_DECK'; source: 'saved' | 'session'; deckId: string }
+  | { type: 'SET_READY'; ready: boolean }
+  | { type: 'START_GAME' } // solo anfitrión
+  | { type: 'KICK_PLAYER'; seat: number } // solo anfitrión
+  | { type: 'TRANSFER_HOST'; seat: number }; // solo anfitrión
 
-type InitiativeAction = { type: "ROLL_D20" };
+type InitiativeAction = { type: 'ROLL_D20' };
 
-type PlaymatAction = { type: "SET_PLAYMAT"; playmat: Playmat };
+type PlaymatAction = { type: 'SET_PLAYMAT'; playmat: Playmat };
 
 type ServerEvent =
   | { version: number; actor?: string; payload: unknown; ts: string }
-  | { type: "ROOM_STATE_SYNC"; state: RoomState }
-  | { type: "REMOTE_CARD_DRAGGING"; payload: RemoteDragPayload }
-  | { type: "MULLIGAN_STATE_SYNC"; mulliganState: MulliganRoomState }
-  | { type: "CARD_REVEALED"; card: CardInstance; fromPlayerId: string; fromPlayerName: string; targetPlayerId?: string; targetPlayerName?: string }
+  | { type: 'ROOM_STATE_SYNC'; state: RoomState }
+  | { type: 'REMOTE_CARD_DRAGGING'; payload: RemoteDragPayload }
+  | { type: 'MULLIGAN_STATE_SYNC'; mulliganState: MulliganRoomState }
+  | {
+      type: 'CARD_REVEALED';
+      card: CardInstance;
+      fromPlayerId: string;
+      fromPlayerName: string;
+      targetPlayerId?: string;
+      targetPlayerName?: string;
+    }
   | LobbyEvent;
 
 type LobbyEvent =
-  | { type: "LOBBY_UPDATED"; seats: LobbySeat[]; canStart: boolean }
-  | { type: "INITIATIVE_STARTED"; deadlineTs: string }
-  | { type: "D20_ROLLED"; seat: number; value: number; round: number }
-  | { type: "INITIATIVE_TIE"; seats: number[]; round: number }
-  | { type: "INITIATIVE_RESOLVED"; order: number[] }   // asientos de 1.º a último
-  | { type: "GAME_STARTED"; firstSeat: number };
+  | { type: 'LOBBY_UPDATED'; seats: LobbySeat[]; canStart: boolean }
+  | { type: 'INITIATIVE_STARTED'; deadlineTs: string }
+  | { type: 'D20_ROLLED'; seat: number; value: number; round: number }
+  | { type: 'INITIATIVE_TIE'; seats: number[]; round: number }
+  | { type: 'INITIATIVE_RESOLVED'; order: number[] } // asientos de 1.º a último
+  | { type: 'GAME_STARTED'; firstSeat: number };
 
 interface LobbySeat {
-  seat: number; userId: string; displayName: string;
-  deck?: { id: string; name: string; commanderName: string; colorIdentity: string[]; warnings: number };
-  ready: boolean; isHost: boolean; connected: boolean;
+  seat: number;
+  userId: string;
+  displayName: string;
+  deck?: {
+    id: string;
+    name: string;
+    commanderName: string;
+    colorIdentity: string[];
+    warnings: number;
+  };
+  ready: boolean;
+  isHost: boolean;
+  connected: boolean;
 }
 ```
+
 **Rendimiento:** p95 < 300 ms por acción; tamaño de mensaje < 2 KB.
-**Restricciones:** una instancia por mesa (afinidad por sala); con varias instancias, usar Redis pub/sub y *sticky sessions*.
+**Restricciones:** una instancia por mesa (afinidad por sala); con varias instancias, usar Redis pub/sub y _sticky sessions_.
 
 ### COMP-1 Web Client
+
 **Módulos:** `LobbyView`, `LobbySeatCard`, `DeckPicker`, `DeckImportModal`, `ReadyButton`, `InitiativeOverlay`, `TableGrid`, `PlayerCell`, `PlaymatBackground`, `NameTag`, `LifePill`, `BattlefieldCanvas`, `HandFan`, `PileSlots`, `FloatingToolbar`, `LogChatPanel`, `CardPreview`.
-**Estado:** Zustand con un *store* de mesa sincronizado por versión de evento.
+**Estado:** Zustand con un _store_ de mesa sincronizado por versión de evento.
 **UX clave y Arquitectura de Interacción:**
+
 - Vista propia grande y oponentes en miniatura; atajos de teclado; modo "solo tracker" para móvil.
 - Mesa expandida como encuadre/zoom interactivo sobre la misma mesa global única (sin duplicar componentes) con cálculo de coordenadas por transformación inversa ($x_{global} = x_{min} + u \times W$, $y_{global} = y_{min} + v \times H$), manteniendo activos DndContext, droppables, mano y menú de clic derecho.
 - Eliminación de recortes en cartas de la mano con `aspect-[5/7]` exacto sin `object-cover` distorsionante, esquinas redondeadas naturales (`rounded-[6px]`), dock y abanico con `overflow-visible`, resolución de imagen normal (`cards.scryfall.io` normal), y elevación por hover 100% contenida en el viewport.
@@ -334,8 +386,10 @@ interface LobbySeat {
   - Causa raíz confirmada: uso de la esquina superior izquierda de la caja vertical sumándole mitades estáticas no orientadas ($w/2, h/2$) al renderizar una carta orientada en horizontal ($h \times w$).
 
 ### COMP-6 Card Service
+
 **Clases:** `ScryfallClient` (cola con rate limit), `DeckParser`, `CommanderValidator`, `CardCache`.
 **Interfaces:**
+
 ```ts
 parseDeck(text: string): ParsedLine[]
 resolveCards(lines: ParsedLine[]): Promise<ResolvedDeck>
@@ -343,6 +397,7 @@ validateCommander(deck: ResolvedDeck): ValidationReport
 ```
 
 ### COMP-8 Gestión de Imágenes y Diagnóstico de Red (Punto 1)
+
 - **Diagnóstico empírico de fallos en biblioteca:**
   - Las imágenes no cargadas en la biblioteca procedían del endpoint de la API `api.scryfall.com/cards/named?exact=...&format=image` en lugar del CDN estático.
   - Al abrir la biblioteca con ~60–92 cartas simultáneas, `api.scryfall.com` respondió con **HTTP 429 Too Many Requests** en el 100 % de las solicitudes en ráfaga (`{"429": 60}`). En solicitudes individuales no espaciadas retornó `HTTP 302` (Redirect temporal a Cloudflare).
@@ -350,47 +405,128 @@ validateCommander(deck: ResolvedDeck): ValidationReport
 - **Directriz de diseño:** Prohibición estricta de invocar `api.scryfall.com/cards/named` en cliente para renderizar cartas en la mesa o biblioteca. Todas las URLs deben consumirse directamente desde `cards.scryfall.io` guardadas en base de datos.
 
 ### COMP-4 Room Manager
+
 Crea y cierra mesas, gestiona códigos, asientos, anfitrión, expiración (mesa inactiva > 2 h se cierra) y `LobbyManager`.
 
 ## Modelos de datos
 
 ```ts
-interface User { id: string; email?: string; displayName: string; passwordHash?: string; isGuest: boolean; createdAt: Date }
-
-interface Deck { id: string; ownerId: string; name: string; commanderCardIds: string[]; createdAt: Date }
-interface DeckCard { deckId: string; cardId: string; quantity: number; isCommander: boolean }
-
-interface Card { id: string /* Scryfall id */; oracleId: string; name: string; manaCost?: string; typeLine: string;
-                 colorIdentity: string[]; imageUris: Record<string,string>; legalities: Record<string,string>; updatedAt: Date }
-
-interface Table { id: string; code: string; hostId: string; seats: number; startingLife: number;
-                  isPrivate: boolean; status: "lobby" | "initiative" | "mulligan" | "playing" | "finished"; createdAt: Date }
-
-interface LobbyPlayerState { seat: number; userId: string; deckRef?: { source: "saved" | "session"; deckId: string }; ready: boolean }
-interface InitiativeState { round: number; rolls: Record<number, number>; pending: number[]; deadlineTs: string; order?: number[] }
-interface TableState { status: "lobby" | "initiative" | "mulligan" | "playing" | "finished"; lobby: LobbyPlayerState[]; initiative?: InitiativeState; turnOrder?: number[] }
-
-interface SeatState { seat: number; userId: string; life: number; poison: number; energy: number; experience: number;
-                      commanderTax: Record<string, number>; commanderDamage: Record<string, number>;
-                      zones: Record<"library"|"hand"|"battlefield"|"graveyard"|"exile"|"command", CardInstance[]> }
-
-interface CardInstance {
-  instanceId: string; cardId: string; tapped: boolean; faceDown: boolean;
-  counters: Record<string, number>;
-  x: number;   // 0..1 normalizado respecto a MesaTotal (pantalla completa 100vw)
-  y: number;   // 0..1 normalizado respecto a MesaTotal (pantalla completa 100vh)
-  z: number;   // orden de apilado global en la mesa
-  ownerId?: string;   // Propietario original inmutable (jugador de cuya zona salió o quien creó la ficha)
-  holderId?: string;  // Titular temporal en mesa (calculado por contención 100% en la división de un jugador)
+interface User {
+  id: string;
+  email?: string;
+  displayName: string;
+  passwordHash?: string;
+  isGuest: boolean;
+  createdAt: Date;
 }
 
-type Playmat = { source: "commander" | "card" | "color"; cardId?: string; color?: string };
-interface SeatVisual { seat: number; playmat: Playmat }
+interface Deck {
+  id: string;
+  ownerId: string;
+  name: string;
+  commanderCardIds: string[];
+  createdAt: Date;
+}
+interface DeckCard {
+  deckId: string;
+  cardId: string;
+  quantity: number;
+  isCommander: boolean;
+}
 
-interface GameRecord { id: string; tableId: string; startedAt: Date; endedAt?: Date;
-                       results: { userId: string; commanderId: string; placement: number }[]; }
-interface ActionLogEntry { gameId: string; version: number; actorSeat: number; action: unknown; ts: Date }
+interface Card {
+  id: string /* Scryfall id */;
+  oracleId: string;
+  name: string;
+  manaCost?: string;
+  typeLine: string;
+  colorIdentity: string[];
+  imageUris: Record<string, string>;
+  legalities: Record<string, string>;
+  updatedAt: Date;
+}
+
+interface Table {
+  id: string;
+  code: string;
+  hostId: string;
+  seats: number;
+  startingLife: number;
+  isPrivate: boolean;
+  status: 'lobby' | 'initiative' | 'mulligan' | 'playing' | 'finished';
+  createdAt: Date;
+}
+
+interface LobbyPlayerState {
+  seat: number;
+  userId: string;
+  deckRef?: { source: 'saved' | 'session'; deckId: string };
+  ready: boolean;
+}
+interface InitiativeState {
+  round: number;
+  rolls: Record<number, number>;
+  pending: number[];
+  deadlineTs: string;
+  order?: number[];
+}
+interface TableState {
+  status: 'lobby' | 'initiative' | 'mulligan' | 'playing' | 'finished';
+  lobby: LobbyPlayerState[];
+  initiative?: InitiativeState;
+  turnOrder?: number[];
+}
+
+interface SeatState {
+  seat: number;
+  userId: string;
+  life: number;
+  poison: number;
+  energy: number;
+  experience: number;
+  commanderTax: Record<string, number>;
+  commanderDamage: Record<string, number>;
+  zones: Record<
+    'library' | 'hand' | 'battlefield' | 'graveyard' | 'exile' | 'command',
+    CardInstance[]
+  >;
+}
+
+interface CardInstance {
+  instanceId: string;
+  cardId: string;
+  tapped: boolean;
+  faceDown: boolean;
+  counters: Record<string, number>;
+  x: number; // 0..1 normalizado respecto a MesaTotal (pantalla completa 100vw)
+  y: number; // 0..1 normalizado respecto a MesaTotal (pantalla completa 100vh)
+  z: number; // orden de apilado global en la mesa
+  ownerId?: string; // Propietario original inmutable (jugador de cuya zona salió o quien creó la ficha)
+  holderId?: string; // Titular temporal en mesa (calculado por contención 100% en la división de un jugador)
+}
+
+type Playmat = { source: 'commander' | 'card' | 'color'; cardId?: string; color?: string };
+interface SeatVisual {
+  seat: number;
+  playmat: Playmat;
+}
+
+interface GameRecord {
+  id: string;
+  tableId: string;
+  startedAt: Date;
+  endedAt?: Date;
+  results: { userId: string; commanderId: string; placement: number }[];
+}
+interface ActionLogEntry {
+  gameId: string;
+  version: number;
+  actorSeat: number;
+  action: unknown;
+  ts: Date;
+}
 ```
+
 Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRecord, GameRecord 1–N ActionLogEntry.
 
 ## Diseño de la interfaz de mesa inmersiva (v2) - Arquitectura MesaTotal
@@ -424,87 +560,95 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
 - **DragOverlay en Portal:** El elemento arrastrado se renderiza mediante `createPortal` en `document.body` garantizando que no sufra recortes ni alteraciones de z-index al cruzar cualquier área de la pantalla.
 
 ### Modelo de UX de Arrastre de Cartas (WYSIWYG y Streaming Efímero en Vivo)
+
 1. **Dimensiones fijas en píxeles de mesa:** La superficie `#mesa-total` calcula `--card-h` y `--card-w` en píxeles absolutos basados en el pod y el viewport (`cellHeight * 0.20`), evitando desajustes de container queries al portalizar a `document.body`.
-2. **Arrastre de carta girada y caja apaisada (Punto 2):** Al arrastrar una carta girada (`tapped: true`), el fantasma en `DragOverlay` conserva fielmente la rotación a 90° (`origin-center rotate-90`) renderizándose como una caja apaisada (ancho y alto visualmente intercambiados). El desplazamiento (*offset*) entre el puntero del ratón y la carta se mide y calcula sobre su caja visual ya girada, asegurando que el puntero no quede "en el aire", que el desplazamiento sea estrictamente constante durante todo el trayecto y que la posición final coincida a $\le 2$ px sin cambios abruptos de dimensiones.
+2. **Arrastre de carta girada y caja apaisada (Punto 2):** Al arrastrar una carta girada (`tapped: true`), el fantasma en `DragOverlay` conserva fielmente la rotación a 90° (`origin-center rotate-90`) renderizándose como una caja apaisada (ancho y alto visualmente intercambiados). El desplazamiento (_offset_) entre el puntero del ratón y la carta se mide y calcula sobre su caja visual ya girada, asegurando que el puntero no quede "en el aire", que el desplazamiento sea estrictamente constante durante todo el trayecto y que la posición final coincida a $\le 2$ px sin cambios abruptos de dimensiones.
 3. **Precisión subpixel al soltar:** La posición final se calcula a partir del rectángulo real del overlay (`active.rect.current.translated`), restringido al viewport mediante modificador en vivo y sin colocación automática ni snapping, logrando coincidencia verificada $\le 2$ px (medición real en prueba: $0.00 - 0.26$ px).
 4. **Detección de colisión estricta por puntero:** El detector (`pointerWithin`) asegura que una carta solo entra en una pila si el cursor está físicamente dentro de sus límites. No existen imanes ni atracciones magnéticas hacia las pilas.
 5. **Fila de insignias de contadores y palabras clave (Punto 4):** Las cartas en mesa muestran una fila de insignias (`CardBadges`) anclada al borde superior de la carta (`top-1 left-1 right-1`), sin cubrir la línea inferior de artista y copyright. Incluye 11 tipos de contadores oficiales (con conteo numérico o interruptor para Finalidad) y 14 palabras clave oficiales en español con término inglés en paréntesis. Se modifican desde secciones en línea en el menú contextual (`CardContextMenu`) por cualquier participante en permanentes visibles, registrándose en bitácora y reseteándose al salir de la mesa.
-6. **Panel explicativo en vista previa y tooltips (Punto 5):** En la vista previa grande (`CardPreviewContext`), si la carta contiene contadores o palabras clave, se despliega un panel lateral anexo (`preview-keywords-counters-panel`) hacia el interior de la pantalla con la lista exhaustiva de iconos, nombres en español (inglés en paréntesis), cantidades y textos oficiales de ayuda (*reminder text*). Las insignias en mesa cuentan con tooltips nativos con la misma descripción detallada.
-5. **Streaming efímero a 30 fps, eliminación de animación desde el centro y prevención de parpadeo en receptor B (Punto 1):** El cliente emisor transmite `CARD_DRAG_MOVE` throttled a ~30 fps con coordenadas normalizadas. En el inicio del arrastre (`handleDragStart`), el emisor calcula de inmediato la posición normalizada real de la carta (tomada de `data.card.position` si proviene del campo o mediante `getBoundingClientRect` si proviene de mano u otras zonas), erradicando el valor residual por defecto en el centro de la pantalla (50%, 50%). El servidor retransmite `REMOTE_CARD_DRAGGING` a los demás participantes. En los receptores, el fantasma remoto nace directamente en esa posición real con la clase `transition-none` durante su primer mensaje (`isFirstMessage: true`), activando la interpolación CSS suave (`transition-[left,top] duration-75 ease-linear`) únicamente a partir del segundo mensaje, asegurando que el fantasma jamás se anime erráticamente desde el centro hacia la carta (primer frame a $\le 2$ px de la posición original y 0 frames en el centro). Durante todo el arrastre y tras finalizarlo, la carta fija permanece oculta (`isRemoteDragging: true`, `opacity: 0`). Al soltar, el emisor emite las coordenadas finales con `isDragging: false`; el receptor mantiene el fantasma visible en la posición final y la carta fija oculta bajo `pendingSync: true` hasta que el evento autoritativo sincroniza el estado en el mismo frame de renderizado, eliminando todo parpadeo, frame en posición anterior o duplicidad visual (0 frames residuales verificado con `requestAnimationFrame`).
-6. **Cierre fluido del abanico:** Al arrastrar una carta de la mano, su ranura colapsa a `width: 0` y `margin-left: 0` con transición de 250ms, cerrando el hueco entre cartas de forma imperceptible y sin desestabilizar el dock. Si el arrastre se cancela con la tecla `Escape`, la ranura se reabre suavemente.
-7. **Actualización optimista y síncrona sin parpadeo (Punto 1):** Al liberar el arrastre en `handleDragEnd`, la posición final `{ normX, normY }` se almacena síncronamente en el mapa local `optimisticPositions` mediante `flushSync` de React en el mismo ciclo en que se desactiva el `DragOverlay` (`dropAnimation={null}`). `BattlefieldCanvas` lee las coordenadas optimistas de inmediato, impidiendo que el renderizado caiga en la posición anterior mientras la confirmación WebSocket viaja por la red. La reconciliación con el estado del servidor descarta automáticamente ecos desactualizados sin causar saltos visuales hacia atrás (0 frames en posición anterior comprobado con `requestAnimationFrame`).
-8. **Eliminación de carta duplicada en clientes remotos (Punto 2):** Mientras un jugador remoto arrastra una carta, `BattlefieldCanvas` en los clientes receptores aplica `isRemoteDragging: true` a la carta fija original, asignándole `opacity: 0` y `pointer-events: none`. Así, el rival visualiza exclusivamente el fantasma interpolado a 30 fps (estrictamente 1 elemento visible para esa instancia). `useGameSocket` implementa un temporizador de seguridad de 1000 ms por cada tarjeta en arrastre remoto: si la conexión se interrumpe o el emisor no envía actualizaciones en 1 s, el estado efímero se purga automáticamente y la carta fija recupera su visibilidad normal (`opacity: 1`).
-9. **Flujos bidireccionales zona a zona y desacoplamiento de playerId (Punto 5):**
-   - **Comandante hacia la mesa:** La ranura de la zona de comando (`DraggableCommanderCard`) implementa `useDraggable({ id: card.instanceId, data: { card, fromZone: 'command' } })`. Al soltar sobre la mesa, emite `MOVE_CARD` con `fromZone: 'command'` y `toZone: 'battlefield'`, actualizando la ranura a estado vacío `(En campo)` con enlace modal para revisar cartas en la zona de comando.
-   - **Mesa hacia la mano:** La mano privada (`data-dock-zone="hand"`) implementa `useDroppable({ id: 'droppable-hand-${player.id}', data: { zone: 'hand', playerId } })` para el jugador local. Soltar cualquier permanente de la mesa sobre el abanico devuelve la carta a la mano privada (`toZone: 'hand'`).
-   - **Biblioteca hacia mano y campo:** Clic en la ranura de biblioteca emite `DRAW_CARDS` (`count: 1`). Además, la carta superior (`DraggableLibraryCard`) implementa `useDraggable({ fromZone: 'library' })`, permitiendo arrastrar directamente de la biblioteca al campo de batalla.
-   - **Robustez de esquemas WebSocket:** `playerId` es opcional en `DrawCardsSchema`, `AdjustLifeSchema`, `SetPlayerCounterSchema`, `SetLifeSchema` y `SetPlayerStatusSchema`. En el servidor (`ws-handler.ts`), si no se proporciona `playerId`, se asigna por defecto `client.playerId`, eliminando errores de tipo en consola y bloqueos de interfaz.
-   - **Estratificación y compresión contra solapamientos:** Las ranuras fijas del dock (Comandante, Biblioteca, Cementerio/Exilio) tienen elevación `z-20` y el contenedor de mano `z-10`. En `HandFan.tsx`, el margen negativo entre cartas se adapta dinámicamente (`overlapRatio = min(0.78, 0.48 + (n-3)*0.05)`), impidiendo que una mano con 7 o más cartas desborde y bloquee los clics o arrastres de la zona de comando.
-10. **La mano como destino de soltado (Punto 6):**
-   - El contenedor del abanico del jugador local (`[data-dock-zone="hand"]`) integra `useDroppable` con identificador `droppable-hand-${player.id}`. En `TableBoard.tsx`, soltar cualquier carta con `overData?.zone === 'hand' && overData?.playerId === localPlayerId` dispara la acción autoritativa `MOVE_CARD` con `toZone: 'hand'` y `toPlayerId: localPlayerId`.
-   - Cuando el puntero del arrastre cruza la zona de la mano propia (`isHandOver: true`), el contenedor activa un resalte suave (`ring-2 ring-amber-400/80 bg-amber-400/15 shadow-[0_0_30px_rgba(251,191,36,0.3)] border-amber-400/50`) con transición de 200 ms.
-   - Las manos de los rivales (`!isLocalPlayer`) no son droppables (`disabled: true` y sin registro de ref), asegurando que un jugador nunca pueda soltar o introducir cartas en las manos ajenas.
+6. **Panel explicativo en vista previa y tooltips (Punto 5):** En la vista previa grande (`CardPreviewContext`), si la carta contiene contadores o palabras clave, se despliega un panel lateral anexo (`preview-keywords-counters-panel`) hacia el interior de la pantalla con la lista exhaustiva de iconos, nombres en español (inglés en paréntesis), cantidades y textos oficiales de ayuda (_reminder text_). Las insignias en mesa cuentan con tooltips nativos con la misma descripción detallada.
+7. **Streaming efímero a 30 fps, eliminación de animación desde el centro y prevención de parpadeo en receptor B (Punto 1):** El cliente emisor transmite `CARD_DRAG_MOVE` throttled a ~30 fps con coordenadas normalizadas. En el inicio del arrastre (`handleDragStart`), el emisor calcula de inmediato la posición normalizada real de la carta (tomada de `data.card.position` si proviene del campo o mediante `getBoundingClientRect` si proviene de mano u otras zonas), erradicando el valor residual por defecto en el centro de la pantalla (50%, 50%). El servidor retransmite `REMOTE_CARD_DRAGGING` a los demás participantes. En los receptores, el fantasma remoto nace directamente en esa posición real con la clase `transition-none` durante su primer mensaje (`isFirstMessage: true`), activando la interpolación CSS suave (`transition-[left,top] duration-75 ease-linear`) únicamente a partir del segundo mensaje, asegurando que el fantasma jamás se anime erráticamente desde el centro hacia la carta (primer frame a $\le 2$ px de la posición original y 0 frames en el centro). Durante todo el arrastre y tras finalizarlo, la carta fija permanece oculta (`isRemoteDragging: true`, `opacity: 0`). Al soltar, el emisor emite las coordenadas finales con `isDragging: false`; el receptor mantiene el fantasma visible en la posición final y la carta fija oculta bajo `pendingSync: true` hasta que el evento autoritativo sincroniza el estado en el mismo frame de renderizado, eliminando todo parpadeo, frame en posición anterior o duplicidad visual (0 frames residuales verificado con `requestAnimationFrame`).
+8. **Cierre fluido del abanico:** Al arrastrar una carta de la mano, su ranura colapsa a `width: 0` y `margin-left: 0` con transición de 250ms, cerrando el hueco entre cartas de forma imperceptible y sin desestabilizar el dock. Si el arrastre se cancela con la tecla `Escape`, la ranura se reabre suavemente.
+9. **Actualización optimista y síncrona sin parpadeo (Punto 1):** Al liberar el arrastre en `handleDragEnd`, la posición final `{ normX, normY }` se almacena síncronamente en el mapa local `optimisticPositions` mediante `flushSync` de React en el mismo ciclo en que se desactiva el `DragOverlay` (`dropAnimation={null}`). `BattlefieldCanvas` lee las coordenadas optimistas de inmediato, impidiendo que el renderizado caiga en la posición anterior mientras la confirmación WebSocket viaja por la red. La reconciliación con el estado del servidor descarta automáticamente ecos desactualizados sin causar saltos visuales hacia atrás (0 frames en posición anterior comprobado con `requestAnimationFrame`).
+10. **Eliminación de carta duplicada en clientes remotos (Punto 2):** Mientras un jugador remoto arrastra una carta, `BattlefieldCanvas` en los clientes receptores aplica `isRemoteDragging: true` a la carta fija original, asignándole `opacity: 0` y `pointer-events: none`. Así, el rival visualiza exclusivamente el fantasma interpolado a 30 fps (estrictamente 1 elemento visible para esa instancia). `useGameSocket` implementa un temporizador de seguridad de 1000 ms por cada tarjeta en arrastre remoto: si la conexión se interrumpe o el emisor no envía actualizaciones en 1 s, el estado efímero se purga automáticamente y la carta fija recupera su visibilidad normal (`opacity: 1`).
+11. **Flujos bidireccionales zona a zona y desacoplamiento de playerId (Punto 5):**
+    - **Comandante hacia la mesa:** La ranura de la zona de comando (`DraggableCommanderCard`) implementa `useDraggable({ id: card.instanceId, data: { card, fromZone: 'command' } })`. Al soltar sobre la mesa, emite `MOVE_CARD` con `fromZone: 'command'` y `toZone: 'battlefield'`, actualizando la ranura a estado vacío `(En campo)` con enlace modal para revisar cartas en la zona de comando.
+    - **Mesa hacia la mano:** La mano privada (`data-dock-zone="hand"`) implementa `useDroppable({ id: 'droppable-hand-${player.id}', data: { zone: 'hand', playerId } })` para el jugador local. Soltar cualquier permanente de la mesa sobre el abanico devuelve la carta a la mano privada (`toZone: 'hand'`).
+    - **Biblioteca hacia mano y campo:** Clic en la ranura de biblioteca emite `DRAW_CARDS` (`count: 1`). Además, la carta superior (`DraggableLibraryCard`) implementa `useDraggable({ fromZone: 'library' })`, permitiendo arrastrar directamente de la biblioteca al campo de batalla.
+    - **Robustez de esquemas WebSocket:** `playerId` es opcional en `DrawCardsSchema`, `AdjustLifeSchema`, `SetPlayerCounterSchema`, `SetLifeSchema` y `SetPlayerStatusSchema`. En el servidor (`ws-handler.ts`), si no se proporciona `playerId`, se asigna por defecto `client.playerId`, eliminando errores de tipo en consola y bloqueos de interfaz.
+    - **Estratificación y compresión contra solapamientos:** Las ranuras fijas del dock (Comandante, Biblioteca, Cementerio/Exilio) tienen elevación `z-20` y el contenedor de mano `z-10`. En `HandFan.tsx`, el margen negativo entre cartas se adapta dinámicamente (`overlapRatio = min(0.78, 0.48 + (n-3)*0.05)`), impidiendo que una mano con 7 o más cartas desborde y bloquee los clics o arrastres de la zona de comando.
+12. **La mano como destino de soltado (Punto 6):**
+
+- El contenedor del abanico del jugador local (`[data-dock-zone="hand"]`) integra `useDroppable` con identificador `droppable-hand-${player.id}`. En `TableBoard.tsx`, soltar cualquier carta con `overData?.zone === 'hand' && overData?.playerId === localPlayerId` dispara la acción autoritativa `MOVE_CARD` con `toZone: 'hand'` y `toPlayerId: localPlayerId`.
+- Cuando el puntero del arrastre cruza la zona de la mano propia (`isHandOver: true`), el contenedor activa un resalte suave (`ring-2 ring-amber-400/80 bg-amber-400/15 shadow-[0_0_30px_rgba(251,191,36,0.3)] border-amber-400/50`) con transición de 200 ms.
+- Las manos de los rivales (`!isLocalPlayer`) no son droppables (`disabled: true` y sin registro de ref), asegurando que un jugador nunca pueda soltar o introducir cartas en las manos ajenas.
+
 11. **Pilas interactivas y modales con menú contextual (Punto 7):**
-   - **Ilustración y conteo de la carta superior:** El cementerio y el exilio renderizan `DraggablePileCard`, mostrando la imagen real de la última carta llegada como carátula de la pila y un contador nítido sobre ella.
-   - **Arrastre directo desde la pila:** La carta superior posee `useDraggable` con `fromZone: 'graveyard' | 'exile'`, permitiendo arrastrarla de forma natural hacia la mesa o hacia la mano propia.
-   - **Inspector modal y menú contextual con envío a división propia en cascada (Punto 2 y Punto 8):** Hacer clic sobre cualquier pila abre un modal con el desglose de cartas. Al hacer clic derecho en cualquier carta dentro del modal (ModalCardItem) o en la mano, se despliega un menú con "Enviar a la mano", "Enviar al campo" y en cementerio "Enviar al exilio". Al seleccionar "Enviar al campo", el sistema calcula las coordenadas normalizadas en el centro de la sección jugable del propio jugador (excluyendo el dock inferior, `getPlayerBattlefieldCascadePosition` en cliente y `computePlayerDivisionCenter` en servidor), con desplazamiento progresivo en cascada (+0.015 en $x, y$) para evitar solapamientos exactos, garantizando autoritativamente que la carta quede con `ownerId` inmutable y `holderId` asignado al jugador (validado en mesas de 2, 4 y 6 jugadores con coordenadas medidas en 1080p: 2p en (436.80, 407.70) con centro jugable (480.00, 459.00); 4p en (436.80, 151.20) con centro jugable (480.00, 202.50); 6p en (276.80, 151.20) con centro jugable (320.00, 202.50)).
-   - **Privacidad estricta de biblioteca:** Cualquier jugador puede consultar los modales de cementerio y exilio de todos los participantes. La biblioteca privada solo puede ser inspeccionada por su propio dueño (`isLocalPlayer`), y el servidor (`visibility-filter.ts`) enmascara las cartas de las bibliotecas rivales con `MASKED_CARD_DEFINITION`.
+
+- **Ilustración y conteo de la carta superior:** El cementerio y el exilio renderizan `DraggablePileCard`, mostrando la imagen real de la última carta llegada como carátula de la pila y un contador nítido sobre ella.
+- **Arrastre directo desde la pila:** La carta superior posee `useDraggable` con `fromZone: 'graveyard' | 'exile'`, permitiendo arrastrarla de forma natural hacia la mesa o hacia la mano propia.
+- **Inspector modal y menú contextual con envío a división propia en cascada (Punto 2 y Punto 8):** Hacer clic sobre cualquier pila abre un modal con el desglose de cartas. Al hacer clic derecho en cualquier carta dentro del modal (ModalCardItem) o en la mano, se despliega un menú con "Enviar a la mano", "Enviar al campo" y en cementerio "Enviar al exilio". Al seleccionar "Enviar al campo", el sistema calcula las coordenadas normalizadas en el centro de la sección jugable del propio jugador (excluyendo el dock inferior, `getPlayerBattlefieldCascadePosition` en cliente y `computePlayerDivisionCenter` en servidor), con desplazamiento progresivo en cascada (+0.015 en $x, y$) para evitar solapamientos exactos, garantizando autoritativamente que la carta quede con `ownerId` inmutable y `holderId` asignado al jugador (validado en mesas de 2, 4 y 6 jugadores con coordenadas medidas en 1080p: 2p en (436.80, 407.70) con centro jugable (480.00, 459.00); 4p en (436.80, 151.20) con centro jugable (480.00, 202.50); 6p en (276.80, 151.20) con centro jugable (320.00, 202.50)).
+- **Privacidad estricta de biblioteca:** Cualquier jugador puede consultar los modales de cementerio y exilio de todos los participantes. La biblioteca privada solo puede ser inspeccionada por su propio dueño (`isLocalPlayer`), y el servidor (`visibility-filter.ts`) enmascara las cartas de las bibliotecas rivales con `MASKED_CARD_DEFINITION`.
 
 12. **Zona de comando droppable e impuesto autoritativo de comandante (Punto 6):**
-   - **Ranura droppable:** La zona de comando en el dock de cada jugador (`[data-dock-zone="command"]`) integra `useDroppable` con identificador `droppable-command-${player.id}` (habilitado únicamente para el jugador local, `disabled: !isLocalPlayer`), permitiendo devolver al comandante arrastrándolo desde la mesa o pilas.
-   - **Botón explícito de retorno:** Cuando la zona de comando está vacía (`zones.command.length === 0`), se muestra un botón explícito "Devolver al comando" (`data-testid="return-to-command-btn"`), garantizando el retorno inmediato sin requerir arrastre físico.
-   - **Impuesto manual sin motor de reglas (Punto 3):** Al devolver al comandante a la zona de comando (sea mediante arrastre sobre la ranura droppable, clic en "Devolver al comando" o clic derecho en la mesa -> "A Comando"), el servidor NO auto-incrementa el impuesto de comandante. La aplicación de impuesto es exclusivamente manual a través de los botones interactivos ±2 de la zona de comando.
-   - **Sacar a la mesa mantiene el tax:** Mover el comandante desde la zona de comando hacia el campo de batalla (`toZone: 'battlefield'`) conserva intacto el valor acumulado de `commanderTax`.
-   - **Badge permanente interactivo:** La ranura de comando renderiza una pastilla interactiva (`data-testid="commander-tax-badge"`) con el texto `Tax: +X` y botones táctiles `+` y `-` que despachan `SET_PLAYER_COUNTER` con delta $\pm 2$ (el impuesto nunca se incrementa ni decrementa de 1 en 1).
-   - **Desacoplamiento de LifePill:** Se eliminaron los controles de `commanderTax` de la pastilla de vida (`LifePill`) para eliminar redundancias y centralizar la visualización y control del impuesto exclusivamente en la zona de comando.
+
+- **Ranura droppable:** La zona de comando en el dock de cada jugador (`[data-dock-zone="command"]`) integra `useDroppable` con identificador `droppable-command-${player.id}` (habilitado únicamente para el jugador local, `disabled: !isLocalPlayer`), permitiendo devolver al comandante arrastrándolo desde la mesa o pilas.
+- **Botón explícito de retorno:** Cuando la zona de comando está vacía (`zones.command.length === 0`), se muestra un botón explícito "Devolver al comando" (`data-testid="return-to-command-btn"`), garantizando el retorno inmediato sin requerir arrastre físico.
+- **Impuesto manual sin motor de reglas (Punto 3):** Al devolver al comandante a la zona de comando (sea mediante arrastre sobre la ranura droppable, clic en "Devolver al comando" o clic derecho en la mesa -> "A Comando"), el servidor NO auto-incrementa el impuesto de comandante. La aplicación de impuesto es exclusivamente manual a través de los botones interactivos ±2 de la zona de comando.
+- **Sacar a la mesa mantiene el tax:** Mover el comandante desde la zona de comando hacia el campo de batalla (`toZone: 'battlefield'`) conserva intacto el valor acumulado de `commanderTax`.
+- **Badge permanente interactivo:** La ranura de comando renderiza una pastilla interactiva (`data-testid="commander-tax-badge"`) con el texto `Tax: +X` y botones táctiles `+` y `-` que despachan `SET_PLAYER_COUNTER` con delta $\pm 2$ (el impuesto nunca se incrementa ni decrementa de 1 en 1).
+- **Desacoplamiento de LifePill:** Se eliminaron los controles de `commanderTax` de la pastilla de vida (`LifePill`) para eliminar redundancias y centralizar la visualización y control del impuesto exclusivamente en la zona de comando.
 
 13. **Arrastre a la biblioteca a la parte superior (Punto 6):**
-   - En `TableBoard.tsx`, soltar una carta sobre la ranura de biblioteca (`overData?.zone === 'library'`) despacha `MOVE_CARD` con `toZone: 'library'` y `destinationIndex: 0`.
-   - En el servidor (`game-state.ts`), cuando `payload.toZone === 'library'` y no se especifica `destinationIndex`, la carta se inserta al inicio del array (`zones.library.unshift(card)`), quedando en la parte superior (arriba, índice 0).
-   - Esto garantiza autoritativamente que la carta soltada en la biblioteca sea la próxima carta extraída al invocar `drawCards` (que toma cartas desde el índice 0 con `splice(0, count)`). Su posición espacial en mesa y estado girado se resetean automáticamente.
+
+- En `TableBoard.tsx`, soltar una carta sobre la ranura de biblioteca (`overData?.zone === 'library'`) despacha `MOVE_CARD` con `toZone: 'library'` y `destinationIndex: 0`.
+- En el servidor (`game-state.ts`), cuando `payload.toZone === 'library'` y no se especifica `destinationIndex`, la carta se inserta al inicio del array (`zones.library.unshift(card)`), quedando en la parte superior (arriba, índice 0).
+- Esto garantiza autoritativamente que la carta soltada en la biblioteca sea la próxima carta extraída al invocar `drawCards` (que toma cartas desde el índice 0 con `splice(0, count)`). Su posición espacial en mesa y estado girado se resetean automáticamente.
 
 14. **Menú contextual en mano, mesa y pilas con submenús de biblioteca y revelación (Punto 7):**
-   - Menú contextual flotante (`CardContextMenu`) disponible al hacer clic derecho en la mano propia (`HandFan`), en cartas del campo de batalla (`BattlefieldCanvas`) o en cartas de cualquier modal inspector de pilas (`PlayerCell`).
-   - Opciones de envío a zonas:
-     - Cementerio (`graveyard`) y Exilio (`exile`): se insertan al tope (índice 0) de la pila correspondiente.
-     - Mesa (`battlefield`): calcula el centro de la sección jugable asignada al jugador sin contar el dock (`getPlayerBattlefieldCascadePosition` en cliente y `computePlayerDivisionCenter` en servidor), aplicando desplazamiento progresivo en cascada (+0.015 en x, y). La carta adquiere `ownerId` inmutable y `holderId` del jugador local. Coordenadas resultantes en 1080p: 2p en (436.80, 407.70) con centro jugable en (480.00, 459.00); 4p en (436.80, 151.20) con centro jugable en (480.00, 202.50); 6p en (276.80, 151.20) con centro jugable en (320.00, 202.50).
-     - Biblioteca (`library`): submenú interactivo con tres acciones: "Arriba" (`destinationIndex: 0`), "Abajo" (`destinationIndex: library.length`), y "Posición" (con selector numérico $1 \dots N$, mapeado a `destinationIndex = pos - 1`).
-   - Revelación de cartas (`REVEAL_CARD` y `CARD_REVEALED`):
-     - No desplaza la carta de su zona.
-     - Submenú de revelación: "A toda la mesa" (difusión broadcast a todos los sockets) o "A [Jugador X]" (filtrado estricto por servidor enviando el mensaje únicamente al socket del destinatario y al emisor mediante `VisibilityFilter`).
-     - Los clientes destinatarios despliegan una modal efímera (`RevealedCardModal`) con la imagen y datos de la carta, cerrable por botón o tecla `Escape`.
-     - Bitácora (`logs`): revelar a todos genera `${fromPlayerName} reveló "${card.name}" a todos`; revelar privado genera `${fromPlayerName} reveló una carta a ${targetPlayerName}` (sin revelar el nombre de la carta al resto de la mesa).
 
+- Menú contextual flotante (`CardContextMenu`) disponible al hacer clic derecho en la mano propia (`HandFan`), en cartas del campo de batalla (`BattlefieldCanvas`) o en cartas de cualquier modal inspector de pilas (`PlayerCell`).
+- Opciones de envío a zonas:
+  - Cementerio (`graveyard`) y Exilio (`exile`): se insertan al tope (índice 0) de la pila correspondiente.
+  - Mesa (`battlefield`): calcula el centro de la sección jugable asignada al jugador sin contar el dock (`getPlayerBattlefieldCascadePosition` en cliente y `computePlayerDivisionCenter` en servidor), aplicando desplazamiento progresivo en cascada (+0.015 en x, y). La carta adquiere `ownerId` inmutable y `holderId` del jugador local. Coordenadas resultantes en 1080p: 2p en (436.80, 407.70) con centro jugable en (480.00, 459.00); 4p en (436.80, 151.20) con centro jugable en (480.00, 202.50); 6p en (276.80, 151.20) con centro jugable en (320.00, 202.50).
+  - Biblioteca (`library`): submenú interactivo con tres acciones: "Arriba" (`destinationIndex: 0`), "Abajo" (`destinationIndex: library.length`), y "Posición" (con selector numérico $1 \dots N$, mapeado a `destinationIndex = pos - 1`).
+- Revelación de cartas (`REVEAL_CARD` y `CARD_REVEALED`):
+  - No desplaza la carta de su zona.
+  - Submenú de revelación: "A toda la mesa" (difusión broadcast a todos los sockets) o "A [Jugador X]" (filtrado estricto por servidor enviando el mensaje únicamente al socket del destinatario y al emisor mediante `VisibilityFilter`).
+  - Los clientes destinatarios despliegan una modal efímera (`RevealedCardModal`) con la imagen y datos de la carta, cerrable por botón o tecla `Escape`.
+  - Bitácora (`logs`): revelar a todos genera `${fromPlayerName} reveló "${card.name}" a todos`; revelar privado genera `${fromPlayerName} reveló una carta a ${targetPlayerName}` (sin revelar el nombre de la carta al resto de la mesa).
 
 15. **Animación de girar y enderezar sobre centro invariante y slot apaisado (Punto 7):**
-    - **Estructura jerárquica slot-rotador:** Cada carta en el campo de batalla (`BattlefieldCanvas`) se compone de un contenedor exterior (*slot*, `.card-slot-container`) y un cuerpo de carta giratorio interior (`.card-rotator`).
+    - **Estructura jerárquica slot-rotador:** Cada carta en el campo de batalla (`BattlefieldCanvas`) se compone de un contenedor exterior (_slot_, `.card-slot-container`) y un cuerpo de carta giratorio interior (`.card-rotator`).
     - **Anclaje e invarianza matemática del centro:** El slot exterior se posiciona mediante `left: calc(${posX}% + var(--card-w) / 2)`, `top: calc(${posY}% + var(--card-h) / 2)` y `transform: translate(-50%, -50%)`. Durante el giro, el ancho y alto del slot se intercambian (`cardW = isTapped ? 'var(--card-h)' : 'var(--card-w)'`, `cardH = isTapped ? 'var(--card-w)' : 'var(--card-h)'`) con transición CSS `cubic-bezier(0, 0, 0.2, 1)` de 180 ms. Debido a que `translate(-50%, -50%)` centra el slot respecto a las coordenadas invariantes, el centro geométrico permanece matemáticamente constante ($\Delta x = 0.00\text{ px}, \Delta y = 0.00\text{ px}$) en todos los fotogramas muestreados con `requestAnimationFrame` tanto en el cliente emisor como en clientes remotos.
     - **Rotación interior por camino más corto:** El cuerpo interior contiene la carátula, badges de contadores (+1/+1, etc.) y el contorno de selección. Rota de $0^\circ \to 90^\circ$ al girar (monótonamente sin sobrepasarse) y de $90^\circ \to 0^\circ$ al enderezar (camino más corto de $-90^\circ$, nunca $270^\circ$). Contadores e insignias giran conjuntamente con la carta sin saltos ni desfases.
     - **Respeto a prefers-reduced-motion:** La media query `@media (prefers-reduced-motion: reduce)` desactiva la animación con `transition: none !important`, realizando el intercambio dimensional y la rotación de forma instantánea.
     - **Desacoplamiento de holderId y MOVE_CARD:** La acción de girar o enderezar despacha exclusivamente `TAP_CARD`. El servidor no recalcula `holderId` (que solo se computa al mover o soltar cartas en la mesa).
     - **Preservación de nitidez óptica y anti-blur en rotación (Corrección Punto 1):**
-      - *Dimensiones pares exactas:* Las variables `--card-w` y `--card-h` se computan y redondean como enteros pares (96×134 en 2p, 78×108 en 4p y 6p a 1080p). Esto asegura que al aplicar `translate(-50%, -50%)`, el desplazamiento sea un entero exacto (e.g. -48px y -67px), eliminando desfases de medio píxel (.5px).
-      - *Posicionamiento entero en el lienzo:* El centro de cada carta se calcula mediante `centerPixelX = Math.round(screenNormX * winW + cardWNum / 2)` y `centerPixelY = Math.round(screenNormY * winH + cardHNum / 2)`, anclando el slot a coordenadas enteras del viewport.
-      - *Gestión temporal de `will-change`:* Para evitar que Blink/Chromium promueva la capa permanentemente y congele una rasterización a baja escala, `will-change: transform` y `will-change: width, height` solo se aplican durante los 180 ms de la animación mediante la clase dinámica `.is-animating-tap`. Al finalizar la transición (`onTransitionEnd`), `will-change` se desactiva, permitiendo al motor rasterizar la carta a resolución nativa completa.
-      - *Transform 2D puro:* Sin capas 3D, sin `translateZ` ni filtros artificiales sobre la imagen.
-      - *Medición empírica de nitidez (Varianza del Laplaciano):* Verificado en `apps/web/e2e/sharpness-tap.spec.ts`:
+      - _Dimensiones pares exactas:_ Las variables `--card-w` y `--card-h` se computan y redondean como enteros pares (96×134 en 2p, 78×108 en 4p y 6p a 1080p). Esto asegura que al aplicar `translate(-50%, -50%)`, el desplazamiento sea un entero exacto (e.g. -48px y -67px), eliminando desfases de medio píxel (.5px).
+      - _Posicionamiento entero en el lienzo:_ El centro de cada carta se calcula mediante `centerPixelX = Math.round(screenNormX * winW + cardWNum / 2)` y `centerPixelY = Math.round(screenNormY * winH + cardHNum / 2)`, anclando el slot a coordenadas enteras del viewport.
+      - _Gestión temporal de `will-change`:_ Para evitar que Blink/Chromium promueva la capa permanentemente y congele una rasterización a baja escala, `will-change: transform` y `will-change: width, height` solo se aplican durante los 180 ms de la animación mediante la clase dinámica `.is-animating-tap`. Al finalizar la transición (`onTransitionEnd`), `will-change` se desactiva, permitiendo al motor rasterizar la carta a resolución nativa completa.
+      - _Transform 2D puro:_ Sin capas 3D, sin `translateZ` ni filtros artificiales sobre la imagen.
+      - _Medición empírica de nitidez (Varianza del Laplaciano):_ Verificado en `apps/web/e2e/sharpness-tap.spec.ts`:
         - DPR 1: Enderezada = 3812.31, Girada = 3929.30, Ratio = 103.07% (>= 90% requerido cumplido).
         - DPR 2: Enderezada = 3376.38, Girada = 3547.01, Ratio = 105.05% (>= 90% requerido cumplido).
         - Capturas ampliadas al 200% archivadas: `sharpness-untapped-200.png` y `sharpness-tapped-200.png`.
     - **Análisis de posición por centro en el modelo:** Al guardar o anclar la posición de la carta por su centro, las rotaciones no alteran las coordenadas de la carta, eliminando cualquier desfase entre clientes locales y remotos.
     - **Fuente de verdad única para el arrastre y DragOverlay idéntico (Corrección Punto 2):**
-      - *Medición precisa de la caja visual:* En `handleDragStart`, se inspecciona el nodo del DOM mediante `getBoundingClientRect()` de la carta (considerando si está rotada 90° o no), calculando el vector de desplazamiento entre las coordenadas del evento puntero (`p0x, p0y`) y el centro de la caja (`grabOffsetFromCenter`), así como con su esquina superior izquierda (`grabOffsetFromTopLeft`).
-      - *Estructura gemela de slot y rotador:* El `DragOverlay` renderiza exactamente la misma arquitectura que `BattlefieldCanvas`: un contenedor `.card-slot-container` con dimensiones intercambiadas (`cardPixelHeight` × `cardPixelWidth` si está girada) y un `.card-rotator` centrado con `rotate(90deg)` o `rotate(0deg)`.
-      - *Modificador `snapToVisualBoxModifier`:* Neutraliza las discrepancias internas de `@dnd-kit` producidas por el centrado CSS (`translate(-50%, -50%)`), garantizando que la posición del overlay coincida exactamente con `initialBox.left + transform.x` y `initialBox.top + transform.y` acotada al viewport, eliminando saltos o desalineaciones visuales al superar los 8 px de activación.
-      - *Estabilidad dimensional de la mano:* En `HandFan.tsx`, las cartas arrastradas conservan su anchura de slot (`var(--card-w)`) aplicando `opacity: 0` en lugar de colapsar la anchura a 0, evitando saltos del abanico o alteraciones de rectángulos durante el arrastre.
-      - *Coordenadas de mesa desde el overlay:* Al soltar (`handleDragEnd`), las coordenadas de mesa se derivan estrictamente de la caja visual delimitada del overlay (`centerScreenX = clampedX + overlayWidth / 2`, `centerScreenY = clampedY + overlayHeight / 2`), asegurando continuidad perfecta entre la experiencia visual y el estado del servidor.
+      - _Medición precisa de la caja visual:_ En `handleDragStart`, se inspecciona el nodo del DOM mediante `getBoundingClientRect()` de la carta (considerando si está rotada 90° o no), calculando el vector de desplazamiento entre las coordenadas del evento puntero (`p0x, p0y`) y el centro de la caja (`grabOffsetFromCenter`), así como con su esquina superior izquierda (`grabOffsetFromTopLeft`).
+      - _Estructura gemela de slot y rotador:_ El `DragOverlay` renderiza exactamente la misma arquitectura que `BattlefieldCanvas`: un contenedor `.card-slot-container` con dimensiones intercambiadas (`cardPixelHeight` × `cardPixelWidth` si está girada) y un `.card-rotator` centrado con `rotate(90deg)` o `rotate(0deg)`.
+      - _Modificador `snapToVisualBoxModifier`:_ Neutraliza las discrepancias internas de `@dnd-kit` producidas por el centrado CSS (`translate(-50%, -50%)`), garantizando que la posición del overlay coincida exactamente con `initialBox.left + transform.x` y `initialBox.top + transform.y` acotada al viewport, eliminando saltos o desalineaciones visuales al superar los 8 px de activación.
+      - _Estabilidad dimensional de la mano:_ En `HandFan.tsx`, las cartas arrastradas conservan su anchura de slot (`var(--card-w)`) aplicando `opacity: 0` en lugar de colapsar la anchura a 0, evitando saltos del abanico o alteraciones de rectángulos durante el arrastre.
+      - _Coordenadas de mesa desde el overlay:_ Al soltar (`handleDragEnd`), las coordenadas de mesa se derivan estrictamente de la caja visual delimitada del overlay (`centerScreenX = clampedX + overlayWidth / 2`, `centerScreenY = clampedY + overlayHeight / 2`), asegurando continuidad perfecta entre la experiencia visual y el estado del servidor.
 
     - **Seguimiento estricto del puntero durante el arrastre (Corrección Punto 3):**
-      - *Sincronización en tiempo real con `latestPointerRef`:* Para eliminar el salto inicial de 8 px inherente a la activación del sensor de `@dnd-kit`, `TableBoard` mantiene un listener nativo global de `pointermove` en fase de captura (`latestPointerRef`). `snapToVisualBoxModifier` calcula `targetLeft = currentPointerX - grabOffsetFromTopLeft.x` y `targetTop = currentPointerY - grabOffsetFromTopLeft.y`, asegurando que el punto agarrado del overlay visual (`puntero - overlayCorner`) se conserve matemáticamente invariante con $\Delta \le 1.0\text{ px}$.
-      - *Muestreo continuo y certificación E2E:* Validado en `apps/web/e2e/pointer-tracking.spec.ts` en 16 combinaciones (carta enderezada y girada; desde mano, mesa y mesa expandida; a 1920x1080 y 1366x768; en pods de 2 y 4 jugadores):
+      - _Sincronización en tiempo real con `latestPointerRef`:_ Para eliminar el salto inicial de 8 px inherente a la activación del sensor de `@dnd-kit`, `TableBoard` mantiene un listener nativo global de `pointermove` en fase de captura (`latestPointerRef`). `snapToVisualBoxModifier` calcula `targetLeft = currentPointerX - grabOffsetFromTopLeft.x` y `targetTop = currentPointerY - grabOffsetFromTopLeft.y`, asegurando que el punto agarrado del overlay visual (`puntero - overlayCorner`) se conserve matemáticamente invariante con $\Delta \le 1.0\text{ px}$.
+      - _Muestreo continuo y certificación E2E:_ Validado en `apps/web/e2e/pointer-tracking.spec.ts` en 16 combinaciones (carta enderezada y girada; desde mano, mesa y mesa expandida; a 1920x1080 y 1366x768; en pods de 2 y 4 jugadores):
         - Desviación en el frame del umbral de 8 px: $\Delta x = 0.00\text{ px}, \Delta y = 0.00\text{ px}$ en todas las combinaciones.
         - Desviación máxima a lo largo de toda la trayectoria: $\Delta x = 0.00\text{ px}, \Delta y = 0.00\text{ px}$ en todas las combinaciones (criterio $\le 1.0\text{ px}$ cumplido al 100%).
+
 ### Privacidad y Reglas de Visibilidad de Mensajes
+
     - **Centrado exacto al enviar al campo con dimensiones reales de carta (Corrección Punto 4):**
       - *Cálculo dinámico basado en dimensiones reales:* `packages/shared/src/utils/card-dimensions.ts` (`getCardDimensions`) calcula el tamaño entero y par de las cartas según el número de participantes (`podSize`) y la resolución del viewport.
       - *Normalización en cliente y servidor:* Tanto `getPlayerBattlefieldCascadePosition` (`apps/web/src/utils/table-framing.ts`) como `computePlayerDivisionCenter` (`apps/server/src/game/game-state.ts`) reemplazan los valores estáticos (`0.0225` y `0.0475`, que asumían 86.4×102.6 px fijos) por `cardHalfWNorm = (cardDims.width / 2) / viewport.width` y `cardHalfHNorm = (cardDims.height / 2) / viewport.height`.
@@ -520,6 +664,7 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
           - 6p: Centro jugable = (227.67, 144.00), Carta (56×78) top-left = (199.67, 105.00) $\to$ Centro carta = (227.67, 144.00), Diferencia = (0.00 px, 0.00 px).
 
 ### Privacidad y Reglas de Visibilidad de Mensajes
+
 1. **Fase de Mulligan y Regla de Londres:**
    - La estructura de mano inicial de cada jugador (`mulliganState.players[playerId].cards`) se transmite de forma autoritativa y privada únicamente al socket del propio jugador.
    - A los rivales se les ocultan las identidades de las cartas (reciben la cuenta `cardsCount`, el estado de decisión `'deciding' | 'kept'`, el número de mulligans realizados y la cantidad de cartas devueltas al fondo, pero jamás los identificadores o nombres de las cartas).
@@ -534,6 +679,7 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
    - Cuando una carta entra a la biblioteca (arriba en índice 0, abajo en `length` o en posición intermedia $N$), su identidad queda protegida bajo la regla de zona oculta: el servidor incrementa el conteo `libraryCount` para la sala, pero no expone el orden ni la identidad de las cartas de la biblioteca a los oponentes.
 
 ### Estilo visual
+
 - Tema oscuro; texto claro con sombra suave; cartas con borde fino y sombra para despegarlas del playmat.
 - **Regla de rotación única de permanente (Punto 3):** La rotación de permanentes (Tap/Untap) se aplica exclusivamente en el contenedor externo `BattlefieldCardItem` (`transition-transform duration-150 origin-center rotate-90`). `CardDisplay` y las etiquetas internas `<img>` carecen de rotaciones propias (`transform: none`), eliminando el problema de rotación doble acumulada a 180° (invertida). Voltear cartas boca abajo o alternar cartas de doble cara conmuta el recurso visual sin aplicar rotaciones 3D conflictivas con el tap.
 - **Interacciones de cartas en mesa (Punto 4):**
@@ -596,10 +742,10 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Filtro `isVisible`:** En [`CardContextMenu.tsx`](apps/web/src/components/CardContextMenu.tsx), la opción "Ver carta" se calcula con `!card.isFaceDown && !isPrivateHand && (fromZone === 'command' || card.isCommander || (fromZone === 'hand' && card.ownerId === targetPlayerId) || fromZone === 'battlefield' || fromZone === 'graveyard' || fromZone === 'exile')`.
   - **Anonimización de títulos:** Si `card.isFaceDown` es true, el encabezado muestra exclusivamente `"Carta boca abajo"`. Si es mano ajena, muestra `"Carta oculta"`, impidiendo cualquier filtración de nombre o tipo.
   - **Flexibilización de mutaciones sobre permanentes visibles (Punto 7 de Correcciones del Cliente - D.7):**
-  - *Qué bloqueaba canMutate anteriormente:* Bloqueaba girar/enderezar (`onTap`), voltear boca abajo/arriba (`onFlip`), clonar fichas (`onClone`), poner contadores y palabras clave sobre permanentes ajenos en la mesa.
-  - *Apertura de interacción en mesa:* Se eliminan las restricciones de `canMutate` sobre permanentes visibles de la mesa en cliente y servidor (`GameStateSession.tapCard`, `flipCard`, `cloneToken`, `setCardCounter`, `setCardPT`, `toggleCardKeyword`). Cualquier jugador puede girar (doble clic o menú), clonar fichas, cambiar cara visible, modificar contadores, P/T o palabras clave, registrándose la autoría en la bitácora pública.
-  - *Preservación de gobernanza de zonas:* El arrastre y los traslados hacia cementerio, exilio, mano, biblioteca o zona de comando permanecen estrictamente gobernados por el propietario y titular (`canMove` / `canMutate`).
-  - *Blindaje de información oculta:* La privacidad de manos ajenas no reveladas, bibliotecas y cartas boca abajo se mantiene 100% blindada.
+  - _Qué bloqueaba canMutate anteriormente:_ Bloqueaba girar/enderezar (`onTap`), voltear boca abajo/arriba (`onFlip`), clonar fichas (`onClone`), poner contadores y palabras clave sobre permanentes ajenos en la mesa.
+  - _Apertura de interacción en mesa:_ Se eliminan las restricciones de `canMutate` sobre permanentes visibles de la mesa en cliente y servidor (`GameStateSession.tapCard`, `flipCard`, `cloneToken`, `setCardCounter`, `setCardPT`, `toggleCardKeyword`). Cualquier jugador puede girar (doble clic o menú), clonar fichas, cambiar cara visible, modificar contadores, P/T o palabras clave, registrándose la autoría en la bitácora pública.
+  - _Preservación de gobernanza de zonas:_ El arrastre y los traslados hacia cementerio, exilio, mano, biblioteca o zona de comando permanecen estrictamente gobernados por el propietario y titular (`canMove` / `canMutate`).
+  - _Blindaje de información oculta:_ La privacidad de manos ajenas no reveladas, bibliotecas y cartas boca abajo se mantiene 100% blindada.
 - **Atribución en el Selector de Playmat y Enlace a "Ver Carta" (Punto 7 de Correcciones del Cliente):**
   - **Identificación de carta de fondo:** En [`PlayerCell.tsx`](apps/web/src/components/PlayerCell.tsx), se resuelve `activePlaymatCard` comparando la URL de fondo (`previewPlaymatUrl` o `playmatImage`) con las ilustraciones `art_crop`, `normal` y `large` de las cartas del jugador, recurriendo al comandante en zona de comando/campo o sintetizando la carta oficial del mazo.
   - **Detección de `art_crop`:** Con `isUsingArtCrop`, si el fondo corresponde a una ilustración recortada de Magic (Scryfall `art_crop`), se expone un bloque de atribución destacado (`data-testid="playmat-attribution-box"`).
@@ -611,13 +757,13 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
 - **Certificación Automatizada E2E de Ver Carta, Dictámenes, DFC, Privacidad y Atribución Playmat (Punto 8 de Correcciones del Cliente):**
   - **Suite Playwright E2E:** Implementada en [`apps/web/e2e/card-details.spec.ts`](apps/web/e2e/card-details.spec.ts) ejecutando el ciclo de validación completo en pod multijugador real (1920x1080).
   - **Resultados de certificación:**
-    1. *Carta con dictámenes oficiales:* Sol Ring verificado con todos sus metadatos (imagen grande, coste {1}, tipo Artifact, Oracle con símbolos `{T} -> ↷` y `{C}{C} -> CC`, artista "Titus Lunter", copyright "Wizards of the Coast", legalidad en Commander "Legal", y 2 dictámenes oficiales con fecha `2023-09-01` y fuente `wotc`).
-    2. *Carta de doble cara (DFC):* Delver of Secrets verificado alternando caras con selector interactivo (`data-testid="card-details-face-switcher"`): Cara 1 (Delver of Secrets, Creature — Human Wizard, 1/1, maná {U}) a Cara 2 (Insectile Aberration, Creature — Human Insect, 3/2 con Flying, sin coste de maná), y reversión a Cara 1.
-    3. *Carta sin dictámenes:* Delver / Cultivate verificado con estado visual accesible `"Sin dictámenes"` (`data-testid="card-details-rulings-empty"`).
-    4. *Aislamiento de privacidad:* Carta boca abajo de Alice en el campo de batalla inspeccionada por Bob; el menú contextual muestra `"Carta boca abajo"` y el botón `"Ver carta"` (`data-testid="context-view-card"`) tiene conteo 0.
-    5. *Comprobación de fecha de sincronización:* Endpoint `POST /api/cards/sync-rulings` verificado con `skipped: true, reason: 'not_modified', syncedCount: 0` ejecutado en 149 ms sin descargas redundantes.
-    6. *Atribución en selector de playmat:* Modal de personalización de playmat verificado con bloque de atribución (`data-testid="playmat-attribution-box"`), artista ("Ilustrado por ..."), copyright ("Wizards of the Coast"), y botón "Ver carta" abriendo `CardDetailsModal` sobre el selector.
-    7. *Artefactos generados:* Capturas al 200% archivadas en el directorio de artefactos: [`card-details-single-faced.png`](card-details-single-faced.png) y [`card-details-double-faced.png`](card-details-double-faced.png).
+    1. _Carta con dictámenes oficiales:_ Sol Ring verificado con todos sus metadatos (imagen grande, coste {1}, tipo Artifact, Oracle con símbolos `{T} -> ↷` y `{C}{C} -> CC`, artista "Titus Lunter", copyright "Wizards of the Coast", legalidad en Commander "Legal", y 2 dictámenes oficiales con fecha `2023-09-01` y fuente `wotc`).
+    2. _Carta de doble cara (DFC):_ Delver of Secrets verificado alternando caras con selector interactivo (`data-testid="card-details-face-switcher"`): Cara 1 (Delver of Secrets, Creature — Human Wizard, 1/1, maná {U}) a Cara 2 (Insectile Aberration, Creature — Human Insect, 3/2 con Flying, sin coste de maná), y reversión a Cara 1.
+    3. _Carta sin dictámenes:_ Delver / Cultivate verificado con estado visual accesible `"Sin dictámenes"` (`data-testid="card-details-rulings-empty"`).
+    4. _Aislamiento de privacidad:_ Carta boca abajo de Alice en el campo de batalla inspeccionada por Bob; el menú contextual muestra `"Carta boca abajo"` y el botón `"Ver carta"` (`data-testid="context-view-card"`) tiene conteo 0.
+    5. _Comprobación de fecha de sincronización:_ Endpoint `POST /api/cards/sync-rulings` verificado con `skipped: true, reason: 'not_modified', syncedCount: 0` ejecutado en 149 ms sin descargas redundantes.
+    6. _Atribución en selector de playmat:_ Modal de personalización de playmat verificado con bloque de atribución (`data-testid="playmat-attribution-box"`), artista ("Ilustrado por ..."), copyright ("Wizards of the Coast"), y botón "Ver carta" abriendo `CardDetailsModal` sobre el selector.
+    7. _Artefactos generados:_ Capturas al 200% archivadas en el directorio de artefactos: [`card-details-single-faced.png`](card-details-single-faced.png) y [`card-details-double-faced.png`](card-details-double-faced.png).
 - **Indicador de Poder y Resistencia (P/T) Efectivo en Mesa (Punto 2 de Correcciones del Cliente - B.2):**
   - **Fórmula de cálculo:** $\text{P/T Efectivo} = \text{Base} + \text{Contadores } +1/+1 - \text{Contadores } -1/-1$ (evaluando indistintamente claves `-1/-1` y `−1/−1` Unicode).
   - **Ubicación y anclaje geométrico:** El componente `CardPTBadge` se renderiza como hijo directo de `.card-slot-container`, anclado a la esquina inferior izquierda (`absolute -bottom-2.5 -left-1`). Al estar fuera de `.card-rotator`, permanece 100% erguido sin rotar con la carta. Al ubicarse a `-bottom-2.5`, se proyecta completamente por fuera del marco de la imagen, respetando la línea inferior que alberga el nombre del artista y el copyright legal según las directrices de Scryfall.
@@ -652,19 +798,19 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Ciclo de Vida y Desaparición al Salir de la Mesa:**
     - En `GameStateSession.moveCard`, si una carta con `isToken: true` abandona el campo de batalla (`fromZone === 'battlefield' && toZone !== 'battlefield'`), se elimina del estado sin insertarse en la zona destino, registrando `"La ficha [nombre] desapareció al salir de la mesa"` y permitiendo revertir con deshacer.
   - **Sección «Crear ficha» en Menú de Carta (`CardContextMenu.tsx`):**
-    - Al abrir el menú sobre cualquier carta en mano, mesa, cementerio o exilio, consulta de forma reactiva las fichas que genera. Si crea al menos una, renderiza la sección `context-create-token-section` con botones individuales; si no genera fichas (ej. *Sol Ring*), la sección permanece completamente oculta.
+    - Al abrir el menú sobre cualquier carta en mano, mesa, cementerio o exilio, consulta de forma reactiva las fichas que genera. Si crea al menos una, renderiza la sección `context-create-token-section` con botones individuales; si no genera fichas (ej. _Sol Ring_), la sección permanece completamente oculta.
   - **Modal de Espacio Vacío de División (`CreateTokenModal.tsx`):**
     - Al hacer clic derecho en un espacio vacío de la división del jugador en [`PlayerCell.tsx`](apps/web/src/components/PlayerCell.tsx), se abre `CreateTokenModal` con 3 pestañas:
-      - (a) *Fichas de mi mazo:* cartas del mazo del jugador agrupadas por carta fuente con buscador.
-      - (b) *Fichas comunes:* Tesoro, Comida, Pista, Sangre, Mapa con ilustración oficial y descripción.
-      - (c) *Ficha personalizada:* creador de fichas con nombre, P/T, colores y tipo.
+      - (a) _Fichas de mi mazo:_ cartas del mazo del jugador agrupadas por carta fuente con buscador.
+      - (b) _Fichas comunes:_ Tesoro, Comida, Pista, Sangre, Mapa con ilustración oficial y descripción.
+      - (c) _Ficha personalizada:_ creador de fichas con nombre, P/T, colores y tipo.
     - Contenedor y backdrop con `e.stopPropagation()` en todos los eventos de puntero y clic.
   - **Certificación Automatizada E2E:** Suite Playwright en [`apps/web/e2e/token-creation.spec.ts`](apps/web/e2e/token-creation.spec.ts) certificando creación de Tesoro común, ficha personalizada Dragón 5/5, centrado en división con cascada, desaparición al salir de la mesa (0 cartas en cementerio), registro en bitácora, presencia de fichas en Smothering Tithe y ausencia en Sol Ring. Artefactos archivados: [`test-tokens-created-on-table.png`](test-tokens-created-on-table.png) y [`test-tokens-disappearance-log.png`](test-tokens-disappearance-log.png).
 
 - **Soporte de Idioma Español Prioritario con Fallback Transparente en Inglés y Modelo CardLocale (Punto 5 de Correcciones del Cliente - C.5):**
   - **Esquema de Base de Datos y Modelo Prisma:** Se diseñó el modelo `CardLocale` en `apps/server/prisma/schema.prisma` con clave primaria compuesta `@@id([oracleId, lang])`, campos para `printingId`, `printedName`, `printedText`, `printedTypeLine`, URLs de imágenes de Scryfall (`small`, `normal`, `large`, `artCrop`) y `releasedAt`.
-  - **Script de Ingesta Streaming Offline:** [`apps/server/src/scripts/process-all-cards-locales.ts`](apps/server/src/scripts/process-all-cards-locales.ts) procesa el archivo masivo *All Cards* de Scryfall (~2 GB) mediante lectura por flujos de texto (`readline`), seleccionando únicamente impresiones con `lang === 'es'`, deduplicando por `oracle_id` y priorizando la impresión más reciente que disponga de imágenes para guardarla en `CardLocale`.
-  - **Servicio Backend CardLocaleService:** [`apps/server/src/services/card-locale.service.ts`](apps/server/src/services/card-locale.service.ts) implementa resolución rápida con caché en memoria (`Map`), soporte presembrado de grapas de Commander (Sol Ring -> *Anillo solar*, Smothering Tithe -> *Diezmo asfixiante*, Kenrith -> *Kenrith, el rey devuelto*, Grave Titan -> *Titán de la tumba*, Regal Caracal -> *Caracal regio*, Cultivate -> *Cultivar*, Plains -> *Llanura*, etc.) y fallback puntual a la API de Scryfall con rate limiting.
+  - **Script de Ingesta Streaming Offline:** [`apps/server/src/scripts/process-all-cards-locales.ts`](apps/server/src/scripts/process-all-cards-locales.ts) procesa el archivo masivo _All Cards_ de Scryfall (~2 GB) mediante lectura por flujos de texto (`readline`), seleccionando únicamente impresiones con `lang === 'es'`, deduplicando por `oracle_id` y priorizando la impresión más reciente que disponga de imágenes para guardarla en `CardLocale`.
+  - **Servicio Backend CardLocaleService:** [`apps/server/src/services/card-locale.service.ts`](apps/server/src/services/card-locale.service.ts) implementa resolución rápida con caché en memoria (`Map`), soporte presembrado de grapas de Commander (Sol Ring -> _Anillo solar_, Smothering Tithe -> _Diezmo asfixiante_, Kenrith -> _Kenrith, el rey devuelto_, Grave Titan -> _Titán de la tumba_, Regal Caracal -> _Caracal regio_, Cultivate -> _Cultivar_, Plains -> _Llanura_, etc.) y fallback puntual a la API de Scryfall con rate limiting.
   - **Función Compartida de Formateo de Carta:** En [`packages/shared/src/utils/card-locale.ts`](packages/shared/src/utils/card-locale.ts), `getCardDisplayData(card, lang, faceIndex)` extrae de forma pura los campos de la cara activa considerando la preferencia de idioma: si `lang === 'es'` y existe `card.locales.es`, devuelve el nombre, tipo, texto e imágenes en español; en caso contrario, realiza fallback inmediato al inglés original.
   - **Selector Reactivo de Idioma en el Cliente:** En [`apps/web/src/context/LanguageContext.tsx`](apps/web/src/context/LanguageContext.tsx), `LanguageProvider` gestiona la preferencia `language: 'es' | 'en'` persistida en `localStorage` (`mtgc_card_language`). En [`FloatingToolbar.tsx`](apps/web/src/components/FloatingToolbar.tsx), el modal de ajustes incluye el control `[data-testid="language-select"]`. Al alternar el idioma, todos los componentes (`CardDisplay`, `CardDetailsModal`, `OpeningHandModal`, `HandFan`, `BattlefieldCanvas`, `CreateTokenModal`) se actualizan reactivamente sin recargas.
   - **Búsqueda Bilingüe en Biblioteca:** En [`PlayerCell.tsx`](apps/web/src/components/PlayerCell.tsx), el buscador de biblioteca y los filtros de tipo validan en simultáneo tanto el nombre/tipo en inglés como en español (`enName.includes(q) || esName.includes(q)`).
@@ -697,8 +843,6 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
     - Pruebas unitarias en `apps/server/test/deck.test.ts` (2/2 pruebas aprobadas).
     - Prueba E2E en Playwright `apps/web/e2e/preset-decks.spec.ts` (aprobada en 2.4s) validando las 8 opciones de mazo, lista desplegable, selección concurrente del mismo mazo (Krenko) por dos jugadores, persistencia en localStorage y estado listo para iniciar partida. Artefacto archivado: [`audit-preset-decks-lobby.png`](audit-preset-decks-lobby.png).
 
-
-
 - **Aislamiento de Eventos en Menús Contextuales y Modales contra Doble Clic y Mutaciones Involuntarias (Punto 2 de Correcciones del Cliente - A.2):**
   - **Diagnóstico de propagación sintética en React:** A pesar de renderizarse a través de portales hacia `document.body` (`Portal.tsx`), el sistema de eventos sintéticos de React propaga los eventos a través de la jerarquía de componentes del árbol de React. Al estar `CardContextMenu` montado como descendiente del contenedor de la carta (`card-slot-container`), los eventos de `dblclick` ejecutados sobre opciones, campos de texto/números, separadores o bordes del menú burbujeaban hasta el manejador `onDoubleClick` de la carta, activando involuntariamente `handleDoubleClick` (`onTap`) y rotando la carta.
   - **Intercepción exhaustiva de eventos:** Se aplicó `e.stopPropagation()` para `click`, `dblclick`, `pointerdown`, `mousedown` y `contextmenu` tanto en el contenedor del menú (`menuRef`) como en el telón de fondo (`backdrop`), así como en todos los modales del sistema (`CardDetailsModal`, `OpeningHandModal`, `RevealedCardModal`, `activePileModal`, `isPlaymatModalOpen`, `FloatingToolbar` y `TurnBar`).
@@ -706,8 +850,8 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
 
 - **Adaptación Fluida y Visibilidad en Pantalla Completa y Modo Expandido (Puntos 6 y 7 de Correcciones del Cliente - E.7):**
   - **Diagnóstico empírico y eliminación del pantallazo azul:** Se diagnosticaron y corrigieron exhaustivamente los dos casos donde la pantalla quedaba en azul pizarra (`#020617` / `bg-slate-950`):
-    1. *Modo Expandido (Botón de expandir celda):* El cierre de captura reactiva en `onExpandCell` opera mediante la actualización funcional `setExpandedPlayerId(prev => prev === player.id ? null : player.id)`, con vinculación dinámica de dimensiones de celda a pantalla completa (`cellWidth = viewportSize.width`, `cellHeight = viewportSize.height`), escala de celda completa con `renderPlayerCell(player, 1, 0, isLocal, false)`, playmat renderizado a sangre (`object-cover w-full h-full`, naturalWidth > 0), cartas con z-index 10 por encima del fondo y dock inferior en z-20. Botón de cierre `[data-testid="close-expanded-view"]` y tecla `Escape` operativos.
-    2. *Pantalla Completa del Navegador (requestFullscreen):* Botón accesible en esquina superior derecha (`fixed top-2 right-4 z-40`, `[data-testid="fullscreen-btn"]`) alternando entre `document.documentElement.requestFullscreen()` y `document.exitFullscreen()`, con escucha reactiva de `fullscreenchange` y sincronización de iconos (`Maximize2` / `Minimize2`).
+    1. _Modo Expandido (Botón de expandir celda):_ El cierre de captura reactiva en `onExpandCell` opera mediante la actualización funcional `setExpandedPlayerId(prev => prev === player.id ? null : player.id)`, con vinculación dinámica de dimensiones de celda a pantalla completa (`cellWidth = viewportSize.width`, `cellHeight = viewportSize.height`), escala de celda completa con `renderPlayerCell(player, 1, 0, isLocal, false)`, playmat renderizado a sangre (`object-cover w-full h-full`, naturalWidth > 0), cartas con z-index 10 por encima del fondo y dock inferior en z-20. Botón de cierre `[data-testid="close-expanded-view"]` y tecla `Escape` operativos.
+    2. _Pantalla Completa del Navegador (requestFullscreen):_ Botón accesible en esquina superior derecha (`fixed top-2 right-4 z-40`, `[data-testid="fullscreen-btn"]`) alternando entre `document.documentElement.requestFullscreen()` y `document.exitFullscreen()`, con escucha reactiva de `fullscreenchange` y sincronización de iconos (`Maximize2` / `Minimize2`).
   - **Métricas empíricas y diagnóstico de elementos:**
     - `mesaTotalSize`: `{ w: 1920, h: 1080 }` a 1080p y `{ w: 1366, h: 768 }` a 768p.
     - `cellRect`: `{ x: 0, y: 0, width: 1920, height: 1080 }` en modo expandido.
@@ -722,43 +866,43 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
 
 - **Certificación Playwright Integral de Correcciones del Cliente P1 a P8 (Punto 9 - G.9):**
   - **Suite Automatizada de Certificación:** Implementada en [`apps/web/e2e/client-corrections-audit-p1-to-p8.spec.ts`](apps/web/e2e/client-corrections-audit-p1-to-p8.spec.ts), ejecutada de extremo a extremo con 3/3 pruebas aprobadas (27.8s) y 0 errores de consola:
-    1. *Punto 1 (Mulligan sin scroll):* Medición empírica del ancho de carta en mano inicial:
+    1. _Punto 1 (Mulligan sin scroll):_ Medición empírica del ancho de carta en mano inicial:
        - Resolución 1920x1080: ancho de carta = **192.47 px** (requisito $\ge 190$ px), `scrollHeight = 1080 px, clientHeight = 1080 px` (0 px de scroll vertical).
        - Resolución 1366x768: ancho de carta = **140.39 px** (requisito $\ge 140$ px), `scrollHeight = 768 px, clientHeight = 768 px` (0 px de scroll vertical).
        - Controles y botones de decisión completamente visibles y accesibles sin recortes.
        - Artefactos archivados: [`audit-p1-mulligan-1080p.png`](audit-p1-mulligan-1080p.png) y [`audit-p1-mulligan-768p.png`](audit-p1-mulligan-768p.png).
-    2. *Punto 2 (Doble clic en menú contextual):* Doble clic exhaustivo sobre opciones, campos de texto, inputs numéricos, bordes y separadores del menú contextual.
+    2. _Punto 2 (Doble clic en menú contextual):_ Doble clic exhaustivo sobre opciones, campos de texto, inputs numéricos, bordes y separadores del menú contextual.
        - La carta en mesa mantiene su rotación inicial inalterada (0°, sin giros accidentales ni cambios de estado).
        - `stopPropagation` activo para `click`, `dblclick`, `pointerdown`, `mousedown` y `contextmenu`.
-    3. *Punto 3 (Poder y Resistencia):* Sección desplegada y visible por defecto en el menú contextual.
+    3. _Punto 3 (Poder y Resistencia):_ Sección desplegada y visible por defecto en el menú contextual.
        - Exactamente dos campos numéricos editables: `Poder` y `Resistencia`.
        - Contadores $+1/+1$ y $-1/-1$ retirados de esta sección y mantenidos en Contadores.
        - Cálculo efectivo automático (base + contadores $+1/+1$ − contadores $-1/-1$).
        - Artefacto archivado: [`audit-p3-pt-section-unfolded.png`](audit-p3-pt-section-unfolded.png).
-    4. *Punto 4 (Fichas):* Creación contextual desde carta (solo fichas de la carta) y desde espacio vacío de división (fichas de mazo con buscador, 5 fichas comunes y personalizada).
+    4. _Punto 4 (Fichas):_ Creación contextual desde carta (solo fichas de la carta) y desde espacio vacío de división (fichas de mazo con buscador, 5 fichas comunes y personalizada).
        - Fichas centradas en cascada, desaparecen al salir de la mesa y se registran en bitácora.
        - Artefacto archivado: [`test-tokens-created-on-table.png`](test-tokens-created-on-table.png).
-    5. *Punto 5 (Español prioritario):* Traducción oficial de cartas desde Scryfall All Cards / `CardLocale`, fallback a inglés y selector dinámico en Ajustes.
+    5. _Punto 5 (Español prioritario):_ Traducción oficial de cartas desde Scryfall All Cards / `CardLocale`, fallback a inglés y selector dinámico en Ajustes.
        - Artefactos archivados: [`audit-card-locale-es.png`](audit-card-locale-es.png) y [`audit-card-locale-en.png`](audit-card-locale-en.png).
-    6. *Punto 6 (Dictámenes oficiales):* Sincronización oficial al arranque con 79,706 dictámenes de WotC/Scryfall, indexación de Sol Ring y contenedor accesible "Sin dictámenes".
+    6. _Punto 6 (Dictámenes oficiales):_ Sincronización oficial al arranque con 79,706 dictámenes de WotC/Scryfall, indexación de Sol Ring y contenedor accesible "Sin dictámenes".
        - Artefacto archivado: [`audit-card-rulings-real.png`](audit-card-rulings-real.png).
-    7. *Punto 7 (Pantalla completa):* Botón de ampliación de división a 100% de viewport y pantalla completa de navegador sobre `document.documentElement` sin pantalla azul, con varianza $> 5400$ y 0 errores de consola.
+    7. _Punto 7 (Pantalla completa):_ Botón de ampliación de división a 100% de viewport y pantalla completa de navegador sobre `document.documentElement` sin pantalla azul, con varianza $> 5400$ y 0 errores de consola.
        - Artefactos archivados: [`fullscreen-fixed-expanded-2p-1080p.png`](fullscreen-fixed-expanded-2p-1080p.png), [`fullscreen-fixed-browser-2p-1080p.png`](fullscreen-fixed-browser-2p-1080p.png), etc.
-    8. *Punto 8 (Mazos listos):* 8 mazos predeterminados y legales de 100 cartas, sección destacada «Mazos Listos» como primera opción en sala de espera, selección múltiple concurrente sin conflicto y memoria en `localStorage`.
+    8. _Punto 8 (Mazos listos):_ 8 mazos predeterminados y legales de 100 cartas, sección destacada «Mazos Listos» como primera opción en sala de espera, selección múltiple concurrente sin conflicto y memoria en `localStorage`.
        - Artefacto archivado: [`audit-preset-decks-lobby.png`](audit-preset-decks-lobby.png).
 
 - **Certificación E2E Integral de Revelación, P/T, Contadores, Palabras Clave y Posición Exterior (Punto 8 de Correcciones del Cliente - E.8):**
   - **Suite Playwright E2E:** Implementada en [`apps/web/e2e/client-features-audit.spec.ts`](apps/web/e2e/client-features-audit.spec.ts), ejecutada de extremo a extremo en pod real de 3 participantes (1920x1080) en 23.5 segundos con 100% de aserciones aprobadas y cero errores de consola.
   - **Resultados de certificación verificados:**
-    1. *Revelación persistente y filtro de privacidad:* Alice revela su carta de la mano a Bob; Bob ve la carta con su arte e identidad real en el abanico de Alice y el distintivo de ojo rojo (`[data-testid="revealed-eye-badge"]`) con tooltip `"Revelada por Alice"`; Charlie (no destinatario) permanece ciego ante la identidad de la carta sin fugas en DOM ni WebSocket; Alice observa el distintivo con tooltip `"Revelada a Bob"`; al pulsar «Dejar de revelar», la carta vuelve al dorso estándar en la vista de Bob.
-    2. *P/T efectivo y códigos de color:* Permanente en mesa inicializado en 4/4 neutro; con $+2$ contadores $+1/+1$ calcula y muestra 6/6 verde/up; con 3 contadores $-1/-1$ calcula 3/3 rojo/down; con poder base 0 y resistencia base -1 calcula -1/-2 rojo/down (soporte de números 0 y negativos sin motor de reglas).
-    3. *Permanente animado sin P/T impreso:* Una carta de tierra/artefacto sin estadísticas impresas no renderiza indicadores P/T; al definir base manual de 5/5 desde el menú en línea, calcula y muestra de forma reactiva la pastilla con 5/5.
-    4. *Insignias y panel explicativo:* 6 distintivos visibles en la fila superior de la carta pegada al borde sin tapar el texto inferior; tooltips con nombres oficiales en español, término original en inglés entre paréntesis y texto recordatorio («Vuela (Flying) - Esta criatura...»); panel lateral en hover preview con iconos, nombres, cantidades y explicaciones recordatorias.
-    5. *Geometría exterior invariable en permanente girado (90°) y enderezado (0°):*
+    1. _Revelación persistente y filtro de privacidad:_ Alice revela su carta de la mano a Bob; Bob ve la carta con su arte e identidad real en el abanico de Alice y el distintivo de ojo rojo (`[data-testid="revealed-eye-badge"]`) con tooltip `"Revelada por Alice"`; Charlie (no destinatario) permanece ciego ante la identidad de la carta sin fugas en DOM ni WebSocket; Alice observa el distintivo con tooltip `"Revelada a Bob"`; al pulsar «Dejar de revelar», la carta vuelve al dorso estándar en la vista de Bob.
+    2. _P/T efectivo y códigos de color:_ Permanente en mesa inicializado en 4/4 neutro; con $+2$ contadores $+1/+1$ calcula y muestra 6/6 verde/up; con 3 contadores $-1/-1$ calcula 3/3 rojo/down; con poder base 0 y resistencia base -1 calcula -1/-2 rojo/down (soporte de números 0 y negativos sin motor de reglas).
+    3. _Permanente animado sin P/T impreso:_ Una carta de tierra/artefacto sin estadísticas impresas no renderiza indicadores P/T; al definir base manual de 5/5 desde el menú en línea, calcula y muestra de forma reactiva la pastilla con 5/5.
+    4. _Insignias y panel explicativo:_ 6 distintivos visibles en la fila superior de la carta pegada al borde sin tapar el texto inferior; tooltips con nombres oficiales en español, término original en inglés entre paréntesis y texto recordatorio («Vuela (Flying) - Esta criatura...»); panel lateral en hover preview con iconos, nombres, cantidades y explicaciones recordatorias.
+    5. _Geometría exterior invariable en permanente girado (90°) y enderezado (0°):_
        - Untapped (0°): `badgeBottomDiff = 10 px`, `badgeLeftDiff = -4 px` (la pastilla proyecta 10 px fuera del rotador, dejando visible la atribución de artista y copyright).
        - Tapped (90°): el rotador gira a 90° horario mientras el indicador P/T permanece erguido (`transform: "none"`, `isBadgeErguido: true`) manteniendo `badgeBottomDiff = 10 px`.
-    6. *Reinicio autoritativo al salir del campo de batalla:* Al trasladar la carta al cementerio, el servidor resetea `counters = {}`, `basePower`, `baseToughness` y `keywords`.
-    7. *Artefactos de prueba archivados:*
+    6. _Reinicio autoritativo al salir del campo de batalla:_ Al trasladar la carta al cementerio, el servidor resetea `counters = {}`, `basePower`, `baseToughness` y `keywords`.
+    7. _Artefactos de prueba archivados:_
        - `audit-persistent-reveal-bob.png` (1,527,693 bytes, varianza 5423.3)
        - `audit-persistent-reveal-charlie.png` (1,491,464 bytes, varianza 5433.8)
        - `audit-pt-indicator-colors.png` (1,621,129 bytes)
@@ -809,11 +953,11 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
     - `2P-768p`: 2 jugadores, viewport 1366×768. Cartas: vertical $96 \times 134\text{ px}$, apaisada $134 \times 96\text{ px}$.
     - `4P-768p`: 4 jugadores, viewport 1366×768. Cartas: vertical $56 \times 78\text{ px}$, apaisada $78 \times 56\text{ px}$.
   - **Casos probados por configuración (20 escenarios en total):**
-    1. *Mesa Enderezada:* Reposicionamiento con carta vertical.
-    2. *Mesa Girada (Tapped):* Arrastre y soltado con carta apaisada a 90°.
-    3. *Re-girada (Untap -> Tap):* Ciclo de cambio de orientación y arrastre subsiguiente.
-    4. *Bordes de Pantalla y Dock:* Desplazamiento hacia los límites perimetrales y zona superior del dock.
-    5. *Mesa Expandida:* Arrastre desde vista enfocada/zoom con transformación inversa de coordenadas.
+    1. _Mesa Enderezada:_ Reposicionamiento con carta vertical.
+    2. _Mesa Girada (Tapped):_ Arrastre y soltado con carta apaisada a 90°.
+    3. _Re-girada (Untap -> Tap):_ Ciclo de cambio de orientación y arrastre subsiguiente.
+    4. _Bordes de Pantalla y Dock:_ Desplazamiento hacia los límites perimetrales y zona superior del dock.
+    5. _Mesa Expandida:_ Arrastre desde vista enfocada/zoom con transformación inversa de coordenadas.
   - **Métricas empíricas registradas en las 20 pruebas:**
     - $\Delta\text{Centro}$ fantasma frame 1 en Guest B respecto a la carta original: **$0.00\text{ px}$** (criterio $\le 1.0\text{ px}$ cumplido).
     - $\Delta\text{Dimensiones}$ fantasma frame 1 en Guest B: **$0.00\text{ px}$** (coincidencia idéntica $w \times h$ o $h \times w$).
@@ -822,39 +966,40 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
     - Tiempo de ejecución total de la suite: **1.5 minutos** (4/4 tests pasados al 100%).
 - **Aclaración y Resolución de Discrepancia de Coordenadas en Pruebas de Arrastre (Punto 6 de Corrección de Posición):**
   - **Discrepancia observada originalmente:** Durante la implementación de las pruebas de seguimiento continuo de puntero (`pointer - overlayCorner == initialGrabOffset`), se identificaron dos discrepancias en los resultados esperados:
-    1. *Solapamiento horizontal en HandFan:* En el abanico de la mano, las cartas se renderizan apiladas con traslape horizontal y rotación leve sobre el borde inferior de la pantalla (`bottom: 0`). Al simular un clic cerca del borde izquierdo o esquina de una carta interior, el evento de puntero alcanzaba el elemento DOM de la carta anterior en el orden $z$ o el área no interactiva del dock, provocando que la carta levantada no correspondiera a la caja medida previamente, o registrando un desfase inicial no representativo del arrastre del usuario.
-    2. *Intervención del acotamiento al viewport (clamping):* En trayectorias de arrastre que dirigían el ratón más allá de los márgenes de la ventana o hacia el interior del dock inferior, el sistema de acotamiento (`clampedCenterX = clamp(...)`) detenía intencionalmente el centro de la carta dentro de los límites visuales seguros, mientras que las coordenadas absolutas del cursor de Playwright continuaban moviéndose libremente fuera de la pantalla. Medir la fidelidad de seguimiento en esa condición arrojaba una divergencia matemática artificial entre la posición del puntero y la carta, debido a la acción legítima del límite perimetral y no a un defecto del overlay.
+    1. _Solapamiento horizontal en HandFan:_ En el abanico de la mano, las cartas se renderizan apiladas con traslape horizontal y rotación leve sobre el borde inferior de la pantalla (`bottom: 0`). Al simular un clic cerca del borde izquierdo o esquina de una carta interior, el evento de puntero alcanzaba el elemento DOM de la carta anterior en el orden $z$ o el área no interactiva del dock, provocando que la carta levantada no correspondiera a la caja medida previamente, o registrando un desfase inicial no representativo del arrastre del usuario.
+    2. _Intervención del acotamiento al viewport (clamping):_ En trayectorias de arrastre que dirigían el ratón más allá de los márgenes de la ventana o hacia el interior del dock inferior, el sistema de acotamiento (`clampedCenterX = clamp(...)`) detenía intencionalmente el centro de la carta dentro de los límites visuales seguros, mientras que las coordenadas absolutas del cursor de Playwright continuaban moviéndose libremente fuera de la pantalla. Medir la fidelidad de seguimiento en esa condición arrojaba una divergencia matemática artificial entre la posición del puntero y la carta, debido a la acción legítima del límite perimetral y no a un defecto del overlay.
   - **Resolución técnica aplicada:**
     1. Para `HandFan`, se ajustó el punto de interacción al cuadrante superior derecho visible y no cubierto de la carta (`preBox.width * 0.75, preBox.height * 0.4`), garantizando la selección unívoca y limpia de la carta objetivo, emulando con exactitud la interacción física de un jugador real.
     2. Se segregaron formalmente los vectores de prueba según el objetivo a certificar:
-       - *Pruebas de fidelidad cinemática de puntero:* Trayectorias fluidas sobre el espacio de juego libre (dentro de los límites de pantalla y sin colisión con el dock), verificando que en cada movimiento del ratón se mantenga $\Delta \le 1.0\text{ px}$ entre el punto agarrado y el cursor.
-       - *Pruebas de contención perimetral (bordes y dock):* Trayectorias específicas hacia los 4 bordes del viewport y hacia el dock inferior, comprobando que las dimensiones orientadas efectivas de la carta detengan el movimiento exactamente en el perímetro sin desbordar ni saltar.
+       - _Pruebas de fidelidad cinemática de puntero:_ Trayectorias fluidas sobre el espacio de juego libre (dentro de los límites de pantalla y sin colisión con el dock), verificando que en cada movimiento del ratón se mantenga $\Delta \le 1.0\text{ px}$ entre el punto agarrado y el cursor.
+       - _Pruebas de contención perimetral (bordes y dock):_ Trayectorias específicas hacia los 4 bordes del viewport y hacia el dock inferior, comprobando que las dimensiones orientadas efectivas de la carta detengan el movimiento exactamente en el perímetro sin desbordar ni saltar.
   - **Confirmación de integridad:** Se confirma de forma concluyente que no se ocultó ningún defecto ni caso de uso real; ambas mecánicas (seguimiento continuo sin desalineación y contención estricta en bordes) están validadas y certificadas por baterías de pruebas independientes.
 - **Consolidación de Métricas Empíricas de la Convención de Posición en el Centro (Punto 7 de Corrección de Posición):**
   - **Tabla comparativa de métricas antes y después de la corrección:**
 
-| Momento / Magnitud Evaluada | Antes de la Corrección (Bug) | Después de la Corrección (Centro Unificado) | Criterio de Aceptación | Estado |
-|---|---|---|---|---|
-| $\Delta\text{Centro}$ al soltar carta girada (Host local) | $dx = -19.00\text{ px}, dy = +19.00\text{ px}$ | $dx = 0.00\text{ px}, dy = 0.00\text{ px}$ | $\le 1.0\text{ px}$ | Cumplido al 100% |
-| Salto vertical en frames 1 a 4 del fantasma remoto (Guest B) | $dy = +27.00\text{ px}$ | $dy = 0.00\text{ px}$ | $\le 1.0\text{ px}$ | Cumplido al 100% |
-| $\Delta\text{Centro}$ fantasma frame 1 vs carta original (Guest B) | $+27.00\text{ px}$ | $0.00\text{ px}$ | $\le 1.0\text{ px}$ | Cumplido al 100% |
-| $\Delta\text{Dimensiones}$ fantasma vs carta original (Guest B) | Inversión $96 \times 134 \to 134 \times 96$ con desfase | $0.00\text{ px}$ (gemelo idéntico) | $0.00\text{ px}$ | Cumplido al 100% |
-| Salto entre frames consecutivos en 500 ms post-drop | Hasta $19.00\text{ px}$ al soltar | $0.00\text{ px}$ en todos los frames | $\le 1.0\text{ px}$ | Cumplido al 100% |
-| Invarianza ante respuesta autoritativa del servidor | Salto al reemplazar optimista | $0.00\text{ px}$ ($\Delta < 0.001$ norm) | $\le 1.0\text{ px}$ | Cumplido al 100% |
-| Límite al viewport de carta apaisada | Se cortaban $19\text{ px}$ en bordes | Acotamiento con ancho y alto orientados | Cero desborde | Cumplido al 100% |
+| Momento / Magnitud Evaluada                                        | Antes de la Corrección (Bug)                            | Después de la Corrección (Centro Unificado) | Criterio de Aceptación | Estado           |
+| ------------------------------------------------------------------ | ------------------------------------------------------- | ------------------------------------------- | ---------------------- | ---------------- |
+| $\Delta\text{Centro}$ al soltar carta girada (Host local)          | $dx = -19.00\text{ px}, dy = +19.00\text{ px}$          | $dx = 0.00\text{ px}, dy = 0.00\text{ px}$  | $\le 1.0\text{ px}$    | Cumplido al 100% |
+| Salto vertical en frames 1 a 4 del fantasma remoto (Guest B)       | $dy = +27.00\text{ px}$                                 | $dy = 0.00\text{ px}$                       | $\le 1.0\text{ px}$    | Cumplido al 100% |
+| $\Delta\text{Centro}$ fantasma frame 1 vs carta original (Guest B) | $+27.00\text{ px}$                                      | $0.00\text{ px}$                            | $\le 1.0\text{ px}$    | Cumplido al 100% |
+| $\Delta\text{Dimensiones}$ fantasma vs carta original (Guest B)    | Inversión $96 \times 134 \to 134 \times 96$ con desfase | $0.00\text{ px}$ (gemelo idéntico)          | $0.00\text{ px}$       | Cumplido al 100% |
+| Salto entre frames consecutivos en 500 ms post-drop                | Hasta $19.00\text{ px}$ al soltar                       | $0.00\text{ px}$ en todos los frames        | $\le 1.0\text{ px}$    | Cumplido al 100% |
+| Invarianza ante respuesta autoritativa del servidor                | Salto al reemplazar optimista                           | $0.00\text{ px}$ ($\Delta < 0.001$ norm)    | $\le 1.0\text{ px}$    | Cumplido al 100% |
+| Límite al viewport de carta apaisada                               | Se cortaban $19\text{ px}$ en bordes                    | Acotamiento con ancho y alto orientados     | Cero desborde          | Cumplido al 100% |
 
 ### Rutas
+
 `/table/:code/lobby` y `/table/:code/play`. El cliente redirige según `table.status`.
 
 ## Manejo de errores
 
-| Categoría | Ejemplos | Estrategia |
-|---|---|---|
-| Red | Caída de WSS | Reconexión con backoff, snapshot + eventos faltantes |
-| Validación | Acción no permitida, zona inválida | Rechazo con código y mensaje; el cliente revierte la UI optimista |
-| Externos | Scryfall 429/5xx | Cola con retardo, caché local, aviso al usuario |
-| Concurrencia | Dos acciones sobre la misma carta | Orden de llegada con versión; notificar a quien perdió |
-| Datos | Mazo con cartas no reconocidas | Reporte parcial y opción de corregir |
+| Categoría    | Ejemplos                           | Estrategia                                                        |
+| ------------ | ---------------------------------- | ----------------------------------------------------------------- |
+| Red          | Caída de WSS                       | Reconexión con backoff, snapshot + eventos faltantes              |
+| Validación   | Acción no permitida, zona inválida | Rechazo con código y mensaje; el cliente revierte la UI optimista |
+| Externos     | Scryfall 429/5xx                   | Cola con retardo, caché local, aviso al usuario                   |
+| Concurrencia | Dos acciones sobre la misma carta  | Orden de llegada con versión; notificar a quien perdió            |
+| Datos        | Mazo con cartas no reconocidas     | Reporte parcial y opción de corregir                              |
 
 ## Seguridad
 
@@ -869,14 +1014,14 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
 
 ### Modelo de amenazas (resumen)
 
-| Amenaza | Mitigación |
-|---|---|
+| Amenaza                                | Mitigación                                                 |
+| -------------------------------------- | ---------------------------------------------------------- |
 | Un jugador intenta ver la mano de otro | Filtrado en servidor; pruebas automatizadas de visibilidad |
-| Inyección de acciones falsas | Validación de asiento y esquema por acción |
-| Spam / flood de chat | Rate limit y expulsión por el anfitrión |
-| XSS vía nombres o chat | Sanitización y CSP |
-| Enumeración de códigos de mesa | Código aleatorio, límite de intentos, mesas privadas |
-| DoS por conexiones | Límite de conexiones por IP y por mesa |
+| Inyección de acciones falsas           | Validación de asiento y esquema por acción                 |
+| Spam / flood de chat                   | Rate limit y expulsión por el anfitrión                    |
+| XSS vía nombres o chat                 | Sanitización y CSP                                         |
+| Enumeración de códigos de mesa         | Código aleatorio, límite de intentos, mesas privadas       |
+| DoS por conexiones                     | Límite de conexiones por IP y por mesa                     |
 
 ## Estrategia de pruebas
 
@@ -899,6 +1044,7 @@ volumes: { pgdata: {} }
 ```
 
 ### Variables de entorno
+
 ```
 DATABASE_URL=cadena de conexión a PostgreSQL
 REDIS_URL=cadena de conexión a Redis

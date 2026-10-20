@@ -2,7 +2,7 @@
  * Persistent browser Cache API manager for Scryfall card images.
  * Stores downloaded card images locally in the user's browser (Cache API)
  * so subsequent games with the same deck load instantly with 0 network calls.
- * 
+ *
  * STRICT COMPLIANCE:
  * - No images are stored, mirrored, or proxied on the server.
  * - All caching is 100% local in the client browser's Cache API ('mtgc-card-images-v1').

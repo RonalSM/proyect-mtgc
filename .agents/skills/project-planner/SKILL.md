@@ -10,8 +10,9 @@ This skill provides templates and guidance for generating comprehensive project 
 ## Quick Start
 
 When a user wants to start a new project, generate three core documents:
+
 1. **Requirements Document** - User stories with acceptance criteria
-2. **Design Document** - Technical architecture and component specifications  
+2. **Design Document** - Technical architecture and component specifications
 3. **Implementation Plan** - Hierarchical task breakdown with requirement tracing
 
 ## Why Explicit Architectural Planning Works
@@ -29,6 +30,7 @@ Setting clear roles, responsibilities, and deliverables upfront dramatically imp
 ### The Architect Mindset
 
 When acting as a **Project Architect**, approach planning with:
+
 - **Systems Thinking** - See the whole before diving into parts
 - **Interface-First Design** - Define contracts between components before internals
 - **Traceability Focus** - Every requirement maps to design elements and tasks
@@ -43,6 +45,7 @@ When starting a project, explicitly establish Claude as the **Project Architect*
 
 **Role:** System Architect and Planning Specialist
 **Responsibilities:**
+
 - Define complete system architecture with all components
 - Map data flow between system elements
 - Identify all integration points and interfaces
@@ -80,14 +83,14 @@ Standard Deliverables Package:
    - User stories with measurable acceptance criteria
    - Complete glossary of terms
    - Traceable requirement IDs
-   
-2. System Design Document  
+
+2. System Design Document
    - Component architecture diagram
    - Data flow diagrams for all major processes
    - Integration point specifications
    - API/Interface contracts
    - Performance and scaling targets
-   
+
 3. Implementation Plan
    - Hierarchical task breakdown
    - Requirement-to-task mapping
@@ -240,7 +243,7 @@ tasks = {
 
 - **Term**: Definition specific to this system
 - **Component**: Major system module or service
-[Add all domain-specific terms]
+  [Add all domain-specific terms]
 
 ## Requirements
 
@@ -251,7 +254,7 @@ tasks = {
 #### Acceptance Criteria
 
 1. WHEN [trigger/condition], THE [component] SHALL [action/behavior]
-2. WHERE [mode/context], THE [component] SHALL [action/behavior]  
+2. WHERE [mode/context], THE [component] SHALL [action/behavior]
 3. IF [condition], THEN THE [component] SHALL [action/behavior]
 4. THE [component] SHALL [capability with measurable target]
 
@@ -303,12 +306,12 @@ Data criteria:
 
 ### Component Map
 
-| Component ID | Name | Type | Responsibility | Interfaces With |
-|-------------|------|------|----------------|-----------------|
-| COMP-1 | Web Frontend | UI | User interface | COMP-2 |
-| COMP-2 | API Gateway | Service | Request routing | COMP-3, COMP-4 |
-| COMP-3 | Business Logic | Service | Core processing | COMP-5 |
-[Complete component inventory]
+| Component ID                   | Name           | Type    | Responsibility  | Interfaces With |
+| ------------------------------ | -------------- | ------- | --------------- | --------------- |
+| COMP-1                         | Web Frontend   | UI      | User interface  | COMP-2          |
+| COMP-2                         | API Gateway    | Service | Request routing | COMP-3, COMP-4  |
+| COMP-3                         | Business Logic | Service | Core processing | COMP-5          |
+| [Complete component inventory] |
 
 ### High-Level Architecture Diagram
 
@@ -319,12 +322,13 @@ Data criteria:
 ### Primary Data Flows
 
 #### 1. [Flow Name] (e.g., User Authentication)
-
 ```
+
 1. [Source] → [Component]: [Data description]
 2. [Component] → [Component]: [Transformation applied]
 3. [Component] → [Destination]: [Final data format]
-```
+
+````
 
 **Data Transformations:**
 - Step 2: [How data changes]
@@ -360,13 +364,14 @@ POST /api/endpoint
     "field": "type"
 }
 
-// Response format  
+// Response format
 {
     "result": "type"
 }
-```
+````
 
 **Error Handling:**
+
 - Retry strategy: [Exponential backoff, circuit breaker]
 - Fallback: [What happens if unavailable]
 - Monitoring: [How to detect issues]
@@ -380,10 +385,12 @@ POST /api/endpoint
 **Responsibility:** [Single sentence description]
 
 **Key Classes:**
+
 - `ClassName`: [Purpose and main methods]
 - `ServiceName`: [What it manages]
 
 **Interfaces:**
+
 ```language
 class InterfaceName:
     def method_name(params) -> ReturnType
@@ -391,11 +398,13 @@ class InterfaceName:
 ```
 
 **Data Flow:**
+
 - Receives [input] from [source]
 - Processes by [algorithm/logic]
 - Outputs [result] to [destination]
 
 **Performance:**
+
 - Target: [metric and value]
 - Constraints: [limitations]
 
@@ -404,6 +413,7 @@ class InterfaceName:
 ## Data Models
 
 ### [Entity Name]
+
 ```language
 @dataclass
 class EntityName:
@@ -415,29 +425,35 @@ class EntityName:
 ## Error Handling
 
 ### [Error Category]
+
 **Types:** [List of error scenarios]
 **Handling:** [Strategy and recovery]
 
 ## Testing Strategy
 
 ### Unit Tests
+
 - [Component]: Test [aspects]
 - Coverage target: 80%
 
 ### Integration Tests
+
 - [Flow]: Test [end-to-end scenario]
 
 ### Performance Tests
+
 - [Operation]: Target [metric]
 
 ## Deployment
 
 ### Docker Configuration
+
 ```yaml
 # Essential service definitions only
 ```
 
 ### Environment Variables
+
 ```
 CATEGORY_VAR=description
 ```
@@ -453,7 +469,8 @@ CATEGORY_VAR=description
 - [Authentication method if applicable]
 - [Data protection approach]
 - [Access control model]
-```
+
+````
 
 ### Design Best Practices
 
@@ -470,12 +487,12 @@ CATEGORY_VAR=description
 # Implementation Plan
 
 - [x] 1. [Phase Name]
-  
+
   - [x] 1.1 [Task name]
     - [Subtask description]
     - [Subtask description]
     - _Requirements: [REQ-X.Y, REQ-A.B]_
-    
+
   - [ ] 1.2 [Task name]
     - [Subtask description]
     - _Requirements: [REQ-X.Y]_
@@ -489,13 +506,13 @@ CATEGORY_VAR=description
     - _Dependencies: Phase 1_
 
 [Continue for all phases]
-```
+````
 
 ### Task Planning Best Practices
 
 1. **Hierarchical structure** - Phases > Tasks > Subtasks
 2. **Requirement tracing** - Link each task to requirements
-3. **Dependency marking** - Identify blockers and prerequisites  
+3. **Dependency marking** - Identify blockers and prerequisites
 4. **Checkbox format** - [x] for complete, [ ] for pending
 5. **Atomic tasks** - Each task independently completable
 6. **Progressive implementation** - Infrastructure → Core → Features → Polish
@@ -558,6 +575,7 @@ CATEGORY_VAR=description
 ### Web Application (Full-Stack)
 
 Requirements focus:
+
 - User authentication and authorization
 - CRUD operations for entities
 - Real-time updates
@@ -565,6 +583,7 @@ Requirements focus:
 - API design
 
 Design focus:
+
 - 3-tier architecture (Frontend, Backend, Database)
 - REST/GraphQL API design
 - State management strategy
@@ -572,6 +591,7 @@ Design focus:
 - Database schema
 
 Tasks focus:
+
 1. Database and backend setup
 2. API implementation
 3. Frontend components
@@ -580,6 +600,7 @@ Tasks focus:
 ### Microservices System
 
 Requirements focus:
+
 - Service boundaries
 - Inter-service communication
 - Data consistency
@@ -587,6 +608,7 @@ Requirements focus:
 - Fault tolerance
 
 Design focus:
+
 - Service decomposition
 - API contracts between services
 - Message queue/event bus
@@ -594,6 +616,7 @@ Design focus:
 - Container orchestration
 
 Tasks focus:
+
 1. Service scaffolding
 2. Shared libraries/contracts
 3. Individual service implementation
@@ -603,6 +626,7 @@ Tasks focus:
 ### Data Pipeline/ETL
 
 Requirements focus:
+
 - Data sources and formats
 - Transformation rules
 - Data quality checks
@@ -610,6 +634,7 @@ Requirements focus:
 - Error handling and retry
 
 Design focus:
+
 - Pipeline stages
 - Data flow diagram
 - Schema evolution
@@ -617,6 +642,7 @@ Design focus:
 - Storage strategy
 
 Tasks focus:
+
 1. Data source connectors
 2. Transformation logic
 3. Validation and quality checks
@@ -626,6 +652,7 @@ Tasks focus:
 ### CLI Tool/Library
 
 Requirements focus:
+
 - Command structure
 - Input/output formats
 - Configuration options
@@ -633,6 +660,7 @@ Requirements focus:
 - Performance requirements
 
 Design focus:
+
 - Command parser architecture
 - Plugin system (if applicable)
 - Configuration management
@@ -640,6 +668,7 @@ Design focus:
 - Testing strategy
 
 Tasks focus:
+
 1. Core command structure
 2. Business logic implementation
 3. Input/output handlers
@@ -651,6 +680,7 @@ Tasks focus:
 ### Trading/Financial Systems
 
 Additional requirements:
+
 - Risk management rules
 - Order execution logic
 - Market data handling
@@ -658,6 +688,7 @@ Additional requirements:
 - Audit trail
 
 Additional design:
+
 - High-frequency data handling
 - Position tracking
 - Risk calculations
@@ -667,6 +698,7 @@ Additional design:
 ### Real-time Systems (Chat, Gaming, IoT)
 
 Additional requirements:
+
 - Latency targets
 - Connection handling
 - State synchronization
@@ -674,6 +706,7 @@ Additional requirements:
 - Push notifications
 
 Additional design:
+
 - WebSocket/SSE architecture
 - State management
 - Caching strategy
@@ -683,6 +716,7 @@ Additional design:
 ### Machine Learning Systems
 
 Additional requirements:
+
 - Model training pipeline
 - Feature engineering
 - Model versioning
@@ -690,6 +724,7 @@ Additional requirements:
 - Monitoring/drift detection
 
 Additional design:
+
 - Training infrastructure
 - Feature store
 - Model registry
@@ -701,6 +736,7 @@ Additional design:
 Before finalizing documents, verify:
 
 ### Requirements Document
+
 - [ ] Every requirement has a clear user story
 - [ ] All acceptance criteria are testable
 - [ ] Non-functional requirements specified (performance, security)
@@ -708,6 +744,7 @@ Before finalizing documents, verify:
 - [ ] Requirements are numbered for tracing
 
 ### Design Document
+
 - [ ] Architecture diagram included
 - [ ] All components have clear responsibilities
 - [ ] Interfaces defined for integration points
@@ -716,6 +753,7 @@ Before finalizing documents, verify:
 - [ ] Deployment configuration included
 
 ### Implementation Plan
+
 - [ ] Tasks grouped into logical phases
 - [ ] Dependencies identified between tasks
 - [ ] Requirements traced to tasks
@@ -729,13 +767,13 @@ Before finalizing documents, verify:
 ```
 User: "I want to build an order flow trading automation system"
 
-Response: "I'll act as your Project Architect to create comprehensive planning documents. 
+Response: "I'll act as your Project Architect to create comprehensive planning documents.
 
 First, let me establish the architectural foundation:
 
 **System Components I need to define:**
 - Market data ingestion service
-- Order flow analysis engine  
+- Order flow analysis engine
 - Trading signal generator
 - Risk management module
 - Order execution service
@@ -804,6 +842,7 @@ Response: "I'll add dashboard requirements to your document:
 ## Common Pitfalls to Avoid
 
 ### Planning Pitfalls
+
 1. **Skipping architectural planning** - Jumping to requirements without mapping components first
 2. **Vague role definition** - Not establishing the architect role leads to unfocused documentation
 3. **Hidden integration points** - Discovering external dependencies during implementation
@@ -811,12 +850,14 @@ Response: "I'll add dashboard requirements to your document:
 5. **Missing data flow analysis** - Not mapping how data moves reveals issues late
 
 ### Requirements Pitfalls
+
 1. **Over-specifying implementation** - Requirements should define "what" not "how"
 2. **Vague acceptance criteria** - Avoid "user-friendly" or "fast" without metrics
 3. **Missing error cases** - Include failure scenarios in requirements
 4. **Untraceable requirements** - Every requirement should map to tasks
 
 ### Design Pitfalls
+
 1. **Monolithic components** - Break down large components into focused services
 2. **Circular dependencies** - Ensure task dependencies form a DAG
 3. **Missing data models** - Define core entities early
@@ -826,6 +867,7 @@ Response: "I'll add dashboard requirements to your document:
 ## Output Format
 
 Generate documents in Markdown format for easy editing and version control. Use:
+
 - Clear hierarchical headings (##, ###, ####)
 - Code blocks with language hints
 - Bulleted and numbered lists
@@ -835,6 +877,7 @@ Generate documents in Markdown format for easy editing and version control. Use:
 - Inline code for technical terms
 
 Save documents as:
+
 - `requirements.md` - Requirements document
 - `design.md` - Design document
 - `tasks.md` - Implementation plan

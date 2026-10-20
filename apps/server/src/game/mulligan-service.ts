@@ -38,7 +38,9 @@ export class MulliganService {
         if (zones.hand.length === 0) {
           const drawCount = Math.min(7, zones.library.length);
           zones.hand = zones.library.splice(0, drawCount);
-    zones.hand.forEach(c => { delete c.revealedTo; });
+          zones.hand.forEach(c => {
+            delete c.revealedTo;
+          });
         }
       }
 
@@ -52,7 +54,9 @@ export class MulliganService {
       this.session.syncPlayerCounts(pid);
     }
 
-    const firstPlayerName = order[0] ? state.players[order[0]]?.name || 'Primer jugador' : 'Primer jugador';
+    const firstPlayerName = order[0]
+      ? state.players[order[0]]?.name || 'Primer jugador'
+      : 'Primer jugador';
     this.session.addLog(
       state.hostId,
       `Inició la fase de mulligan (Regla de Londres con 1.º gratis). Turno de decisión: ${firstPlayerName}.`,
@@ -101,14 +105,21 @@ export class MulliganService {
     }
 
     // Return hand to library and shuffle with CSPRNG
-    zones.library.push(...zones.hand.map(c => { delete c.revealedTo; return c; }));
+    zones.library.push(
+      ...zones.hand.map(c => {
+        delete c.revealedTo;
+        return c;
+      }),
+    );
     zones.hand = [];
     zones.library = secureShuffle(zones.library);
 
     // Draw 7 cards
     const drawCount = Math.min(7, zones.library.length);
     zones.hand = zones.library.splice(0, drawCount);
-    zones.hand.forEach(c => { delete c.revealedTo; });
+    zones.hand.forEach(c => {
+      delete c.revealedTo;
+    });
 
     pMulligan.mulliganCount++;
     const k = pMulligan.mulliganCount;
@@ -279,10 +290,7 @@ export class MulliganService {
     if (nextPlayerId) {
       state.mulligan.currentDecidingPlayerId = nextPlayerId;
       const nextName = state.players[nextPlayerId]?.name || nextPlayerId;
-      this.session.addLog(
-        state.hostId,
-        `Turno de decisión de mano inicial: ${nextName}.`,
-      );
+      this.session.addLog(state.hostId, `Turno de decisión de mano inicial: ${nextName}.`);
       this.session.incrementVersion();
       if (this.onStateChanged) {
         this.onStateChanged();

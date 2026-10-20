@@ -1,6 +1,6 @@
 ---
 name: multiplayer-testing
-description: "Estrategia de pruebas para la mesa multijugador: unitarias (parser de mazos, validador, d20, barajado), integración, E2E con 4 clientes en Playwright, pruebas de fuga de información oculta, latencia de extremo a extremo y carga. Úsala al escribir o ejecutar pruebas, al validar una fase y antes de marcar como completa cualquier tarea de pruebas o de rendimiento."
+description: 'Estrategia de pruebas para la mesa multijugador: unitarias (parser de mazos, validador, d20, barajado), integración, E2E con 4 clientes en Playwright, pruebas de fuga de información oculta, latencia de extremo a extremo y carga. Úsala al escribir o ejecutar pruebas, al validar una fase y antes de marcar como completa cualquier tarea de pruebas o de rendimiento.'
 ---
 
 # Pruebas de la mesa multijugador
@@ -19,12 +19,12 @@ Una prueba que no ejecutas no cuenta como evidencia. Ejecuta, guarda el resultad
 Un contexto de navegador por jugador:
 
 ```ts
-import { test, expect, chromium } from "@playwright/test";
+import { test, expect, chromium } from '@playwright/test';
 
-test("lobby, d20 y arrastrar una carta", async () => {
+test('lobby, d20 y arrastrar una carta', async () => {
   const browser = await chromium.launch();
   const pages = await Promise.all(
-    [0, 1, 2, 3].map(async () => (await browser.newContext()).newPage())
+    [0, 1, 2, 3].map(async () => (await browser.newContext()).newPage()),
   );
   // anfitrión crea la mesa; los demás entran con el código
   // cada uno elige mazo y marca Listo; el anfitrión inicia

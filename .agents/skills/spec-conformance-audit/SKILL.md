@@ -1,6 +1,6 @@
 ---
 name: spec-conformance-audit
-description: "Audita el código contra requirements.md, design.md y tasks.md y produce una matriz de conformidad honesta. Úsala SIEMPRE que el usuario pida revisar el avance, comparar código con el plan, actualizar tasks.md, marcar tareas como hechas o cerrar una fase, y antes de escribir [x] en cualquier tarea. Úsala también cuando una implementación difiera del diseño original."
+description: 'Audita el código contra requirements.md, design.md y tasks.md y produce una matriz de conformidad honesta. Úsala SIEMPRE que el usuario pida revisar el avance, comparar código con el plan, actualizar tasks.md, marcar tareas como hechas o cerrar una fase, y antes de escribir [x] en cualquier tarea. Úsala también cuando una implementación difiera del diseño original.'
 ---
 
 # Auditoría de conformidad con la especificación
@@ -26,9 +26,9 @@ Los documentos del proyecto (`requirements.md`, `design.md`, `tasks.md`) son el 
 
 ## Plantilla de matriz
 
-| Requisito | Criterio | Estado | Evidencia (archivo / prueba) | Qué falta |
-|---|---|---|---|---|
-| REQ-9 | 9.2 Arrastrar y soltar entre zonas | Parcial | `apps/web/...` / sin prueba E2E | Falta drag & drop; hay botones |
+| Requisito | Criterio                           | Estado  | Evidencia (archivo / prueba)    | Qué falta                      |
+| --------- | ---------------------------------- | ------- | ------------------------------- | ------------------------------ |
+| REQ-9     | 9.2 Arrastrar y soltar entre zonas | Parcial | `apps/web/...` / sin prueba E2E | Falta drag & drop; hay botones |
 
 ## Anti-patrones que debes evitar
 

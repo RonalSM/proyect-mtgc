@@ -110,7 +110,10 @@ export class GameStateSession {
    */
   public selectDeck(playerId: string, payload: SelectDeckPayload): void {
     const selected = this.lobbyManager.selectDeck(playerId, payload);
-    this.addLog(playerId, `eligió el mazo "${selected.name}" (Comandante: ${selected.commanderName})`);
+    this.addLog(
+      playerId,
+      `eligió el mazo "${selected.name}" (Comandante: ${selected.commanderName})`,
+    );
     this.incrementVersion();
   }
 
@@ -297,7 +300,7 @@ export class GameStateSession {
 
     player.isEliminated = payload.isEliminated;
     player.eliminationReason = payload.isEliminated
-      ? ((payload.reason as any) || (player.riskReason ? player.riskReason : 'manual'))
+      ? (payload.reason as any) || (player.riskReason ? player.riskReason : 'manual')
       : undefined;
 
     this.addLog(
@@ -485,7 +488,9 @@ export class GameStateSession {
     // 3. Secure CSPRNG Shuffle
     zones.library = secureShuffle(zones.library);
     // Terminar revelaciones activas en mano al barajar (Punto 1)
-    zones.hand.forEach(c => { delete c.revealedTo; });
+    zones.hand.forEach(c => {
+      delete c.revealedTo;
+    });
 
     // 4. Draw opening 7 cards
     const initialHandSize = Math.min(7, zones.library.length);
@@ -534,7 +539,9 @@ export class GameStateSession {
     if (this.state.status === 'mulligan') {
       this.mulliganService.takeMulligan(playerId);
     } else {
-      throw new Error('La acción de mulligan solo está permitida durante la fase inicial de mulligan.');
+      throw new Error(
+        'La acción de mulligan solo está permitida durante la fase inicial de mulligan.',
+      );
     }
   }
 
@@ -547,7 +554,9 @@ export class GameStateSession {
 
     zones.library = secureShuffle(zones.library);
     // Terminar revelaciones activas en mano al barajar (Punto 1)
-    zones.hand.forEach(c => { delete c.revealedTo; });
+    zones.hand.forEach(c => {
+      delete c.revealedTo;
+    });
     this.addLog(playerId, `barajó su biblioteca`);
     this.incrementVersion();
   }
@@ -559,7 +568,7 @@ export class GameStateSession {
   public computeHolderId(
     position: { x: number; y: number },
     isTapped: boolean,
-    viewport: { width: number; height: number } = { width: 1920, height: 1080 }
+    viewport: { width: number; height: number } = { width: 1920, height: 1080 },
   ): string | undefined {
     const allSeated = Object.values(this.state.players).filter(p => !p.isSpectator);
     const totalPlayers = Math.max(2, allSeated.length);
@@ -571,8 +580,8 @@ export class GameStateSession {
     const cardDims = getCardDimensions(totalPlayers, viewport);
     const orientedW = isTapped ? cardDims.height : cardDims.width;
     const orientedH = isTapped ? cardDims.width : cardDims.height;
-    const cardHalfWNorm = (orientedW / 2) / viewport.width;
-    const cardHalfHNorm = (orientedH / 2) / viewport.height;
+    const cardHalfWNorm = orientedW / 2 / viewport.width;
+    const cardHalfHNorm = orientedH / 2 / viewport.height;
 
     const cardLeft = position.x - cardHalfWNorm;
     const cardTop = position.y - cardHalfHNorm;
@@ -623,7 +632,7 @@ export class GameStateSession {
    */
   public computePlayerDivisionCenter(
     targetPlayerId: string,
-    viewport: { width: number; height: number } = { width: 1920, height: 1080 }
+    viewport: { width: number; height: number } = { width: 1920, height: 1080 },
   ): { x: number; y: number } {
     const allSeated = Object.values(this.state.players).filter(p => !p.isSpectator);
     const totalPlayers = Math.max(2, allSeated.length);
@@ -664,8 +673,8 @@ export class GameStateSession {
 
     // Tamaño real de la carta para que quede exactamente centrada en la sección jugable (Punto 4 & Punto 2)
     const cardDims = getCardDimensions(totalPlayers, viewport);
-    const cardHalfWNorm = (cardDims.width / 2) / viewport.width;
-    const cardHalfHNorm = (cardDims.height / 2) / viewport.height;
+    const cardHalfWNorm = cardDims.width / 2 / viewport.width;
+    const cardHalfHNorm = cardDims.height / 2 / viewport.height;
 
     const existingCount = this.state.playerZones[targetPlayerId]?.battlefield?.length ?? 0;
     const cascadeOffset = (existingCount % 5) * 0.015;
@@ -685,7 +694,9 @@ export class GameStateSession {
   /**
    * Finds a card on any battlefield in the room
    */
-  public findBattlefieldCard(instanceId: string): { card: CardInstance; playerId: string; index: number } | undefined {
+  public findBattlefieldCard(
+    instanceId: string,
+  ): { card: CardInstance; playerId: string; index: number } | undefined {
     for (const [pId, zones] of Object.entries(this.state.playerZones)) {
       const idx = zones.battlefield.findIndex(c => c.instanceId === instanceId);
       if (idx !== -1 && zones.battlefield[idx]) {
@@ -714,7 +725,9 @@ export class GameStateSession {
       // Buscar primero en fromPlayerId
       const fromZones = this.state.playerZones[fromPlayerId];
       if (fromZones && fromZones[payload.fromZone]) {
-        cardIndex = fromZones[payload.fromZone].findIndex(c => c.instanceId === payload.cardInstanceId);
+        cardIndex = fromZones[payload.fromZone].findIndex(
+          c => c.instanceId === payload.cardInstanceId,
+        );
         if (cardIndex !== -1) {
           fromArray = fromZones[payload.fromZone];
         }
@@ -722,7 +735,8 @@ export class GameStateSession {
       // Si no se encontró y es zona pública (cementerio o exilio), buscar en todos los jugadores
       if (cardIndex === -1 && (payload.fromZone === 'graveyard' || payload.fromZone === 'exile')) {
         for (const [pId, zones] of Object.entries(this.state.playerZones)) {
-          const idx = zones[payload.fromZone]?.findIndex(c => c.instanceId === payload.cardInstanceId) ?? -1;
+          const idx =
+            zones[payload.fromZone]?.findIndex(c => c.instanceId === payload.cardInstanceId) ?? -1;
           if (idx !== -1) {
             fromPlayerId = pId;
             fromArray = zones[payload.fromZone];
@@ -893,23 +907,11 @@ export class GameStateSession {
       );
     } else if (payload.toZone === 'library') {
       // Punto 2: La bitácora registra "X envió una carta a su biblioteca" sin revelar la posición
-      this.addLog(
-        playerId,
-        'envió una carta a su biblioteca',
-        true,
-      );
+      this.addLog(playerId, 'envió una carta a su biblioteca', true);
     } else if (payload.fromZone === 'battlefield' && payload.toZone === 'battlefield') {
-      this.addLog(
-        playerId,
-        `movió "${card.definition.name}"`,
-        true,
-      );
+      this.addLog(playerId, `movió "${card.definition.name}"`, true);
     } else if (payload.fromZone === 'hand' && payload.toZone === 'battlefield') {
-      this.addLog(
-        playerId,
-        `jugó "${card.definition.name}" al campo de batalla`,
-        true,
-      );
+      this.addLog(playerId, `jugó "${card.definition.name}" al campo de batalla`, true);
     } else {
       this.addLog(
         playerId,
@@ -945,7 +947,15 @@ export class GameStateSession {
   public revealCard(
     playerId: string,
     payload: RevealCardPayload,
-  ): { card: CardInstance; fromPlayerId: string; fromPlayerName: string; targetPlayerId?: string; targetPlayerName?: string } | undefined {
+  ):
+    | {
+        card: CardInstance;
+        fromPlayerId: string;
+        fromPlayerName: string;
+        targetPlayerId?: string;
+        targetPlayerName?: string;
+      }
+    | undefined {
     const fromPlayer = this.state.players[playerId];
     const fromPlayerName = fromPlayer?.name || 'Jugador';
 
@@ -958,7 +968,9 @@ export class GameStateSession {
       }
       if (!foundCard) {
         for (const zoneList of Object.values(zones)) {
-          foundCard = (zoneList as CardInstance[]).find((c: CardInstance) => c.instanceId === payload.cardInstanceId);
+          foundCard = (zoneList as CardInstance[]).find(
+            (c: CardInstance) => c.instanceId === payload.cardInstanceId,
+          );
           if (foundCard) break;
         }
       }
@@ -1009,10 +1021,7 @@ export class GameStateSession {
   /**
    * Deja de revelar una carta de la mano (Punto 1)
    */
-  public unrevealCard(
-    playerId: string,
-    payload: UnrevealCardPayload,
-  ): boolean {
+  public unrevealCard(playerId: string, payload: UnrevealCardPayload): boolean {
     const zones = this.state.playerZones[playerId];
     if (!zones) return false;
 
@@ -1111,7 +1120,9 @@ export class GameStateSession {
       },
     };
 
-    const targetZones = this.state.playerZones[clonedInstance.holderId || playerId] || this.state.playerZones[playerId];
+    const targetZones =
+      this.state.playerZones[clonedInstance.holderId || playerId] ||
+      this.state.playerZones[playerId];
     if (targetZones) {
       targetZones.battlefield.push(clonedInstance);
     }
@@ -1122,7 +1133,9 @@ export class GameStateSession {
       description: `Revertir clon de ${sourceCard.definition.name}`,
       revert: () => {
         if (targetZones) {
-          const idx = targetZones.battlefield.findIndex(c => c.instanceId === clonedInstance.instanceId);
+          const idx = targetZones.battlefield.findIndex(
+            c => c.instanceId === clonedInstance.instanceId,
+          );
           if (idx !== -1) {
             targetZones.battlefield.splice(idx, 1);
           }
@@ -1144,10 +1157,16 @@ export class GameStateSession {
     // Detect base power / toughness
     let baseP: number | undefined = undefined;
     let baseT: number | undefined = undefined;
-    if (payload.tokenDefinition.power !== undefined && !isNaN(parseInt(payload.tokenDefinition.power, 10))) {
+    if (
+      payload.tokenDefinition.power !== undefined &&
+      !isNaN(parseInt(payload.tokenDefinition.power, 10))
+    ) {
       baseP = parseInt(payload.tokenDefinition.power, 10);
     }
-    if (payload.tokenDefinition.toughness !== undefined && !isNaN(parseInt(payload.tokenDefinition.toughness, 10))) {
+    if (
+      payload.tokenDefinition.toughness !== undefined &&
+      !isNaN(parseInt(payload.tokenDefinition.toughness, 10))
+    ) {
       baseT = parseInt(payload.tokenDefinition.toughness, 10);
     }
 
@@ -1156,9 +1175,20 @@ export class GameStateSession {
     if (payload.tokenDefinition.oracleText) {
       const text = payload.tokenDefinition.oracleText.toLowerCase();
       const standardKws = [
-        'deathtouch', 'defender', 'double strike', 'fear', 'first strike',
-        'flying', 'haste', 'hexproof', 'indestructible', 'lifelink',
-        'menace', 'reach', 'trample', 'vigilance',
+        'deathtouch',
+        'defender',
+        'double strike',
+        'fear',
+        'first strike',
+        'flying',
+        'haste',
+        'hexproof',
+        'indestructible',
+        'lifelink',
+        'menace',
+        'reach',
+        'trample',
+        'vigilance',
       ];
       for (const kw of standardKws) {
         if (new RegExp(`\\b${kw}\\b`, 'i').test(text)) {
@@ -1191,7 +1221,9 @@ export class GameStateSession {
       },
     };
 
-    const targetZones = this.state.playerZones[tokenInstance.holderId || targetPlayerId] || this.state.playerZones[targetPlayerId];
+    const targetZones =
+      this.state.playerZones[tokenInstance.holderId || targetPlayerId] ||
+      this.state.playerZones[targetPlayerId];
     if (targetZones) {
       targetZones.battlefield.push(tokenInstance);
     }
@@ -1203,7 +1235,9 @@ export class GameStateSession {
       description: `Revertir creación de ficha ${payload.tokenDefinition.name}`,
       revert: () => {
         if (targetZones) {
-          const idx = targetZones.battlefield.findIndex(c => c.instanceId === tokenInstance.instanceId);
+          const idx = targetZones.battlefield.findIndex(
+            c => c.instanceId === tokenInstance.instanceId,
+          );
           if (idx !== -1) {
             targetZones.battlefield.splice(idx, 1);
           }
@@ -1482,7 +1516,10 @@ export class GameStateSession {
    * Responds to an undo proposal that affects opponents (REQ-11.3)
    */
   public confirmUndo(responderId: string, payload: ConfirmUndoPayload): boolean {
-    if (!this.state.pendingUndoProposal || this.state.pendingUndoProposal.id !== payload.proposalId) {
+    if (
+      !this.state.pendingUndoProposal ||
+      this.state.pendingUndoProposal.id !== payload.proposalId
+    ) {
       return false;
     }
 
@@ -1490,7 +1527,10 @@ export class GameStateSession {
     const responderName = this.state.players[responderId]?.name || 'Jugador';
 
     if (!payload.approved) {
-      this.addLog(responderId, `${responderName} rechazó la solicitud de deshacer "${proposal.description}"`);
+      this.addLog(
+        responderId,
+        `${responderName} rechazó la solicitud de deshacer "${proposal.description}"`,
+      );
       this.state.pendingUndoProposal = undefined;
       this.incrementVersion();
       return false;
@@ -1500,7 +1540,8 @@ export class GameStateSession {
 
     // Check if all targeted players have approved
     const allApproved = proposal.targetPlayerIds.every(
-      targetId => proposal.approvals[targetId] === true || !this.state.players[targetId]?.isConnected,
+      targetId =>
+        proposal.approvals[targetId] === true || !this.state.players[targetId]?.isConnected,
     );
 
     if (allApproved) {

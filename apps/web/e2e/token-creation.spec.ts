@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 
 const SCREENSHOT_DIR = path.resolve(
-  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
 );
 
 async function setupTokenTestPod(browser: any) {
@@ -46,7 +46,7 @@ async function setupTokenTestPod(browser: any) {
 
   await hostPage.fill(
     'textarea',
-    `// Comandante\n1 Kenrith, the Returned King *CMDR*\n\n// Mazo\n1 Smothering Tithe\n1 Grave Titan\n1 Regal Caracal\n1 Sol Ring\n10 Plains\n10 Island\n10 Swamp\n10 Mountain\n10 Forest`
+    `// Comandante\n1 Kenrith, the Returned King *CMDR*\n\n// Mazo\n1 Smothering Tithe\n1 Grave Titan\n1 Regal Caracal\n1 Sol Ring\n10 Plains\n10 Island\n10 Swamp\n10 Mountain\n10 Forest`,
   );
   await hostPage.click('button:has-text("Validar lista")');
   await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -71,7 +71,7 @@ async function setupTokenTestPod(browser: any) {
   }
   await pPage.fill(
     'textarea',
-    `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n10 Mountain\n10 Swamp\n10 Plains`
+    `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n10 Mountain\n10 Swamp\n10 Plains`,
   );
   await pPage.click('button:has-text("Validar lista")');
   await pPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -82,7 +82,9 @@ async function setupTokenTestPod(browser: any) {
   await startGameBtn.click();
 
   // Complete mulligan
-  await expect(pages[0].locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 25000 });
+  await expect(pages[0].locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+    timeout: 25000,
+  });
   for (let step = 0; step < 2; step++) {
     for (let pIdx = 0; pIdx < 2; pIdx++) {
       const keepBtn = pages[pIdx].locator('[data-testid="keep-btn"]');
@@ -96,7 +98,9 @@ async function setupTokenTestPod(browser: any) {
   }
 
   for (const page of pages) {
-    await expect(page.locator('[data-testid="opening-hand-modal"]')).not.toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="opening-hand-modal"]')).not.toBeVisible({
+      timeout: 15000,
+    });
   }
   await expect(pages[0].locator('#mesa-total')).toBeVisible({ timeout: 10000 });
 
@@ -104,7 +108,9 @@ async function setupTokenTestPod(browser: any) {
 }
 
 test.describe('Punto 4: Fichas asociadas a cartas, comunes y personalizadas', () => {
-  test('Crear fichas desde menú de espacio vacío y verificar desaparición al salir', async ({ browser }) => {
+  test('Crear fichas desde menú de espacio vacío y verificar desaparición al salir', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, pages, hostPage } = await setupTokenTestPod(browser);
 
@@ -144,7 +150,9 @@ test.describe('Punto 4: Fichas asociadas a cartas, comunes y personalizadas', ()
 
       // Modal cerrado y ficha Tesoro en mesa
       await expect(tokenModal).not.toBeVisible();
-      const treasureToken = page.locator('[data-battlefield-card][data-card-name="Treasure"]').first();
+      const treasureToken = page
+        .locator('[data-battlefield-card][data-card-name="Treasure"]')
+        .first();
       await expect(treasureToken).toBeVisible({ timeout: 5000 });
 
       // 2. Probar pestaña Ficha personalizada
@@ -203,14 +211,18 @@ test.describe('Punto 4: Fichas asociadas a cartas, comunes y personalizadas', ()
       }
       await expect(page.locator('text=creó una ficha "Treasure"')).toBeVisible({ timeout: 5000 });
       await expect(page.locator('text=creó una ficha "Dragón"')).toBeVisible({ timeout: 5000 });
-      await expect(page.locator('text=desapareció al salir de la mesa')).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('text=desapareció al salir de la mesa')).toBeVisible({
+        timeout: 5000,
+      });
 
       // 5. Probar clic derecho sobre cartas en mano: Smothering Tithe (crea ficha) vs Sol Ring (no crea)
       const titheCard = page.locator('[data-from-zone="hand"][data-card-name="Smothering Tithe"]');
       if (await titheCard.isVisible().catch(() => false)) {
         await titheCard.click({ button: 'right', force: true });
         await page.waitForTimeout(400);
-        await expect(page.locator('[data-testid="context-create-token-section"]')).toBeVisible({ timeout: 5000 });
+        await expect(page.locator('[data-testid="context-create-token-section"]')).toBeVisible({
+          timeout: 5000,
+        });
         await expect(page.locator('[data-testid="create-token-treasure"]')).toBeVisible();
         await page.keyboard.press('Escape');
         await page.waitForTimeout(300);
@@ -220,7 +232,9 @@ test.describe('Punto 4: Fichas asociadas a cartas, comunes y personalizadas', ()
       if (await solRingCard.isVisible().catch(() => false)) {
         await solRingCard.click({ button: 'right', force: true });
         await page.waitForTimeout(400);
-        await expect(page.locator('[data-testid="context-create-token-section"]')).not.toBeVisible();
+        await expect(
+          page.locator('[data-testid="context-create-token-section"]'),
+        ).not.toBeVisible();
         await page.keyboard.press('Escape');
       }
 

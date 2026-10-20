@@ -58,8 +58,8 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         player.isAtRisk && !player.isEliminated
           ? 'border-rose-500/80 ring-2 ring-rose-500/30'
           : isActiveTurn
-          ? 'border-amber-400 ring-2 ring-amber-400/20 shadow-amber-500/10'
-          : 'border-slate-800'
+            ? 'border-amber-400 ring-2 ring-amber-400/20 shadow-amber-500/10'
+            : 'border-slate-800'
       } ${player.isEliminated ? 'opacity-60 saturate-50' : ''}`}
     >
       {/* Header Info */}

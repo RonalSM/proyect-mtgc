@@ -11,7 +11,11 @@ class CardImageResolver {
   /**
    * Synchronously get a previously cached image URL for a card name with language support
    */
-  public getCached(cardName: string, size: 'small' | 'normal' = 'normal', lang: 'es' | 'en' = 'es'): string | null {
+  public getCached(
+    cardName: string,
+    size: 'small' | 'normal' = 'normal',
+    lang: 'es' | 'en' = 'es',
+  ): string | null {
     if (!cardName) return null;
     const key = `${cardName.trim().toLowerCase()}_${size}_${lang}`;
     return this.cache.get(key) || null;
@@ -20,7 +24,11 @@ class CardImageResolver {
   /**
    * Asynchronously resolve image URL via backend with deduplication and in-memory cache
    */
-  public async resolve(cardName: string, size: 'small' | 'normal' = 'normal', lang: 'es' | 'en' = 'es'): Promise<string | null> {
+  public async resolve(
+    cardName: string,
+    size: 'small' | 'normal' = 'normal',
+    lang: 'es' | 'en' = 'es',
+  ): Promise<string | null> {
     if (!cardName) return null;
     const trimmed = cardName.trim();
     const key = `${trimmed.toLowerCase()}_${size}_${lang}`;
@@ -35,13 +43,18 @@ class CardImageResolver {
 
     const promise = (async () => {
       try {
-        const res = await fetch(`/api/cards/search?name=${encodeURIComponent(trimmed)}&exact=true&lang=${lang}`);
+        const res = await fetch(
+          `/api/cards/search?name=${encodeURIComponent(trimmed)}&exact=true&lang=${lang}`,
+        );
         if (res.ok) {
           const cardDef = await res.json();
           let targetUrl: string | null = null;
           if (lang === 'es' && cardDef.locales?.es) {
             const es = cardDef.locales.es;
-            targetUrl = size === 'small' ? (es.imageUrlSmall || es.imageUrlNormal || null) : (es.imageUrlNormal || es.imageUrlSmall || null);
+            targetUrl =
+              size === 'small'
+                ? es.imageUrlSmall || es.imageUrlNormal || null
+                : es.imageUrlNormal || es.imageUrlSmall || null;
           }
           if (!targetUrl) {
             targetUrl =

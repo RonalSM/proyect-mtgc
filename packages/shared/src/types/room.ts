@@ -1,7 +1,8 @@
 import { PlayerState } from './player.js';
 import { CardInstance } from './card.js';
 
-export type RoomStatus = 'lobby' | 'initiative' | 'mulligan' | 'playing' | 'finished' | 'in_progress' | 'ended';
+export type RoomStatus =
+  'lobby' | 'initiative' | 'mulligan' | 'playing' | 'finished' | 'in_progress' | 'ended';
 
 export interface MulliganPlayerState {
   playerId: string;

@@ -501,7 +501,9 @@ export class WebSocketHandler {
         }
 
         case 'ROLL_D20_INITIATIVE': {
-          throw new Error('La tirada de iniciativa es 100% automática y gestionada exclusivamente por el servidor. Ningún jugador debe lanzar manualmente.');
+          throw new Error(
+            'La tirada de iniciativa es 100% automática y gestionada exclusivamente por el servidor. Ningún jugador debe lanzar manualmente.',
+          );
         }
 
         case 'SET_PLAYMAT': {

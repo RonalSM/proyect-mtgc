@@ -181,15 +181,21 @@ test.describe('E2E Tabletop - 4 Players Live Pod', () => {
 
     // 4. Cargar/Seleccionar mazos y marcar Listo para todos
     for (const page of [hostPage, p2Page, p3Page, p4Page]) {
-      const cargarMazoBtn = page.locator('button:has-text("Cargar Mazo"), button:has-text("Cambiar Mazo")').first();
+      const cargarMazoBtn = page
+        .locator('button:has-text("Cargar Mazo"), button:has-text("Cambiar Mazo")')
+        .first();
       if (await cargarMazoBtn.isVisible()) {
         await cargarMazoBtn.click();
-        const validarBtn = page.locator('button:has-text("Validar y Cargar Mazo"), button:has-text("Confirmar Mazo")').first();
+        const validarBtn = page
+          .locator('button:has-text("Validar y Cargar Mazo"), button:has-text("Confirmar Mazo")')
+          .first();
         if (await validarBtn.isVisible()) {
           await validarBtn.click();
         }
       }
-      const listoBtn = page.locator('button:has-text("Marcar Listo"), button:has-text("Listo")').first();
+      const listoBtn = page
+        .locator('button:has-text("Marcar Listo"), button:has-text("Listo")')
+        .first();
       if (await listoBtn.isVisible()) {
         await listoBtn.click();
       }
@@ -202,7 +208,9 @@ test.describe('E2E Tabletop - 4 Players Live Pod', () => {
     }
 
     // 6. Verificar transición a iniciativa o partida (D20 o Cuadrícula)
-    const gridOrInitiative = hostPage.locator('text=Fase de Iniciativa, text=Tirar D20, [data-drop-zone="battlefield"]').first();
+    const gridOrInitiative = hostPage
+      .locator('text=Fase de Iniciativa, text=Tirar D20, [data-drop-zone="battlefield"]')
+      .first();
     await expect(gridOrInitiative).toBeVisible({ timeout: 15000 });
 
     // Limpieza

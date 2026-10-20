@@ -99,7 +99,11 @@ describe('Punto 6: Zona de comando e impuesto de comandante (commanderTax)', () 
 
     assert.strictEqual(session.state.playerZones.p_alice.command.length, 0);
     assert.strictEqual(session.state.playerZones.p_alice.battlefield.length, 1);
-    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 0, 'Sacar el comandante a la mesa no debe alterar el tax');
+    assert.strictEqual(
+      session.state.players.p_alice.counters.commanderTax,
+      0,
+      'Sacar el comandante a la mesa no debe alterar el tax',
+    );
 
     // 2. Devolverlo al comando: tax SIGUE en 0 (sin auto-incremento, Punto 3)
     session.moveCard('p_alice', {
@@ -110,7 +114,11 @@ describe('Punto 6: Zona de comando e impuesto de comandante (commanderTax)', () 
 
     assert.strictEqual(session.state.playerZones.p_alice.command.length, 1);
     assert.strictEqual(session.state.playerZones.p_alice.battlefield.length, 0);
-    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 0, 'Devolver al comando NO debe auto-incrementar tax (sin motor de reglas)');
+    assert.strictEqual(
+      session.state.players.p_alice.counters.commanderTax,
+      0,
+      'Devolver al comando NO debe auto-incrementar tax (sin motor de reglas)',
+    );
 
     // 3. Subir tax manualmente a +2 vía SET_PLAYER_COUNTER (botón +2)
     session.setPlayerCounter({
@@ -118,7 +126,11 @@ describe('Punto 6: Zona de comando e impuesto de comandante (commanderTax)', () 
       counterType: 'commanderTax',
       delta: 2,
     });
-    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 2, 'Subir tax manualmente con botón +2 debe dar 2');
+    assert.strictEqual(
+      session.state.players.p_alice.counters.commanderTax,
+      2,
+      'Subir tax manualmente con botón +2 debe dar 2',
+    );
 
     // 4. Subir tax manualmente a +4 vía SET_PLAYER_COUNTER
     session.setPlayerCounter({
@@ -126,7 +138,11 @@ describe('Punto 6: Zona de comando e impuesto de comandante (commanderTax)', () 
       counterType: 'commanderTax',
       delta: 2,
     });
-    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 4, 'Subir tax manualmente de 2 en 2 debe llegar a +4');
+    assert.strictEqual(
+      session.state.players.p_alice.counters.commanderTax,
+      4,
+      'Subir tax manualmente de 2 en 2 debe llegar a +4',
+    );
 
     // 5. Restar tax manualmente a +2 vía SET_PLAYER_COUNTER (botón -2)
     session.setPlayerCounter({
@@ -134,7 +150,11 @@ describe('Punto 6: Zona de comando e impuesto de comandante (commanderTax)', () 
       counterType: 'commanderTax',
       delta: -2,
     });
-    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 2, 'Restar tax manualmente con botón -2 debe dar 2');
+    assert.strictEqual(
+      session.state.players.p_alice.counters.commanderTax,
+      2,
+      'Restar tax manualmente con botón -2 debe dar 2',
+    );
 
     // 6. Sacarlo de nuevo a la mesa: tax se mantiene en +2
     session.moveCard('p_alice', {
@@ -145,7 +165,11 @@ describe('Punto 6: Zona de comando e impuesto de comandante (commanderTax)', () 
     });
 
     assert.strictEqual(session.state.playerZones.p_alice.battlefield.length, 1);
-    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 2, 'Sacarlo de nuevo debe mantener el tax manual en +2');
+    assert.strictEqual(
+      session.state.players.p_alice.counters.commanderTax,
+      2,
+      'Sacarlo de nuevo debe mantener el tax manual en +2',
+    );
   });
 
   test('Undo de movimiento no altera el commanderTax manual', () => {
@@ -179,7 +203,11 @@ describe('Punto 6: Zona de comando e impuesto de comandante (commanderTax)', () 
     // Undo -> revierte movimiento, tax sigue en 4
     const undoSuccess = session.undoLast('p_alice');
     assert.strictEqual(undoSuccess, true);
-    assert.strictEqual(session.state.players.p_alice.counters.commanderTax, 4, 'Deshacer movimiento no altera el tax manual');
+    assert.strictEqual(
+      session.state.players.p_alice.counters.commanderTax,
+      4,
+      'Deshacer movimiento no altera el tax manual',
+    );
     assert.strictEqual(session.state.playerZones.p_alice.battlefield.length, 1);
   });
 });

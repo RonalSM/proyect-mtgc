@@ -94,19 +94,19 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   const cellWidth = expandedPlayerId
     ? viewportSize.width
     : isTwoPlayer
-    ? viewportSize.width / 2
-    : podSize <= 4
-    ? viewportSize.width / 2
-    : viewportSize.width / 3;
+      ? viewportSize.width / 2
+      : podSize <= 4
+        ? viewportSize.width / 2
+        : viewportSize.width / 3;
 
   const cellHeight = expandedPlayerId
     ? viewportSize.height
     : isTwoPlayer
-    ? viewportSize.height
-    : viewportSize.height / 2;
+      ? viewportSize.height
+      : viewportSize.height / 2;
 
   // Límite por alto: cerca del 20% del alto de la celda (REQ-22.6.3 / Punto 9)
-  const maxHByCellHeight = cellHeight * 0.20;
+  const maxHByCellHeight = cellHeight * 0.2;
 
   // Límite por ancho: vida (~80px) + gaps/padding (~50px) + comandante (W) + mano (~2.5*W) + biblioteca (W) + pilas (W)
   // 5.5 * W <= cellWidth - 130  =>  W <= (cellWidth - 130) / 5.5
@@ -144,7 +144,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
   // Detección estricta de colisión por puntero (Punto 4):
   // La carta va a una pila sólo si el puntero está dentro de esa pila; en cualquier otro caso queda en la mesa.
-  const customCollisionDetection: CollisionDetection = (args) => {
+  const customCollisionDetection: CollisionDetection = args => {
     const pointerCollisions = pointerWithin(args);
     if (pointerCollisions.length > 0) {
       const pileCollision = pointerCollisions.find(c => c.id !== 'tabletop');
@@ -181,7 +181,14 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     activeNodeRect,
   }: {
     transform: { x: number; y: number; scaleX: number; scaleY: number };
-    activeNodeRect: { top: number; left: number; width: number; height: number; bottom: number; right: number } | null;
+    activeNodeRect: {
+      top: number;
+      left: number;
+      width: number;
+      height: number;
+      bottom: number;
+      right: number;
+    } | null;
   }) => {
     if (!dragOffsetRef.current || !activeNodeRect) return transform;
 
@@ -190,8 +197,10 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
 
     // Posición del cursor en tiempo real para eliminar saltos en el frame donde se supera el umbral de 8px
-    const currentPointerX = latestPointerRef.current.x || (initialBox.left + grabOffsetFromTopLeft.x + transform.x);
-    const currentPointerY = latestPointerRef.current.y || (initialBox.top + grabOffsetFromTopLeft.y + transform.y);
+    const currentPointerX =
+      latestPointerRef.current.x || initialBox.left + grabOffsetFromTopLeft.x + transform.x;
+    const currentPointerY =
+      latestPointerRef.current.y || initialBox.top + grabOffsetFromTopLeft.y + transform.y;
 
     const targetLeft = currentPointerX - grabOffsetFromTopLeft.x;
     const targetTop = currentPointerY - grabOffsetFromTopLeft.y;
@@ -210,10 +219,12 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
   const handleDragStart = (event: DragStartEvent) => {
     setIsDragging(true);
-    const data = event.active.data.current as {
-      card: CardInstance;
-      fromZone: 'hand' | 'battlefield' | 'command' | 'library' | 'graveyard' | 'exile';
-    } | undefined;
+    const data = event.active.data.current as
+      | {
+          card: CardInstance;
+          fromZone: 'hand' | 'battlefield' | 'command' | 'library' | 'graveyard' | 'exile';
+        }
+      | undefined;
 
     if (data?.card) {
       setActiveDragItem({ card: data.card, fromZone: data.fromZone });
@@ -227,7 +238,9 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       // Medir getBoundingClientRect() de la caja visual real (ya girada si está girada)
       const domEl =
         typeof document !== 'undefined'
-          ? (document.querySelector(`[data-card-instance-id="${event.active.id}"]`) as HTMLElement | null)
+          ? (document.querySelector(
+              `[data-card-instance-id="${event.active.id}"]`,
+            ) as HTMLElement | null)
           : null;
       const rect = domEl?.getBoundingClientRect();
 
@@ -292,10 +305,12 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     }
     lastDragMoveTimeRef.current = now;
 
-    const data = event.active.data.current as {
-      card?: CardInstance;
-      fromZone?: 'hand' | 'battlefield' | 'command' | 'library' | 'graveyard' | 'exile';
-    } | undefined;
+    const data = event.active.data.current as
+      | {
+          card?: CardInstance;
+          fromZone?: 'hand' | 'battlefield' | 'command' | 'library' | 'graveyard' | 'exile';
+        }
+      | undefined;
 
     const isTapped = !!(data?.card?.isTapped || activeDragItem?.card?.isTapped);
     const overlayWidth = isTapped ? cardPixelHeight : cardPixelWidth;
@@ -309,8 +324,12 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
     if (dragOffsetRef.current) {
       const { initialBox, grabOffsetFromTopLeft } = dragOffsetRef.current;
-      const curX = latestPointerRef.current.x || (initialBox.left + grabOffsetFromTopLeft.x + (event.delta?.x ?? 0));
-      const curY = latestPointerRef.current.y || (initialBox.top + grabOffsetFromTopLeft.y + (event.delta?.y ?? 0));
+      const curX =
+        latestPointerRef.current.x ||
+        initialBox.left + grabOffsetFromTopLeft.x + (event.delta?.x ?? 0);
+      const curY =
+        latestPointerRef.current.y ||
+        initialBox.top + grabOffsetFromTopLeft.y + (event.delta?.y ?? 0);
       overlayLeft = curX - grabOffsetFromTopLeft.x;
       overlayTop = curY - grabOffsetFromTopLeft.y;
     } else if (event.active.rect.current?.translated) {
@@ -343,17 +362,20 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     });
   };
 
-  const handleDragCancel = useCallback((event?: DragCancelEvent) => {
-    const cardId = activeDragItem?.card.instanceId || event?.active?.id;
-    if (cardId) {
-      onAction('CARD_DRAG_MOVE', {
-        cardInstanceId: cardId,
-        isDragging: false,
-      });
-    }
-    setIsDragging(false);
-    setActiveDragItem(null);
-  }, [activeDragItem, onAction, setIsDragging]);
+  const handleDragCancel = useCallback(
+    (event?: DragCancelEvent) => {
+      const cardId = activeDragItem?.card.instanceId || event?.active?.id;
+      if (cardId) {
+        onAction('CARD_DRAG_MOVE', {
+          cardInstanceId: cardId,
+          isDragging: false,
+        });
+      }
+      setIsDragging(false);
+      setActiveDragItem(null);
+    },
+    [activeDragItem, onAction, setIsDragging],
+  );
 
   // Cancelar arrastre con Escape o cerrar mesa expandida si no hay arrastre (Punto 3 / Punto 5)
   useEffect(() => {
@@ -382,16 +404,24 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     const initial = active.rect.current?.initial;
 
     const isTapped = !!activeDragItem?.card?.isTapped;
-    const overlayWidth = isTapped ? cardPixelHeight : (translated?.width || initial?.width || cardPixelWidth);
-    const overlayHeight = isTapped ? cardPixelWidth : (translated?.height || initial?.height || cardPixelHeight);
+    const overlayWidth = isTapped
+      ? cardPixelHeight
+      : translated?.width || initial?.width || cardPixelWidth;
+    const overlayHeight = isTapped
+      ? cardPixelWidth
+      : translated?.height || initial?.height || cardPixelHeight;
 
     let overlayLeft = 0;
     let overlayTop = 0;
 
     if (dragOffsetRef.current) {
       const { initialBox, grabOffsetFromTopLeft } = dragOffsetRef.current;
-      const curX = latestPointerRef.current.x || (initialBox.left + grabOffsetFromTopLeft.x + (event.delta?.x ?? 0));
-      const curY = latestPointerRef.current.y || (initialBox.top + grabOffsetFromTopLeft.y + (event.delta?.y ?? 0));
+      const curX =
+        latestPointerRef.current.x ||
+        initialBox.left + grabOffsetFromTopLeft.x + (event.delta?.x ?? 0);
+      const curY =
+        latestPointerRef.current.y ||
+        initialBox.top + grabOffsetFromTopLeft.y + (event.delta?.y ?? 0);
       overlayLeft = curX - grabOffsetFromTopLeft.x;
       overlayTop = curY - grabOffsetFromTopLeft.y;
     } else if (translated) {
@@ -400,7 +430,10 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     } else if (initial) {
       overlayLeft = initial.left + (event.delta?.x ?? 0);
       overlayTop = initial.top + (event.delta?.y ?? 0);
-    } else if (event.activatorEvent instanceof MouseEvent || event.activatorEvent instanceof PointerEvent) {
+    } else if (
+      event.activatorEvent instanceof MouseEvent ||
+      event.activatorEvent instanceof PointerEvent
+    ) {
       overlayLeft = event.activatorEvent.clientX - overlayWidth / 2 + (event.delta?.x ?? 0);
       overlayTop = event.activatorEvent.clientY - overlayHeight / 2 + (event.delta?.y ?? 0);
     }
@@ -437,7 +470,11 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     });
 
     // Punto 6: Soltar sobre biblioteca la deja ARRIBA (destinationIndex: 0, próxima que se roba); cementerio/exilio van a la pila
-    if (overData?.zone === 'library' || overData?.zone === 'graveyard' || overData?.zone === 'exile') {
+    if (
+      overData?.zone === 'library' ||
+      overData?.zone === 'graveyard' ||
+      overData?.zone === 'exile'
+    ) {
       flushSync(() => {
         setIsDragging(false);
         setActiveDragItem(null);
@@ -567,7 +604,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   };
 
   const allBattlefieldCards = Object.values(roomState.playerZones).flatMap(
-    zones => zones.battlefield
+    zones => zones.battlefield,
   );
 
   // Punto 1: Reconciliación con confirmación del servidor sin retroceder ante ecos desactualizados
@@ -638,10 +675,12 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       <div
         id="mesa-total"
         ref={setTabletopRef}
-        style={{
-          '--card-w': `${cardPixelWidth}px`,
-          '--card-h': `${cardPixelHeight}px`,
-        } as React.CSSProperties}
+        style={
+          {
+            '--card-w': `${cardPixelWidth}px`,
+            '--card-h': `${cardPixelHeight}px`,
+          } as React.CSSProperties
+        }
         className="relative w-full h-full overflow-hidden bg-black select-none"
       >
         {/* Full-bleed Table Grid (Visual Divisions & Floating Docks o Vista Ampliada) */}
@@ -666,9 +705,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           cardPixelWidth={cardPixelWidth}
           cardPixelHeight={cardPixelHeight}
           onUnauthorizedAttempt={() =>
-            showPermissionWarning(
-              'No puedes mover una carta ajena sin ser su titular temporal.',
-            )
+            showPermissionWarning('No puedes mover una carta ajena sin ser su titular temporal.')
           }
           onAction={onAction}
         />
@@ -691,8 +728,12 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
                 data-drag-overlay="true"
                 className="card-slot-container flex items-center justify-center pointer-events-none select-none z-[9999]"
                 style={{
-                  width: activeDragItem.card.isTapped ? `${cardPixelHeight}px` : `${cardPixelWidth}px`,
-                  height: activeDragItem.card.isTapped ? `${cardPixelWidth}px` : `${cardPixelHeight}px`,
+                  width: activeDragItem.card.isTapped
+                    ? `${cardPixelHeight}px`
+                    : `${cardPixelWidth}px`,
+                  height: activeDragItem.card.isTapped
+                    ? `${cardPixelWidth}px`
+                    : `${cardPixelHeight}px`,
                   transition: 'none',
                 }}
               >
@@ -713,13 +754,9 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
                     allowFaceToggle={false}
                     isTapped={activeDragItem.card.isTapped}
                   />
-                  {!activeDragItem.card.isFaceDown && (
-                    <CardBadges card={activeDragItem.card} />
-                  )}
+                  {!activeDragItem.card.isFaceDown && <CardBadges card={activeDragItem.card} />}
                 </div>
-                {!activeDragItem.card.isFaceDown && (
-                  <CardPTBadge card={activeDragItem.card} />
-                )}
+                {!activeDragItem.card.isFaceDown && <CardPTBadge card={activeDragItem.card} />}
               </div>
             ) : null}
           </DragOverlay>

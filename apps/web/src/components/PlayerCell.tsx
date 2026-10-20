@@ -1,7 +1,13 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
 import { toArtCropUrl } from '@mtgc/shared';
-import type { PlayerState, GameActionType, CardInstance, CardDefinition, RoomState } from '@mtgc/shared';
+import type {
+  PlayerState,
+  GameActionType,
+  CardInstance,
+  CardDefinition,
+  RoomState,
+} from '@mtgc/shared';
 import {
   Heart,
   Skull,
@@ -56,12 +62,12 @@ const DraggableCommanderCard: React.FC<{
       data-commander-card="true"
       data-card-instance-id={card.instanceId}
       onClick={onClick}
-      onContextMenu={(e) => {
+      onContextMenu={e => {
         e.preventDefault();
         e.stopPropagation();
         openCardDetails(card.definition);
       }}
-      onMouseEnter={(e) => !card.isFaceDown && !isDragging && showPreview(card.definition, e)}
+      onMouseEnter={e => !card.isFaceDown && !isDragging && showPreview(card.definition, e)}
       onMouseLeave={hidePreview}
       className={`w-full h-full relative cursor-grab active:cursor-grabbing select-none ${
         isDragging ? 'opacity-0' : ''
@@ -153,7 +159,9 @@ const DraggablePileCard: React.FC<{
       data-pile-card={fromZone}
       data-card-instance-id={card.instanceId}
       onClick={onClick}
-      onMouseEnter={(e) => card?.definition && !card.isFaceDown && !isDragging && showPreview(card.definition, e)}
+      onMouseEnter={e =>
+        card?.definition && !card.isFaceDown && !isDragging && showPreview(card.definition, e)
+      }
       onMouseLeave={hidePreview}
       className={`w-full h-full relative cursor-grab active:cursor-grabbing select-none overflow-hidden rounded-md border ${
         isGraveyard ? 'border-slate-700 bg-slate-900' : 'border-purple-800 bg-purple-950'
@@ -162,10 +170,14 @@ const DraggablePileCard: React.FC<{
       <CardDisplay card={card.definition} allowFaceToggle={false} />
       {/* Overlay Badge con Nombre de Pila y Conteo (Punto 7) */}
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent flex flex-col items-center justify-end p-0.5 pointer-events-none">
-        <span className={`text-[7px] font-black tracking-tight uppercase ${isGraveyard ? 'text-slate-300' : 'text-purple-300'}`}>
+        <span
+          className={`text-[7px] font-black tracking-tight uppercase ${isGraveyard ? 'text-slate-300' : 'text-purple-300'}`}
+        >
           {isGraveyard ? 'CEMENTERIO' : 'EXILIO'}
         </span>
-        <span className={`text-[11px] font-mono font-black leading-none drop-shadow ${isGraveyard ? 'text-amber-300' : 'text-purple-200'}`}>
+        <span
+          className={`text-[11px] font-mono font-black leading-none drop-shadow ${isGraveyard ? 'text-amber-300' : 'text-purple-200'}`}
+        >
           {count}
         </span>
       </div>
@@ -198,7 +210,7 @@ const ModalCardItem: React.FC<{
       data-card-name={card.definition.name}
       data-card-type={card.definition.typeLine}
       onContextMenu={handleContextMenu}
-      onMouseEnter={(e) => showPreview(card.definition, e)}
+      onMouseEnter={e => showPreview(card.definition, e)}
       onMouseLeave={hidePreview}
       className="space-y-1 relative group cursor-context-menu"
       title="Clic derecho para opciones (Enviar a la mano, Enviar al campo)"
@@ -285,7 +297,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const [showLifeControls, setShowLifeControls] = useState(false);
   const [damageInput, setDamageInput] = useState('');
   const [healInput, setHealInput] = useState('');
-  const [activePileModal, setActivePileModal] = useState<'graveyard' | 'exile' | 'command' | 'library' | null>(null);
+  const [activePileModal, setActivePileModal] = useState<
+    'graveyard' | 'exile' | 'command' | 'library' | null
+  >(null);
   const [librarySearchQuery, setLibrarySearchQuery] = useState('');
   const [libraryTypeFilter, setLibraryTypeFilter] = useState<string | null>(null);
   const [syncQueueCount, setSyncQueueCount] = useState(0);
@@ -338,19 +352,24 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         const combinedType = `${typeLine} ${esTypeLine}`;
         const filter = libraryTypeFilter.toLowerCase();
         if (filter === 'criaturas') {
-          if (!combinedType.includes('creature') && !combinedType.includes('criatura')) return false;
+          if (!combinedType.includes('creature') && !combinedType.includes('criatura'))
+            return false;
         } else if (filter === 'instantáneos' || filter === 'instantaneos') {
-          if (!combinedType.includes('instant') && !combinedType.includes('instantáneo')) return false;
+          if (!combinedType.includes('instant') && !combinedType.includes('instantáneo'))
+            return false;
         } else if (filter === 'conjuros') {
           if (!combinedType.includes('sorcery') && !combinedType.includes('conjuro')) return false;
         } else if (filter === 'artefactos') {
-          if (!combinedType.includes('artifact') && !combinedType.includes('artefacto')) return false;
+          if (!combinedType.includes('artifact') && !combinedType.includes('artefacto'))
+            return false;
         } else if (filter === 'encantamientos') {
-          if (!combinedType.includes('enchantment') && !combinedType.includes('encantamiento')) return false;
+          if (!combinedType.includes('enchantment') && !combinedType.includes('encantamiento'))
+            return false;
         } else if (filter === 'tierras') {
           if (!combinedType.includes('land') && !combinedType.includes('tierra')) return false;
         } else if (filter === 'planeswalkers') {
-          if (!combinedType.includes('planeswalker') && !combinedType.includes('caminante')) return false;
+          if (!combinedType.includes('planeswalker') && !combinedType.includes('caminante'))
+            return false;
         }
       }
       return true;
@@ -434,10 +453,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   };
 
   // Fallback playmat (REQ-22.3: art_crop de Scryfall, no la carta completa)
-  const playmatImage = toArtCropUrl(
-    player.playmatUrl ||
-    player.selectedDeck?.commanderImageUrl
-  );
+  const playmatImage = toArtCropUrl(player.playmatUrl || player.selectedDeck?.commanderImageUrl);
   const [playmatError, setPlaymatError] = useState(false);
 
   React.useEffect(() => {
@@ -524,8 +540,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const isUsingArtCrop = Boolean(
     previewPlaymatUrl &&
     (previewPlaymatUrl.includes('art_crop') ||
-     previewPlaymatUrl.includes('cards.scryfall.io') ||
-     Boolean(activePlaymatCard))
+      previewPlaymatUrl.includes('cards.scryfall.io') ||
+      Boolean(activePlaymatCard)),
   );
 
   const playmatArtist = activePlaymatCard?.artist || 'Wizards of the Coast';
@@ -573,12 +589,12 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       const fromZone = allBattlefieldCards?.some(c => c.instanceId === commanderCard.instanceId)
         ? 'battlefield'
         : zones.graveyard.some(c => c.instanceId === commanderCard.instanceId)
-        ? 'graveyard'
-        : zones.exile.some(c => c.instanceId === commanderCard.instanceId)
-        ? 'exile'
-        : zones.hand.some(c => c.instanceId === commanderCard.instanceId)
-        ? 'hand'
-        : 'battlefield';
+          ? 'graveyard'
+          : zones.exile.some(c => c.instanceId === commanderCard.instanceId)
+            ? 'exile'
+            : zones.hand.some(c => c.instanceId === commanderCard.instanceId)
+              ? 'hand'
+              : 'battlefield';
 
       onAction('MOVE_CARD', {
         cardInstanceId: commanderCard.instanceId,
@@ -691,8 +707,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         className="absolute bottom-1 inset-x-0 z-20 flex items-end justify-between px-2 pb-1 w-full gap-1 sm:gap-1.5 pointer-events-none select-none max-w-full overflow-visible"
       >
         {/* 1. Hueco Propio para Pastilla de Vida (Izquierda, Punto 8) */}
-        <div data-dock-zone="identity" className="flex flex-col items-start space-y-1 flex-shrink-0 pointer-events-none">
-
+        <div
+          data-dock-zone="identity"
+          className="flex flex-col items-start space-y-1 flex-shrink-0 pointer-events-none"
+        >
           {/* At Risk Pill si aplica */}
           {player.isAtRisk && !player.isEliminated && (
             <span className="bg-rose-950/90 border border-rose-500 text-rose-300 px-2 py-0.5 rounded-lg text-[9px] font-bold animate-pulse flex items-center space-x-1 shadow">
@@ -717,8 +735,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                 player.life <= 0
                   ? 'bg-rose-950/90 border-rose-600 text-rose-300 ring-2 ring-rose-500/30'
                   : player.life <= 10
-                  ? 'bg-amber-950/90 border-amber-600 text-amber-200'
-                  : 'bg-slate-950/90 border-slate-700/80 text-white hover:border-amber-500/50'
+                    ? 'bg-amber-950/90 border-amber-600 text-amber-200'
+                    : 'bg-slate-950/90 border-slate-700/80 text-white hover:border-amber-500/50'
               }`}
             >
               <Heart
@@ -766,7 +784,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   {/* Punto 7: Dos inputs numéricos: 'Daño recibido' y 'Vida ganada' */}
                   <div className="flex flex-col space-y-1.5 pt-1.5 border-t border-slate-800">
                     <form onSubmit={handleDamageSubmit} className="flex flex-col space-y-0.5">
-                      <label className="text-[10px] font-semibold text-rose-300">Daño recibido</label>
+                      <label className="text-[10px] font-semibold text-rose-300">
+                        Daño recibido
+                      </label>
                       <div className="flex space-x-1">
                         <input
                           type="number"
@@ -796,7 +816,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     </form>
 
                     <form onSubmit={handleHealSubmit} className="flex flex-col space-y-0.5">
-                      <label className="text-[10px] font-semibold text-emerald-300">Vida ganada</label>
+                      <label className="text-[10px] font-semibold text-emerald-300">
+                        Vida ganada
+                      </label>
                       <div className="flex space-x-1">
                         <input
                           type="number"
@@ -833,8 +855,18 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                       <span>Veneno: {player.counters.poison}</span>
                     </span>
                     <div className="flex space-x-1">
-                      <button onClick={() => adjustCounter('poison', -1)} className="hover:text-white px-1 font-bold">-</button>
-                      <button onClick={() => adjustCounter('poison', 1)} className="hover:text-white px-1 font-bold">+</button>
+                      <button
+                        onClick={() => adjustCounter('poison', -1)}
+                        className="hover:text-white px-1 font-bold"
+                      >
+                        -
+                      </button>
+                      <button
+                        onClick={() => adjustCounter('poison', 1)}
+                        className="hover:text-white px-1 font-bold"
+                      >
+                        +
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -853,7 +885,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             height: 'var(--card-h)',
           }}
           className={`rounded-lg overflow-hidden border shadow-lg bg-slate-950 flex flex-col items-center justify-center relative flex-shrink-0 pointer-events-auto z-20 transition-all ${
-            isCommandOver ? 'ring-2 ring-amber-400 bg-amber-950/40 border-amber-400 scale-[1.03]' : 'border-slate-800'
+            isCommandOver
+              ? 'ring-2 ring-amber-400 bg-amber-950/40 border-amber-400 scale-[1.03]'
+              : 'border-slate-800'
           }`}
           title={`Zona de Comando (${zones.command.length} cartas)`}
         >
@@ -902,9 +936,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               onClick={() => setActivePileModal('command')}
             />
           ) : (
-            <div
-              className="w-full h-full border-2 border-dashed border-amber-600/40 rounded-lg flex flex-col items-center justify-center p-1 text-center bg-amber-950/10 relative"
-            >
+            <div className="w-full h-full border-2 border-dashed border-amber-600/40 rounded-lg flex flex-col items-center justify-center p-1 text-center bg-amber-950/10 relative">
               <div className="mt-5 flex flex-col items-center">
                 <span className="text-[8px] text-slate-500 mb-0.5">(En campo)</span>
                 {isLocalPlayer && (
@@ -958,16 +990,22 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             isLibOver
               ? 'ring-4 ring-amber-400 scale-110 shadow-2xl shadow-amber-500/60 z-30'
               : isLocalPlayer
-              ? 'cursor-pointer hover:scale-105 active:scale-95 border-amber-500/50'
-              : 'border-slate-800'
+                ? 'cursor-pointer hover:scale-105 active:scale-95 border-amber-500/50'
+                : 'border-slate-800'
           }`}
-          title={isLocalPlayer ? 'Click para robar de la Biblioteca, o arrastra al campo o a la mano' : 'Biblioteca'}
+          title={
+            isLocalPlayer
+              ? 'Click para robar de la Biblioteca, o arrastra al campo o a la mano'
+              : 'Biblioteca'
+          }
         >
           <DraggableLibraryCard
             card={zones.library[0]}
             isLocalPlayer={isLocalPlayer}
             count={zones.library.length || player.libraryCount}
-            onClick={() => isLocalPlayer && onAction('DRAW_CARDS', { playerId: player.id, count: 1 })}
+            onClick={() =>
+              isLocalPlayer && onAction('DRAW_CARDS', { playerId: player.id, count: 1 })
+            }
           />
           {isLocalPlayer && (
             <button
@@ -1001,8 +1039,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               isGydOver
                 ? 'ring-4 ring-slate-200 scale-105 bg-slate-700 shadow-xl'
                 : zones.graveyard.length > 0
-                ? 'bg-slate-800/90'
-                : 'opacity-70'
+                  ? 'bg-slate-800/90'
+                  : 'opacity-70'
             }`}
             title={`Cementerio: ${zones.graveyard.length} cartas (clic para ver, arrastra la superior)`}
           >
@@ -1037,8 +1075,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               isExileOver
                 ? 'ring-4 ring-purple-400 scale-105 bg-purple-900 shadow-xl'
                 : zones.exile.length > 0
-                ? 'bg-purple-950/40 border-purple-700/60'
-                : 'opacity-70'
+                  ? 'bg-purple-950/40 border-purple-700/60'
+                  : 'opacity-70'
             }`}
             title={`Exilio: ${zones.exile.length} cartas (clic para ver, arrastra la superior)`}
           >
@@ -1097,10 +1135,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     {activePileModal === 'command'
                       ? 'Zona de Comando'
                       : activePileModal === 'graveyard'
-                      ? 'Cementerio'
-                      : activePileModal === 'exile'
-                      ? 'Exilio'
-                      : 'Biblioteca'}{' '}
+                        ? 'Cementerio'
+                        : activePileModal === 'exile'
+                          ? 'Exilio'
+                          : 'Biblioteca'}{' '}
                     (
                     {activePileModal === 'library' && (librarySearchQuery || libraryTypeFilter)
                       ? `${filteredModalCards.length} / ${zones[activePileModal]?.length || 0}`
@@ -1127,7 +1165,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                         >
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
                           <span className="font-mono font-medium">
-                            Cargando {imageStats.loaded} de {imageStats.total || zones.library.length}
+                            Cargando {imageStats.loaded} de{' '}
+                            {imageStats.total || zones.library.length}
                           </span>
                         </div>
                       ) : imageStats.loaded > 0 ? (
@@ -1136,7 +1175,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                           className="text-[10px] text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full flex items-center gap-1"
                         >
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                          <span>Imágenes listas ({imageStats.loaded}/{imageStats.total || zones.library.length})</span>
+                          <span>
+                            Imágenes listas ({imageStats.loaded}/
+                            {imageStats.total || zones.library.length})
+                          </span>
                         </div>
                       ) : null}
 
@@ -1149,7 +1191,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                           title="Reintentar carga de imágenes fallidas"
                         >
                           <RefreshCw className="w-2.5 h-2.5" />
-                          <span>Reintentar {imageStats.failed} fallida{imageStats.failed > 1 ? 's' : ''}</span>
+                          <span>
+                            Reintentar {imageStats.failed} fallida{imageStats.failed > 1 ? 's' : ''}
+                          </span>
                         </button>
                       )}
                     </div>
@@ -1234,7 +1278,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                       ? 'No se encontraron cartas con los filtros seleccionados'
                       : 'Esta zona está vacía'
                   }
-                  renderItem={(card) => (
+                  renderItem={card => (
                     <ModalCardItem
                       key={card.instanceId}
                       card={card}

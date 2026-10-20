@@ -12,12 +12,7 @@ import {
   DragEndEvent,
   DragStartEvent,
 } from '@dnd-kit/core';
-import type {
-  CardInstance,
-  PlayerZones,
-  GameActionType,
-  ZoneType,
-} from '@mtgc/shared';
+import type { CardInstance, PlayerZones, GameActionType, ZoneType } from '@mtgc/shared';
 import {
   Layers,
   Sparkles,
@@ -241,8 +236,7 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
   // ----------------------------------------------------
   const handleDragStart = (event: DragStartEvent) => {
     const data = event.active.data.current as
-      | { card: CardInstance; fromZone: ZoneType }
-      | undefined;
+      { card: CardInstance; fromZone: ZoneType } | undefined;
     if (data) {
       setActiveCard(data);
     }
@@ -285,11 +279,11 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
           const clientX =
             'clientX' in pointerEvent
               ? pointerEvent.clientX
-              : pointerEvent.touches?.[0]?.clientX ?? rect.left + rect.width / 2;
+              : (pointerEvent.touches?.[0]?.clientX ?? rect.left + rect.width / 2);
           const clientY =
             'clientY' in pointerEvent
               ? pointerEvent.clientY
-              : pointerEvent.touches?.[0]?.clientY ?? rect.top + rect.height / 2;
+              : (pointerEvent.touches?.[0]?.clientY ?? rect.top + rect.height / 2);
 
           normX = Math.max(0.02, Math.min(0.92, (clientX + delta.x - rect.left) / rect.width));
           normY = Math.max(0.02, Math.min(0.92, (clientY + delta.y - rect.top) / rect.height));
@@ -309,11 +303,7 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
+    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex flex-col h-full space-y-4">
         {/* Top Control Bar: Global Actions and Zone Docks */}
         <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-lg">
@@ -689,10 +679,7 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
                     onDoubleClick={() => setZoomedCard(card)}
                     className="w-32 sm:w-36 aspect-[5/7] bg-slate-950 border border-slate-800 hover:border-amber-400/80 rounded-xl overflow-hidden shadow-lg group transition-transform hover:-translate-y-2 cursor-grab active:cursor-grabbing select-none touch-none relative"
                   >
-                    <CardDisplay
-                      card={card.definition}
-                      isFaceDown={false}
-                    />
+                    <CardDisplay card={card.definition} isFaceDown={false} />
                   </DraggableCard>
 
                   {/* Alternative Action Buttons for each hand card */}

@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { RoomState, GameActionType, RemoteCardDraggingPayload, CardInstance } from '@mtgc/shared';
+import type {
+  RoomState,
+  GameActionType,
+  RemoteCardDraggingPayload,
+  CardInstance,
+} from '@mtgc/shared';
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting';
 export type RemoteDragState = RemoteCardDraggingPayload & {
@@ -25,7 +30,9 @@ export function useGameSocket({
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
   const [roomState, setRoomState] = useState<RoomState | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [remoteDraggingCards, setRemoteDraggingCards] = useState<Record<string, RemoteDragState>>({});
+  const [remoteDraggingCards, setRemoteDraggingCards] = useState<Record<string, RemoteDragState>>(
+    {},
+  );
   const [revealedCard, setRevealedCard] = useState<{
     card: CardInstance;
     fromPlayerId: string;

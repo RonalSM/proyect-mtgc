@@ -84,7 +84,11 @@ test('BulkSyncService - date check skips redownload ONLY if local data exists (P
     const res = await bulkSyncService.syncRulings();
     assert.strictEqual(res.skipped, true);
     assert.strictEqual(res.reason, 'not_modified');
-    assert.strictEqual(downloadUriFetched, false, 'No debió descargar el archivo bulk porque la fecha no cambió y hay datos');
+    assert.strictEqual(
+      downloadUriFetched,
+      false,
+      'No debió descargar el archivo bulk porque la fecha no cambió y hay datos',
+    );
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -138,11 +142,17 @@ test('BulkSyncService - does NOT skip if local data is empty even if date matche
 
     const res = await freshService.syncRulings();
     assert.strictEqual(res.skipped, false);
-    assert.strictEqual(downloadUriFetched, true, 'Debe descargar el archivo porque la tabla/memoria estaba vacía');
+    assert.strictEqual(
+      downloadUriFetched,
+      true,
+      'Debe descargar el archivo porque la tabla/memoria estaba vacía',
+    );
     assert.strictEqual(res.syncedCount, 1);
 
     // Verificar que Sol Ring tiene sus dictámenes oficiales asegurados
-    const solRulings = await freshService.getRulingsByOracleId('6ad8011d-3471-4369-9d68-b264cc027487');
+    const solRulings = await freshService.getRulingsByOracleId(
+      '6ad8011d-3471-4369-9d68-b264cc027487',
+    );
     assert.ok(solRulings.length >= 2, 'Sol Ring debe tener al menos 2 dictámenes oficiales');
     assert.ok(solRulings.some(r => r.comment.includes('Mana abilities do not use the stack')));
 

@@ -140,7 +140,11 @@ describe('Punto 5: Propietario original (ownerId) y temporal (holderId)', () => 
     const foundCard = session.findBattlefieldCard(cardA.instanceId)?.card;
     assert.ok(foundCard);
     assert.strictEqual(foundCard.ownerId, 'p_alice', 'El ownerId debe ser inmutable');
-    assert.strictEqual(foundCard.holderId, 'p_bob', 'El holderId debe ser Bob al estar 100% en su celda');
+    assert.strictEqual(
+      foundCard.holderId,
+      'p_bob',
+      'El holderId debe ser Bob al estar 100% en su celda',
+    );
 
     // 3. Bob ahora puede mover la carta dentro de su campo porque es su holderId
     session.moveCard('p_bob', {
@@ -204,20 +208,21 @@ describe('Punto 5: Propietario original (ownerId) y temporal (holderId)', () => 
 
     const straddlingCard = session.findBattlefieldCard(cardA.instanceId)?.card;
     assert.ok(straddlingCard);
-    assert.strictEqual(straddlingCard.holderId, undefined, 'holderId debe quedar vacío al estar entre dos divisiones');
+    assert.strictEqual(
+      straddlingCard.holderId,
+      undefined,
+      'holderId debe quedar vacío al estar entre dos divisiones',
+    );
 
     // Bob no puede moverla
-    assert.throws(
-      () => {
-        session.moveCard('p_bob', {
-          cardInstanceId: cardA.instanceId,
-          fromZone: 'battlefield',
-          toZone: 'battlefield',
-          position: { x: 0.7, y: 0.4, zIndex: 2 },
-        });
-      },
-      /Acción no autorizada/,
-    );
+    assert.throws(() => {
+      session.moveCard('p_bob', {
+        cardInstanceId: cardA.instanceId,
+        fromZone: 'battlefield',
+        toZone: 'battlefield',
+        position: { x: 0.7, y: 0.4, zIndex: 2 },
+      });
+    }, /Acción no autorizada/);
 
     // Alice (ownerId) sí puede moverla
     assert.doesNotThrow(() => {

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import type { RoomState, GameActionType, CardDefinition, DeckCardWithQuantity } from '@mtgc/shared';
-import { parseDecklist, validateCommanderDeck, toArtCropUrl, inferCardTypeLine } from '@mtgc/shared';
+import {
+  parseDecklist,
+  validateCommanderDeck,
+  toArtCropUrl,
+  inferCardTypeLine,
+} from '@mtgc/shared';
 import { imageLoaderQueue } from '../services/imageLoaderQueue';
 import {
   Users,
@@ -402,9 +407,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
             <div
               key={player.id}
               className={`bg-slate-900 border rounded-2xl p-5 flex flex-col justify-between shadow-lg relative overflow-hidden transition-all ${
-                player.isReady
-                  ? 'border-emerald-500/40 shadow-emerald-500/5'
-                  : 'border-slate-800'
+                player.isReady ? 'border-emerald-500/40 shadow-emerald-500/5' : 'border-slate-800'
               } ${isLocal ? 'ring-1 ring-amber-500/30' : ''}`}
             >
               {/* Playmat subtle preview if available */}
@@ -418,9 +421,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs font-mono font-bold text-slate-500">
-                      #{idx + 1}
-                    </span>
+                    <span className="text-xs font-mono font-bold text-slate-500">#{idx + 1}</span>
                     <h3 className="font-bold text-sm text-white flex items-center space-x-1.5">
                       <span>{player.name}</span>
                       {player.isHost && (
@@ -461,9 +462,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                 <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-3 space-y-1.5">
                   {deck ? (
                     <div>
-                      <div className="text-xs font-bold text-amber-300 truncate">
-                        {deck.name}
-                      </div>
+                      <div className="text-xs font-bold text-amber-300 truncate">{deck.name}</div>
                       <div className="text-[11px] text-slate-400 truncate flex items-center space-x-1">
                         <Sparkles className="w-3 h-3 text-amber-400" />
                         <span>{deck.commanderName}</span>
@@ -527,8 +526,8 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
               !localPlayer?.selectedDeck
                 ? 'bg-slate-800/50 text-slate-500 cursor-not-allowed border border-slate-800'
                 : localPlayer?.isReady
-                ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
-                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30'
+                  ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30'
             }`}
           >
             {localPlayer?.isReady ? (
@@ -652,7 +651,9 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {importTab === 'presets' ? (
                 isLoadingPresets ? (
-                  <div className="text-center py-12 text-slate-400 text-xs">Cargando mazos de Commander listos...</div>
+                  <div className="text-center py-12 text-slate-400 text-xs">
+                    Cargando mazos de Commander listos...
+                  </div>
                 ) : presetDecks.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {presetDecks.map((preset: any) => {
@@ -700,21 +701,23 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                                         c === 'W'
                                           ? 'bg-amber-100/20 border-amber-200/40 text-amber-100'
                                           : c === 'U'
-                                          ? 'bg-blue-900/40 border-blue-500/40 text-blue-300'
-                                          : c === 'B'
-                                          ? 'bg-purple-950/40 border-purple-500/40 text-purple-300'
-                                          : c === 'R'
-                                          ? 'bg-rose-950/40 border-rose-500/40 text-rose-300'
-                                          : c === 'G'
-                                          ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
-                                          : 'bg-slate-800 border-slate-700 text-slate-300'
+                                            ? 'bg-blue-900/40 border-blue-500/40 text-blue-300'
+                                            : c === 'B'
+                                              ? 'bg-purple-950/40 border-purple-500/40 text-purple-300'
+                                              : c === 'R'
+                                                ? 'bg-rose-950/40 border-rose-500/40 text-rose-300'
+                                                : c === 'G'
+                                                  ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                                                  : 'bg-slate-800 border-slate-700 text-slate-300'
                                       }`}
                                     >
                                       {c}
                                     </span>
                                   ))
                                 ) : (
-                                  <span className="text-[10px] font-bold text-slate-400">Incoloro</span>
+                                  <span className="text-[10px] font-bold text-slate-400">
+                                    Incoloro
+                                  </span>
                                 )}
                               </div>
                             </div>
@@ -732,7 +735,11 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                               >
                                 <BookOpen className="w-3.5 h-3.5" />
                                 <span>{isExpanded ? 'Ocultar cartas' : 'Ver cartas (100)'}</span>
-                                {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                {isExpanded ? (
+                                  <ChevronUp className="w-3 h-3" />
+                                ) : (
+                                  <ChevronDown className="w-3 h-3" />
+                                )}
                               </button>
                             </div>
 
@@ -750,7 +757,10 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                                   // Mazo ({preset.maindeckCards?.length || 99})
                                 </div>
                                 {preset.maindeckCards?.map((card: any, idx: number) => (
-                                  <div key={idx} className="truncate text-slate-400 hover:text-white">
+                                  <div
+                                    key={idx}
+                                    className="truncate text-slate-400 hover:text-white"
+                                  >
                                     1 {card.name}
                                   </div>
                                 ))}
@@ -783,7 +793,9 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-12 text-slate-400 text-xs">No se encontraron mazos listos.</div>
+                  <div className="text-center py-12 text-slate-400 text-xs">
+                    No se encontraron mazos listos.
+                  </div>
                 )
               ) : importTab === 'saved' ? (
                 isLoadingDecks ? (
@@ -869,7 +881,9 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                   </div>
                 ) : (
                   <div className="text-center py-8 space-y-3">
-                    <p className="text-slate-400 text-sm">No tienes mazos guardados en tu cuenta.</p>
+                    <p className="text-slate-400 text-sm">
+                      No tienes mazos guardados en tu cuenta.
+                    </p>
                     <button
                       onClick={() => setImportTab('import')}
                       className="bg-amber-500 text-slate-950 px-4 py-2 rounded-xl font-bold text-xs shadow"
@@ -958,8 +972,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                         onClick={() =>
                           handleApplySelectedDeck({
                             name: deckNameInput || 'Mazo Importado',
-                            commanderName:
-                              validationResult.commanderCards[0]?.name || 'Comandante',
+                            commanderName: validationResult.commanderCards[0]?.name || 'Comandante',
                             commanderImageUrl:
                               validationResult.commanderCards[0]?.imageUrlArtCrop ||
                               toArtCropUrl(validationResult.commanderCards[0]?.imageUrlNormal),

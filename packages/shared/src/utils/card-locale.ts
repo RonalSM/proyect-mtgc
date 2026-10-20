@@ -20,7 +20,7 @@ export interface CardDisplayData {
 export function getCardDisplayData(
   card: CardDefinition,
   lang: SupportedLanguage = 'es',
-  faceIndex = 0
+  faceIndex = 0,
 ): CardDisplayData {
   if (card.isTwoFaced && card.faces && card.faces[faceIndex]) {
     const face: CardFace = card.faces[faceIndex];

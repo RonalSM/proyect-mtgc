@@ -5,7 +5,10 @@ import { RoomManager } from '../src/game/room-manager.js';
 import { filterRoomStateForPlayer } from '../src/game/visibility-filter.js';
 import type { CardDefinition } from '@mtgc/shared';
 
-function createSampleDeck(commanderName: string, prefix: string): {
+function createSampleDeck(
+  commanderName: string,
+  prefix: string,
+): {
   commanderCards: CardDefinition[];
   maindeckCards: CardDefinition[];
 } {
@@ -104,9 +107,15 @@ test('Fase 8 Completa: Lobby -> Privacidad de Mazos -> Listo -> Inicio -> D20 In
 
   // Verificar privacidad de mazo:
   // Bob ve el selectedDeck público de Alice (nombre, comandante, 100 cartas), pero NO la lista de cartas
-  assert.strictEqual(session.state.players['p_alice']?.selectedDeck?.commanderName, 'Kess, Dissident Mage');
+  assert.strictEqual(
+    session.state.players['p_alice']?.selectedDeck?.commanderName,
+    'Kess, Dissident Mage',
+  );
   assert.strictEqual(session.state.players['p_alice']?.selectedDeck?.cardCount, 100);
-  assert.strictEqual((session.state.players['p_alice']?.selectedDeck as any)?.maindeckCards, undefined);
+  assert.strictEqual(
+    (session.state.players['p_alice']?.selectedDeck as any)?.maindeckCards,
+    undefined,
+  );
 
   // 4. Estado "Listo" (REQ-20.5, REQ-20.6, REQ-20.7)
   // No todos listos -> iniciar falla
@@ -128,10 +137,18 @@ test('Fase 8 Completa: Lobby -> Privacidad de Mazos -> Listo -> Inicio -> D20 In
   // Comprobar zonas iniciales: comandante en zona de comando, 7 cartas en mano, 92 en biblioteca (REQ-20.11)
   for (const pid of ['p_alice', 'p_bob', 'p_charlie', 'p_diana']) {
     const zones = session.state.playerZones[pid];
-    assert.strictEqual(zones.command.length, 1, `Jugador ${pid} debe tener 1 comandante en command`);
+    assert.strictEqual(
+      zones.command.length,
+      1,
+      `Jugador ${pid} debe tener 1 comandante en command`,
+    );
     assert.strictEqual(zones.command[0].isCommander, true);
     assert.strictEqual(zones.hand.length, 7, `Jugador ${pid} debe iniciar con 7 cartas en mano`);
-    assert.strictEqual(zones.library.length, 92, `Jugador ${pid} debe tener 92 cartas restantes en biblioteca`);
+    assert.strictEqual(
+      zones.library.length,
+      92,
+      `Jugador ${pid} debe tener 92 cartas restantes en biblioteca`,
+    );
   }
 
   // Comprobar información oculta durante iniciativa:
@@ -257,7 +274,11 @@ test('Fase 8 - Distribución estadística de D20 en servidor (1..20 uniforme y s
   const N = 2000;
   for (let i = 0; i < N; i++) {
     // Usamos el roomManager e initiativeService para tirar
-    const room = new RoomManager().createRoom({ name: 'D20 Test', hostName: 'Tester', hostId: 't1' });
+    const room = new RoomManager().createRoom({
+      name: 'D20 Test',
+      hostName: 'Tester',
+      hostId: 't1',
+    });
     room.state.status = 'initiative';
     room.state.initiative = { round: 1, deadlineTimestamp: Date.now() + 15000, rolls: {} };
     const roll = room.rollD20Initiative('t1');
@@ -316,7 +337,10 @@ test('Fase 8 - Posiciones normalizadas invariantes entre resoluciones de ventana
     return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
   }
 
-  function getContrastRatio(rgb1: [number, number, number], rgb2: [number, number, number]): number {
+  function getContrastRatio(
+    rgb1: [number, number, number],
+    rgb2: [number, number, number],
+  ): number {
     const lum1 = getLuminance(...rgb1);
     const lum2 = getLuminance(...rgb2);
     const brightest = Math.max(lum1, lum2);
@@ -408,4 +432,3 @@ test('Fase 8 - Pod de 6 jugadores en cuadrícula 2x3 con reparto y rotación (RE
 
   session.cleanup();
 });
-

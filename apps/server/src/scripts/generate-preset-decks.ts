@@ -92,7 +92,7 @@ const DECKS: DeckConfig[] = [
 1 Demand Answers
 1 Tormenting Voice
 1 Wild Guess
-37 Mountain`
+37 Mountain`,
   },
   {
     filename: '02-goreclaw-terror-of-qal-sisma.txt',
@@ -165,7 +165,7 @@ const DECKS: DeckConfig[] = [
 1 Garruk, Primal Hunter
 1 Vivien, Monsters' Advocate
 1 Nissa, Who Shakes the World
-37 Forest`
+37 Forest`,
   },
   {
     filename: '03-brago-king-eternal.txt',
@@ -247,7 +247,7 @@ const DECKS: DeckConfig[] = [
 1 Sea of Clouds
 1 Exotic Orchard
 14 Plains
-15 Island`
+15 Island`,
   },
   {
     filename: '04-meren-of-clan-nel-toth.txt',
@@ -329,7 +329,7 @@ const DECKS: DeckConfig[] = [
 1 Necroblossom Snarl
 1 Exotic Orchard
 14 Swamp
-15 Forest`
+15 Forest`,
   },
   {
     filename: '05-wyleth-soul-of-steel.txt',
@@ -403,7 +403,7 @@ const DECKS: DeckConfig[] = [
 1 Furycalm Snarl
 1 Exotic Orchard
 18 Plains
-19 Mountain`
+19 Mountain`,
   },
   {
     filename: '06-niv-mizzet-parun.txt',
@@ -478,7 +478,7 @@ const DECKS: DeckConfig[] = [
 1 Frostboil Snarl
 1 Exotic Orchard
 19 Island
-17 Mountain`
+17 Mountain`,
   },
   {
     filename: '07-alela-artful-provocateur.txt',
@@ -563,7 +563,7 @@ const DECKS: DeckConfig[] = [
 1 Exotic Orchard
 9 Plains
 9 Island
-9 Swamp`
+9 Swamp`,
   },
   {
     filename: '08-kozilek-the-great-distortion.txt',
@@ -652,8 +652,8 @@ const DECKS: DeckConfig[] = [
 1 Buried Ruin
 1 Inventors' Fair
 1 Darksteel Citadel
-21 Wastes`
-  }
+21 Wastes`,
+  },
 ];
 
 export function runGenerator() {
@@ -683,24 +683,40 @@ export function runGenerator() {
         typeLine: 'Legendary Creature',
         colorIdentity: d.colorIdentity as any,
         colors: d.colorIdentity as any,
-        legalities: { commander: 'legal' }
+        legalities: { commander: 'legal' },
       } as CardDefinition,
       quantity: e.quantity,
-      isCommander: true
+      isCommander: true,
     }));
 
     const maindeckCards = parsed.maindeckEntries.map(e => ({
       card: {
         scryfallId: `id_${e.cardName}`,
         name: e.cardName,
-        cmc: e.cardName.includes('Plains') || e.cardName.includes('Island') || e.cardName.includes('Swamp') || e.cardName.includes('Mountain') || e.cardName.includes('Forest') || e.cardName.includes('Wastes') ? 0 : 3,
-        typeLine: e.cardName.includes('Plains') || e.cardName.includes('Island') || e.cardName.includes('Swamp') || e.cardName.includes('Mountain') || e.cardName.includes('Forest') || e.cardName.includes('Wastes') ? 'Basic Land' : 'Spell',
+        cmc:
+          e.cardName.includes('Plains') ||
+          e.cardName.includes('Island') ||
+          e.cardName.includes('Swamp') ||
+          e.cardName.includes('Mountain') ||
+          e.cardName.includes('Forest') ||
+          e.cardName.includes('Wastes')
+            ? 0
+            : 3,
+        typeLine:
+          e.cardName.includes('Plains') ||
+          e.cardName.includes('Island') ||
+          e.cardName.includes('Swamp') ||
+          e.cardName.includes('Mountain') ||
+          e.cardName.includes('Forest') ||
+          e.cardName.includes('Wastes')
+            ? 'Basic Land'
+            : 'Spell',
         colorIdentity: d.colorIdentity as any,
         colors: d.colorIdentity as any,
-        legalities: { commander: 'legal' }
+        legalities: { commander: 'legal' },
       } as CardDefinition,
       quantity: e.quantity,
-      isCommander: false
+      isCommander: false,
     }));
 
     const valResult = validateCommanderDeck(commanderCards, maindeckCards);

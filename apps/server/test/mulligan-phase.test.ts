@@ -180,10 +180,7 @@ test('Punto 5: Flujo completo de Mulligan de Londres con 4 jugadores y regla de 
 
   // 2. Jugador A: se queda a la primera
   // Si Bob intenta decidir antes de tiempo, es rechazado
-  assert.throws(
-    () => session.keepHand('pB'),
-    /No es tu turno de decidir/,
-  );
+  assert.throws(() => session.keepHand('pB'), /No es tu turno de decidir/);
 
   session.keepHand('pA');
   assert.strictEqual(session.state.mulligan.players['pA']?.hasKept, true);
@@ -214,10 +211,7 @@ test('Punto 5: Flujo completo de Mulligan de Londres con 4 jugadores y regla de 
   assert.strictEqual(session.state.playerZones['pC']!.hand.length, 7);
 
   // Si C intenta quedarse sin elegir carta para el fondo, es rechazado
-  assert.throws(
-    () => session.keepHand('pC'),
-    /Debes seleccionar exactamente 1 carta/,
-  );
+  assert.throws(() => session.keepHand('pC'), /Debes seleccionar exactamente 1 carta/);
 
   // C elige 1 carta de su mano para poner al fondo
   const cardToBottom = session.state.playerZones['pC']!.hand[0]!;
@@ -225,23 +219,32 @@ test('Punto 5: Flujo completo de Mulligan de Londres con 4 jugadores y regla de 
   session.keepHand('pC', [cardToBottomId]);
 
   assert.strictEqual(session.state.mulligan.players['pC']?.hasKept, true);
-  assert.strictEqual(session.state.playerZones['pC']!.hand.length, 6, 'C tiene 6 cartas en mano tras devolver 1');
-  assert.strictEqual(session.state.playerZones['pC']!.library.length, 93, 'C tiene 93 cartas en biblioteca (92 + 1 al fondo)');
+  assert.strictEqual(
+    session.state.playerZones['pC']!.hand.length,
+    6,
+    'C tiene 6 cartas en mano tras devolver 1',
+  );
+  assert.strictEqual(
+    session.state.playerZones['pC']!.library.length,
+    93,
+    'C tiene 93 cartas en biblioteca (92 + 1 al fondo)',
+  );
 
   // Comprobar que la carta devuelta está en el fondo de la biblioteca (índice library.length - 1)
   const cLib = session.state.playerZones['pC']!.library;
   const bottomCard = cLib[cLib.length - 1];
-  assert.strictEqual(bottomCard?.instanceId, cardToBottomId, 'La carta devuelta está al fondo de la biblioteca');
+  assert.strictEqual(
+    bottomCard?.instanceId,
+    cardToBottomId,
+    'La carta devuelta está al fondo de la biblioteca',
+  );
 
   // 5. Jugador D: se desconecta y el anfitrión (A) fuerza su decisión
   assert.strictEqual(session.state.mulligan.currentDecidingPlayerId, 'pD');
   session.state.players['pD']!.isConnected = false;
 
   // Un jugador que no es host no puede forzar
-  assert.throws(
-    () => session.forceMulliganDecision('pB', 'pD'),
-    /Solo el anfitrión puede forzar/,
-  );
+  assert.throws(() => session.forceMulliganDecision('pB', 'pD'), /Solo el anfitrión puede forzar/);
 
   // Anfitrión fuerza la decisión de D
   session.forceMulliganDecision('pA', 'pD');
@@ -262,10 +265,26 @@ test('Punto 5: Flujo completo de Mulligan de Londres con 4 jugadores y regla de 
   const handC = stateForA.playerZones['pC']!.hand;
   const handD = stateForA.playerZones['pD']!.hand;
 
-  assert.notStrictEqual(handA[0]?.definition.name, 'Carta Oculta', 'A ve el nombre real de sus cartas');
-  assert.strictEqual(handB[0]?.definition.name, 'Carta Oculta', 'A ve la mano de B como Carta Oculta');
-  assert.strictEqual(handC[0]?.definition.name, 'Carta Oculta', 'A ve la mano de C como Carta Oculta');
-  assert.strictEqual(handD[0]?.definition.name, 'Carta Oculta', 'A ve la mano de D como Carta Oculta');
+  assert.notStrictEqual(
+    handA[0]?.definition.name,
+    'Carta Oculta',
+    'A ve el nombre real de sus cartas',
+  );
+  assert.strictEqual(
+    handB[0]?.definition.name,
+    'Carta Oculta',
+    'A ve la mano de B como Carta Oculta',
+  );
+  assert.strictEqual(
+    handC[0]?.definition.name,
+    'Carta Oculta',
+    'A ve la mano de C como Carta Oculta',
+  );
+  assert.strictEqual(
+    handD[0]?.definition.name,
+    'Carta Oculta',
+    'A ve la mano de D como Carta Oculta',
+  );
 
   // Comprobar bibliotecas enmascaradas
   assert.strictEqual(stateForA.playerZones['pB']!.library[0]?.definition.name, 'Carta Oculta');

@@ -4,7 +4,8 @@ import * as path from 'path';
 
 test.describe.configure({ mode: 'serial', timeout: 150000 });
 
-const ARTIFACTS_DIR = 'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa';
+const ARTIFACTS_DIR =
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa';
 
 function computeBufferVariance(buffer: Buffer): number {
   let sum = 0;
@@ -15,7 +16,7 @@ function computeBufferVariance(buffer: Buffer): number {
     sumSq += val * val;
   }
   const mean = sum / buffer.length;
-  return (sumSq / buffer.length) - (mean * mean);
+  return sumSq / buffer.length - mean * mean;
 }
 
 async function setupGame(browser: any, podSize: number, width = 1920, height = 1080) {
@@ -32,7 +33,9 @@ async function setupGame(browser: any, podSize: number, width = 1920, height = 1
   const hostPage = pages[0];
 
   await hostPage.goto('http://localhost:3000');
-  await expect(hostPage.locator('h1')).toContainText('Mesa Virtual de Commander', { timeout: 15000 });
+  await expect(hostPage.locator('h1')).toContainText('Mesa Virtual de Commander', {
+    timeout: 15000,
+  });
 
   await hostPage.fill('input[placeholder="Ej. Pod Casual 4 Jugadores"]', `FS-${podSize}P`);
   await hostPage.fill('input[placeholder="Ej. Planeswalker 1"]', 'Alice (Host)');
@@ -48,7 +51,7 @@ async function setupGame(browser: any, podSize: number, width = 1920, height = 1
   await hostPage.click('button:has-text("Importar mi primer mazo")');
   await hostPage.fill(
     'textarea',
-    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n10 Plains\n10 Island`
+    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n10 Plains\n10 Island`,
   );
   await hostPage.click('button:has-text("Validar lista")');
   await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -58,7 +61,9 @@ async function setupGame(browser: any, podSize: number, width = 1920, height = 1
   for (let pIdx = 1; pIdx < podSize; pIdx++) {
     const pPage = pages[pIdx];
     await pPage.goto('http://localhost:3000');
-    await expect(pPage.locator('h1')).toContainText('Mesa Virtual de Commander', { timeout: 15000 });
+    await expect(pPage.locator('h1')).toContainText('Mesa Virtual de Commander', {
+      timeout: 15000,
+    });
     await pPage.click('button:has-text("Unirse con Código")');
     await pPage.fill('input[placeholder="EJ: 5HQWNJ"]', roomCode);
     await pPage.fill('input[placeholder="Ej. Jugador Invitado"]', `${guestNames[pIdx - 1]}`);
@@ -68,7 +73,7 @@ async function setupGame(browser: any, podSize: number, width = 1920, height = 1
     await pPage.click('button:has-text("Importar mi primer mazo")');
     await pPage.fill(
       'textarea',
-      `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n10 Mountain\n10 Swamp`
+      `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n10 Mountain\n10 Swamp`,
     );
     await pPage.click('button:has-text("Validar lista")');
     await pPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -76,7 +81,9 @@ async function setupGame(browser: any, podSize: number, width = 1920, height = 1
   }
 
   await hostPage.click('button:has-text("INICIAR PARTIDA")');
-  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 25000 });
+  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+    timeout: 25000,
+  });
 
   for (let step = 0; step < podSize; step++) {
     for (let attempt = 0; attempt < 30; attempt++) {
@@ -140,7 +147,9 @@ for (const cfg of testConfigs) {
     const expandBtn0 = hostPage.locator('[data-expand-cell-btn]').first();
     await expect(expandBtn0).toBeVisible({ timeout: 10000 });
     await expandBtn0.dispatchEvent('click');
-    await expect(hostPage.locator('[data-testid="close-expanded-view"]')).toBeVisible({ timeout: 10000 });
+    await expect(hostPage.locator('[data-testid="close-expanded-view"]')).toBeVisible({
+      timeout: 10000,
+    });
     await hostPage.waitForTimeout(400);
 
     // Diagnostics in expanded view
@@ -191,7 +200,9 @@ for (const cfg of testConfigs) {
 
     // Exit expanded view using Esc
     await hostPage.keyboard.press('Escape');
-    await expect(hostPage.locator('[data-testid="close-expanded-view"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(hostPage.locator('[data-testid="close-expanded-view"]')).not.toBeVisible({
+      timeout: 5000,
+    });
     await hostPage.waitForTimeout(300);
 
     // Re-expand and exit using close button
@@ -200,7 +211,9 @@ for (const cfg of testConfigs) {
     const closeBtn = hostPage.locator('[data-testid="close-expanded-view"]');
     await expect(closeBtn).toBeVisible({ timeout: 10000 });
     await closeBtn.click();
-    await expect(hostPage.locator('[data-testid="close-expanded-view"]')).not.toBeVisible({ timeout: 5000 });
+    await expect(hostPage.locator('[data-testid="close-expanded-view"]')).not.toBeVisible({
+      timeout: 5000,
+    });
 
     // ==========================================
     // CASE 2: Browser Fullscreen button
@@ -225,12 +238,17 @@ for (const cfg of testConfigs) {
       };
     });
 
-    console.log(`Metrics Browser Fullscreen (${cfg.label}):`, JSON.stringify(metricsBrowserFs, null, 2));
+    console.log(
+      `Metrics Browser Fullscreen (${cfg.label}):`,
+      JSON.stringify(metricsBrowserFs, null, 2),
+    );
 
     const shotBrowserFsPath = path.join(ARTIFACTS_DIR, `fullscreen-fixed-browser-${cfg.label}.png`);
     let bufferBrowserFs: Buffer;
     try {
-      bufferBrowserFs = await hostPage.locator('#mesa-total').screenshot({ path: shotBrowserFsPath });
+      bufferBrowserFs = await hostPage
+        .locator('#mesa-total')
+        .screenshot({ path: shotBrowserFsPath });
       console.log('locator screenshot succeeded');
     } catch (e: any) {
       console.log('locator screenshot failed:', e.message);

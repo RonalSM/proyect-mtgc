@@ -54,16 +54,21 @@ interface LocaleCandidate {
  * Offline streaming processor for Scryfall "All Cards" bulk export.
  * Filters lang="es" prints, picks the latest printing with image per oracle_id,
  * and saves to CardLocale table.
- * 
+ *
  * Usage:
  *   npx tsx src/scripts/process-all-cards-locales.ts --file path/to/all-cards.json
  */
-export async function processAllCardsLocales(filePath: string, targetLang = 'es'): Promise<{ processed: number; upserted: number }> {
+export async function processAllCardsLocales(
+  filePath: string,
+  targetLang = 'es',
+): Promise<{ processed: number; upserted: number }> {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Archivo no encontrado: ${filePath}`);
   }
 
-  console.log(`[LocaleSync] Iniciando procesamiento streaming de ${filePath} para idioma "${targetLang}"...`);
+  console.log(
+    `[LocaleSync] Iniciando procesamiento streaming de ${filePath} para idioma "${targetLang}"...`,
+  );
   const fileStream = fs.createReadStream(filePath, { encoding: 'utf-8' });
   const rl = readline.createInterface({
     input: fileStream,
@@ -102,7 +107,8 @@ export async function processAllCardsLocales(filePath: string, targetLang = 'es'
           printingId: card.id,
           printedName: card.printed_name || card.card_faces?.[0]?.printed_name || card.name,
           printedText: card.printed_text || card.card_faces?.[0]?.printed_text || card.oracle_text,
-          printedTypeLine: card.printed_type_line || card.card_faces?.[0]?.printed_type_line || card.type_line,
+          printedTypeLine:
+            card.printed_type_line || card.card_faces?.[0]?.printed_type_line || card.type_line,
           imageUrlSmall: smallImg,
           imageUrlNormal: normalImg,
           imageUrlLarge: largeImg,
@@ -134,11 +140,15 @@ export async function processAllCardsLocales(filePath: string, targetLang = 'es'
     }
 
     if (totalLines % 100000 === 0) {
-      console.log(`[LocaleSync] Líneas leídas: ${totalLines}, impresiones ${targetLang} encontradas: ${spanishCount}, oracles únicos: ${bestCandidates.size}`);
+      console.log(
+        `[LocaleSync] Líneas leídas: ${totalLines}, impresiones ${targetLang} encontradas: ${spanishCount}, oracles únicos: ${bestCandidates.size}`,
+      );
     }
   }
 
-  console.log(`[LocaleSync] Lectura completa. Guardando ${bestCandidates.size} registros en CardLocale...`);
+  console.log(
+    `[LocaleSync] Lectura completa. Guardando ${bestCandidates.size} registros en CardLocale...`,
+  );
 
   let upserted = 0;
   const batchSize = 100;
@@ -148,39 +158,41 @@ export async function processAllCardsLocales(filePath: string, targetLang = 'es'
     const batch = candidatesArray.slice(i, i + batchSize);
     await Promise.all(
       batch.map(item =>
-        (prisma as any).cardLocale?.upsert({
-          where: {
-            oracleId_lang: {
+        (prisma as any).cardLocale
+          ?.upsert({
+            where: {
+              oracleId_lang: {
+                oracleId: item.oracleId,
+                lang: item.lang,
+              },
+            },
+            create: {
               oracleId: item.oracleId,
               lang: item.lang,
+              printingId: item.printingId,
+              printedName: item.printedName,
+              printedText: item.printedText,
+              printedTypeLine: item.printedTypeLine,
+              imageUrlSmall: item.imageUrlSmall,
+              imageUrlNormal: item.imageUrlNormal,
+              imageUrlLarge: item.imageUrlLarge,
+              imageUrlArtCrop: item.imageUrlArtCrop,
+              releasedAt: item.releasedAt ? new Date(item.releasedAt) : null,
             },
-          },
-          create: {
-            oracleId: item.oracleId,
-            lang: item.lang,
-            printingId: item.printingId,
-            printedName: item.printedName,
-            printedText: item.printedText,
-            printedTypeLine: item.printedTypeLine,
-            imageUrlSmall: item.imageUrlSmall,
-            imageUrlNormal: item.imageUrlNormal,
-            imageUrlLarge: item.imageUrlLarge,
-            imageUrlArtCrop: item.imageUrlArtCrop,
-            releasedAt: item.releasedAt ? new Date(item.releasedAt) : null,
-          },
-          update: {
-            printingId: item.printingId,
-            printedName: item.printedName,
-            printedText: item.printedText,
-            printedTypeLine: item.printedTypeLine,
-            imageUrlSmall: item.imageUrlSmall,
-            imageUrlNormal: item.imageUrlNormal,
-            imageUrlLarge: item.imageUrlLarge,
-            imageUrlArtCrop: item.imageUrlArtCrop,
-            releasedAt: item.releasedAt ? new Date(item.releasedAt) : null,
-          },
-        }).catch(() => null)
-      )
+            update: {
+              printingId: item.printingId,
+              printedName: item.printedName,
+              printedText: item.printedText,
+              printedTypeLine: item.printedTypeLine,
+              imageUrlSmall: item.imageUrlSmall,
+              imageUrlNormal: item.imageUrlNormal,
+              imageUrlLarge: item.imageUrlLarge,
+              imageUrlArtCrop: item.imageUrlArtCrop,
+              releasedAt: item.releasedAt ? new Date(item.releasedAt) : null,
+            },
+          })
+          .catch(() => null),
+      ),
     );
     upserted += batch.length;
   }

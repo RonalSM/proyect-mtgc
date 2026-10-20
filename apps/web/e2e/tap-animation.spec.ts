@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 
 const SCREENSHOT_DIR = path.resolve(
-  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
 );
 
 // Helper para crear sala, unir 2 jugadores, importar mazos y dejarlos listos
@@ -48,7 +48,7 @@ async function setupTwoPlayerGame(browser: any) {
   }
   await hostPage.fill(
     'textarea',
-    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Command Tower\n1 Cultivate\n1 Counterspell\n1 Swords to Plowshares\n1 Demonic Tutor\n10 Plains\n10 Island\n10 Swamp\n10 Forest`
+    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Command Tower\n1 Cultivate\n1 Counterspell\n1 Swords to Plowshares\n1 Demonic Tutor\n10 Plains\n10 Island\n10 Swamp\n10 Forest`,
   );
   await hostPage.click('button:has-text("Validar lista")');
   await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -71,7 +71,7 @@ async function setupTwoPlayerGame(browser: any) {
   }
   await guestPage.fill(
     'textarea',
-    `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Lightning Bolt\n1 Dark Ritual\n1 Vampiric Tutor\n1 Blood Artist\n10 Mountain\n10 Swamp\n10 Plains`
+    `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Arcane Signet\n1 Lightning Bolt\n1 Dark Ritual\n1 Vampiric Tutor\n1 Blood Artist\n10 Mountain\n10 Swamp\n10 Plains`,
   );
   await guestPage.click('button:has-text("Validar lista")');
   await guestPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -83,7 +83,9 @@ async function setupTwoPlayerGame(browser: any) {
   await startGameBtn.click();
 
   // Completar fase de mulligan en ambos jugadores
-  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 25000 });
+  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+    timeout: 25000,
+  });
 
   for (let step = 0; step < 2; step++) {
     for (let attempt = 0; attempt < 30; attempt++) {
@@ -112,8 +114,9 @@ async function setupTwoPlayerGame(browser: any) {
 }
 
 test.describe('Punto 7: Animación de girar y enderezar sobre el centro invariante', () => {
-
-  test('Giro y enderezado: centro fijo (<= 1 px), ángulo monótono (0 a 90), dimensiones intercambiadas y sincronía remota en B', async ({ browser }) => {
+  test('Giro y enderezado: centro fijo (<= 1 px), ángulo monótono (0 a 90), dimensiones intercambiadas y sincronía remota en B', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
     const { contexts, hostPage, guestPage } = await setupTwoPlayerGame(browser);
 
@@ -122,7 +125,9 @@ test.describe('Punto 7: Animación de girar y enderezar sobre el centro invarian
       const handCard = hostPage.locator('[data-from-zone="hand"]').first();
       await handCard.waitFor({ state: 'visible', timeout: 10000 });
       await handCard.click({ button: 'right', force: true });
-      await hostPage.locator('[data-testid="context-to-battlefield"]').waitFor({ state: 'visible', timeout: 5000 });
+      await hostPage
+        .locator('[data-testid="context-to-battlefield"]')
+        .waitFor({ state: 'visible', timeout: 5000 });
       await hostPage.locator('[data-testid="context-to-battlefield"]').click();
       await hostPage.waitForTimeout(1000);
 
@@ -279,7 +284,9 @@ test.describe('Punto 7: Animación de girar y enderezar sobre el centro invarian
         if (dx > maxCxDiff) maxCxDiff = dx;
         if (dy > maxCyDiff) maxCyDiff = dy;
       }
-      console.log(`[Punto 7] Máxima variación del centro en Host: Δx=${maxCxDiff.toFixed(2)}px, Δy=${maxCyDiff.toFixed(2)}px`);
+      console.log(
+        `[Punto 7] Máxima variación del centro en Host: Δx=${maxCxDiff.toFixed(2)}px, Δy=${maxCyDiff.toFixed(2)}px`,
+      );
       expect(maxCxDiff).toBeLessThanOrEqual(1.0);
       expect(maxCyDiff).toBeLessThanOrEqual(1.0);
 
@@ -294,8 +301,12 @@ test.describe('Punto 7: Animación de girar y enderezar sobre el centro invarian
       }
 
       // Verificación 3: Las dimensiones se intercambian (ancho y alto del slot)
-      console.log(`[Punto 7] Dimensiones iniciales: ${f0.width.toFixed(1)} x ${f0.height.toFixed(1)}`);
-      console.log(`[Punto 7] Dimensiones finales: ${fEnd.width.toFixed(1)} x ${fEnd.height.toFixed(1)}`);
+      console.log(
+        `[Punto 7] Dimensiones iniciales: ${f0.width.toFixed(1)} x ${f0.height.toFixed(1)}`,
+      );
+      console.log(
+        `[Punto 7] Dimensiones finales: ${fEnd.width.toFixed(1)} x ${fEnd.height.toFixed(1)}`,
+      );
       expect(Math.abs(fEnd.width - f0.height)).toBeLessThanOrEqual(1.5);
       expect(Math.abs(fEnd.height - f0.width)).toBeLessThanOrEqual(1.5);
 
@@ -317,7 +328,9 @@ test.describe('Punto 7: Animación de girar y enderezar sobre el centro invarian
           if (dx > maxRemoteCxDiff) maxRemoteCxDiff = dx;
           if (dy > maxRemoteCyDiff) maxRemoteCyDiff = dy;
         }
-        console.log(`[Punto 7] Máxima variación del centro en Remoto B: Δx=${maxRemoteCxDiff.toFixed(2)}px, Δy=${maxRemoteCyDiff.toFixed(2)}px`);
+        console.log(
+          `[Punto 7] Máxima variación del centro en Remoto B: Δx=${maxRemoteCxDiff.toFixed(2)}px, Δy=${maxRemoteCyDiff.toFixed(2)}px`,
+        );
         expect(maxRemoteCxDiff).toBeLessThanOrEqual(1.0);
         expect(maxRemoteCyDiff).toBeLessThanOrEqual(1.0);
         expect(Math.abs(rfEnd.width - rf0.height)).toBeLessThanOrEqual(2.0);
@@ -333,7 +346,9 @@ test.describe('Punto 7: Animación de girar y enderezar sobre el centro invarian
       await hostPage.evaluate(() => (window as any).__stopSampling());
 
       const untapFrames = await hostPage.evaluate(() => (window as any).__tapFrames || []);
-      console.log(`[Punto 7] Frames muestreados durante el enderezado (Untap): ${untapFrames.length}`);
+      console.log(
+        `[Punto 7] Frames muestreados durante el enderezado (Untap): ${untapFrames.length}`,
+      );
       expect(untapFrames.length).toBeGreaterThanOrEqual(5);
 
       const u0 = untapFrames[0];
@@ -348,7 +363,9 @@ test.describe('Punto 7: Animación de girar y enderezar sobre el centro invarian
         if (dx > maxUntapCxDiff) maxUntapCxDiff = dx;
         if (dy > maxUntapCyDiff) maxUntapCyDiff = dy;
       }
-      console.log(`[Punto 7] Máxima variación del centro en Untap: Δx=${maxUntapCxDiff.toFixed(2)}px, Δy=${maxUntapCyDiff.toFixed(2)}px`);
+      console.log(
+        `[Punto 7] Máxima variación del centro en Untap: Δx=${maxUntapCxDiff.toFixed(2)}px, Δy=${maxUntapCyDiff.toFixed(2)}px`,
+      );
       expect(maxUntapCxDiff).toBeLessThanOrEqual(1.0);
       expect(maxUntapCyDiff).toBeLessThanOrEqual(1.0);
 
@@ -365,12 +382,10 @@ test.describe('Punto 7: Animación de girar y enderezar sobre el centro invarian
       // Dimensiones vuelven a vertical original
       expect(Math.abs(uEnd.width - f0.width)).toBeLessThanOrEqual(1.0);
       expect(Math.abs(uEnd.height - f0.height)).toBeLessThanOrEqual(1.0);
-
     } finally {
       for (const ctx of contexts) {
         await ctx.close().catch(() => {});
       }
     }
   });
-
 });

@@ -131,7 +131,8 @@ export class ScryfallService {
    */
   public toCardDefinition(raw: ScryfallCardRaw): CardDefinition {
     const hasFaceImages = !!(raw.card_faces && raw.card_faces.some(f => f.image_uris));
-    const isTwoFaced = hasFaceImages || !!(raw.card_faces && raw.card_faces.length > 1 && !raw.image_uris);
+    const isTwoFaced =
+      hasFaceImages || !!(raw.card_faces && raw.card_faces.length > 1 && !raw.image_uris);
     const primaryFace = isTwoFaced ? raw.card_faces![0] : undefined;
 
     const imageUrlSmall = raw.image_uris?.small || primaryFace?.image_uris?.small;

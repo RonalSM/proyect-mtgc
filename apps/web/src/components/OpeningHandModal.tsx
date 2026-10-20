@@ -18,7 +18,7 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
   const mulligan = roomState.mulligan;
   const localPlayer = roomState.players[localPlayerId];
   const isSpectator = localPlayer?.isSpectator ?? false;
-  const isHost = localPlayer?.isHost ?? (roomState.hostId === localPlayerId);
+  const isHost = localPlayer?.isHost ?? roomState.hostId === localPlayerId;
 
   const currentDecidingId = mulligan?.currentDecidingPlayerId;
   const currentDecidingPlayer = currentDecidingId ? roomState.players[currentDecidingId] : null;
@@ -47,7 +47,9 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
 
     const libraryCards = roomState.playerZones[localPlayerId]?.library || [];
     for (const card of libraryCards) {
-      const smallUrl = card.definition?.imageUrlSmall || card.definition?.imageUrlNormal?.replace('/normal/', '/small/');
+      const smallUrl =
+        card.definition?.imageUrlSmall ||
+        card.definition?.imageUrlNormal?.replace('/normal/', '/small/');
       if (smallUrl) imageLoaderQueue.enqueue(smallUrl, 1);
     }
   }, [localHand, roomState.playerZones, localPlayerId]);
@@ -91,7 +93,10 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
     (cardsToBottomCount > 0 && selectedBottomCardIds.length !== cardsToBottomCount);
 
   return (
-    <div data-testid="opening-hand-modal" className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-between p-3 sm:p-5 select-none overflow-y-auto">
+    <div
+      data-testid="opening-hand-modal"
+      className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-between p-3 sm:p-5 select-none overflow-y-auto"
+    >
       {/* Top Header */}
       <div className="w-full max-w-5xl flex flex-col items-center space-y-1.5 sm:space-y-2 text-center pt-1 sm:pt-2">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold tracking-wide">
@@ -103,8 +108,8 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
           {myHasKept
             ? 'Te has quedado con tu mano inicial'
             : isMyDecisionTurn
-            ? 'Tu turno de decisión: ¿Te quedas o haces mulligan?'
-            : `Esperando a ${currentDecidingPlayer?.name || 'otro jugador'}...`}
+              ? 'Tu turno de decisión: ¿Te quedas o haces mulligan?'
+              : `Esperando a ${currentDecidingPlayer?.name || 'otro jugador'}...`}
         </h2>
 
         {/* Turn order indicator chips */}
@@ -123,8 +128,8 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
                   isCurrent
                     ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20 animate-pulse'
                     : hasKept
-                    ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/30'
-                    : 'bg-slate-900 text-slate-400 border-slate-800'
+                      ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/30'
+                      : 'bg-slate-900 text-slate-400 border-slate-800'
                 }`}
               >
                 <span className="font-mono text-[10px]">{idx + 1}.º</span>
@@ -170,8 +175,8 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
                       isSelected
                         ? 'ring-4 ring-amber-500 scale-105 shadow-2xl shadow-amber-500/30 -translate-y-2'
                         : cardsToBottomCount > 0 && isMyDecisionTurn && !myHasKept
-                        ? 'hover:scale-105 hover:-translate-y-1 hover:ring-2 hover:ring-amber-400/50'
-                        : ''
+                          ? 'hover:scale-105 hover:-translate-y-1 hover:ring-2 hover:ring-amber-400/50'
+                          : ''
                     }`}
                     style={{
                       width: 'clamp(140px, calc(9.4vw + 12px), 215px)',
@@ -179,7 +184,12 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
                     }}
                   >
                     <div className="w-full h-full rounded-xl overflow-hidden shadow-xl border border-slate-700/80">
-                      <CardDisplay card={card.definition} isFaceDown={false} allowFaceToggle={false} size="normal" />
+                      <CardDisplay
+                        card={card.definition}
+                        isFaceDown={false}
+                        allowFaceToggle={false}
+                        size="normal"
+                      />
                     </div>
 
                     {/* Bottom selection badge */}
@@ -198,7 +208,9 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
               <div className="bg-amber-950/60 border border-amber-500/40 text-amber-200 text-xs px-4 py-1.5 sm:py-2 rounded-xl flex items-center space-x-2 animate-bounce">
                 <ShieldAlert className="w-4 h-4 text-amber-400 flex-shrink-0" />
                 <span>
-                  Debes seleccionar exactamente <strong>{cardsToBottomCount} carta(s)</strong> para poner en el fondo de la biblioteca ({selectedBottomCardIds.length}/{cardsToBottomCount} seleccionadas).
+                  Debes seleccionar exactamente <strong>{cardsToBottomCount} carta(s)</strong> para
+                  poner en el fondo de la biblioteca ({selectedBottomCardIds.length}/
+                  {cardsToBottomCount} seleccionadas).
                 </span>
               </div>
             )}
@@ -281,7 +293,9 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
             {myHasKept ? (
               <>
                 <Check className="w-4 h-4 text-emerald-400" />
-                <span>Te has quedado con tu mano. Esperando a que el resto de jugadores decida...</span>
+                <span>
+                  Te has quedado con tu mano. Esperando a que el resto de jugadores decida...
+                </span>
               </>
             ) : (
               <>

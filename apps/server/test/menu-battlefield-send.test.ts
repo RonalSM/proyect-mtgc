@@ -1,7 +1,12 @@
 import test, { describe } from 'node:test';
 import assert from 'node:assert';
 import { GameStateSession } from '../src/game/game-state.js';
-import { getCardDimensions, type RoomState, type CardInstance, type CardDefinition } from '@mtgc/shared';
+import {
+  getCardDimensions,
+  type RoomState,
+  type CardInstance,
+  type CardDefinition,
+} from '@mtgc/shared';
 
 function createDummyCard(id: string, name: string, ownerId: string): CardInstance {
   const def: CardDefinition = {
@@ -60,15 +65,9 @@ function createRoomWithPlayers(numPlayers: 2 | 4 | 6): GameStateSession {
         createDummyCard(`hand_${i}_2`, `Hand Card 2 of ${i}`, pId),
       ],
       battlefield: [],
-      graveyard: [
-        createDummyCard(`gy_${i}_1`, `GY Card 1 of ${i}`, pId),
-      ],
-      exile: [
-        createDummyCard(`ex_${i}_1`, `Exile Card 1 of ${i}`, pId),
-      ],
-      command: [
-        createDummyCard(`cmd_${i}`, `Commander ${i}`, pId),
-      ],
+      graveyard: [createDummyCard(`gy_${i}_1`, `GY Card 1 of ${i}`, pId)],
+      exile: [createDummyCard(`ex_${i}_1`, `Exile Card 1 of ${i}`, pId)],
+      command: [createDummyCard(`cmd_${i}`, `Commander ${i}`, pId)],
     };
   }
 
@@ -121,8 +120,14 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
     assert.ok(c1 && c2 && c3, 'Las 3 cartas deben estar en el campo de batalla');
 
     // Player 0 está en la mitad izquierda (x in [0, 0.5])
-    assert.ok(c1.position!.x >= 0.15 && c1.position!.x <= 0.35, `c1 x (${c1.position!.x}) debe estar cerca del centro de player 0 (0.25)`);
-    assert.ok(c1.position!.y >= 0.30 && c1.position!.y <= 0.50, `c1 y (${c1.position!.y}) debe estar cerca del centro jugable de player 0 (0.425 - 0.0475 = 0.3775)`);
+    assert.ok(
+      c1.position!.x >= 0.15 && c1.position!.x <= 0.35,
+      `c1 x (${c1.position!.x}) debe estar cerca del centro de player 0 (0.25)`,
+    );
+    assert.ok(
+      c1.position!.y >= 0.3 && c1.position!.y <= 0.5,
+      `c1 y (${c1.position!.y}) debe estar cerca del centro jugable de player 0 (0.425 - 0.0475 = 0.3775)`,
+    );
     assert.strictEqual(c1.ownerId, 'player_0');
     assert.strictEqual(c1.holderId, 'player_0');
 
@@ -142,7 +147,10 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
     const cBob = session.findBattlefieldCard('hand_1_1')?.card;
     assert.ok(cBob);
     // Player 1 está en la mitad derecha (x in [0.5, 1.0])
-    assert.ok(cBob.position!.x >= 0.65 && cBob.position!.x <= 0.85, `cBob x (${cBob.position!.x}) debe estar cerca del centro de player 1 (0.75)`);
+    assert.ok(
+      cBob.position!.x >= 0.65 && cBob.position!.x <= 0.85,
+      `cBob x (${cBob.position!.x}) debe estar cerca del centro de player 1 (0.75)`,
+    );
     assert.strictEqual(cBob.ownerId, 'player_1');
     assert.strictEqual(cBob.holderId, 'player_1');
   });
@@ -228,7 +236,10 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
           const pId = 'player_0';
 
           const cardDims = getCardDimensions(numPlayers, { width: res.width, height: res.height });
-          const centerPos = session.computePlayerDivisionCenter(pId, { width: res.width, height: res.height });
+          const centerPos = session.computePlayerDivisionCenter(pId, {
+            width: res.width,
+            height: res.height,
+          });
 
           // Convención única (Punto 2): la posición retornada es directamente el centro de la carta
           const cardCenterX = centerPos.x * res.width;
@@ -250,9 +261,9 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
 
           console.log(
             `[Punto 4 Test] ${numPlayers}p ${res.name}: Carta (${cardDims.width}x${cardDims.height}) ` +
-            `Centro carta=(${cardCenterX.toFixed(2)}, ${cardCenterY.toFixed(2)}), ` +
-            `Centro jugable=(${playableCenterX.toFixed(2)}, ${playableCenterY.toFixed(2)}), ` +
-            `Diff=(dX=${diffX.toFixed(2)}px, dY=${diffY.toFixed(2)}px)`
+              `Centro carta=(${cardCenterX.toFixed(2)}, ${cardCenterY.toFixed(2)}), ` +
+              `Centro jugable=(${playableCenterX.toFixed(2)}, ${playableCenterY.toFixed(2)}), ` +
+              `Diff=(dX=${diffX.toFixed(2)}px, dY=${diffY.toFixed(2)}px)`,
           );
 
           assert.ok(diffX <= 1.0, `diffX (${diffX.toFixed(3)} px) debe ser <= 1.0 px`);
@@ -262,4 +273,3 @@ describe('Punto 2: Enviar al campo desde el menú con clic derecho (2, 4 y 6 jug
     }
   });
 });
-

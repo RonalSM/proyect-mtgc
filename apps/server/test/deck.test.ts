@@ -5,7 +5,7 @@ import { CardDefinition } from '@mtgc/shared';
 
 const mockCommander: CardDefinition = {
   scryfallId: 'cmd_1',
-  name: 'Atraxa, Praetors\' Voice',
+  name: "Atraxa, Praetors' Voice",
   cmc: 4,
   typeLine: 'Legendary Creature — Phyrexian Angel Horror',
   colors: ['W', 'U', 'B', 'G'],
@@ -27,7 +27,7 @@ test('DeckService - saves and retrieves user decks linked to userId (REQ-7.5)', 
   // 1. Save deck
   const saved = await deckService.saveDeck(userId, {
     name: 'Atraxa Proliferate',
-    rawDecklist: '1 Atraxa, Praetors\' Voice\n1 Sol Ring',
+    rawDecklist: "1 Atraxa, Praetors' Voice\n1 Sol Ring",
     commanderCards: [mockCommander],
     maindeckCards: [mockSolRing],
   });
@@ -35,7 +35,7 @@ test('DeckService - saves and retrieves user decks linked to userId (REQ-7.5)', 
   assert.ok(saved.id);
   assert.strictEqual(saved.userId, userId);
   assert.strictEqual(saved.name, 'Atraxa Proliferate');
-  assert.strictEqual(saved.commanderName, 'Atraxa, Praetors\' Voice');
+  assert.strictEqual(saved.commanderName, "Atraxa, Praetors' Voice");
   assert.deepStrictEqual(saved.colorIdentity, ['W', 'U', 'B', 'G']);
   assert.strictEqual(saved.cardCount, 2);
 
@@ -71,14 +71,25 @@ test('DeckService - loads, validates and serves 6 to 8 preset Commander decks (P
   const presets = await deckService.loadPresetDecks();
 
   // Exactly between 6 and 8 decks (8 generated)
-  assert.ok(presets.length >= 6 && presets.length <= 8, `Expected 6 to 8 presets, got ${presets.length}`);
+  assert.ok(
+    presets.length >= 6 && presets.length <= 8,
+    `Expected 6 to 8 presets, got ${presets.length}`,
+  );
 
   for (const preset of presets) {
     assert.strictEqual(preset.isPreset, true, `${preset.name} must be marked isPreset`);
     assert.strictEqual(preset.userId, null, `${preset.name} must have null userId (system preset)`);
     assert.strictEqual(preset.cardCount, 100, `${preset.name} must have exactly 100 cards`);
-    assert.strictEqual(preset.commanderCards.length, 1, `${preset.name} must have 1 commander card`);
-    assert.strictEqual(preset.maindeckCards.length, 99, `${preset.name} must have 99 maindeck cards`);
+    assert.strictEqual(
+      preset.commanderCards.length,
+      1,
+      `${preset.name} must have 1 commander card`,
+    );
+    assert.strictEqual(
+      preset.maindeckCards.length,
+      99,
+      `${preset.name} must have 99 maindeck cards`,
+    );
     assert.ok(preset.commanderImageUrl, `${preset.name} must have a commander art crop URL`);
   }
 

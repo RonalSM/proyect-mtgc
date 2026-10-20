@@ -76,10 +76,10 @@ export const CardBadges: React.FC<CardBadgesProps> = ({ card }) => {
     <div
       data-testid="card-badge-row"
       className="absolute top-1 left-1 right-1 flex flex-row flex-wrap items-center gap-0.5 z-20 pointer-events-auto"
-      onClick={(e) => e.stopPropagation()}
+      onClick={e => e.stopPropagation()}
     >
       {/* Insignias de Palabras Clave */}
-      {activeKeywords.map((kwId) => {
+      {activeKeywords.map(kwId => {
         const def = getKeywordDefinition(kwId);
         const IconComponent = KEYWORD_ICONS[kwId.toLowerCase()] || Sparkles;
         const label = def?.label || kwId;

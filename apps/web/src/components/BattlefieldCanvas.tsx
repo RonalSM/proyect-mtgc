@@ -16,9 +16,11 @@ export const CardPTBadge: React.FC<{ card: CardInstance }> = ({ card }) => {
 
   let badgeBorderBg = 'bg-slate-950/95 border-slate-700/80 text-slate-200 shadow-sm';
   if (overallStatus === 'up') {
-    badgeBorderBg = 'bg-slate-950/95 border-emerald-500/80 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.35)]';
+    badgeBorderBg =
+      'bg-slate-950/95 border-emerald-500/80 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.35)]';
   } else if (overallStatus === 'down') {
-    badgeBorderBg = 'bg-slate-950/95 border-rose-500/80 text-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.35)]';
+    badgeBorderBg =
+      'bg-slate-950/95 border-rose-500/80 text-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.35)]';
   }
 
   let pColor = 'text-slate-100 font-bold';
@@ -91,7 +93,7 @@ interface BattlefieldCardItemProps {
   showPreview: (
     card: CardDefinition,
     posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent,
-    instance?: CardInstance
+    instance?: CardInstance,
   ) => void;
   hidePreview: () => void;
 }
@@ -203,7 +205,11 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   }, [isTapped]);
 
   const handleTransitionEnd = (e: React.TransitionEvent) => {
-    if (e.propertyName === 'transform' || e.propertyName === 'width' || e.propertyName === 'height') {
+    if (
+      e.propertyName === 'transform' ||
+      e.propertyName === 'width' ||
+      e.propertyName === 'height'
+    ) {
       setIsAnimatingTap(false);
     }
   };
@@ -228,7 +234,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   const centerPixelX = Math.round(clampedCenterX);
   const centerPixelY = Math.round(clampedCenterY);
 
-  const zIndex = optimisticPosition?.zIndex ?? (card.position?.zIndex ?? 5);
+  const zIndex = optimisticPosition?.zIndex ?? card.position?.zIndex ?? 5;
 
   return (
     <div
@@ -250,14 +256,12 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchEnd}
-      onMouseEnter={(e) => !card.isFaceDown && !isDragging && showPreview(card.definition, e, card)}
+      onMouseEnter={e => !card.isFaceDown && !isDragging && showPreview(card.definition, e, card)}
       onMouseLeave={hidePreview}
       onTransitionEnd={handleTransitionEnd}
       className={`card-slot-container absolute group select-none pointer-events-auto flex items-center justify-center cursor-pointer ${
         isAnimatingTap ? 'is-animating-tap' : ''
-      } ${
-        isDragging || isRemoteDragging ? 'opacity-0 pointer-events-none' : ''
-      }`}
+      } ${isDragging || isRemoteDragging ? 'opacity-0 pointer-events-none' : ''}`}
       style={{
         left: `${centerPixelX}px`,
         top: `${centerPixelY}px`,
@@ -284,11 +288,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
           transformOrigin: 'center center',
         }}
       >
-        <CardDisplay
-          card={card.definition}
-          isFaceDown={card.isFaceDown}
-          isTapped={isTapped}
-        />
+        <CardDisplay card={card.definition} isFaceDown={card.isFaceDown} isTapped={isTapped} />
 
         {/* Insignias de Contadores y Palabras Clave oficiales (Punto 4): pegada al borde superior sin cubrir la linea inferior */}
         {!card.isFaceDown && <CardBadges card={card} />}
@@ -386,7 +386,8 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
       {cards.map(card => {
         const remoteItem = remoteDraggingCards && remoteDraggingCards[card.instanceId];
         const isRemoteDragging = !!(
-          remoteItem && (remoteItem.isDragging || (remoteItem as any).pendingSync)
+          remoteItem &&
+          (remoteItem.isDragging || (remoteItem as any).pendingSync)
         );
         return (
           <BattlefieldCardItem
@@ -424,7 +425,12 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
           if (viewFraming?.isExpanded) {
             screenNormX = (screenNormX - viewFraming.xMin) / viewFraming.width;
             screenNormY = (screenNormY - viewFraming.yMin) / viewFraming.height;
-            if (screenNormX < -0.15 || screenNormX > 1.15 || screenNormY < -0.15 || screenNormY > 1.15) {
+            if (
+              screenNormX < -0.15 ||
+              screenNormX > 1.15 ||
+              screenNormY < -0.15 ||
+              screenNormY > 1.15
+            ) {
               return null;
             }
           }
@@ -438,8 +444,14 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
           // Convención única (Punto 2 & Punto 3): la posición es el centro con dimensiones orientadas
           const rawGhostCenterX = screenNormX * winW;
           const rawGhostCenterY = screenNormY * winH;
-          const clampedGhostCenterX = Math.max(ghostW / 2, Math.min(winW - ghostW / 2, rawGhostCenterX));
-          const clampedGhostCenterY = Math.max(ghostH / 2, Math.min(winH - ghostH / 2, rawGhostCenterY));
+          const clampedGhostCenterX = Math.max(
+            ghostW / 2,
+            Math.min(winW - ghostW / 2, rawGhostCenterX),
+          );
+          const clampedGhostCenterY = Math.max(
+            ghostH / 2,
+            Math.min(winH - ghostH / 2, rawGhostCenterY),
+          );
 
           const ghostCenterX = Math.round(clampedGhostCenterX);
           const ghostCenterY = Math.round(clampedGhostCenterY);

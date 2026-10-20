@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 
 const ARTIFACT_DIR = path.resolve(
-  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
 );
 
 // Helper para crear sala, unir 2 jugadores, completar mulligan y colocar carta en mesa
@@ -26,7 +26,10 @@ async function setupGameWithBattlefieldCard(browser: any, deviceScaleFactor = 1)
   await hostPage.goto('http://localhost:3000');
   await expect(hostPage.locator('text=Servidor en línea')).toBeVisible({ timeout: 15000 });
 
-  await hostPage.fill('input[placeholder="Ej. Pod Casual 4 Jugadores"]', `Sharpness Pod DPR${deviceScaleFactor}`);
+  await hostPage.fill(
+    'input[placeholder="Ej. Pod Casual 4 Jugadores"]',
+    `Sharpness Pod DPR${deviceScaleFactor}`,
+  );
   await hostPage.fill('input[placeholder="Ej. Planeswalker 1"]', 'Alice (Host)');
   await hostPage.selectOption('select', '2');
   await hostPage.click('button:has-text("Crear Mesa y Obtener Código")');
@@ -47,7 +50,7 @@ async function setupGameWithBattlefieldCard(browser: any, deviceScaleFactor = 1)
   }
   await hostPage.fill(
     'textarea',
-    `// Comandante\n1 Sol Ring *CMDR*\n\n// Mazo\n1 Arcane Signet\n1 Command Tower\n10 Plains\n10 Island\n10 Swamp\n10 Forest\n10 Mountain`
+    `// Comandante\n1 Sol Ring *CMDR*\n\n// Mazo\n1 Arcane Signet\n1 Command Tower\n10 Plains\n10 Island\n10 Swamp\n10 Forest\n10 Mountain`,
   );
   await hostPage.click('button:has-text("Validar lista")');
   await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -70,7 +73,7 @@ async function setupGameWithBattlefieldCard(browser: any, deviceScaleFactor = 1)
   }
   await guestPage.fill(
     'textarea',
-    `// Comandante\n1 Sol Ring *CMDR*\n\n// Mazo\n1 Arcane Signet\n1 Command Tower\n10 Plains\n10 Island\n10 Swamp\n10 Forest\n10 Mountain`
+    `// Comandante\n1 Sol Ring *CMDR*\n\n// Mazo\n1 Arcane Signet\n1 Command Tower\n10 Plains\n10 Island\n10 Swamp\n10 Forest\n10 Mountain`,
   );
   await guestPage.click('button:has-text("Validar lista")');
   await guestPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -82,7 +85,9 @@ async function setupGameWithBattlefieldCard(browser: any, deviceScaleFactor = 1)
   await startBtn.click();
 
   // Mulligan secuencial para ambos jugadores
-  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 25000 });
+  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+    timeout: 25000,
+  });
   for (let step = 0; step < 2; step++) {
     for (let attempt = 0; attempt < 30; attempt++) {
       let clicked = false;
@@ -111,7 +116,9 @@ async function setupGameWithBattlefieldCard(browser: any, deviceScaleFactor = 1)
   const handCard = hostPage.locator('[data-from-zone="hand"]').first();
   await handCard.waitFor({ state: 'visible', timeout: 10000 });
   await handCard.click({ button: 'right', force: true });
-  await hostPage.locator('[data-testid="context-to-battlefield"]').waitFor({ state: 'visible', timeout: 5000 });
+  await hostPage
+    .locator('[data-testid="context-to-battlefield"]')
+    .waitFor({ state: 'visible', timeout: 5000 });
   await hostPage.locator('[data-testid="context-to-battlefield"]').click();
   await hostPage.waitForTimeout(1000);
 
@@ -123,7 +130,9 @@ async function setupGameWithBattlefieldCard(browser: any, deviceScaleFactor = 1)
 }
 
 test.describe('Punto 1: Medición de Nitidez de Carta Girada vs Enderezada (Varianza del Laplaciano)', () => {
-  test('Verificar nitidez con devicePixelRatio 1 y 2 (>= 90% de la enderezada)', async ({ browser }) => {
+  test('Verificar nitidez con devicePixelRatio 1 y 2 (>= 90% de la enderezada)', async ({
+    browser,
+  }) => {
     test.setTimeout(240000);
 
     const results: {
@@ -135,16 +144,24 @@ test.describe('Punto 1: Medición de Nitidez de Carta Girada vs Enderezada (Vari
 
     for (const dpr of [1, 2]) {
       console.log(`\n--- Iniciando medición con devicePixelRatio = ${dpr} ---`);
-      const { hostPage, hostContext, guestContext, bfCard } = await setupGameWithBattlefieldCard(browser, dpr);
+      const { hostPage, hostContext, guestContext, bfCard } = await setupGameWithBattlefieldCard(
+        browser,
+        dpr,
+      );
 
       try {
         // Asegurar que la imagen de la carta esté completamente cargada (naturalWidth > 0)
         const img = bfCard.locator('img');
         await expect(img).toBeVisible({ timeout: 10000 });
-        await hostPage.waitForFunction(() => {
-          const cardImg = document.querySelector('[data-battlefield-card="true"] img') as HTMLImageElement;
-          return cardImg && cardImg.complete && cardImg.naturalWidth > 0;
-        }, { timeout: 15000 });
+        await hostPage.waitForFunction(
+          () => {
+            const cardImg = document.querySelector(
+              '[data-battlefield-card="true"] img',
+            ) as HTMLImageElement;
+            return cardImg && cardImg.complete && cardImg.naturalWidth > 0;
+          },
+          { timeout: 15000 },
+        );
 
         // Esperar reposo
         await hostPage.waitForTimeout(600);
@@ -154,8 +171,8 @@ test.describe('Punto 1: Medición de Nitidez de Carta Girada vs Enderezada (Vari
         const untappedBuffer = await rotator.screenshot();
 
         // 2. Medir varianza del Laplaciano en el navegador
-        const untappedVariance = await hostPage.evaluate(async (base64) => {
-          return new Promise<number>((resolve) => {
+        const untappedVariance = await hostPage.evaluate(async base64 => {
+          return new Promise<number>(resolve => {
             const image = new Image();
             image.onload = () => {
               const canvas = document.createElement('canvas');
@@ -218,8 +235,8 @@ test.describe('Punto 1: Medición de Nitidez de Carta Girada vs Enderezada (Vari
         const tappedBuffer = await rotator.screenshot();
 
         // 5. Medir varianza del Laplaciano de la carta girada
-        const tappedVariance = await hostPage.evaluate(async (base64) => {
-          return new Promise<number>((resolve) => {
+        const tappedVariance = await hostPage.evaluate(async base64 => {
+          return new Promise<number>(resolve => {
             const image = new Image();
             image.onload = () => {
               const canvas = document.createElement('canvas');
@@ -272,7 +289,9 @@ test.describe('Punto 1: Medición de Nitidez de Carta Girada vs Enderezada (Vari
         console.log(`DPR ${dpr}:`);
         console.log(`  Varianza Laplaciano Enderezada = ${untappedVariance.toFixed(2)}`);
         console.log(`  Varianza Laplaciano Girada     = ${tappedVariance.toFixed(2)}`);
-        console.log(`  Ratio de Nitidez (girada / enderezada) = ${(sharpnessRatio * 100).toFixed(2)}%`);
+        console.log(
+          `  Ratio de Nitidez (girada / enderezada) = ${(sharpnessRatio * 100).toFixed(2)}%`,
+        );
 
         results.push({
           dpr,
@@ -284,8 +303,8 @@ test.describe('Punto 1: Medición de Nitidez de Carta Girada vs Enderezada (Vari
         // 6. Generar capturas ampliadas al 200% (para DPR=1)
         if (dpr === 1) {
           const generateZoom200 = async (buffer: Buffer, outPath: string) => {
-            const base64Zoom = await hostPage.evaluate(async (base64) => {
-              return new Promise<string>((resolve) => {
+            const base64Zoom = await hostPage.evaluate(async base64 => {
+              return new Promise<string>(resolve => {
                 const img = new Image();
                 img.onload = () => {
                   const canvas = document.createElement('canvas');
@@ -303,13 +322,16 @@ test.describe('Punto 1: Medición de Nitidez de Carta Girada vs Enderezada (Vari
             fs.writeFileSync(outPath, Buffer.from(base64Zoom, 'base64'));
           };
 
-          await generateZoom200(untappedBuffer, path.join(ARTIFACT_DIR, 'sharpness-untapped-200.png'));
+          await generateZoom200(
+            untappedBuffer,
+            path.join(ARTIFACT_DIR, 'sharpness-untapped-200.png'),
+          );
           await generateZoom200(tappedBuffer, path.join(ARTIFACT_DIR, 'sharpness-tapped-200.png'));
           console.log(`  Capturas 200% guardadas en ${ARTIFACT_DIR}`);
         }
 
         // Aserción requerida: la girada debe tener al menos el 90% de la nitidez de la enderezada
-        expect(sharpnessRatio).toBeGreaterThanOrEqual(0.90);
+        expect(sharpnessRatio).toBeGreaterThanOrEqual(0.9);
       } finally {
         await hostContext.close();
         await guestContext.close();
@@ -318,7 +340,9 @@ test.describe('Punto 1: Medición de Nitidez de Carta Girada vs Enderezada (Vari
 
     console.log('\n=== Resumen de Medición de Nitidez ===');
     for (const r of results) {
-      console.log(`DPR ${r.dpr}: Enderezada=${r.untappedVariance.toFixed(2)}, Girada=${r.tappedVariance.toFixed(2)}, Ratio=${(r.sharpnessRatio * 100).toFixed(2)}% (>= 90% SUPERADO)`);
+      console.log(
+        `DPR ${r.dpr}: Enderezada=${r.untappedVariance.toFixed(2)}, Girada=${r.tappedVariance.toFixed(2)}, Ratio=${(r.sharpnessRatio * 100).toFixed(2)}% (>= 90% SUPERADO)`,
+      );
     }
   });
 });

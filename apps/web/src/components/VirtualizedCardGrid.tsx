@@ -60,7 +60,7 @@ export const VirtualizedCardGrid: React.FC<VirtualizedCardGridProps> = ({
   const startRow = Math.max(0, Math.floor(scrollTop / estimatedRowHeight) - overscan);
   const endRow = Math.min(
     totalRows,
-    Math.ceil((scrollTop + containerHeight) / estimatedRowHeight) + overscan
+    Math.ceil((scrollTop + containerHeight) / estimatedRowHeight) + overscan,
   );
 
   const isVirtualized =
@@ -111,15 +111,9 @@ export const VirtualizedCardGrid: React.FC<VirtualizedCardGridProps> = ({
         <div style={{ height: `${topSpacerHeight}px`, width: '100%' }} aria-hidden="true" />
       )}
 
-      <div
-        className={`grid ${
-          columns === 3 ? 'grid-cols-3' : 'grid-cols-3 sm:grid-cols-4'
-        } gap-3`}
-      >
+      <div className={`grid ${columns === 3 ? 'grid-cols-3' : 'grid-cols-3 sm:grid-cols-4'} gap-3`}>
         {visibleItems.map(({ card, index }) => (
-          <React.Fragment key={card.instanceId || index}>
-            {renderItem(card, index)}
-          </React.Fragment>
+          <React.Fragment key={card.instanceId || index}>{renderItem(card, index)}</React.Fragment>
         ))}
       </div>
 

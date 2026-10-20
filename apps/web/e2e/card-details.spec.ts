@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 
 const SCREENSHOT_DIR = path.resolve(
-  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
 );
 
 async function setupTestPod(
@@ -10,7 +10,7 @@ async function setupTestPod(
   podSize: number = 2,
   width = 1920,
   height = 1080,
-  roomPrefix = 'CardDetails'
+  roomPrefix = 'CardDetails',
 ) {
   const contexts: any[] = [];
   const pages: any[] = [];
@@ -32,7 +32,10 @@ async function setupTestPod(
   const hostOnlineBadge = hostPage.locator('text=Servidor en línea');
   await expect(hostOnlineBadge).toBeVisible({ timeout: 15000 });
 
-  await hostPage.fill('input[placeholder="Ej. Pod Casual 4 Jugadores"]', `${roomPrefix} ${podSize}p`);
+  await hostPage.fill(
+    'input[placeholder="Ej. Pod Casual 4 Jugadores"]',
+    `${roomPrefix} ${podSize}p`,
+  );
   await hostPage.fill('input[placeholder="Ej. Planeswalker 1"]', 'Alice (Host)');
   await hostPage.selectOption('select', String(podSize));
   await hostPage.click('button:has-text("Crear Mesa y Obtener Código")');
@@ -54,7 +57,7 @@ async function setupTestPod(
   }
   await hostPage.fill(
     'textarea',
-    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Delver of Secrets // Insectile Aberration\n1 Cultivate\n97 Plains`
+    `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n1 Delver of Secrets // Insectile Aberration\n1 Cultivate\n97 Plains`,
   );
   await hostPage.click('button:has-text("Validar lista")');
   await hostPage.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -77,10 +80,7 @@ async function setupTestPod(
   } else {
     await bobPage.click('button:has-text("Importar mi primer mazo")');
   }
-  await bobPage.fill(
-    'textarea',
-    `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n100 Mountain`
-  );
+  await bobPage.fill('textarea', `// Comandante\n1 Edgar Markov *CMDR*\n\n// Mazo\n100 Mountain`);
   await bobPage.click('button:has-text("Validar lista")');
   await bobPage.click('button:has-text("Usar este Mazo en la Mesa")');
   await bobPage.click('button:has-text("Marcarme Listo")');
@@ -90,7 +90,9 @@ async function setupTestPod(
   await startGameBtn.click();
 
   // Completar fase de mulligan (ambos jugadores se quedan su mano)
-  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 25000 });
+  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+    timeout: 25000,
+  });
   for (let step = 0; step < podSize; step++) {
     for (let attempt = 0; attempt < 30; attempt++) {
       let acted = false;
@@ -111,7 +113,9 @@ async function setupTestPod(
   }
 
   // Esperar a que la mesa esté activa
-  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toHaveCount(0, { timeout: 15000 });
+  await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toHaveCount(0, {
+    timeout: 15000,
+  });
   await hostPage.waitForTimeout(1000);
 
   return { contexts, pages, hostPage, bobPage, roomCode };
@@ -130,7 +134,8 @@ test.describe('Punto 8: Suite E2E Ver Carta, Dictámenes, DFC, Privacidad y Atri
             {
               publishedAt: '2023-09-01',
               source: 'wotc',
-              comment: '{T}: Add {C}{C}. Mana abilities do not use the stack and cannot be responded to.',
+              comment:
+                '{T}: Add {C}{C}. Mana abilities do not use the stack and cannot be responded to.',
             },
             {
               publishedAt: '2021-02-05',
@@ -149,7 +154,13 @@ test.describe('Punto 8: Suite E2E Ver Carta, Dictámenes, DFC, Privacidad y Atri
     browser,
   }) => {
     test.setTimeout(180000);
-    const { contexts, pages, hostPage, bobPage } = await setupTestPod(browser, 2, 1920, 1080, 'CardDet');
+    const { contexts, pages, hostPage, bobPage } = await setupTestPod(
+      browser,
+      2,
+      1920,
+      1080,
+      'CardDet',
+    );
 
     try {
       // =========================================================================
@@ -158,7 +169,9 @@ test.describe('Punto 8: Suite E2E Ver Carta, Dictámenes, DFC, Privacidad y Atri
       console.log('--- [Punto 8] 1. Verificando carta con dictámenes (Sol Ring) ---');
 
       // Si Sol Ring está en la mano, abrir menú contextual; si no, buscarlo en la biblioteca
-      const solRingHand = hostPage.locator('[data-from-zone="hand"][data-card-name="Sol Ring"]').first();
+      const solRingHand = hostPage
+        .locator('[data-from-zone="hand"][data-card-name="Sol Ring"]')
+        .first();
       if ((await solRingHand.count()) > 0) {
         await solRingHand.dispatchEvent('contextmenu', { clientX: 400, clientY: 500 });
         const viewCardBtn = hostPage.locator('[data-testid="context-view-card"]');
@@ -172,7 +185,9 @@ test.describe('Punto 8: Suite E2E Ver Carta, Dictámenes, DFC, Privacidad y Atri
         await searchInput.fill('Sol Ring');
         await hostPage.waitForTimeout(300);
 
-        const solRingItem = hostPage.locator('[data-modal-card-item][data-card-name*="Sol Ring"]').first();
+        const solRingItem = hostPage
+          .locator('[data-modal-card-item][data-card-name*="Sol Ring"]')
+          .first();
         await expect(solRingItem).toBeVisible();
         await solRingItem.dispatchEvent('contextmenu', { clientX: 400, clientY: 500 });
 
@@ -240,7 +255,9 @@ test.describe('Punto 8: Suite E2E Ver Carta, Dictámenes, DFC, Privacidad y Atri
       console.log('--- [Punto 8] 2. Verificando carta de doble cara (Delver of Secrets) ---');
 
       // Localizar Delver of Secrets (en mano o en biblioteca)
-      const delverHand = hostPage.locator('[data-from-zone="hand"][data-card-name*="Delver"]').first();
+      const delverHand = hostPage
+        .locator('[data-from-zone="hand"][data-card-name*="Delver"]')
+        .first();
       if ((await delverHand.count()) > 0) {
         await delverHand.dispatchEvent('contextmenu', { clientX: 400, clientY: 500 });
         const viewDelverBtn = hostPage.locator('[data-testid="context-view-card"]');
@@ -254,7 +271,9 @@ test.describe('Punto 8: Suite E2E Ver Carta, Dictámenes, DFC, Privacidad y Atri
         await searchInput.fill('Delver');
         await hostPage.waitForTimeout(300);
 
-        const delverItem = hostPage.locator('[data-modal-card-item][data-card-name*="Delver"]').first();
+        const delverItem = hostPage
+          .locator('[data-modal-card-item][data-card-name*="Delver"]')
+          .first();
         await expect(delverItem).toBeVisible();
         await delverItem.dispatchEvent('contextmenu', { clientX: 400, clientY: 500 });
 
@@ -326,7 +345,9 @@ test.describe('Punto 8: Suite E2E Ver Carta, Dictámenes, DFC, Privacidad y Atri
       // Enviar una carta de la mano de Alice al campo de batalla
       const cardOnField = hostPage.locator('[data-battlefield-card="true"]').first();
       if ((await cardOnField.count()) === 0) {
-        const handCard = hostPage.locator('[data-dock-zone="hand"] [data-hand-card="true"]').first();
+        const handCard = hostPage
+          .locator('[data-dock-zone="hand"] [data-hand-card="true"]')
+          .first();
         await handCard.dispatchEvent('contextmenu', { clientX: 500, clientY: 500 });
         await hostPage.locator('[data-testid="context-to-battlefield"]').click();
         await hostPage.waitForTimeout(500);
@@ -427,7 +448,9 @@ test.describe('Punto 8: Suite E2E Ver Carta, Dictámenes, DFC, Privacidad y Atri
       await hostPage.locator('[data-testid="close-playmat-modal-btn"]').dispatchEvent('click');
       await expect(playmatModal).toHaveCount(0);
 
-      console.log('✅ [Punto 8] Suite E2E de Ver Carta y Atribución Playmat completada con éxito al 100%');
+      console.log(
+        '✅ [Punto 8] Suite E2E de Ver Carta y Atribución Playmat completada con éxito al 100%',
+      );
     } finally {
       for (const ctx of contexts) {
         await ctx.close().catch(() => {});

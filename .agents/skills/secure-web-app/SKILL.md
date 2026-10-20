@@ -1,6 +1,6 @@
 ---
 name: secure-web-app
-description: "Lista de verificación de seguridad para la app web multijugador: autenticación, contraseñas, sesiones y cookies, CSP, rate limiting, validación de entradas, WebSocket, secretos, dependencias y protección de datos personales (Ley 1581 de 2012 de Colombia). Úsala al tocar registro, login, tokens, cookies, chat, nombres de usuario, entradas del usuario, despliegue, Docker, o cuando se pida una revisión de seguridad."
+description: 'Lista de verificación de seguridad para la app web multijugador: autenticación, contraseñas, sesiones y cookies, CSP, rate limiting, validación de entradas, WebSocket, secretos, dependencias y protección de datos personales (Ley 1581 de 2012 de Colombia). Úsala al tocar registro, login, tokens, cookies, chat, nombres de usuario, entradas del usuario, despliegue, Docker, o cuando se pida una revisión de seguridad.'
 ---
 
 # Seguridad de la aplicación
@@ -54,6 +54,6 @@ Aplica esta lista al escribir o revisar código. Para cada punto indica en el in
 
 ## Formato del informe
 
-| Control | Estado | Evidencia | Acción |
-|---|---|---|---|
-| Argon2id en registro | Falta | `apps/server/...` usa scrypt | Cambiar o aprobar |
+| Control              | Estado | Evidencia                    | Acción            |
+| -------------------- | ------ | ---------------------------- | ----------------- |
+| Argon2id en registro | Falta  | `apps/server/...` usa scrypt | Cambiar o aprobar |

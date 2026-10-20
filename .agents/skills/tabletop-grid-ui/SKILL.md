@@ -1,6 +1,6 @@
 ---
 name: tabletop-grid-ui
-description: "Diseño e implementación de la pantalla de partida estilo playgroup.gg: cuadrícula de 2 filas y hasta 3 columnas a sangre, playmat de fondo por jugador, pastilla de vida en la esquina interior, mano y pilas en el borde inferior, barra flotante y drag & drop con dnd-kit con posiciones normalizadas. Úsala al construir o modificar apps/web, la mesa, las celdas de jugador, las cartas, las zonas o los estilos de la partida."
+description: 'Diseño e implementación de la pantalla de partida estilo playgroup.gg: cuadrícula de 2 filas y hasta 3 columnas a sangre, playmat de fondo por jugador, pastilla de vida en la esquina interior, mano y pilas en el borde inferior, barra flotante y drag & drop con dnd-kit con posiciones normalizadas. Úsala al construir o modificar apps/web, la mesa, las celdas de jugador, las cartas, las zonas o los estilos de la partida.'
 ---
 
 # Pantalla de partida: cuadrícula a sangre
@@ -27,8 +27,8 @@ La `FloatingToolbar` (ronda, temporizador, historial, espectadores, compartir, d
 ## Esquina de la pastilla de vida
 
 ```ts
-function lifeCorner(row: 0 | 1, col: number): { v: "top" | "bottom"; h: "left" | "right" } {
-  return { v: row === 0 ? "bottom" : "top", h: col === 0 ? "right" : "left" };
+function lifeCorner(row: 0 | 1, col: number): { v: 'top' | 'bottom'; h: 'left' | 'right' } {
+  return { v: row === 0 ? 'bottom' : 'top', h: col === 0 ? 'right' : 'left' };
 }
 ```
 

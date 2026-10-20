@@ -13,21 +13,19 @@ export interface CardDimensions {
  */
 export function getCardDimensions(
   podSize: number,
-  viewport: ViewportDimensions = { width: 1920, height: 1080 }
+  viewport: ViewportDimensions = { width: 1920, height: 1080 },
 ): CardDimensions {
   const isTwoPlayer = podSize <= 2;
   const cellWidth = isTwoPlayer
     ? viewport.width / 2
     : podSize <= 4
-    ? viewport.width / 2
-    : viewport.width / 3;
+      ? viewport.width / 2
+      : viewport.width / 3;
 
-  const cellHeight = isTwoPlayer
-    ? viewport.height
-    : viewport.height / 2;
+  const cellHeight = isTwoPlayer ? viewport.height : viewport.height / 2;
 
   // Límite por alto: cerca del 20% del alto de la celda (REQ-22.6.3 / Punto 9)
-  const maxHByCellHeight = cellHeight * 0.20;
+  const maxHByCellHeight = cellHeight * 0.2;
 
   // Límite por ancho: vida (~80px) + gaps/padding (~50px) + comandante (W) + mano (~2.5*W) + biblioteca (W) + pilas (W)
   const maxWByCellWidth = Math.max(45, (cellWidth - 130) / 5.5);

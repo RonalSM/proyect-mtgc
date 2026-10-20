@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 
 const SCREENSHOT_DIR = path.resolve(
-  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
 );
 
 test.describe('Punto 6: Dictámenes Oficiales y Sincronización Automática al Arrancar (D.6)', () => {
@@ -40,7 +40,7 @@ test.describe('Punto 6: Dictámenes Oficiales y Sincronización Automática al A
     }
     await page.fill(
       'textarea',
-      `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n99 Plains`
+      `// Comandante\n1 Atraxa, Praetors' Voice *CMDR*\n\n// Mazo\n1 Sol Ring\n99 Plains`,
     );
     await page.click('button:has-text("Validar lista")');
     await page.click('button:has-text("Usar este Mazo en la Mesa")');
@@ -75,7 +75,9 @@ test.describe('Punto 6: Dictámenes Oficiales y Sincronización Automática al A
 
     // Completar fase de mulligan (ambos jugadores se quedan su mano en orden de turno)
     const pages = [page, page2];
-    await expect(page.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 25000 });
+    await expect(page.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+      timeout: 25000,
+    });
     for (let step = 0; step < 2; step++) {
       for (let attempt = 0; attempt < 30; attempt++) {
         let acted = false;
@@ -96,14 +98,18 @@ test.describe('Punto 6: Dictámenes Oficiales y Sincronización Automática al A
     }
 
     // Esperar a que la mesa esté activa
-    await expect(page.locator('[data-testid="opening-hand-modal"]')).toHaveCount(0, { timeout: 15000 });
+    await expect(page.locator('[data-testid="opening-hand-modal"]')).toHaveCount(0, {
+      timeout: 15000,
+    });
     await page.waitForTimeout(1000);
 
     // =========================================================================
     // 1. SOL RING: Abrir "Ver carta" y verificar al menos 2 dictámenes reales
     // =========================================================================
     console.log('--- 1. Verificando dictámenes en Sol Ring ---');
-    const solRingInHand = page.locator('[data-from-zone="hand"][data-card-name*="Sol Ring"]').first();
+    const solRingInHand = page
+      .locator('[data-from-zone="hand"][data-card-name*="Sol Ring"]')
+      .first();
     if ((await solRingInHand.count()) > 0) {
       await solRingInHand.dispatchEvent('contextmenu', { clientX: 400, clientY: 500 });
       await page.click('[data-testid="context-view-card"]');
@@ -131,12 +137,16 @@ test.describe('Punto 6: Dictámenes Oficiales y Sincronización Automática al A
     const firstRuling = rulingItems.first();
     await expect(firstRuling.locator('[data-testid="ruling-date"]')).toContainText('2023-09-01');
     await expect(firstRuling.locator('[data-testid="ruling-source"]')).toContainText(/wotc/i);
-    await expect(firstRuling.locator('[data-testid="ruling-comment"]')).toContainText('Mana abilities do not use the stack');
+    await expect(firstRuling.locator('[data-testid="ruling-comment"]')).toContainText(
+      'Mana abilities do not use the stack',
+    );
 
     const secondRuling = rulingItems.nth(1);
     await expect(secondRuling.locator('[data-testid="ruling-date"]')).toContainText('2021-02-05');
     await expect(secondRuling.locator('[data-testid="ruling-source"]')).toContainText(/wotc/i);
-    await expect(secondRuling.locator('[data-testid="ruling-comment"]')).toContainText('Sol Ring is legal in Commander');
+    await expect(secondRuling.locator('[data-testid="ruling-comment"]')).toContainText(
+      'Sol Ring is legal in Commander',
+    );
 
     // Captura de pantalla de Sol Ring con dictámenes reales
     await page.screenshot({
@@ -157,7 +167,11 @@ test.describe('Punto 6: Dictámenes Oficiales y Sincronización Automática al A
     // 2. CARTA SIN DICTÁMENES: Llanura / Plains muestra estado vacío sin romper
     // =========================================================================
     console.log('--- 2. Verificando carta sin dictámenes (Plains/Llanura) ---');
-    const plainsInHand = page.locator('[data-from-zone="hand"][data-card-name*="Plains"], [data-from-zone="hand"][data-card-name*="Llanura"]').first();
+    const plainsInHand = page
+      .locator(
+        '[data-from-zone="hand"][data-card-name*="Plains"], [data-from-zone="hand"][data-card-name*="Llanura"]',
+      )
+      .first();
     if ((await plainsInHand.count()) > 0) {
       await plainsInHand.dispatchEvent('contextmenu', { clientX: 400, clientY: 500 });
       await page.click('[data-testid="context-view-card"]');

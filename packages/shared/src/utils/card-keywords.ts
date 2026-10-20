@@ -24,7 +24,8 @@ export const MTG_KEYWORDS: KeywordDefinition[] = [
     nameEn: 'Deathtouch',
     label: 'Toque mortal (Deathtouch)',
     iconName: 'Skull',
-    reminderText: 'Cualquier cantidad de daño que esto inflija a una criatura es suficiente para destruirla.',
+    reminderText:
+      'Cualquier cantidad de daño que esto inflija a una criatura es suficiente para destruirla.',
   },
   {
     id: 'defender',
@@ -48,7 +49,8 @@ export const MTG_KEYWORDS: KeywordDefinition[] = [
     nameEn: 'Fear',
     label: 'Miedo (Fear)',
     iconName: 'Ghost',
-    reminderText: 'Esta criatura no puede ser bloqueada excepto por criaturas artefacto y/o criaturas negras.',
+    reminderText:
+      'Esta criatura no puede ser bloqueada excepto por criaturas artefacto y/o criaturas negras.',
   },
   {
     id: 'first_strike',
@@ -56,7 +58,8 @@ export const MTG_KEYWORDS: KeywordDefinition[] = [
     nameEn: 'First strike',
     label: 'Daña primero (First strike)',
     iconName: 'Zap',
-    reminderText: 'Esta criatura hace daño de combate antes que las criaturas que no tengan la habilidad de dañar primero.',
+    reminderText:
+      'Esta criatura hace daño de combate antes que las criaturas que no tengan la habilidad de dañar primero.',
   },
   {
     id: 'flying',
@@ -64,7 +67,8 @@ export const MTG_KEYWORDS: KeywordDefinition[] = [
     nameEn: 'Flying',
     label: 'Vuela (Flying)',
     iconName: 'Feather',
-    reminderText: 'Esta criatura no puede ser bloqueada excepto por criaturas con las habilidades de volar y/o alcance.',
+    reminderText:
+      'Esta criatura no puede ser bloqueada excepto por criaturas con las habilidades de volar y/o alcance.',
   },
   {
     id: 'haste',
@@ -80,7 +84,8 @@ export const MTG_KEYWORDS: KeywordDefinition[] = [
     nameEn: 'Hexproof',
     label: 'Antimaleficio (Hexproof)',
     iconName: 'ShieldCheck',
-    reminderText: 'Este permanente no puede ser objetivo de hechizos o habilidades que controlen tus oponentes.',
+    reminderText:
+      'Este permanente no puede ser objetivo de hechizos o habilidades que controlen tus oponentes.',
   },
   {
     id: 'indestructible',
@@ -96,7 +101,8 @@ export const MTG_KEYWORDS: KeywordDefinition[] = [
     nameEn: 'Lifelink',
     label: 'Vínculo vital (Lifelink)',
     iconName: 'Heart',
-    reminderText: 'El daño infligido por este permanente también hace que ganes esa misma cantidad de vidas.',
+    reminderText:
+      'El daño infligido por este permanente también hace que ganes esa misma cantidad de vidas.',
   },
   {
     id: 'menace',
@@ -120,7 +126,8 @@ export const MTG_KEYWORDS: KeywordDefinition[] = [
     nameEn: 'Trample',
     label: 'Arrollar (Trample)',
     iconName: 'Footprints',
-    reminderText: 'Esta criatura puede asignar el daño de combate sobrante al jugador o planeswalker defensor si destruye a todos sus bloqueadores.',
+    reminderText:
+      'Esta criatura puede asignar el daño de combate sobrante al jugador o planeswalker defensor si destruye a todos sus bloqueadores.',
   },
   {
     id: 'vigilance',
@@ -171,7 +178,8 @@ export const MTG_COUNTERS: CounterDefinition[] = [
     nameEn: 'Lore',
     label: 'Tradición (Lore)',
     iconName: 'BookOpen',
-    reminderText: 'Contadores que avanzan los capítulos de una saga en el paso principal previo al combate.',
+    reminderText:
+      'Contadores que avanzan los capítulos de una saga en el paso principal previo al combate.',
   },
   {
     id: 'shield',
@@ -179,7 +187,8 @@ export const MTG_COUNTERS: CounterDefinition[] = [
     nameEn: 'Shield',
     label: 'Escudo (Shield)',
     iconName: 'Shield',
-    reminderText: 'Si este permanente fuera a recibir daño o ser destruido, en vez de eso se retira un contador de escudo.',
+    reminderText:
+      'Si este permanente fuera a recibir daño o ser destruido, en vez de eso se retira un contador de escudo.',
   },
   {
     id: 'stun',
@@ -187,7 +196,8 @@ export const MTG_COUNTERS: CounterDefinition[] = [
     nameEn: 'Stun',
     label: 'Aturdimiento (Stun)',
     iconName: 'RotateCcw',
-    reminderText: 'Si un permanente con un contador de aturdimiento fuera a enderezarse, en vez de eso permanece girado y se retira un contador de aturdimiento.',
+    reminderText:
+      'Si un permanente con un contador de aturdimiento fuera a enderezarse, en vez de eso permanece girado y se retira un contador de aturdimiento.',
   },
   {
     id: 'time',
@@ -203,7 +213,8 @@ export const MTG_COUNTERS: CounterDefinition[] = [
     nameEn: 'Finality',
     label: 'Finalidad (Finality)',
     iconName: 'ShieldX',
-    reminderText: 'Si este permanente fuera a ir a un cementerio desde el campo de batalla, en vez de eso se exilia.',
+    reminderText:
+      'Si este permanente fuera a ir a un cementerio desde el campo de batalla, en vez de eso se exilia.',
     isSingle: true,
   },
   {
@@ -226,12 +237,16 @@ export const MTG_COUNTERS: CounterDefinition[] = [
 
 export function getKeywordDefinition(id: string): KeywordDefinition | undefined {
   const norm = id.toLowerCase().trim();
-  return MTG_KEYWORDS.find(k => k.id === norm || k.nameEs.toLowerCase() === norm || k.nameEn.toLowerCase() === norm);
+  return MTG_KEYWORDS.find(
+    k => k.id === norm || k.nameEs.toLowerCase() === norm || k.nameEn.toLowerCase() === norm,
+  );
 }
 
 export function getCounterDefinition(id: string): CounterDefinition | undefined {
   const norm = id.toLowerCase().trim();
   if (norm === '+1/+1') return MTG_COUNTERS.find(c => c.id === '+1/+1');
   if (norm === '-1/-1' || norm === '−1/−1') return MTG_COUNTERS.find(c => c.id === '−1/−1');
-  return MTG_COUNTERS.find(c => c.id === norm || c.nameEs.toLowerCase() === norm || c.nameEn.toLowerCase() === norm);
+  return MTG_COUNTERS.find(
+    c => c.id === norm || c.nameEs.toLowerCase() === norm || c.nameEn.toLowerCase() === norm,
+  );
 }

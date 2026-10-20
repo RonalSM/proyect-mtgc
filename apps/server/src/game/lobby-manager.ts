@@ -120,7 +120,10 @@ export class LobbyManager {
 
     const seatedPlayers = Object.values(this.roomState.players).filter(p => !p.isSpectator);
     if (seatedPlayers.length < 2) {
-      return { canStart: false, reason: 'Se necesitan al menos 2 jugadores para iniciar la partida.' };
+      return {
+        canStart: false,
+        reason: 'Se necesitan al menos 2 jugadores para iniciar la partida.',
+      };
     }
 
     const unreadyPlayers = seatedPlayers.filter(p => !p.isReady || !p.selectedDeck);

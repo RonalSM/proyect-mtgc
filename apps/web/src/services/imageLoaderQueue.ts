@@ -86,7 +86,8 @@ class ImageLoaderQueue {
    * Get global stats for UI counters ("Cargando N de M")
    */
   public getStats(): ImageQueueStats {
-    const total = this.loadedUrls.size + this.failedUrls.size + this.queue.length + this.activeCount;
+    const total =
+      this.loadedUrls.size + this.failedUrls.size + this.queue.length + this.activeCount;
     return {
       total,
       loaded: this.loadedUrls.size,

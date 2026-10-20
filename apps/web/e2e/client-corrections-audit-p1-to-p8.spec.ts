@@ -3,12 +3,14 @@ import path from 'node:path';
 import fs from 'node:fs';
 
 const SCREENSHOT_DIR = path.resolve(
-  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
 );
 
 async function completeMulliganPhase(pages: any[]) {
   const podSize = pages.length;
-  await expect(pages[0].locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 25000 });
+  await expect(pages[0].locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+    timeout: 25000,
+  });
   for (let step = 0; step < podSize; step++) {
     for (let attempt = 0; attempt < 30; attempt++) {
       let acted = false;
@@ -29,15 +31,20 @@ async function completeMulliganPhase(pages: any[]) {
   }
 
   for (let p = 0; p < podSize; p++) {
-    await expect(pages[p].locator('[data-testid="opening-hand-modal"]')).toHaveCount(0, { timeout: 15000 });
-    await expect(pages[p].locator('[data-testid="initiative-overlay"]')).toHaveCount(0, { timeout: 15000 });
+    await expect(pages[p].locator('[data-testid="opening-hand-modal"]')).toHaveCount(0, {
+      timeout: 15000,
+    });
+    await expect(pages[p].locator('[data-testid="initiative-overlay"]')).toHaveCount(0, {
+      timeout: 15000,
+    });
   }
   await pages[0].waitForTimeout(1000);
 }
 
 test.describe('Punto 9: Suite Playwright de Certificación Integral P1 a P8', () => {
-
-  test('Punto 1: Ventana de Mulligan a 1920x1080 (>= 190px) y a 1366x768 (>= 140px) sin scroll vertical', async ({ browser }) => {
+  test('Punto 1: Ventana de Mulligan a 1920x1080 (>= 190px) y a 1366x768 (>= 140px) sin scroll vertical', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
 
     // Test 1080p
@@ -86,21 +93,30 @@ test.describe('Punto 9: Suite Playwright de Certificación Integral P1 a P8', ()
     await expect(card1080).toBeVisible();
     const box1080 = await card1080.boundingBox();
     expect(box1080).not.toBeNull();
-    console.log(`[Punto 1] Medición a 1920x1080: ancho de carta = ${box1080!.width}px (Requisito >= 190px)`);
+    console.log(
+      `[Punto 1] Medición a 1920x1080: ancho de carta = ${box1080!.width}px (Requisito >= 190px)`,
+    );
     expect(box1080!.width).toBeGreaterThanOrEqual(190);
 
     // Verify modal has no vertical scroll (scrollHeight <= clientHeight + 5)
     const scrollCheck1080 = await modal1080.evaluate((el: HTMLElement) => {
       return { scrollHeight: el.scrollHeight, clientHeight: el.clientHeight };
     });
-    console.log(`[Punto 1] Scroll 1080p: scrollHeight=${scrollCheck1080.scrollHeight}, clientHeight=${scrollCheck1080.clientHeight}`);
+    console.log(
+      `[Punto 1] Scroll 1080p: scrollHeight=${scrollCheck1080.scrollHeight}, clientHeight=${scrollCheck1080.clientHeight}`,
+    );
     expect(scrollCheck1080.scrollHeight).toBeLessThanOrEqual(scrollCheck1080.clientHeight + 5);
 
     // Check active deciding player has visible buttons
-    const activePage1080 = (await page1080.locator('[data-testid="keep-btn"]').isVisible().catch(() => false))
+    const activePage1080 = (await page1080
+      .locator('[data-testid="keep-btn"]')
+      .isVisible()
+      .catch(() => false))
       ? page1080
       : page2;
-    await expect(activePage1080.locator('[data-testid="keep-btn"]')).toBeVisible({ timeout: 10000 });
+    await expect(activePage1080.locator('[data-testid="keep-btn"]')).toBeVisible({
+      timeout: 10000,
+    });
 
     const shot1080 = path.join(SCREENSHOT_DIR, 'audit-p1-mulligan-1080p.png');
     await page1080.screenshot({ path: shot1080 });
@@ -149,13 +165,17 @@ test.describe('Punto 9: Suite Playwright de Certificación Integral P1 a P8', ()
     await expect(card768).toBeVisible();
     const box768 = await card768.boundingBox();
     expect(box768).not.toBeNull();
-    console.log(`[Punto 1] Medición a 1366x768: ancho de carta = ${box768!.width}px (Requisito >= 140px)`);
+    console.log(
+      `[Punto 1] Medición a 1366x768: ancho de carta = ${box768!.width}px (Requisito >= 140px)`,
+    );
     expect(box768!.width).toBeGreaterThanOrEqual(140);
 
     const scrollCheck768 = await modal768.evaluate((el: HTMLElement) => {
       return { scrollHeight: el.scrollHeight, clientHeight: el.clientHeight };
     });
-    console.log(`[Punto 1] Scroll 768p: scrollHeight=${scrollCheck768.scrollHeight}, clientHeight=${scrollCheck768.clientHeight}`);
+    console.log(
+      `[Punto 1] Scroll 768p: scrollHeight=${scrollCheck768.scrollHeight}, clientHeight=${scrollCheck768.clientHeight}`,
+    );
     expect(scrollCheck768.scrollHeight).toBeLessThanOrEqual(scrollCheck768.clientHeight + 5);
 
     const shot768 = path.join(SCREENSHOT_DIR, 'audit-p1-mulligan-768p.png');
@@ -165,7 +185,9 @@ test.describe('Punto 9: Suite Playwright de Certificación Integral P1 a P8', ()
     await ctx768_2.close();
   });
 
-  test('Puntos 2 y 3: Doble clic en menú contextual no altera la carta y Sección P/T desplegada con cálculo efectivo', async ({ browser }) => {
+  test('Puntos 2 y 3: Doble clic en menú contextual no altera la carta y Sección P/T desplegada con cálculo efectivo', async ({
+    browser,
+  }) => {
     test.setTimeout(90000);
 
     const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
@@ -233,7 +255,9 @@ test.describe('Punto 9: Suite Playwright de Certificación Integral P1 a P8', ()
     await expect(ptSection).toBeVisible();
 
     // Exactly two inputs: Poder and Resistencia
-    const ptInputs = contextMenu.locator('input[placeholder="Poder"], input[placeholder="Resistencia"], input[type="number"]');
+    const ptInputs = contextMenu.locator(
+      'input[placeholder="Poder"], input[placeholder="Resistencia"], input[type="number"]',
+    );
     const inputCount = await ptInputs.count();
     console.log(`[Punto 3] Campos numéricos en sección P/T: ${inputCount}`);
     expect(inputCount).toBeGreaterThanOrEqual(2);
@@ -261,7 +285,9 @@ test.describe('Punto 9: Suite Playwright de Certificación Integral P1 a P8', ()
       return rotator ? rotator.style.transform : el.style.transform;
     });
     expect(currentRot).toBe(initialRot);
-    console.log('[Punto 2] Doble clic en opciones, inputs, separadores y bordes del menú: rotación inalterada (0deg, stopPropagation exitoso)');
+    console.log(
+      '[Punto 2] Doble clic en opciones, inputs, separadores y bordes del menú: rotación inalterada (0deg, stopPropagation exitoso)',
+    );
 
     // Save screenshot
     const shotPT = path.join(SCREENSHOT_DIR, 'audit-p3-pt-section-unfolded.png');
@@ -271,7 +297,9 @@ test.describe('Punto 9: Suite Playwright de Certificación Integral P1 a P8', ()
     await ctx2.close();
   });
 
-  test('Puntos 4, 5, 6, 7 y 8: Verificación integrada de fichas, idioma español, dictámenes oficiales, fullscreen y mazos listos', async ({ browser }) => {
+  test('Puntos 4, 5, 6, 7 y 8: Verificación integrada de fichas, idioma español, dictámenes oficiales, fullscreen y mazos listos', async ({
+    browser,
+  }) => {
     // Verified via specialized tests:
     // P4: apps/web/e2e/token-creation.spec.ts (pass)
     // P5: apps/web/e2e/card-locale.spec.ts (pass)
@@ -280,10 +308,11 @@ test.describe('Punto 9: Suite Playwright de Certificación Integral P1 a P8', ()
     // P8: apps/web/e2e/preset-decks.spec.ts (pass)
     expect(fs.existsSync(path.join(SCREENSHOT_DIR, 'audit-card-rulings-real.png'))).toBe(true);
     expect(fs.existsSync(path.join(SCREENSHOT_DIR, 'audit-preset-decks-lobby.png'))).toBe(true);
-    expect(fs.existsSync(path.join(SCREENSHOT_DIR, 'fullscreen-fixed-expanded-2p-1080p.png'))).toBe(true);
+    expect(fs.existsSync(path.join(SCREENSHOT_DIR, 'fullscreen-fixed-expanded-2p-1080p.png'))).toBe(
+      true,
+    );
     expect(fs.existsSync(path.join(SCREENSHOT_DIR, 'test-tokens-created-on-table.png'))).toBe(true);
     expect(fs.existsSync(path.join(SCREENSHOT_DIR, 'audit-card-locale-es.png'))).toBe(true);
     console.log('✅ [Punto 9] Todos los artefactos visuales y suites especializadas verificados.');
   });
-
 });

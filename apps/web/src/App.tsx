@@ -54,13 +54,14 @@ export default function App() {
   }, []);
 
   // Connect WebSocket when inside a room
-  const { status, roomState, sendAction, remoteDraggingCards, revealedCard, dismissRevealedCard } = useGameSocket({
-    roomCode: roomCode || '',
-    playerId,
-    playerName,
-    isSpectator,
-    enabled: !!roomCode,
-  });
+  const { status, roomState, sendAction, remoteDraggingCards, revealedCard, dismissRevealedCard } =
+    useGameSocket({
+      roomCode: roomCode || '',
+      playerId,
+      playerName,
+      isSpectator,
+      enabled: !!roomCode,
+    });
 
   const handleCreateRoom = async (data: {
     name: string;
@@ -133,18 +134,10 @@ export default function App() {
           onLeaveRoom={handleLeaveRoom}
         />
         {roomState.status === 'initiative' && (
-          <InitiativeOverlay
-            roomState={roomState}
-            localPlayerId={playerId}
-            onAction={sendAction}
-          />
+          <InitiativeOverlay roomState={roomState} localPlayerId={playerId} onAction={sendAction} />
         )}
         {roomState.status === 'mulligan' && (
-          <OpeningHandModal
-            roomState={roomState}
-            localPlayerId={playerId}
-            onAction={sendAction}
-          />
+          <OpeningHandModal roomState={roomState} localPlayerId={playerId} onAction={sendAction} />
         )}
         {revealedCard && (
           <RevealedCardModal

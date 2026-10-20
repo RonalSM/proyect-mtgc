@@ -11,7 +11,7 @@ interface CardPreviewContextType {
   showPreview: (
     card: CardDefinition,
     posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent,
-    instance?: CardInstance
+    instance?: CardInstance,
   ) => void;
   hidePreview: () => void;
   setIsDragging: (isDragging: boolean) => void;
@@ -53,7 +53,7 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const showPreview = (
     card: CardDefinition,
     posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent,
-    instance?: CardInstance
+    instance?: CardInstance,
   ) => {
     if (isDragging) return;
 
@@ -61,8 +61,8 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
       posOrEvent && 'clientX' in posOrEvent && typeof posOrEvent.clientX === 'number'
         ? posOrEvent.clientX
         : posOrEvent && 'x' in posOrEvent && typeof posOrEvent.x === 'number'
-        ? posOrEvent.x
-        : mousePosRef.current.x;
+          ? posOrEvent.x
+          : mousePosRef.current.x;
 
     const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
     // Si el cursor está a la izquierda (< screenWidth / 2), la vista previa sale a la derecha; si no, a la izquierda
@@ -102,7 +102,9 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
   };
 
   const activeKeywords = activeInstance?.keywords || [];
-  const activeCounters = Object.entries(activeInstance?.counters || {}).filter(([_, count]) => count > 0);
+  const activeCounters = Object.entries(activeInstance?.counters || {}).filter(
+    ([_, count]) => count > 0,
+  );
   const hasExplanations = activeKeywords.length > 0 || activeCounters.length > 0;
 
   return (
@@ -200,7 +202,11 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                       const reminder = def?.reminderText || '';
                       const isPlus = type === '+1/+1';
                       const isMinus = type === '−1/−1' || type === '-1/-1';
-                      const countDisplay = isPlus ? `+${count}` : isMinus ? `-${count}` : `×${count}`;
+                      const countDisplay = isPlus
+                        ? `+${count}`
+                        : isMinus
+                          ? `-${count}`
+                          : `×${count}`;
 
                       return (
                         <div
@@ -214,9 +220,15 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                               <IconComp className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
                               <span className="text-slate-200">{label}</span>
                             </div>
-                            <span className={`font-mono text-xs px-1 rounded ${
-                              isPlus ? 'text-emerald-400 bg-emerald-950/60' : isMinus ? 'text-rose-400 bg-rose-950/60' : 'text-amber-300 bg-amber-950/60'
-                            }`}>
+                            <span
+                              className={`font-mono text-xs px-1 rounded ${
+                                isPlus
+                                  ? 'text-emerald-400 bg-emerald-950/60'
+                                  : isMinus
+                                    ? 'text-rose-400 bg-rose-950/60'
+                                    : 'text-amber-300 bg-amber-950/60'
+                              }`}
+                            >
                               {countDisplay}
                             </span>
                           </div>
@@ -239,10 +251,7 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
       {/* Modal / Panel 'Ver carta' detallado con dictámenes oficiales, artista y copyright (Punto 4) */}
       {detailsCard && (
         <Portal>
-          <CardDetailsModal
-            card={detailsCard}
-            onClose={closeCardDetails}
-          />
+          <CardDetailsModal card={detailsCard} onClose={closeCardDetails} />
         </Portal>
       )}
     </CardPreviewContext.Provider>

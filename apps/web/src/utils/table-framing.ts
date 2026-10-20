@@ -43,7 +43,7 @@ export function getPlayerBattlefieldCascadePosition(
   viewport: { width: number; height: number } = {
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080,
-  }
+  },
 ): { x: number; y: number } {
   const framing = getPlayerFraming(playerId, roomState);
   const allSeated = Object.values(roomState.players).filter(p => !p.isSpectator);
@@ -61,11 +61,13 @@ export function getPlayerBattlefieldCascadePosition(
 
   // Tamaño real de la carta para que quede exactamente centrada en la sección jugable (Punto 4)
   const cardDims = getCardDimensions(totalPlayers, viewport);
-  const cardHalfWNorm = (cardDims.width / 2) / viewport.width;
-  const cardHalfHNorm = (cardDims.height / 2) / viewport.height;
+  const cardHalfWNorm = cardDims.width / 2 / viewport.width;
+  const cardHalfHNorm = cardDims.height / 2 / viewport.height;
 
   const playerBattlefield = battlefieldCards
-    ? battlefieldCards.filter(c => c.holderId === playerId || (!c.holderId && c.ownerId === playerId))
+    ? battlefieldCards.filter(
+        c => c.holderId === playerId || (!c.holderId && c.ownerId === playerId),
+      )
     : (roomState.playerZones[playerId]?.battlefield ?? []);
   const cascadeIndex = playerBattlefield.length % 5;
   const cascadeOffset = cascadeIndex * 0.015;
