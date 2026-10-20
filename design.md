@@ -626,14 +626,14 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **P/T variable con `*`:** Cartas con `*` en su definición (p. ej. `*/*`, `1+*`) muestran `*` hasta que el jugador define un valor base numérico en el menú contextual.
   - **Valores negativos:** Admite 0 y cifras negativas (p. ej. `-1/-1`) sin destrucción automática, dado que la mesa no incluye motor de reglas.
   - **Reinicio autoritativo:** En el servidor (`GameStateSession.moveCard`), al abandonar el campo de batalla (`toZone !== 'battlefield'`), se reinician automáticamente `card.counters = {}`, `delete card.basePower`, `delete card.baseToughness` y `delete card.keywords`.
-- **Sección en Línea de Poder y Resistencia en Menú Contextual (Punto 3 de Correcciones del Cliente - B.3):**
-  - **Estructura visual:** Sección en línea expandible (`data-testid="context-pt-toggle-btn"`) en [`CardContextMenu.tsx`](apps/web/src/components/CardContextMenu.tsx) con icono `Swords`, encabezado con previsualización del P/T efectivo live y contenedor indentado (`data-testid="context-pt-section"`).
-  - **Campos numéricos sin botones de incremento:** Cuadrícula de 2 columnas con 4 campos (`<input type="number">`):
-    - "Poder base" (`data-testid="pt-input-base-power"`).
-    - "Resistencia base" (`data-testid="pt-input-base-toughness"`).
-    - "Contadores +1/+1" (`data-testid="pt-input-plus-counters"`).
-    - "Contadores −1/−1" (`data-testid="pt-input-minus-counters"`).
-  - **Interacción por teclado y rueda de ratón:** Modificables directamente escribiendo, mediante flechas arriba/abajo (con escape del interceptor general de navegación del menú cuando el foco está en un `INPUT`) y con la rueda del ratón (`onWheel` ajustando en $\pm 1$ con prevención de scroll).
+- **Sección de Poder y Resistencia Siempre Visible en Menú Contextual (Punto 3 de Correcciones del Cliente - A.3):**
+  - **Estructura visual:** Sección en línea permanentemente visible (no plegada, sin botón de acordeón) en [`CardContextMenu.tsx`](apps/web/src/components/CardContextMenu.tsx) con icono `Swords`, encabezado con previsualización del P/T efectivo reactivo (`data-testid="pt-effective-preview"`) y contenedor `data-testid="context-pt-section"`.
+  - **Dos campos numéricos directos:** Exclusivamente 2 campos (`<input type="number">`):
+    - "Poder" (`data-testid="pt-input-base-power"`).
+    - "Resistencia" (`data-testid="pt-input-base-toughness"`).
+    - Se eliminan de esta sección los campos de contadores $+1/+1$ y $-1/-1$, manteniéndose exclusivamente en la sección contigua "Contadores".
+  - **Recálculo automático y soporte sin P/T:** Para cartas sin P/T (ej. tierras o artefactos), los campos aparecen vacíos (`''`) permitiendo definir valores numéricos; el P/T efectivo se calcula de forma reactiva ($\text{base} + \text{contadores } +1/+1 - \text{contadores } -1/-1$).
+  - **Interacción por teclado y rueda de ratón:** Modificables directamente escribiendo, mediante flechas arriba/abajo y con la rueda del ratón (`onWheel` ajustando en $\pm 1$ con prevención de scroll).
   - **Interacción universal en mesa:** Disponible para cualquier jugador en cualquier permanente visible del campo de batalla sin restricción por `canMutate`, registrando la autoría en la bitácora pública de la partida mediante la acción `SET_CARD_PT`.
 
 

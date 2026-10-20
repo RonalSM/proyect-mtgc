@@ -73,7 +73,6 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
     ? parseInt(card.definition.toughness, 10)
     : undefined;
 
-  const [isPTExpanded, setIsPTExpanded] = useState(false);
   const [isCountersExpanded, setIsCountersExpanded] = useState(false);
   const [isKeywordsExpanded, setIsKeywordsExpanded] = useState(false);
   const [customCounterName, setCustomCounterName] = useState('');
@@ -364,163 +363,89 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             </button>
           )}
 
-          {/* Sección en línea: Poder y resistencia (Punto 3), Contadores y Palabras Clave (Punto 4) - Visible en mesa para cualquier jugador */}
+          {/* Sección siempre visible: Poder y resistencia (Punto 3) - Visible en mesa para cualquier jugador */}
           {fromZone === 'battlefield' && !card.isFaceDown && (
-            <>
-              <div className="flex flex-col border-t border-slate-800 pt-0.5">
-              <button
-                type="button"
-                data-testid="context-pt-toggle-btn"
-                onClick={() => setIsPTExpanded(prev => !prev)}
-                className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
-              >
-                <div className="flex items-center space-x-2">
+            <div
+              data-testid="context-pt-section"
+              className="flex flex-col border-t border-slate-800 pt-2 pb-1.5 px-2 bg-slate-950/40 rounded-lg my-1 space-y-1.5"
+            >
+              <div className="flex items-center justify-between text-xs font-bold text-slate-200">
+                <div className="flex items-center space-x-1.5">
                   <Swords className="w-3.5 h-3.5 text-amber-400" />
                   <span>Poder y resistencia</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  {(liveEffectiveP !== '*' || liveEffectiveT !== '*') && (
-                    <span className="text-[10px] font-mono font-bold text-amber-300 mr-1">
-                      {liveEffectiveP}/{liveEffectiveT}
-                    </span>
-                  )}
-                  {isPTExpanded ? (
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                  ) : (
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                  )}
+                  <span className="text-[10px] text-slate-400">Efectivo:</span>
+                  <span
+                    data-testid="pt-effective-preview"
+                    className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-amber-300 font-bold"
+                  >
+                    {liveEffectiveP}/{liveEffectiveT}
+                  </span>
                 </div>
-              </button>
+              </div>
 
-              {isPTExpanded && (
-                <div
-                  data-testid="context-pt-section"
-                  className="pl-3 pr-2 py-2 space-y-2 border-l-2 border-amber-500/50 bg-slate-950/40 rounded-r-lg my-1"
-                >
-                  <div className="flex items-center justify-between text-[11px] font-bold text-amber-300 pb-1 border-b border-slate-800">
-                    <span>P/T Efectivo</span>
-                    <span
-                      data-testid="pt-effective-preview"
-                      className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-amber-300"
-                    >
-                      {liveEffectiveP}/{liveEffectiveT}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-[10px]">
-                    {/* Poder base */}
-                    <div className="flex flex-col space-y-1">
-                      <label className="text-slate-400 font-medium">Poder base</label>
-                      <input
-                        type="number"
-                        step="1"
-                        data-testid="pt-input-base-power"
-                        value={inputBaseP}
-                        placeholder={card.definition?.power ?? '*'}
-                        onChange={e => {
-                          const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
-                          inputBasePRef.current = val;
-                          setInputBaseP(val);
-                          emitPT(val, inputBaseTRef.current, inputPlus, inputMinus);
-                        }}
-                        onWheel={e => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          const step = e.deltaY < 0 ? 1 : -1;
-                          const current = typeof inputBasePRef.current === 'number' ? inputBasePRef.current : (printedPower ?? 0);
-                          const next = current + step;
-                          inputBasePRef.current = next;
-                          setInputBaseP(next);
-                          emitPT(next, inputBaseTRef.current, inputPlus, inputMinus);
-                        }}
-                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center text-xs font-mono text-slate-100 focus:outline-none focus:border-amber-400"
-                      />
-                    </div>
-
-                    {/* Resistencia base */}
-                    <div className="flex flex-col space-y-1">
-                      <label className="text-slate-400 font-medium">Resistencia base</label>
-                      <input
-                        type="number"
-                        step="1"
-                        data-testid="pt-input-base-toughness"
-                        value={inputBaseT}
-                        placeholder={card.definition?.toughness ?? '*'}
-                        onChange={e => {
-                          const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
-                          inputBaseTRef.current = val;
-                          setInputBaseT(val);
-                          emitPT(inputBasePRef.current, val, inputPlus, inputMinus);
-                        }}
-                        onWheel={e => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          const step = e.deltaY < 0 ? 1 : -1;
-                          const current = typeof inputBaseTRef.current === 'number' ? inputBaseTRef.current : (printedToughness ?? 0);
-                          const next = current + step;
-                          inputBaseTRef.current = next;
-                          setInputBaseT(next);
-                          emitPT(inputBasePRef.current, next, inputPlus, inputMinus);
-                        }}
-                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center text-xs font-mono text-slate-100 focus:outline-none focus:border-amber-400"
-                      />
-                    </div>
-
-                    {/* Contadores +1/+1 */}
-                    <div className="flex flex-col space-y-1">
-                      <label className="text-emerald-400 font-medium">Contadores +1/+1</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        data-testid="pt-input-plus-counters"
-                        value={inputPlus}
-                        onChange={e => {
-                          const val = Math.max(0, parseInt(e.target.value, 10) || 0);
-                          setInputPlus(val);
-                          emitPT(inputBaseP, inputBaseT, val, inputMinus);
-                        }}
-                        onWheel={e => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          const step = e.deltaY < 0 ? 1 : -1;
-                          const next = Math.max(0, inputPlus + step);
-                          setInputPlus(next);
-                          emitPT(inputBaseP, inputBaseT, next, inputMinus);
-                        }}
-                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center text-xs font-mono text-emerald-400 focus:outline-none focus:border-emerald-400"
-                      />
-                    </div>
-
-                    {/* Contadores -1/-1 */}
-                    <div className="flex flex-col space-y-1">
-                      <label className="text-rose-400 font-medium">Contadores −1/−1</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        data-testid="pt-input-minus-counters"
-                        value={inputMinus}
-                        onChange={e => {
-                          const val = Math.max(0, parseInt(e.target.value, 10) || 0);
-                          setInputMinus(val);
-                          emitPT(inputBaseP, inputBaseT, inputPlus, val);
-                        }}
-                        onWheel={e => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          const step = e.deltaY < 0 ? 1 : -1;
-                          const next = Math.max(0, inputMinus + step);
-                          setInputMinus(next);
-                          emitPT(inputBaseP, inputBaseT, inputPlus, next);
-                        }}
-                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center text-xs font-mono text-rose-400 focus:outline-none focus:border-rose-400"
-                      />
-                    </div>
-                  </div>
+              <div className="grid grid-cols-2 gap-2 text-[10px] pt-0.5">
+                {/* Poder base */}
+                <div className="flex flex-col space-y-1">
+                  <label className="text-slate-400 font-medium">Poder</label>
+                  <input
+                    type="number"
+                    step="1"
+                    data-testid="pt-input-base-power"
+                    value={inputBaseP}
+                    placeholder={card.definition?.power ?? ''}
+                    onChange={e => {
+                      const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
+                      inputBasePRef.current = val;
+                      setInputBaseP(val);
+                      emitPT(val, inputBaseTRef.current, inputPlus, inputMinus);
+                    }}
+                    onWheel={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const step = e.deltaY < 0 ? 1 : -1;
+                      const current = typeof inputBasePRef.current === 'number' ? inputBasePRef.current : (printedPower ?? 0);
+                      const next = current + step;
+                      inputBasePRef.current = next;
+                      setInputBaseP(next);
+                      emitPT(next, inputBaseTRef.current, inputPlus, inputMinus);
+                    }}
+                    className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center text-xs font-mono text-slate-100 focus:outline-none focus:border-amber-400"
+                  />
                 </div>
-              )}
+
+                {/* Resistencia base */}
+                <div className="flex flex-col space-y-1">
+                  <label className="text-slate-400 font-medium">Resistencia</label>
+                  <input
+                    type="number"
+                    step="1"
+                    data-testid="pt-input-base-toughness"
+                    value={inputBaseT}
+                    placeholder={card.definition?.toughness ?? ''}
+                    onChange={e => {
+                      const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
+                      inputBaseTRef.current = val;
+                      setInputBaseT(val);
+                      emitPT(inputBasePRef.current, val, inputPlus, inputMinus);
+                    }}
+                    onWheel={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const step = e.deltaY < 0 ? 1 : -1;
+                      const current = typeof inputBaseTRef.current === 'number' ? inputBaseTRef.current : (printedToughness ?? 0);
+                      const next = current + step;
+                      inputBaseTRef.current = next;
+                      setInputBaseT(next);
+                      emitPT(inputBasePRef.current, next, inputPlus, inputMinus);
+                    }}
+                    className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center text-xs font-mono text-slate-100 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
             </div>
+          )}
 
             {/* Contadores (Punto 4): accesible para cualquier jugador sobre cartas visibles de la mesa */}
             <div className="flex flex-col">
