@@ -9,6 +9,7 @@ export type GameActionType =
   | 'SET_PLAYER_COUNTER'
   | 'SET_PLAYER_STATUS'
   | 'SET_CARD_COUNTER'
+  | 'SET_CARD_PT'
   // Card Movements & State
   | 'MOVE_CARD'
   | 'TAP_CARD'
@@ -81,6 +82,14 @@ export interface SetCardCounterPayload {
   cardInstanceId: string;
   counterType: string; // e.g. '+1/+1', 'loyalty', 'charge'
   delta: number;
+}
+
+export interface SetCardPTPayload {
+  cardInstanceId: string;
+  basePower?: number | null;
+  baseToughness?: number | null;
+  plusCounters?: number;
+  minusCounters?: number;
 }
 
 export interface MoveCardPayload {

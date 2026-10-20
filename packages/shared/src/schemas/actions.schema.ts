@@ -32,6 +32,14 @@ export const SetCardCounterSchema = z.object({
   delta: z.number().int(),
 });
 
+export const SetCardPTSchema = z.object({
+  cardInstanceId: z.string().min(1),
+  basePower: z.number().int().optional().nullable(),
+  baseToughness: z.number().int().optional().nullable(),
+  plusCounters: z.number().int().min(0).optional(),
+  minusCounters: z.number().int().min(0).optional(),
+});
+
 export const MoveCardSchema = z.object({
   cardInstanceId: z.string().min(1),
   fromZone: ZoneTypeSchema,
@@ -179,6 +187,7 @@ export const ActionEnvelopeSchema = z.object({
     'SET_PLAYER_COUNTER',
     'SET_PLAYER_STATUS',
     'SET_CARD_COUNTER',
+    'SET_CARD_PT',
     'MOVE_CARD',
     'TAP_CARD',
     'UNTAP_ALL',

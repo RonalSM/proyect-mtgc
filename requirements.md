@@ -231,6 +231,17 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
         - **Cartas con `*` o expresiones variables:** Cartas con `*` (p. ej. `*/*`, `1+*`) muestran `*` en el indicador hasta que el jugador asigne un valor base numérico en el menú contextual.
         - **Valores nulos o negativos sin motor de reglas:** El valor de poder o resistencia puede alcanzar 0 o cifras negativas (p. ej. `-1/-1`), manteniéndose en mesa sin destrucción ni descarte automático al carecer la aplicación de motor de reglas.
         - **Reinicio al salir de la mesa:** Cuando la carta abandona el campo de batalla (hacia cementerio, exilio, mano o biblioteca), todos sus contadores y valores de poder/resistencia base son reseteados automáticamente.
+    7.33. **Sección en línea de Poder y Resistencia en menú contextual (Punto 3 de Correcciones del Cliente - B.3):**
+        - **Expansión vertical en línea:** En el menú contextual de cualquier carta visible del campo de batalla (`fromZone === 'battlefield' && !card.isFaceDown`), THE sistema SHALL presentar una sección desplegable en línea titulada "Poder y resistencia" (`data-testid="context-pt-toggle-btn"` / `data-testid="context-pt-section"`), accesible para cualquier jugador de la mesa sin exclusión por titularidad (`canMutate`).
+        - **Cuatro campos numéricos interactivos:** La sección contiene cuatro campos de entrada numérica (`<input type="number">`), modificables mediante escritura directa, teclas de flechas arriba/abajo o rueda del ratón (`onWheel`):
+            1. "Poder base" (`data-testid="pt-input-base-power"`): inicializado con el valor de fuerza impreso de la carta (o vacío/placeholder para cartas sin P/T como tierras a animar).
+            2. "Resistencia base" (`data-testid="pt-input-base-toughness"`): inicializado con el valor de resistencia impreso de la carta (o vacío/placeholder para cartas sin P/T). Permite edición desacoplada para efectos asimétricos (+1/+0 o 0/+1).
+            3. "Contadores +1/+1" (`data-testid="pt-input-plus-counters"`): inicializado con el total de contadores $+1/+1$ en la carta ($min=0$).
+            4. "Contadores −1/−1" (`data-testid="pt-input-minus-counters"`): inicializado con el total de contadores $-1/-1$ en la carta ($min=0$).
+        - **Sin botones de incremento:** La interfaz no incluye botones del tipo "agregar 1" ni "+1", operando exclusivamente con los campos numéricos directos.
+        - **Recálculo automático y sincronización autoritativa:** Al modificar cualquier campo, el P/T efectivo se recalcula de forma reactiva en pantalla y se envía al servidor mediante la acción `SET_CARD_PT`, guardándose en la `CardInstance` (`basePower`, `baseToughness`, contadores) y sincronizándose a todos los clientes (`ROOM_STATE_SYNC`).
+        - **Registro en bitácora:** El servidor registra autoritativamente en la bitácora pública qué jugador modificó el P/T y el resultado final (`[Jugador] modificó poder/resistencia de "[Nombre]" a X/Y`).
+        - **Ciclo de vida:** Al abandonar la mesa hacia cualquier otra zona, los contadores y las bases numéricas modificadas se resetean a sus valores iniciales.
 
 
 ### REQ-10 Sincronización y reconexión

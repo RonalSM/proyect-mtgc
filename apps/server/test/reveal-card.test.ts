@@ -413,3 +413,52 @@ test('Punto 2 & Punto 3: Reseteo de contadores y P/T al salir la carta del campo
   assert.strictEqual(gyCard.keywords, undefined, 'keywords debe ser eliminado');
   assert.strictEqual(gyCard.position, undefined, 'position debe ser eliminada');
 });
+
+test('Punto 3: setCardPT permite a cualquier jugador modificar basePower, baseToughness y contadores en carta visible, registrando en bitácora', () => {
+  const roomState = createMockRoomState();
+  const session = new GameStateSession(roomState);
+
+  const bearCard: CardInstance = {
+    instanceId: 'bear_1',
+    definition: {
+      scryfallId: 'sf_bear',
+      name: 'Grizzly Bears',
+      cmc: 2,
+      typeLine: 'Creature — Bear',
+      colors: ['G'],
+      colorIdentity: ['G'],
+      power: '2',
+      toughness: '2',
+    },
+    ownerId: 'p1',
+    controllerId: 'p1',
+    isFaceDown: false,
+    counters: {},
+    position: { x: 0.5, y: 0.5, zIndex: 5 },
+  };
+
+  session.state.playerZones['p1']!.battlefield = [bearCard];
+  session.syncPlayerCounts('p1');
+
+  // Bob (p2, rival) modifica el P/T de los osos de Alice (p1): base 3/1, dos +1/+1 y un -1/-1
+  session.setCardPT('p2', {
+    cardInstanceId: 'bear_1',
+    basePower: 3,
+    baseToughness: 1,
+    plusCounters: 2,
+    minusCounters: 1,
+  });
+
+  const card = session.state.playerZones['p1']!.battlefield[0]!;
+  assert.strictEqual(card.basePower, 3);
+  assert.strictEqual(card.baseToughness, 1);
+  assert.strictEqual(card.counters['+1/+1'], 2);
+  assert.strictEqual(card.counters['−1/−1'], 1);
+
+  // Bitácora registra la acción con autor Bob (p2)
+  const lastLog = session.state.logs[session.state.logs.length - 1];
+  assert.ok(lastLog);
+  assert.strictEqual(lastLog.playerName, 'Bob');
+  assert.ok(lastLog.actionText.includes('modificó poder/resistencia de "Grizzly Bears"'));
+  assert.ok(lastLog.actionText.includes('4/2')); // (3+1)/(1+1) = 4/2
+});

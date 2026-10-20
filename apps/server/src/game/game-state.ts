@@ -9,6 +9,7 @@ import {
   CommanderDamagePayload,
   SetPlayerCounterPayload,
   SetCardCounterPayload,
+  SetCardPTPayload,
   MoveCardPayload,
   TapCardPayload,
   FlipCardPayload,
@@ -20,6 +21,7 @@ import {
   UnrevealCardPayload,
   toArtCropUrl,
   getCardDimensions,
+  computeCardPT,
 } from '@mtgc/shared';
 import { secureShuffle, secureRoll } from './csprng.js';
 import { randomUUID, randomInt } from 'crypto';
@@ -1100,10 +1102,8 @@ export class GameStateSession {
     if (!found) return;
 
     const card = found.card;
-    const isOwner = card.ownerId === playerId;
-    const isHolder = card.holderId === playerId;
-    if (!isOwner && !isHolder) {
-      throw new Error('No autorizado: solo el propietario original o el titular temporal pueden modificar contadores.');
+    if (card.isFaceDown) {
+      throw new Error('No se pueden modificar contadores de una carta boca abajo.');
     }
 
     const current = card.counters[payload.counterType] || 0;
@@ -1118,6 +1118,63 @@ export class GameStateSession {
     this.addLog(
       playerId,
       `modificó contadores ${payload.counterType} en "${card.definition.name}" en ${sign}`,
+    );
+    this.incrementVersion();
+  }
+
+  /**
+   * Modifica los valores de poder y resistencia (base y contadores) en una carta visible de la mesa (Punto 3)
+   */
+  public setCardPT(playerId: string, payload: SetCardPTPayload): void {
+    const found = this.findBattlefieldCard(payload.cardInstanceId);
+    if (!found) return;
+
+    const card = found.card;
+    if (card.isFaceDown) {
+      throw new Error('No se puede modificar el poder y resistencia de una carta boca abajo.');
+    }
+
+    if (payload.basePower !== undefined) {
+      if (payload.basePower === null) {
+        delete card.basePower;
+      } else {
+        card.basePower = payload.basePower;
+      }
+    }
+
+    if (payload.baseToughness !== undefined) {
+      if (payload.baseToughness === null) {
+        delete card.baseToughness;
+      } else {
+        card.baseToughness = payload.baseToughness;
+      }
+    }
+
+    if (payload.plusCounters !== undefined) {
+      if (payload.plusCounters === 0) {
+        delete card.counters['+1/+1'];
+      } else {
+        card.counters['+1/+1'] = payload.plusCounters;
+      }
+    }
+
+    if (payload.minusCounters !== undefined) {
+      if (payload.minusCounters === 0) {
+        delete card.counters['-1/-1'];
+        delete card.counters['−1/−1'];
+      } else {
+        delete card.counters['-1/-1'];
+        card.counters['−1/−1'] = payload.minusCounters;
+      }
+    }
+
+    const ptInfo = computeCardPT(card);
+    const ptText = ptInfo ? ptInfo.text : 'N/A';
+
+    this.addLog(
+      playerId,
+      `modificó poder/resistencia de "${card.definition.name}" a ${ptText}`,
+      true,
     );
     this.incrementVersion();
   }

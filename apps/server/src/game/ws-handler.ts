@@ -28,6 +28,7 @@ import {
   MulliganForceDecisionSchema,
   RevealCardSchema,
   UnrevealCardSchema,
+  SetCardPTSchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -262,6 +263,12 @@ export class WebSocketHandler {
         case 'SET_CARD_COUNTER': {
           const valid = SetCardCounterSchema.parse(payload);
           session.setCardCounter(client.playerId, valid);
+          break;
+        }
+
+        case 'SET_CARD_PT': {
+          const valid = SetCardPTSchema.parse(payload);
+          session.setCardPT(client.playerId, valid);
           break;
         }
 
