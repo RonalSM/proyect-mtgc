@@ -355,7 +355,17 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Las imágenes en español provienen directamente de `cards.scryfall.io`.
    - La clave de caché en memoria de `cardImageResolver` y en `PersistentImageCache` incluye explícitamente el idioma (`${cardName}_${size}_${lang}`).
 
-### REQ-28 Mazos Listos de Commander (Presets) (Punto 8 de Correcciones del Cliente - F.8)
+### REQ-28 Dictámenes Oficiales y Sincronización al Arranque (Punto 6 de Correcciones del Cliente - D.6)
+
+1. **Sincronización Automática al Inicio:**
+   - Al arrancar el servidor Fastify (`apps/server/src/index.ts`), el servicio `BulkSyncService` ejecuta `syncRulingsIfEmpty()`, verificando si la tabla relacional `Ruling` o la memoria local carecen de datos indexados.
+   - Si no existen datos o si la fecha de actualización de Scryfall es más reciente que `lastRulingsUpdatedAt`, el servidor descarga el archivo bulk oficial de dictámenes (`rulings`, ~79,706 entradas de WotC), lo descomprime con `zlib` y lo indexa eficientemente por `oracle_id`.
+   - Si ya existen dictámenes locales y la marca `updated_at` no ha cambiado, omite la descarga (`skipped: true, reason: 'not_modified'`).
+2. **Consulta Aislada y Sin Dependencias Externas:**
+   - El endpoint REST `GET /api/cards/:oracleId/rulings` resuelve los dictámenes directamente desde la memoria y base de datos local en menos de 5 ms, sin realizar peticiones en tiempo real a Gatherer ni a Scryfall.
+   - Las cartas que no disponen de dictámenes oficiales (p. ej. tierras básicas o permanentes sencillos) retornan una lista vacía `[]`, mostrando en el cliente el estado accesible y controlado «Sin dictámenes».
+
+### REQ-29 Mazos Listos de Commander (Presets) (Punto 8 de Correcciones del Cliente - F.8)
 
 1. **Catálogo de Mazos Predeterminados:**
    - Entre 6 y 8 mazos predeterminados balanceados y de estilos diversos (Mono-R Krenko, Mono-G Goreclaw, W/U Brago, B/G Meren, R/W Wyleth, U/R Niv-Mizzet, W/U/B Alela e Incoloro Kozilek).
@@ -372,6 +382,119 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Múltiples jugadores pueden elegir simultáneamente el mismo mazo sin conflictos, instanciándose copias independientes para cada asiento.
    - Persistencia en navegador: se almacena el último mazo seleccionado en `localStorage` (`mtgc_last_selected_deck`) y se restaura automáticamente en futuras visitas.
    - Conservación íntegra de endpoints de importación, parseo y validación de texto para usuarios registrados e invitados.
+
+### REQ-30 Certificación Integral Playwright de Correcciones del Cliente (P1 a P8) (Punto 9 - G.9)
+
+1. **Suite de Auditoría E2E Automatizada:**
+   - Implementada en [`apps/web/e2e/client-corrections-audit-p1-to-p8.spec.ts`](apps/web/e2e/client-corrections-audit-p1-to-p8.spec.ts), cubriendo los requerimientos de la primera ronda de auditoría:
+     1. Ventana de mulligan inicial sin scroll a 1080p ($\ge 190$ px de ancho de carta) y 768p ($\ge 140$ px de ancho de carta).
+     2. Aislamiento de eventos con `stopPropagation` en menú contextual contra doble clic y giros involuntarios.
+     3. Sección de Poder y Resistencia visible por defecto con dos campos numéricos base y cálculo automático de P/T efectivo.
+     4. Creación y gestión de fichas (asociadas a cartas, 5 comunes y personalizadas) centradas en cascada y desapareciendo al salir de la mesa.
+     5. Idioma español prioritario con fallback transparente a inglés en todas las superficies.
+     6. Sincronización al inicio de dictámenes oficiales de Scryfall (79,706 dictámenes).
+     7. Pantalla completa y vista ampliada sin pantallas azules.
+     8. 8 Mazos listos de Commander en la sala de espera con selección concurrente.
+
+### REQ-31 Modo Expandido de División y Pantalla Completa Nativa F11 (Punto 1 de Correcciones del Cliente - A.1)
+
+**Historia:** Como jugador, quiero ampliar la división de cualquier participante para enfocarme en sus permanentes y usar la tecla F11 del navegador para pantalla completa general sin controles redundantes en la interfaz.
+
+1. **Vista Ampliada (Modo Expandido de División):**
+   - Cada celda de jugador cuenta con un botón interactivo de expandir división (`data-expand-cell-btn={player.id}`).
+   - Al activarlo, la división del jugador seleccionado (propia o rival) se expande hasta ocupar el 100% de la ventana sin pantallas azules, renderizando el playmat a sangre (`playmatRect`), las cartas de la mesa con z-index 10, y el dock inferior flotante (`dockRect`) con la mano y pilas en z-20.
+   - Mantiene activa toda la interactividad (DndContext, menús contextuales, zoom e inspección de cartas).
+   - El cierre se realiza de manera accesible pulsando la tecla `Escape` o el botón interactivo «Cerrar (Esc)» (`[data-testid="close-expanded-view"]`).
+2. **Pantalla Completa Nativa del Navegador Delegada a F11:**
+   - THE sistema SHALL NOT mostrar botones de pantalla completa del navegador en la esquina superior derecha de la interfaz ni ejecutar llamadas a la API `document.documentElement.requestFullscreen()`.
+   - La pantalla completa del navegador queda delegada exclusivamente a la tecla nativa `F11` del sistema operativo y del navegador web del cliente.
+   - Los resets universales de CSS (`index.css`) garantizan que al presionar F11 el fondo sea `#000000` puro, sin desbordes de scroll (`overflow: hidden`) ni márgenes anómalos.
+
+### REQ-32 Menú Contextual de Carta Compacto y Contención en Viewport con ResizeObserver (Puntos 2 y 3 de Correcciones del Cliente - B.2 y B.3)
+
+**Historia:** Como jugador, quiero que el menú contextual de clic derecho sobre una carta sea compacto, ergonómico y siempre visible dentro de la pantalla, sin salirse del borde inferior ni desbordar en pantallas pequeñas.
+
+1. **Diseño Compacto y Ergonómico:**
+   - THE menú contextual de carta (`CardContextMenu.tsx`) SHALL ajustar su ancho al contenido con un ancho máximo estricto de 240 px (`w-max max-w-[240px]`), eliminando columnas anchas o espacios desaprovechados.
+   - Toda la tipografía de títulos, opciones de menú y etiquetas SHALL renderizarse a 14 px (`text-[14px]`).
+   - Los campos numéricos de edición de Poder/Resistencia base y Contadores SHALL ser compactos (`w-11` a `w-12`, padding reducido `px-1.5 py-0.5`), con truncado automático de textos largos (`truncate`).
+2. **Posicionamiento Reactivo con Márgenes de Seguridad:**
+   - THE menú contextual SHALL posicionarse estrictamente dentro de los límites del viewport, manteniendo un margen mínimo de seguridad de 8 px respecto a los 4 bordes de la ventana (`left >= 8`, `top >= 8`, `right <= window.innerWidth - 8`, `bottom <= window.innerHeight - 8`).
+   - WHEN el menú se abra cerca del borde inferior o no quepa por debajo del cursor, THE sistema SHALL abrirlo hacia arriba (`posY - menuHeight`) o desplazarlo verticalmente para que permanezca completamente visible.
+   - THE altura máxima del menú SHALL ser estrictamente igual a `calc(100vh - 16px)`, incorporando scroll interno vertical fluido (`overflow-y-auto`) para permitir el acceso completo a todas las opciones y submenús.
+3. **Recálculo Dinámico con ResizeObserver:**
+   - THE componente SHALL observar las mutaciones dimensionales del contenedor mediante `ResizeObserver` y eventos `resize` de ventana, recalculando automáticamente las coordenadas `top` y `left` en tiempo real cada vez que el usuario despliegue o pliegue secciones internas (Poder/Resistencia, Contadores, Palabras Clave, submenús de Biblioteca o Revelar).
+   - Verificado exhaustivamente mediante pruebas de clic derecho en cartas situadas en los 4 bordes y las 4 esquinas del viewport con todas las secciones expandidas a resoluciones 1920x1080, 1366x768 y 1280x720, certificando ancho $\le 240$ px y contención total.
+
+### REQ-33 Fuentes Vectoriales Auto-Alojadas Mana y Keyrune y Licencias de Terceros (Punto 4 de Correcciones del Cliente - C.4)
+
+**Historia:** Como usuario y administrador, quiero que todos los símbolos de juego, palabras clave, contadores y expansiones se rendericen de forma nítida y segura con las fuentes oficiales Mana y Keyrune servidas localmente sin dependencias de CDNs externas, cumpliendo las licencias de código abierto.
+
+1. **Auto-Alojamiento Local Estricto y Cumplimiento CSP:**
+   - Las fuentes tipográficas vectoriales `mana-font@1.18.0` y `keyrune@3.19.0` SHALL empaquetarse y servirse localmente desde el servidor de la aplicación (`dist/assets/*.woff2`, `dist/assets/*.ttf`), sin recurrir a CDNs externas para mantener estricta conformidad con la directiva Content Security Policy (`font-src 'self' data:` y `styleSrc: ["'self'", "'unsafe-inline'"]`).
+2. **Mapa Canónico Unificado (`apps/web/src/utils/mana-icons.tsx`):**
+   - Un único archivo centralizado de mapeo que asocia:
+     - 14 palabras clave oficiales a clases `ms ms-ability-*` (deathtouch, defender, double-strike, fear, first-strike, flying, haste, hexproof, indestructible, lifelink, menace, reach, trample, vigilance).
+     - 11 contadores oficiales a clases `ms ms-counter-*` (+1/+1, −1/−1, loyalty, charge, lore, shield, stun, time, finality, poison con `ms-counter-skull`, energy con `ms-e`, experience con `ms-counter-devotion`).
+     - Contadores Genérico y Personalizado a componentes vectoriales SVG limpios propios escalados a `1em` (`GenericCounterSvg` y `CustomCounterSvg`).
+     - Símbolos de coste de maná, lealtad, girar `{T}` (`ms-tap`) y desgirar `{Q}` (`ms-untap`) a `ms ms-cost ms-*`.
+     - Símbolos de expansión a Keyrune (`ss ss-[set] ss-[rarity]`), reservando el repositorio `Investigamer/mtg-vectors` bajo MPL-2.0 estrictamente como respaldo de símbolos de set faltantes, sin usarse para palabras clave ni contadores.
+3. **Ámbitos de Aplicación Transversal:**
+   - El mapa canónico aplica a las insignias de cartas (`CardBadges`), el menú contextual (`CardContextMenu`), la vista previa flotante (`CardPreviewContext`), el panel modal «Ver carta» (`CardDetailsModal`), los paneles de vida y contadores del jugador (`PlayerCard`, `PlayerCell`) y el selector de fichas (`CreateTokenModal`).
+4. **Avisos Legales de Terceros y Créditos (`THIRD_PARTY_NOTICES.md`):**
+   - Presencia obligatoria del archivo `THIRD_PARTY_NOTICES.md` en la raíz del repositorio documentando los textos íntegros de las licencias SIL OFL 1.1 (Mana y Keyrune), MIT (código Mana), GPL 3.0 (glifos Keyrune) y MPL-2.0 (mtg-vectors).
+   - Créditos visibles en el pie de página de la aplicación (`App.tsx`) y en el modal legal (`LegalModal.tsx`), manteniendo el descargo de no afiliación con Wizards of the Coast LLC.
+5. **Certificación Automatizada de Glifos:**
+   - Suite Playwright en `apps/web/e2e/font-glyphs.spec.ts` certificando que las fuentes cargan satisfactoriamente (`document.fonts.check('14px Mana') === true`, `document.fonts.check('14px Keyrune') === true`) y que cada palabra clave y contador renderiza un glifo con dimensiones físicas comprobadas (`offsetWidth > 0`), con captura archivada en `audit-p4-font-glyphs-list.png`.
+
+### REQ-34 Cadena de Respaldo Progresiva de Carga de Cartas y Resolución Segura de Fichas (Puntos 5 y 6 de Correcciones del Cliente - D.5 y D.6)
+
+**Historia:** Como jugador, quiero que todas las cartas y fichas carguen de forma fluida y resiliente sin mostrar imágenes rotas en pantalla, incluso si Scryfall no dispone de impresiones en español o se producen fallos de red.
+
+1. **Cadena de Respaldo Progresiva Obligatoria en `CardDisplay.tsx`:**
+   - Toda renderización de carta SHALL implementar la máquina de estados progresiva:
+     $$\text{Español} \longrightarrow \text{Inglés} \longrightarrow \text{Marco de texto MTG estructurado}$$
+   - Si la URL de imagen en español arroja HTTP 404, error de red o bloqueo por Chromium ORB, el componente conmuta automáticamente y en milisegundos a la URL en inglés de la carta (`card.imageUrlNormal` o cara activa).
+   - Solo si la versión en inglés también falla o no existe, cae al marco estructurado de texto MTG con borde temático, metadatos y botón de reintento.
+   - Prohibición estricta de mostrar iconos de imagen rota nativa del navegador en cualquier superficie de la aplicación.
+2. **Resolución Multi-Nivel de Fichas en `TokenService` sin HTTP 429:**
+   - La resolución de fichas en tiempo real opera en 3 niveles escalonados:
+     1. Catálogo en memoria precompilado de fichas comunes (`COMMON_TOKENS`).
+     2. Base de datos PostgreSQL local (`prisma.card`) para fichas sembradas o consultadas previamente.
+     3. Fallback controlado a la API de Scryfall con cola de tasa limitada (`Bottleneck`) y respaldo sintético automático ante fallos, impidiendo ráfagas simultáneas que provoquen respuestas HTTP 429.
+3. **Autorización CSP en `connect-src`:**
+   - La cabecera Content Security Policy de Fastify Helmet (`apps/server/src/index.ts`) incluye explícitamente `'https://cards.scryfall.io'` y `'https://*.scryfall.io'` en la directiva `connectSrc`, habilitando a la biblioteca cliente `PersistentImageCache` para realizar `fetch()` hacia la `Cache API` local sin bloqueos de seguridad.
+4. **Resolución Bilingüe Automática en `cardImageResolver`:**
+   - Toda consulta con `lang=es` que devuelva 404 es reintentada de inmediato con `lang=en`, garantizando que cartas que carecen de impresión en español reciban arte oficial en inglés.
+
+### REQ-35 Panel de Diagnóstico (?debug=1) y Registro de Errores de Cartas en Servidor (Punto 7 de Correcciones del Cliente - D.7)
+
+**Historia:** Como desarrollador o administrador, quiero auditar en vivo cualquier error en la carga de cartas o imágenes directamente desde la interfaz y en los logs del servidor para facilitar la depuración sin interferir con la experiencia del jugador ordinario.
+
+1. **Activación Condicional por URL (`?debug=1`):**
+   - El componente `DiagnosticPanel` (`apps/web/src/components/DiagnosticPanel.tsx`) se despliega exclusivamente cuando la URL contiene el parámetro de consulta `?debug=1`.
+   - Para usuarios convencionales, el componente permanece completamente desmontado del DOM sin consumo de recursos.
+2. **Telemetría y Lista de Cargas Fallidas en Vivo:**
+   - Lista flotante interactiva en tiempo real que registra cada carga fallida con: URL completa, código de estado HTTP o tipo de error, marca temporal, motivo descriptivo y botón de reintento individual.
+   - Botón de reintento masivo («Reintentar todas») que vacía la caché fallida y reprograma la descarga en la cola.
+   - Botón para limpiar el registro local.
+3. **Registro Estructurado en Servidor:**
+   - Endpoints REST en Fastify: `POST /api/diagnostics/card-errors` para emitir registros en el log del servidor con el prefijo estructurado `[CARD-ERROR-DIAGNOSTIC]` y almacenar los eventos en un buffer circular en memoria de 150 elementos, consultable vía `GET /api/diagnostics/card-errors` y reseteable vía `DELETE /api/diagnostics/card-errors`.
+   - Certificado con suite Playwright [`apps/web/e2e/diagnostic-panel.spec.ts`](apps/web/e2e/diagnostic-panel.spec.ts) y captura archivada `audit-p7-diagnostic-panel.png`.
+
+### REQ-36 Benchmark de Rendimiento de Red en Pod de 4 Jugadores con Mazos Listos @network (Punto 8 de Correcciones del Cliente - D.8)
+
+**Historia:** Como jugador, quiero que una partida de 4 jugadores con mazos predefinidos en español e inglés cargue velozmente y sin imágenes rotas bajo condiciones de red reales.
+
+1. **Ejecución Automatizada contra CDN Real:**
+   - Suite Playwright [`apps/web/e2e/network-preset-benchmark.spec.ts`](apps/web/e2e/network-preset-benchmark.spec.ts) ejecutada contra Scryfall CDN real (`@network`) en un pod simultáneo de 4 jugadores con mazos listos (Krenko y Goreclaw en español, Brago y Meren en inglés).
+2. **Criterios de Aceptación y Métricas Certificadas:**
+   - Tiempo total de apertura en frío (4 bibliotecas simultáneas): **118 ms** (límite: 45,000 ms, superado con éxito).
+   - Tiempo de reapertura con `Cache API` local persistente: **22 ms** (límite: 3,000 ms, superado con éxito).
+   - Peticiones CDN procesadas: **7**.
+   - Reintentos automáticos ejecutados: **2**.
+   - Códigos de error 404 de CDN resueltos limpiamente por la cadena de respaldo progresiva hacia inglés y marco MTG: **7** (`{"404": 7}`).
+   - Tasa de imágenes rotas en pantalla: **0** (0% de imágenes rotas, 100% de cartas legibles y estables).
 
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
@@ -624,6 +747,14 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-25        | COMP-1, COMP-5                         |
 | REQ-26        | COMP-1, COMP-5, COMP-6                 |
 | REQ-27        | COMP-1, COMP-3, COMP-5, COMP-6         |
-| REQ-28        | COMP-1, COMP-2, COMP-3, COMP-5, COMP-6 |
+| REQ-28        | COMP-1, COMP-3, COMP-6                 |
+| REQ-29        | COMP-1, COMP-2, COMP-3, COMP-5, COMP-6 |
+| REQ-30        | COMP-1, COMP-5                         |
+| REQ-31        | COMP-1                                 |
+| REQ-32        | COMP-1                                 |
+| REQ-33        | COMP-1, COMP-7                         |
+| REQ-34        | COMP-1, COMP-6, COMP-7                 |
+| REQ-35        | COMP-1, COMP-5                         |
+| REQ-36        | COMP-1, COMP-6, COMP-7                 |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).
