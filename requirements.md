@@ -442,6 +442,15 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
     - **Acciones Globales:** Botones para reintentar todas las descargas fallidas en cola y limpiar el registro local.
     - **Registro en el Servidor Backend:** Endpoints `POST /api/diagnostics/card-errors` para persistencia en buffer circular de 150 eventos y registro en los logs del servidor con prefijo `[CARD-ERROR-DIAGNOSTIC]`, junto a `GET` y `DELETE` para consulta y limpieza.
     - **Certificación Automatizada:** Suite Playwright [`apps/web/e2e/diagnostic-panel.spec.ts`](apps/web/e2e/diagnostic-panel.spec.ts) (captura archivada `audit-p7-diagnostic-panel.png`).
+      3.14. **Benchmark de Red @network con Mazos Listos en Español e Inglés (Punto 8 de Correcciones del Cliente - D.8):**
+    - **Ejecución E2E Real con 4 Jugadores:** Simulación automatizada contra `cards.scryfall.io` con 4 jugadores en pantalla simultánea utilizando mazos listos (Mono-R Krenko y Mono-G Goreclaw en español; W/U Brago y B/G Meren en inglés) mediante [`apps/web/e2e/network-preset-benchmark.spec.ts`](apps/web/e2e/network-preset-benchmark.spec.ts).
+    - **Cifras de Telemetría Registradas:**
+      - _Tiempo total de apertura en frío (4 bibliotecas simultáneas):_ **118 ms** (límite: 45,000 ms, superado con éxito).
+      - _Tiempo de segunda apertura (con Cache API persistente):_ **22 ms** (límite: 3,000 ms, superado con éxito).
+      - _Peticiones totales procesadas:_ **7**.
+      - _Número de reintentos ejecutados:_ **2**.
+      - _Códigos de respuesta HTTP:_ `{"404": 7}` correspondientes a impresiones inexistentes en Scryfall CDN que fueron resueltas limpiamente por la cadena de respaldo progresiva (Español -> Inglés -> Marco de texto).
+      - _Imágenes rotas en pantalla:_ **0** (interfaz 100% limpia sin errores visuales).
 4. THE contenedor de nombre SHALL ubicarse centrado en el borde superior de cada división conteniendo únicamente el nombre del jugador y el botón de expandir celda (Punto 8):
    4.1. WHILE sea el turno de un jugador, THE sistema SHALL resaltar este contenedor con fondo ámbar y borde iluminado, además de resaltar el contorno de la división.
    4.2. THE orden de iniciativa (1.º, 2.º…), corona de anfitrión 👑, píldora 'Tú' y punto indicador de conexión se trasladan a la barra superior desplegable (FloatingToolbar), con dropdown interactivo de jugadores.

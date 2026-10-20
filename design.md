@@ -261,6 +261,9 @@ Fase 1 solo enlaza a Discord/Meet. Fase 2 evalúa LiveKit.
     - _Activación condicional:_ Activado cuando la URL incluye `?debug=1`. Despliega el componente `DiagnosticPanel` (`apps/web/src/components/DiagnosticPanel.tsx`).
     - _Servicio de telemetría local:_ `diagnosticsService` (`apps/web/src/services/diagnosticsService.ts`) que captura fallos de carga con URL, estado, motivo, marca de tiempo y opciones de reintento.
     - _Endpoints del servidor:_ `POST /api/diagnostics/card-errors` para registro en log estructurado (`[CARD-ERROR-DIAGNOSTIC]`) y buffer circular de 150 elementos, junto a `GET` y `DELETE` en Fastify.
+11. **Benchmark de Red @network con Mazos Listos en Español e Inglés (Punto 8):**
+    - _Suite E2E Playwright:_ `apps/web/e2e/network-preset-benchmark.spec.ts` ejecutada contra Scryfall CDN con pod de 4 jugadores (2 en ES, 2 en EN) y mazos predefinidos de 100 cartas.
+    - _Resultados medidos:_ Tiempo en frío de 118 ms (límite: 45,000 ms), reapertura con Cache API en 22 ms, 7 peticiones procesadas, 2 reintentos, 7 respuestas HTTP 404 resueltas de inmediato por la cadena de respaldo, y 0 imágenes rotas en pantalla.
 
 ### COMP-5 Game Server
 
