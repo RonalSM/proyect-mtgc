@@ -20,6 +20,7 @@ import { TableGrid } from './TableGrid';
 import { PlayerCell } from './PlayerCell';
 import { BattlefieldCanvas, CardPTBadge } from './BattlefieldCanvas';
 import { CardDisplay } from './CardDisplay';
+import { CardBadges } from './CardBadges';
 import { Portal } from './Portal';
 import { CardPreviewProvider, useCardPreview } from '../context/CardPreviewContext';
 import type { RemoteDragState } from '../hooks/useGameSocket';
@@ -704,6 +705,9 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
                     allowFaceToggle={false}
                     isTapped={activeDragItem.card.isTapped}
                   />
+                  {!activeDragItem.card.isFaceDown && (
+                    <CardBadges card={activeDragItem.card} />
+                  )}
                 </div>
                 {!activeDragItem.card.isFaceDown && (
                   <CardPTBadge card={activeDragItem.card} />

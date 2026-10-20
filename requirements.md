@@ -242,6 +242,15 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
         - **Recálculo automático y sincronización autoritativa:** Al modificar cualquier campo, el P/T efectivo se recalcula de forma reactiva en pantalla y se envía al servidor mediante la acción `SET_CARD_PT`, guardándose en la `CardInstance` (`basePower`, `baseToughness`, contadores) y sincronizándose a todos los clientes (`ROOM_STATE_SYNC`).
         - **Registro en bitácora:** El servidor registra autoritativamente en la bitácora pública qué jugador modificó el P/T y el resultado final (`[Jugador] modificó poder/resistencia de "[Nombre]" a X/Y`).
         - **Ciclo de vida:** Al abandonar la mesa hacia cualquier otra zona, los contadores y las bases numéricas modificadas se resetean a sus valores iniciales.
+    - **REQ-9.7.30 (Fila de insignias para contadores y palabras clave, Punto 4):**
+      - **Insignias e iconos:** Cada contador y palabra clave presente en una carta en la mesa muestra una insignia con icono representativo, distribuida en una fila horizontal pegada al borde superior de la carta, sin cubrir la línea inferior de artista y copyright (pautas de Scryfall).
+      - **Contadores admitidos (11 tipos):** $+1/+1$, $−1/−1$, Lealtad (`loyalty`), Carga (`charge`), Tradición (`lore`), Escudo (`shield`), Aturdimiento (`stun`), Tiempo (`time`), Finalidad (`finality`), Genérico (`generic`) y Personalizado (`custom`, con nombre libre editable).
+      - **Palabras clave admitidas (14 oficiales MTG):** Toque mortal (Deathtouch), Defensor (Defender), Daña dos veces (Double strike), Miedo (Fear), Daña primero (First strike), Vuela (Flying), Prisa (Haste), Antimaleficio (Hexproof), Indestructible (Indestructible), Vínculo vital (Lifelink), Amenaza (Menace), Alcance (Reach), Arrollar (Trample) y Vigilancia (Vigilance). Mostradas con nombre oficial en español y, entre paréntesis, el original en inglés.
+      - **Secciones en línea en el menú contextual:**
+        1. "Contadores" (`data-testid="context-counters-section"`): desplegable en línea con campos numéricos directos (teclado, rueda del ratón y flechas) para cada tipo de contador; Finalidad opera como un interruptor on/off exclusivo ($0$ o $1$); y sección de Contadores Personalizados con creación de nuevos marcadores con nombre y eliminación.
+        2. "Palabras clave" (`data-testid="context-keywords-section"`): desplegable en línea con los 14 términos oficiales y un interruptor on/off (`role="switch"`) individual para cada una.
+      - **Modificación universal y registro:** Cualquier jugador puede modificar los contadores y las palabras clave de cualquier carta visible en la mesa; el servidor valida y registra autoritativamente la acción en la bitácora pública con el nombre del autor.
+      - **Ciclo de vida y reseteo:** Al salir la carta del campo de batalla (hacia cementerio, exilio, mano o biblioteca), todos sus contadores y palabras clave activas son reseteados y eliminados de la instancia.
 
 
 ### REQ-10 Sincronización y reconexión

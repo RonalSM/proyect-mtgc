@@ -29,6 +29,7 @@ import {
   RevealCardSchema,
   UnrevealCardSchema,
   SetCardPTSchema,
+  ToggleCardKeywordSchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -269,6 +270,12 @@ export class WebSocketHandler {
         case 'SET_CARD_PT': {
           const valid = SetCardPTSchema.parse(payload);
           session.setCardPT(client.playerId, valid);
+          break;
+        }
+
+        case 'TOGGLE_CARD_KEYWORD': {
+          const valid = ToggleCardKeywordSchema.parse(payload);
+          session.toggleCardKeyword(client.playerId, valid);
           break;
         }
 

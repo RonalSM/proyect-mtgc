@@ -29,7 +29,14 @@ export const SetPlayerCounterSchema = z.object({
 export const SetCardCounterSchema = z.object({
   cardInstanceId: z.string().min(1),
   counterType: z.string().min(1),
-  delta: z.number().int(),
+  delta: z.number().int().optional(),
+  count: z.number().int().min(0).optional(),
+});
+
+export const ToggleCardKeywordSchema = z.object({
+  cardInstanceId: z.string().min(1),
+  keyword: z.string().min(1),
+  active: z.boolean().optional(),
 });
 
 export const SetCardPTSchema = z.object({
@@ -188,6 +195,7 @@ export const ActionEnvelopeSchema = z.object({
     'SET_PLAYER_STATUS',
     'SET_CARD_COUNTER',
     'SET_CARD_PT',
+    'TOGGLE_CARD_KEYWORD',
     'MOVE_CARD',
     'TAP_CARD',
     'UNTAP_ALL',

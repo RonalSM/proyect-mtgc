@@ -4,6 +4,7 @@ import { computeCardPT } from '@mtgc/shared';
 import { useDraggable } from '@dnd-kit/core';
 import { CardDisplay } from './CardDisplay';
 import { CardContextMenu } from './CardContextMenu';
+import { CardBadges } from './CardBadges';
 import { useCardPreview } from '../context/CardPreviewContext';
 import type { RemoteDragState } from '../hooks/useGameSocket';
 
@@ -298,19 +299,8 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
           isTapped={isTapped}
         />
 
-        {/* Counter Badges (REQ-5.3): Acompañan a la carta durante la rotación sin saltos */}
-        {card.counters && Object.entries(card.counters).length > 0 && (
-          <div className="absolute top-0.5 right-0.5 flex flex-col space-y-0.5 pointer-events-none z-10">
-            {Object.entries(card.counters).map(([type, count]) => (
-              <span
-                key={type}
-                className="bg-amber-500 text-slate-950 font-black text-[8px] px-1 rounded shadow leading-tight"
-              >
-                {count > 0 ? `+${count}` : count}
-              </span>
-            ))}
-          </div>
-        )}
+        {/* Insignias de Contadores y Palabras Clave oficiales (Punto 4): pegada al borde superior sin cubrir la linea inferior */}
+        {!card.isFaceDown && <CardBadges card={card} />}
       </div>
 
       {/* Indicador P/T efectivo anclado a la esquina inferior izquierda de la caja visual sin girar con ella (Punto 2) */}

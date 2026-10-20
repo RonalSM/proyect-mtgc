@@ -20,7 +20,13 @@ import {
   ChevronRight,
   ChevronDown,
   Swords,
+  CircleDot,
+  Tag,
+  Plus,
+  X,
 } from 'lucide-react';
+import { MTG_KEYWORDS, MTG_COUNTERS } from '@mtgc/shared';
+import { KEYWORD_ICONS, COUNTER_ICONS } from './CardBadges';
 import { getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
 import { useCardPreview } from '../context/CardPreviewContext';
 
@@ -68,6 +74,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
     : undefined;
 
   const [isPTExpanded, setIsPTExpanded] = useState(false);
+  const [isCountersExpanded, setIsCountersExpanded] = useState(false);
+  const [isKeywordsExpanded, setIsKeywordsExpanded] = useState(false);
+  const [customCounterName, setCustomCounterName] = useState('');
+  const [customCounterCount, setCustomCounterCount] = useState<number>(1);
   const [inputPlus, setInputPlus] = useState<number>(card.counters?.['+1/+1'] || 0);
   const [inputMinus, setInputMinus] = useState<number>((card.counters?.['-1/-1'] || 0) + (card.counters?.['−1/−1'] || 0));
   const [inputBaseP, setInputBaseP] = useState<number | ''>(
@@ -92,6 +102,38 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
       plusCounters: plus,
       minusCounters: minus,
     });
+  };
+
+  const handleSetCounter = (type: string, count: number) => {
+    onAction('SET_CARD_COUNTER', {
+      cardInstanceId: card.instanceId,
+      counterType: type,
+      count: Math.max(0, count),
+    });
+  };
+
+  const handleToggleKeyword = (kwId: string) => {
+    onAction('TOGGLE_CARD_KEYWORD', {
+      cardInstanceId: card.instanceId,
+      keyword: kwId,
+    });
+  };
+
+  const standardCounterIds = new Set(MTG_COUNTERS.map(c => c.id).concat(['-1/-1']));
+  const customCounters = Object.entries(card.counters || {}).filter(
+    ([k, v]) => !standardCounterIds.has(k) && v > 0
+  );
+
+  const handleAddCustom = () => {
+    const name = customCounterName.trim();
+    if (!name) return;
+    handleSetCounter(name, customCounterCount);
+    setCustomCounterName('');
+    setCustomCounterCount(1);
+  };
+
+  const handleDeleteCustom = (name: string) => {
+    handleSetCounter(name, 0);
   };
 
   const liveBaseP = typeof inputBaseP === 'number' ? inputBaseP : printedPower;
@@ -308,9 +350,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             </button>
           )}
 
-          {/* Sección en línea: Poder y resistencia (Punto 3) - Visible en mesa para cualquier jugador */}
+          {/* Sección en línea: Poder y resistencia (Punto 3), Contadores y Palabras Clave (Punto 4) - Visible en mesa para cualquier jugador */}
           {fromZone === 'battlefield' && !card.isFaceDown && (
-            <div className="flex flex-col border-t border-slate-800 pt-0.5">
+            <>
+              <div className="flex flex-col border-t border-slate-800 pt-0.5">
               <button
                 type="button"
                 data-testid="context-pt-toggle-btn"
@@ -460,6 +503,240 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Contadores (Punto 4): accesible para cualquier jugador sobre cartas visibles de la mesa */}
+            <div className="flex flex-col">
+              <button
+                type="button"
+                data-testid="context-counters-toggle"
+                onClick={() => setIsCountersExpanded(!isCountersExpanded)}
+                className={`w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg cursor-pointer transition-colors ${
+                  isCountersExpanded ? 'bg-slate-800 text-amber-300' : 'text-slate-200'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <CircleDot className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Contadores</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  {Object.values(card.counters || {}).reduce((a, b) => a + b, 0) > 0 && (
+                    <span className="text-[10px] font-mono font-bold text-amber-300 mr-1">
+                      {Object.values(card.counters || {}).reduce((a, b) => a + b, 0)}
+                    </span>
+                  )}
+                  {isCountersExpanded ? (
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  ) : (
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                  )}
+                </div>
+              </button>
+
+              {isCountersExpanded && (
+                <div
+                  data-testid="context-counters-section"
+                  className="pl-3 pr-2 py-2 space-y-2 border-l-2 border-amber-500/50 bg-slate-950/40 rounded-r-lg my-1 max-h-60 overflow-y-auto"
+                >
+                  {/* Lista de Contadores oficiales */}
+                  {MTG_COUNTERS.map(c => {
+                    const IconComponent = COUNTER_ICONS[c.id] || CircleDot;
+                    const count = card.counters?.[c.id] || 0;
+
+                    if (c.isSingle) {
+                      // Finalidad: solo 1 o 0 con interruptor
+                      const isActive = count > 0;
+                      return (
+                        <div key={c.id} className="flex items-center justify-between py-1 border-b border-slate-800/80">
+                          <div className="flex items-center space-x-1.5 text-[11px] flex-1 min-w-0 pr-2">
+                            <IconComponent className="w-3.5 h-3.5 flex-shrink-0 text-purple-400" />
+                            <span className="text-slate-200 truncate">{c.label}</span>
+                          </div>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={isActive}
+                            data-testid="counter-toggle-finality"
+                            onClick={() => handleSetCounter(c.id, isActive ? 0 : 1)}
+                            className={`w-7 h-4 flex items-center rounded-full p-0.5 transition-colors cursor-pointer ${
+                              isActive ? 'bg-purple-600 justify-end' : 'bg-slate-700 justify-start'
+                            }`}
+                          >
+                            <div className="w-3 h-3 rounded-full bg-white shadow-md" />
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    if (c.id === 'custom') {
+                      return null; // Renderizado abajo
+                    }
+
+                    return (
+                      <div key={c.id} className="flex items-center justify-between py-1 border-b border-slate-800/60 text-[10px]">
+                        <div className="flex items-center space-x-1.5 flex-1 min-w-0 pr-2">
+                          <IconComponent className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
+                          <label className="text-slate-300 truncate font-medium">{c.label}</label>
+                        </div>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          data-testid={`counter-input-${c.id}`}
+                          value={count}
+                          onChange={e => {
+                            const val = Math.max(0, parseInt(e.target.value, 10) || 0);
+                            handleSetCounter(c.id, val);
+                          }}
+                          onWheel={e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const step = e.deltaY < 0 ? 1 : -1;
+                            handleSetCounter(c.id, Math.max(0, count + step));
+                          }}
+                          className="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-center text-xs font-mono text-slate-100 focus:outline-none focus:border-amber-400"
+                        />
+                      </div>
+                    );
+                  })}
+
+                  {/* Sección de Contadores Personalizados */}
+                  <div className="pt-1.5 border-t border-slate-800">
+                    <div className="flex items-center space-x-1.5 text-[11px] font-semibold text-amber-300 mb-1">
+                      <Tag className="w-3 h-3 text-amber-400" />
+                      <span>Personalizado (Custom)</span>
+                    </div>
+
+                    {/* Contadores personalizados existentes */}
+                    {customCounters.map(([name, count]) => (
+                      <div key={name} className="flex items-center justify-between py-0.5 text-[10px]">
+                        <span className="text-slate-300 truncate font-medium pr-1">{name}</span>
+                        <div className="flex items-center space-x-1">
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            data-testid={`custom-counter-input-${name}`}
+                            value={count}
+                            onChange={e => {
+                              const val = Math.max(0, parseInt(e.target.value, 10) || 0);
+                              handleSetCounter(name, val);
+                            }}
+                            className="w-12 bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-center text-xs font-mono text-slate-100"
+                          />
+                          <button
+                            type="button"
+                            title="Eliminar contador"
+                            data-testid={`delete-custom-counter-${name}`}
+                            onClick={() => handleDeleteCustom(name)}
+                            className="p-1 hover:bg-rose-900/50 text-rose-400 rounded"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Agregar nuevo contador personalizado */}
+                    <div className="flex items-center space-x-1 mt-1">
+                      <input
+                        type="text"
+                        placeholder="Nombre..."
+                        data-testid="custom-counter-name-input"
+                        value={customCounterName}
+                        onChange={e => setCustomCounterName(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddCustom();
+                          }
+                        }}
+                        className="flex-1 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[10px] text-slate-100 focus:outline-none focus:border-amber-400"
+                      />
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        data-testid="custom-counter-count-input"
+                        value={customCounterCount}
+                        onChange={e => setCustomCounterCount(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                        className="w-10 bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-center text-[10px] font-mono text-slate-100"
+                      />
+                      <button
+                        type="button"
+                        data-testid="add-custom-counter-btn"
+                        onClick={handleAddCustom}
+                        className="p-1 bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded border border-amber-500/40"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Palabras clave (Punto 4): accesible para cualquier jugador sobre cartas visibles de la mesa */}
+            <div className="flex flex-col">
+              <button
+                type="button"
+                data-testid="context-keywords-toggle"
+                onClick={() => setIsKeywordsExpanded(!isKeywordsExpanded)}
+                className={`w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg cursor-pointer transition-colors ${
+                  isKeywordsExpanded ? 'bg-slate-800 text-amber-300' : 'text-slate-200'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Palabras clave</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  {(card.keywords?.length || 0) > 0 && (
+                    <span className="text-[10px] font-mono font-bold text-amber-300 mr-1">
+                      {card.keywords?.length}
+                    </span>
+                  )}
+                  {isKeywordsExpanded ? (
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  ) : (
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                  )}
+                </div>
+              </button>
+
+              {isKeywordsExpanded && (
+                <div
+                  data-testid="context-keywords-section"
+                  className="pl-3 pr-2 py-2 space-y-1.5 border-l-2 border-amber-500/50 bg-slate-950/40 rounded-r-lg my-1 max-h-60 overflow-y-auto"
+                >
+                  {MTG_KEYWORDS.map(kw => {
+                    const IconComponent = KEYWORD_ICONS[kw.id] || Sparkles;
+                    const isActive = (card.keywords || []).includes(kw.id);
+
+                    return (
+                      <div key={kw.id} className="flex items-center justify-between py-1 border-b border-slate-800/80">
+                        <div className="flex items-center space-x-1.5 text-[11px] flex-1 min-w-0 pr-2">
+                          <IconComponent className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
+                          <span className="text-slate-200 truncate">{kw.label}</span>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={isActive}
+                          data-testid={`keyword-toggle-${kw.id}`}
+                          onClick={() => handleToggleKeyword(kw.id)}
+                          className={`w-7 h-4 flex items-center rounded-full p-0.5 transition-colors cursor-pointer ${
+                            isActive ? 'bg-amber-500 justify-end' : 'bg-slate-700 justify-start'
+                          }`}
+                        >
+                          <div className="w-3 h-3 rounded-full bg-white shadow-md" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            </>
           )}
 
           {/* Opciones de mutación y movimiento (exclusivas del dueño o controlador de la carta) */}

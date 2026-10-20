@@ -462,3 +462,69 @@ test('Punto 3: setCardPT permite a cualquier jugador modificar basePower, baseTo
   assert.ok(lastLog.actionText.includes('modificó poder/resistencia de "Grizzly Bears"'));
   assert.ok(lastLog.actionText.includes('4/2')); // (3+1)/(1+1) = 4/2
 });
+
+test('Punto 4: toggleCardKeyword y setCardCounter con conteo exacto y palabras clave oficiales', () => {
+  const roomState = createMockRoomState();
+  const session = new GameStateSession(roomState);
+
+  const dragonCard: CardInstance = {
+    instanceId: 'dragon_1',
+    definition: {
+      scryfallId: 'sf_dragon',
+      name: 'Shivan Dragon',
+      cmc: 6,
+      typeLine: 'Creature — Dragon',
+      colors: ['R'],
+      colorIdentity: ['R'],
+      power: '5',
+      toughness: '5',
+    },
+    ownerId: 'p1',
+    controllerId: 'p1',
+    isFaceDown: false,
+    counters: {},
+    keywords: [],
+    position: { x: 0.5, y: 0.5, zIndex: 5 },
+  };
+
+  session.state.playerZones['p1']!.battlefield = [dragonCard];
+  session.syncPlayerCounts('p1');
+
+  // Bob activa la palabra clave "flying" (Vuela) y "haste" (Prisa)
+  session.toggleCardKeyword('p2', { cardInstanceId: 'dragon_1', keyword: 'flying', active: true });
+  session.toggleCardKeyword('p2', { cardInstanceId: 'dragon_1', keyword: 'haste' });
+
+  let card = session.state.playerZones['p1']!.battlefield[0]!;
+  assert.deepStrictEqual(card.keywords, ['flying', 'haste']);
+
+  // Bob fija contadores de Lealtad en 4, Carga en 2, y Finalidad en 1 (exact count)
+  session.setCardCounter('p2', { cardInstanceId: 'dragon_1', counterType: 'loyalty', count: 4 });
+  session.setCardCounter('p2', { cardInstanceId: 'dragon_1', counterType: 'charge', count: 2 });
+  session.setCardCounter('p2', { cardInstanceId: 'dragon_1', counterType: 'finality', count: 1 });
+
+  card = session.state.playerZones['p1']!.battlefield[0]!;
+  assert.strictEqual(card.counters['loyalty'], 4);
+  assert.strictEqual(card.counters['charge'], 2);
+  assert.strictEqual(card.counters['finality'], 1);
+
+  // Desactivar flying
+  session.toggleCardKeyword('p1', { cardInstanceId: 'dragon_1', keyword: 'flying', active: false });
+  card = session.state.playerZones['p1']!.battlefield[0]!;
+  assert.deepStrictEqual(card.keywords, ['haste']);
+
+  // Poner contadores de carga a 0 elimina la clave del objeto counters
+  session.setCardCounter('p1', { cardInstanceId: 'dragon_1', counterType: 'charge', count: 0 });
+  card = session.state.playerZones['p1']!.battlefield[0]!;
+  assert.strictEqual(card.counters['charge'], undefined);
+
+  // Mover al cementerio reinicia keywords y contadores
+  session.moveCard('p1', {
+    cardInstanceId: 'dragon_1',
+    fromZone: 'battlefield',
+    toZone: 'graveyard',
+  });
+  const gyCard = session.state.playerZones['p1']!.graveyard.find(c => c.instanceId === 'dragon_1');
+  assert.ok(gyCard);
+  assert.strictEqual(gyCard.keywords, undefined);
+  assert.deepStrictEqual(gyCard.counters, {});
+});

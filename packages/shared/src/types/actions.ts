@@ -10,6 +10,7 @@ export type GameActionType =
   | 'SET_PLAYER_STATUS'
   | 'SET_CARD_COUNTER'
   | 'SET_CARD_PT'
+  | 'TOGGLE_CARD_KEYWORD'
   // Card Movements & State
   | 'MOVE_CARD'
   | 'TAP_CARD'
@@ -81,7 +82,14 @@ export interface SetPlayerCounterPayload {
 export interface SetCardCounterPayload {
   cardInstanceId: string;
   counterType: string; // e.g. '+1/+1', 'loyalty', 'charge'
-  delta: number;
+  delta?: number;
+  count?: number;
+}
+
+export interface ToggleCardKeywordPayload {
+  cardInstanceId: string;
+  keyword: string;
+  active?: boolean;
 }
 
 export interface SetCardPTPayload {

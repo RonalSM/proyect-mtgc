@@ -10,6 +10,7 @@ import {
   SetPlayerCounterPayload,
   SetCardCounterPayload,
   SetCardPTPayload,
+  ToggleCardKeywordPayload,
   MoveCardPayload,
   TapCardPayload,
   FlipCardPayload,
@@ -1095,7 +1096,7 @@ export class GameStateSession {
   }
 
   /**
-   * Adds or removes counters from a card
+   * Adds or removes counters from a card, or sets an exact count (Punto 4)
    */
   public setCardCounter(playerId: string, payload: SetCardCounterPayload): void {
     const found = this.findBattlefieldCard(payload.cardInstanceId);
@@ -1106,19 +1107,63 @@ export class GameStateSession {
       throw new Error('No se pueden modificar contadores de una carta boca abajo.');
     }
 
-    const current = card.counters[payload.counterType] || 0;
-    const next = Math.max(0, current + payload.delta);
-    if (next === 0) {
-      delete card.counters[payload.counterType];
-    } else {
-      card.counters[payload.counterType] = next;
+    if (payload.count !== undefined) {
+      const next = Math.max(0, payload.count);
+      if (next === 0) {
+        delete card.counters[payload.counterType];
+      } else {
+        card.counters[payload.counterType] = next;
+      }
+      this.addLog(
+        playerId,
+        `fijó contadores ${payload.counterType} en "${card.definition.name}" en ${next}`,
+      );
+    } else if (payload.delta !== undefined) {
+      const current = card.counters[payload.counterType] || 0;
+      const next = Math.max(0, current + payload.delta);
+      if (next === 0) {
+        delete card.counters[payload.counterType];
+      } else {
+        card.counters[payload.counterType] = next;
+      }
+
+      const sign = payload.delta > 0 ? `+${payload.delta}` : `${payload.delta}`;
+      this.addLog(
+        playerId,
+        `modificó contadores ${payload.counterType} en "${card.definition.name}" en ${sign}`,
+      );
+    }
+    this.incrementVersion();
+  }
+
+  /**
+   * Activa o desactiva una palabra clave en una carta visible de la mesa (Punto 4)
+   */
+  public toggleCardKeyword(playerId: string, payload: ToggleCardKeywordPayload): void {
+    const found = this.findBattlefieldCard(payload.cardInstanceId);
+    if (!found) return;
+
+    const card = found.card;
+    if (card.isFaceDown) {
+      throw new Error('No se pueden modificar palabras clave de una carta boca abajo.');
     }
 
-    const sign = payload.delta > 0 ? `+${payload.delta}` : `${payload.delta}`;
-    this.addLog(
-      playerId,
-      `modificó contadores ${payload.counterType} en "${card.definition.name}" en ${sign}`,
-    );
+    if (!card.keywords) {
+      card.keywords = [];
+    }
+
+    const keywordId = payload.keyword.toLowerCase().trim();
+    const exists = card.keywords.includes(keywordId);
+    const shouldBeActive = payload.active !== undefined ? payload.active : !exists;
+
+    if (shouldBeActive && !exists) {
+      card.keywords.push(keywordId);
+      this.addLog(playerId, `activó palabra clave "${keywordId}" en "${card.definition.name}"`);
+    } else if (!shouldBeActive && exists) {
+      card.keywords = card.keywords.filter(k => k !== keywordId);
+      this.addLog(playerId, `desactivó palabra clave "${keywordId}" en "${card.definition.name}"`);
+    }
+
     this.incrementVersion();
   }
 
