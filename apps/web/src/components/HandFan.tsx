@@ -91,6 +91,7 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
       data-from-zone="hand"
       data-card-instance-id={card.instanceId}
       data-card-name={card.definition.name}
+      data-revealed-card={card.revealedTo ? 'true' : 'false'}
       onClick={onSelect}
       onDoubleClick={onZoom}
       onContextMenu={onContextMenu}
@@ -286,6 +287,7 @@ export const HandFan: React.FC<HandFanProps> = ({
                   data-card-instance-id={card.instanceId}
                   data-card-name={card.definition.name}
                   data-hand-card="true"
+                  data-revealed-card="true"
                   data-from-zone="hand"
                   onMouseEnter={(e) => showPreview(card.definition, e)}
                   onMouseLeave={hidePreview}

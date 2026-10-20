@@ -86,12 +86,18 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
   const [inputBaseT, setInputBaseT] = useState<number | ''>(
     card.baseToughness !== undefined ? card.baseToughness : (printedToughness !== undefined ? printedToughness : '')
   );
+  const inputBasePRef = useRef<number | ''>(inputBaseP);
+  const inputBaseTRef = useRef<number | ''>(inputBaseT);
 
   useEffect(() => {
+    const pVal = card.basePower !== undefined ? card.basePower : (printedPower !== undefined ? printedPower : '');
+    const tVal = card.baseToughness !== undefined ? card.baseToughness : (printedToughness !== undefined ? printedToughness : '');
+    inputBasePRef.current = pVal;
+    inputBaseTRef.current = tVal;
     setInputPlus(card.counters?.['+1/+1'] || 0);
     setInputMinus((card.counters?.['-1/-1'] || 0) + (card.counters?.['−1/−1'] || 0));
-    setInputBaseP(card.basePower !== undefined ? card.basePower : (printedPower !== undefined ? printedPower : ''));
-    setInputBaseT(card.baseToughness !== undefined ? card.baseToughness : (printedToughness !== undefined ? printedToughness : ''));
+    setInputBaseP(pVal);
+    setInputBaseT(tVal);
   }, [card.instanceId, card.counters, card.basePower, card.baseToughness, printedPower, printedToughness]);
 
   const emitPT = (p: number | '', t: number | '', plus: number, minus: number) => {
@@ -405,17 +411,19 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                         placeholder={card.definition?.power ?? '*'}
                         onChange={e => {
                           const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
+                          inputBasePRef.current = val;
                           setInputBaseP(val);
-                          emitPT(val, inputBaseT, inputPlus, inputMinus);
+                          emitPT(val, inputBaseTRef.current, inputPlus, inputMinus);
                         }}
                         onWheel={e => {
                           e.preventDefault();
                           e.stopPropagation();
                           const step = e.deltaY < 0 ? 1 : -1;
-                          const current = typeof inputBaseP === 'number' ? inputBaseP : (printedPower ?? 0);
+                          const current = typeof inputBasePRef.current === 'number' ? inputBasePRef.current : (printedPower ?? 0);
                           const next = current + step;
+                          inputBasePRef.current = next;
                           setInputBaseP(next);
-                          emitPT(next, inputBaseT, inputPlus, inputMinus);
+                          emitPT(next, inputBaseTRef.current, inputPlus, inputMinus);
                         }}
                         className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center text-xs font-mono text-slate-100 focus:outline-none focus:border-amber-400"
                       />
@@ -432,17 +440,19 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                         placeholder={card.definition?.toughness ?? '*'}
                         onChange={e => {
                           const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
+                          inputBaseTRef.current = val;
                           setInputBaseT(val);
-                          emitPT(inputBaseP, val, inputPlus, inputMinus);
+                          emitPT(inputBasePRef.current, val, inputPlus, inputMinus);
                         }}
                         onWheel={e => {
                           e.preventDefault();
                           e.stopPropagation();
                           const step = e.deltaY < 0 ? 1 : -1;
-                          const current = typeof inputBaseT === 'number' ? inputBaseT : (printedToughness ?? 0);
+                          const current = typeof inputBaseTRef.current === 'number' ? inputBaseTRef.current : (printedToughness ?? 0);
                           const next = current + step;
+                          inputBaseTRef.current = next;
                           setInputBaseT(next);
-                          emitPT(inputBaseP, next, inputPlus, inputMinus);
+                          emitPT(inputBasePRef.current, next, inputPlus, inputMinus);
                         }}
                         className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center text-xs font-mono text-slate-100 focus:outline-none focus:border-amber-400"
                       />

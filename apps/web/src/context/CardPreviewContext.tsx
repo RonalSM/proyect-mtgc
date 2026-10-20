@@ -171,6 +171,7 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                       return (
                         <div
                           key={kwId}
+                          data-preview-item="true"
                           data-testid={`preview-keyword-${kwId}`}
                           className="flex flex-col space-y-0.5 bg-slate-950/40 p-1.5 rounded border border-slate-800/80"
                         >
@@ -204,6 +205,7 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                       return (
                         <div
                           key={type}
+                          data-preview-item="true"
                           data-testid={`preview-counter-${type}`}
                           className="flex flex-col space-y-0.5 bg-slate-950/40 p-1.5 rounded border border-slate-800/80"
                         >

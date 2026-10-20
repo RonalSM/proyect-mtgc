@@ -967,6 +967,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           {/* Cementerio (Mitad Superior - Droppable y Arrastrable, Punto 7) */}
           <div
             ref={setGydDropRef}
+            data-pile-zone="graveyard"
             className={`flex-1 rounded-md overflow-hidden border border-slate-700 bg-slate-900/90 shadow flex flex-col items-center justify-center cursor-pointer hover:border-slate-500 active:scale-95 transition-all relative ${
               isGydOver
                 ? 'ring-4 ring-slate-200 scale-105 bg-slate-700 shadow-xl'
@@ -1002,6 +1003,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           {/* Exilio (Mitad Inferior - Droppable y Arrastrable, Punto 7) */}
           <div
             ref={setExileDropRef}
+            data-pile-zone="exile"
             className={`flex-1 rounded-md overflow-hidden border border-slate-700 bg-slate-900/90 shadow flex flex-col items-center justify-center cursor-pointer hover:border-purple-500/50 active:scale-95 transition-all relative ${
               isExileOver
                 ? 'ring-4 ring-purple-400 scale-105 bg-purple-900 shadow-xl'

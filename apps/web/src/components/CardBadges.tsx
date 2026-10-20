@@ -88,6 +88,7 @@ export const CardBadges: React.FC<CardBadgesProps> = ({ card }) => {
         return (
           <span
             key={`kw-${kwId}`}
+            data-badge-item="true"
             data-testid={`card-badge-keyword-${kwId}`}
             title={`${label}\n${reminder}`}
             className="inline-flex items-center justify-center p-0.5 rounded bg-slate-900/95 border border-amber-400/60 text-amber-300 shadow shadow-black/60 cursor-help transition-transform hover:scale-110"
@@ -116,6 +117,7 @@ export const CardBadges: React.FC<CardBadgesProps> = ({ card }) => {
         return (
           <span
             key={`cnt-${type}`}
+            data-badge-item="true"
             data-testid={`card-badge-counter-${type}`}
             title={`${label} (${count})\n${reminder}`}
             className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-bold border shadow shadow-black/60 cursor-help transition-transform hover:scale-110 ${badgeStyle}`}

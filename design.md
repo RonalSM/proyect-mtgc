@@ -645,6 +645,24 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Resets CSS Universales:** En `index.css`, reglas para `:fullscreen`, `:-webkit-full-screen`, `::backdrop`, `html`, `body`, `#root` y `#mesa-total` fijando fondo `#000000`, ancho y alto 100% y `overflow: hidden`, eliminando parpadeos y márgenes erróneos.
   - **Certificación Visual Playwright E2E:** Suite automatizada en [`apps/web/e2e/fullscreen-visual.spec.ts`](apps/web/e2e/fullscreen-visual.spec.ts) validada en pods reales de 2, 4 y 6 jugadores: playmat cargado con `naturalWidth > 0`, dock y mano visibles, cartas visibles en el campo, varianza de imagen $> 5400$ (descartando pantallas vacías), salida con botón y tecla Esc, y 0 errores de consola.
 
+- **Certificación E2E Integral de Revelación, P/T, Contadores, Palabras Clave y Posición Exterior (Punto 8 de Correcciones del Cliente - E.8):**
+  - **Suite Playwright E2E:** Implementada en [`apps/web/e2e/client-features-audit.spec.ts`](apps/web/e2e/client-features-audit.spec.ts), ejecutada de extremo a extremo en pod real de 3 participantes (1920x1080) en 23.5 segundos con 100% de aserciones aprobadas y cero errores de consola.
+  - **Resultados de certificación verificados:**
+    1. *Revelación persistente y filtro de privacidad:* Alice revela su carta de la mano a Bob; Bob ve la carta con su arte e identidad real en el abanico de Alice y el distintivo de ojo rojo (`[data-testid="revealed-eye-badge"]`) con tooltip `"Revelada por Alice"`; Charlie (no destinatario) permanece ciego ante la identidad de la carta sin fugas en DOM ni WebSocket; Alice observa el distintivo con tooltip `"Revelada a Bob"`; al pulsar «Dejar de revelar», la carta vuelve al dorso estándar en la vista de Bob.
+    2. *P/T efectivo y códigos de color:* Permanente en mesa inicializado en 4/4 neutro; con $+2$ contadores $+1/+1$ calcula y muestra 6/6 verde/up; con 3 contadores $-1/-1$ calcula 3/3 rojo/down; con poder base 0 y resistencia base -1 calcula -1/-2 rojo/down (soporte de números 0 y negativos sin motor de reglas).
+    3. *Permanente animado sin P/T impreso:* Una carta de tierra/artefacto sin estadísticas impresas no renderiza indicadores P/T; al definir base manual de 5/5 desde el menú en línea, calcula y muestra de forma reactiva la pastilla con 5/5.
+    4. *Insignias y panel explicativo:* 6 distintivos visibles en la fila superior de la carta pegada al borde sin tapar el texto inferior; tooltips con nombres oficiales en español, término original en inglés entre paréntesis y texto recordatorio («Vuela (Flying) - Esta criatura...»); panel lateral en hover preview con iconos, nombres, cantidades y explicaciones recordatorias.
+    5. *Geometría exterior invariable en permanente girado (90°) y enderezado (0°):*
+       - Untapped (0°): `badgeBottomDiff = 10 px`, `badgeLeftDiff = -4 px` (la pastilla proyecta 10 px fuera del rotador, dejando visible la atribución de artista y copyright).
+       - Tapped (90°): el rotador gira a 90° horario mientras el indicador P/T permanece erguido (`transform: "none"`, `isBadgeErguido: true`) manteniendo `badgeBottomDiff = 10 px`.
+    6. *Reinicio autoritativo al salir del campo de batalla:* Al trasladar la carta al cementerio, el servidor resetea `counters = {}`, `basePower`, `baseToughness` y `keywords`.
+    7. *Artefactos de prueba archivados:*
+       - `audit-persistent-reveal-bob.png` (1,527,693 bytes, varianza 5423.3)
+       - `audit-persistent-reveal-charlie.png` (1,491,464 bytes, varianza 5433.8)
+       - `audit-pt-indicator-colors.png` (1,621,129 bytes)
+       - `audit-preview-keywords-counters.png` (1,788,671 bytes)
+       - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
+
 - Etiqueta de nombre: píldora pequeña con icono de ampliar; turno activo con borde de color y brillo suave.
 - Ranuras de pilas: rectángulos con proporción de carta; vacías con contorno punteado y etiqueta de zona.
 - Animaciones breves (robar, d20, pasar turno) solo con `transform` y `opacity`, desactivadas con `prefers-reduced-motion`.

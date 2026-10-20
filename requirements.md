@@ -342,6 +342,37 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 3. **Protección inviolable de información oculta:**
    - La identidad de las cartas ocultas (manos ajenas no reveladas, bibliotecas ajenas y cartas boca abajo) SHALL permanecer estrictamente protegida por el servidor (`VisibilityFilter`) sin ofrecer nunca opciones de inspección («Ver carta») ni mutación.
 
+### REQ-25 Certificación E2E integral de correcciones del cliente (Punto 8 de Correcciones del Cliente - E.8)
+1. **Suite de pruebas automatizada Playwright:**
+   - Implementada en [`apps/web/e2e/client-features-audit.spec.ts`](apps/web/e2e/client-features-audit.spec.ts), ejecutada de extremo a extremo en pod real de 3 participantes (1920x1080).
+2. **Revelación persistente en mano y privacidad estricta:**
+   - Al seleccionar un destinatario específico («Bob»), la carta se revela exclusivamente a dicho destinatario con arte real, nombre e insignia de ojo rojo (`[data-testid="revealed-eye-badge"]`), tooltip `"Revelada por Alice"`.
+   - El emisor visualiza el ojo rojo con tooltip `"Revelada a Bob"`.
+   - El cliente no destinatario («Charlie») permanece estrictamente ciego ante la carta (`count === 0`, sin fuga de texto o metadatos en DOM o WebSocket).
+   - Al pulsar «Dejar de revelar», la identidad se enmascara de inmediato para todos los destinatarios.
+3. **Poder y Resistencia efectivo, fórmulas, colores y soporte de valores negativos:**
+   - Indicador P/T exterior (`CardPTBadge`) anclado a la esquina inferior izquierda.
+   - P/T efectivo = base + contadores $+1/+1$ − contadores $-1/-1$.
+   - Colores verificados: verde (`up`) al superar el base, rojo (`down`) al quedar por debajo, neutro (`neutral`) cuando es igual.
+   - Soporte de valores 0 y negativos (ej. poder base 0 y resistencia base -1 resultando en P/T efectivo -1/-2, rojo/down).
+   - Soporte para cartas sin P/T impreso (ej. tierras o artefactos a animar): muestra 0 indicadores P/T inicialmente; al definir base manual (5/5), se calcula y muestra de forma reactiva (5/5).
+4. **Insignias y panel explicativo de palabras clave y contadores:**
+   - Fila de insignias (`CardBadges.tsx`) pegada al borde superior de la carta con 6 distintivos activos (flying, deathtouch, loyalty, shield, +1/+1, -1/-1).
+   - Tooltip oficial con traducción al español y término original en inglés entre paréntesis más texto recordatorio («Vuela (Flying) - Esta criatura no puede ser bloqueada...»).
+   - Panel lateral desacoplado en la vista previa hover (`preview-keywords-counters-panel`) mostrando icono, nombre, cantidad y recordatorio oficial en español.
+5. **Geometría y posicionamiento exterior en carta erguida y girada:**
+   - Posición invariable fuera del marco: `badgeBottomDiff = 10 px` (proyecta 10 px por debajo del borde de la imagen, sin tapar la línea de artista y copyright).
+   - En permanente girado a 90°: el cuerpo rota 90° (`rotate(90deg)`), el indicador P/T permanece erguido (`transform: none`, `isBadgeErguido: true`) y mantiene `badgeBottomDiff = 10 px`.
+6. **Reinicio autoritativo al abandonar el campo de batalla:**
+   - Al trasladar el permanente al cementerio, el servidor resetea `counters = {}`, `basePower`, `baseToughness` y `keywords`.
+7. **Capturas y métricas certificadas:**
+   - `audit-persistent-reveal-bob.png` (1,527,693 bytes, varianza 5423.3)
+   - `audit-persistent-reveal-charlie.png` (1,491,464 bytes, varianza 5433.8)
+   - `audit-pt-indicator-colors.png` (1,621,129 bytes)
+   - `audit-preview-keywords-counters.png` (1,788,671 bytes)
+   - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
+   - Cero errores de consola de React o del navegador (`cleanErrors: []`).
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
 **Historia:** Como jugador, quiero ver a todos en una cuadrícula a pantalla completa, cada uno con su propio fondo y su propio espacio, para sentir que estamos jugando juntos en una mesa.
