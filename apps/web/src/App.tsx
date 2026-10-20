@@ -8,6 +8,7 @@ import { OpeningHandModal } from './components/OpeningHandModal';
 import { RevealedCardModal } from './components/RevealedCardModal';
 import { DeckImporter } from './components/DeckImporter';
 import { LegalModal } from './components/LegalModal';
+import { FontGlyphsAudit } from './components/FontGlyphsAudit';
 import { RefreshCw, Layers, Users } from 'lucide-react';
 
 export default function App() {
@@ -24,6 +25,17 @@ export default function App() {
   const [serverStatus, setServerStatus] = useState<'online' | 'offline' | 'checking'>('checking');
   const [isCreatingRoom, setIsCreatingRoom] = useState<boolean>(false);
   const [isLegalOpen, setIsLegalOpen] = useState<boolean>(false);
+  const [isFontAuditOpen, setIsFontAuditOpen] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return (
+        params.has('test-font-glyphs') ||
+        params.get('test') === 'font-glyphs' ||
+        params.get('debug') === 'icons'
+      );
+    }
+    return false;
+  });
 
   // Initialize or restore player ID
   useEffect(() => {
@@ -251,14 +263,25 @@ export default function App() {
       <footer className="border-t border-slate-800/80 bg-slate-950 px-6 py-2.5 flex items-center justify-between text-[11px] text-slate-500">
         <div>
           Mesa Virtual de Commander &bull; No oficial, sin afiliación con Wizards of the Coast
-          &bull; Scryfall API
+          &bull; Scryfall API &bull; Fuentes Mana &amp; Keyrune (SIL OFL 1.1 / MIT)
         </div>
-        <button
-          onClick={() => setIsLegalOpen(true)}
-          className="text-slate-400 hover:text-amber-400 underline transition-colors"
-        >
-          Avisos Legales y Privacidad
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            type="button"
+            data-testid="open-font-glyphs-audit-btn"
+            onClick={() => setIsFontAuditOpen(true)}
+            className="text-slate-400 hover:text-amber-400 underline transition-colors"
+          >
+            Glifos Mana &amp; Keyrune
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsLegalOpen(true)}
+            className="text-slate-400 hover:text-amber-400 underline transition-colors"
+          >
+            Avisos Legales y Privacidad
+          </button>
+        </div>
       </footer>
 
       {revealedCard && (
@@ -269,6 +292,7 @@ export default function App() {
         />
       )}
       <LegalModal isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
+      {isFontAuditOpen && <FontGlyphsAudit onClose={() => setIsFontAuditOpen(false)} />}
     </div>
   );
 }

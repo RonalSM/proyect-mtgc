@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { PlayerState, GameActionType } from '@mtgc/shared';
-import { Heart, Plus, Minus, Swords, Skull, Shield, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, Plus, Minus, Swords, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface PlayerCardProps {
   player: PlayerState;
@@ -216,7 +216,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
                 : 'bg-slate-950 border-slate-800 text-slate-400'
             }`}
           >
-            <Skull className="w-3.5 h-3.5" />
+            <i className="ms ms-counter-skull text-xs flex-shrink-0" aria-hidden="true" />
             <span>Veneno: {player.counters.poison}/10</span>
           </button>
           {player.counters.poison > 0 && (
@@ -234,7 +234,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
             onClick={() => adjustTax(2)}
             className="flex items-center space-x-1 px-2 py-1 rounded-md border bg-slate-950 border-slate-800 text-amber-300 hover:border-amber-500/40"
           >
-            <Shield className="w-3.5 h-3.5" />
+            <i className="ms ms-counter-shield text-xs flex-shrink-0" aria-hidden="true" />
             <span>Tax: +{player.counters.commanderTax}</span>
           </button>
           {player.counters.commanderTax > 0 && (

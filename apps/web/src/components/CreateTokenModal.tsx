@@ -350,7 +350,7 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                   : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <i className="ms ms-token text-xs" aria-hidden="true" />
               <span>Fichas comunes ({COMMON_TOKENS_CLIENT.length})</span>
             </button>
 

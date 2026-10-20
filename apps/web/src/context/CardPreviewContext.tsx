@@ -4,8 +4,10 @@ import { getKeywordDefinition, getCounterDefinition } from '@mtgc/shared';
 import { CardDisplay } from '../components/CardDisplay';
 import { CardDetailsModal } from '../components/CardDetailsModal';
 import { Portal } from '../components/Portal';
-import { KEYWORD_ICONS, COUNTER_ICONS } from '../components/CardBadges';
-import { Sparkles, Tag } from 'lucide-react';
+import {
+  MtgKeywordIcon,
+  MtgCounterIcon,
+} from '../utils/mana-icons';
 
 interface CardPreviewContextType {
   showPreview: (
@@ -166,7 +168,6 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                   <div className="space-y-1.5">
                     {activeKeywords.map(kwId => {
                       const def = getKeywordDefinition(kwId);
-                      const IconComp = KEYWORD_ICONS[kwId.toLowerCase()] || Sparkles;
                       const label = def?.label || kwId;
                       const reminder = def?.reminderText || '';
 
@@ -178,7 +179,10 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                           className="flex flex-col space-y-0.5 bg-slate-950/40 p-1.5 rounded border border-slate-800/80"
                         >
                           <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-300">
-                            <IconComp className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
+                            <MtgKeywordIcon
+                              keyword={kwId}
+                              className="w-3.5 h-3.5 flex-shrink-0 text-amber-400 text-sm"
+                            />
                             <span>{label}</span>
                           </div>
                           {reminder && (
@@ -197,7 +201,6 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                   <div className="space-y-1.5">
                     {activeCounters.map(([type, count]) => {
                       const def = getCounterDefinition(type);
-                      const IconComp = COUNTER_ICONS[type] || Tag;
                       const label = def?.label || type;
                       const reminder = def?.reminderText || '';
                       const isPlus = type === '+1/+1';
@@ -217,7 +220,10 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                         >
                           <div className="flex items-center justify-between text-xs font-bold text-slate-100">
                             <div className="flex items-center space-x-1.5">
-                              <IconComp className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
+                              <MtgCounterIcon
+                                counterType={type}
+                                className="w-3.5 h-3.5 flex-shrink-0 text-amber-400 text-sm"
+                              />
                               <span className="text-slate-200">{label}</span>
                             </div>
                             <span

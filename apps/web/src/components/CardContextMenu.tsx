@@ -9,7 +9,6 @@ import type {
 import { Portal } from './Portal';
 import {
   Play,
-  RotateCw,
   Copy,
   Eye,
   EyeOff,
@@ -26,13 +25,15 @@ import {
   ChevronRight,
   ChevronDown,
   Swords,
-  CircleDot,
   Tag,
   Plus,
   X,
 } from 'lucide-react';
 import { MTG_KEYWORDS, MTG_COUNTERS } from '@mtgc/shared';
-import { KEYWORD_ICONS, COUNTER_ICONS } from './CardBadges';
+import {
+  MtgKeywordIcon,
+  MtgCounterIcon,
+} from '../utils/mana-icons';
 import { getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
 import { useCardPreview } from '../context/CardPreviewContext';
 
@@ -538,7 +539,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   className="w-full flex items-center justify-between px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors text-[14px]"
                 >
                   <div className="flex items-center space-x-2 truncate">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                    <i className="ms ms-token text-amber-400 text-xs flex-shrink-0" aria-hidden="true" />
                     <span className="font-medium text-[14px] truncate">{token.name}</span>
                     {(token.power !== undefined || token.toughness !== undefined) && (
                       <span className="text-[10px] font-mono text-slate-400">
@@ -653,7 +654,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   }`}
                 >
                   <div className="flex items-center space-x-2">
-                    <CircleDot className="w-3.5 h-3.5 text-amber-400" />
+                    <MtgCounterIcon counterType="+1/+1" className="text-amber-400 text-sm" />
                     <span>Contadores</span>
                   </div>
                   <div className="flex items-center space-x-1">
@@ -677,7 +678,6 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   >
                     {/* Lista de Contadores oficiales */}
                     {MTG_COUNTERS.map(c => {
-                      const IconComponent = COUNTER_ICONS[c.id] || CircleDot;
                       const count = card.counters?.[c.id] || 0;
 
                       if (c.isSingle) {
@@ -689,7 +689,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                             className="flex items-center justify-between py-0.5 border-b border-slate-800/80 text-[14px]"
                           >
                             <div className="flex items-center space-x-1.5 text-[11px] flex-1 min-w-0 pr-2">
-                              <IconComponent className="w-3.5 h-3.5 flex-shrink-0 text-purple-400" />
+                              <MtgCounterIcon
+                                counterType={c.id}
+                                className="w-3.5 h-3.5 flex-shrink-0 text-purple-400 text-sm"
+                              />
                               <span className="text-slate-200 truncate">{c.label}</span>
                             </div>
                             <button
@@ -720,7 +723,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                           className="flex items-center justify-between py-0.5 border-b border-slate-800/60 text-[14px]"
                         >
                           <div className="flex items-center space-x-1.5 flex-1 min-w-0 pr-2">
-                            <IconComponent className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
+                            <MtgCounterIcon
+                              counterType={c.id}
+                              className="w-3.5 h-3.5 flex-shrink-0 text-amber-400 text-sm"
+                            />
                             <label className="text-slate-300 truncate font-medium">{c.label}</label>
                           </div>
                           <input
@@ -860,7 +866,6 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                     className="pl-2 pr-1.5 py-1.5 space-y-1 border-l-2 border-amber-500/50 bg-slate-950/40 rounded-r-lg my-0.5 max-h-56 overflow-y-auto text-[14px]"
                   >
                     {MTG_KEYWORDS.map(kw => {
-                      const IconComponent = KEYWORD_ICONS[kw.id] || Sparkles;
                       const isActive = (card.keywords || []).includes(kw.id);
 
                       return (
@@ -869,7 +874,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                           className="flex items-center justify-between py-1 border-b border-slate-800/80"
                         >
                           <div className="flex items-center space-x-1.5 text-[11px] flex-1 min-w-0 pr-2">
-                            <IconComponent className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
+                            <MtgKeywordIcon
+                              keyword={kw.id}
+                              className="w-3.5 h-3.5 flex-shrink-0 text-amber-400 text-sm"
+                            />
                             <span className="text-slate-200 truncate">{kw.label}</span>
                           </div>
                           <button
@@ -906,7 +914,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   }}
                   className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-200 text-[14px] hover:text-white cursor-pointer"
                 >
-                  <RotateCw className="w-3.5 h-3.5 text-amber-400" />
+                  <i
+                    className={`${card.isTapped ? 'ms ms-untap' : 'ms ms-tap'} text-amber-400 text-sm w-4 inline-block text-center flex-shrink-0`}
+                    aria-hidden="true"
+                  />
                   <span>{card.isTapped ? 'Enderezar' : 'Girar'}</span>
                 </button>
               )}

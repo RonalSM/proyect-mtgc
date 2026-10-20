@@ -41,6 +41,8 @@ await server.register(helmet, {
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
+      fontSrc: ["'self'", 'data:'],
+      styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: [
         "'self'",
         'data:',

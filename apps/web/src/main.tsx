@@ -1,5 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import 'mana-font/css/mana.css';
+import 'keyrune/css/keyrune.css';
 import App from './App';
 import { LanguageProvider } from './context/LanguageContext';
 import './index.css';

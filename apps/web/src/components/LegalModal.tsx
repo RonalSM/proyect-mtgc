@@ -75,6 +75,22 @@ export const LegalModal: React.FC<LegalModalProps> = ({
           </p>
         </section>
 
+        {/* Fuentes e Iconografía: Mana y Keyrune */}
+        <section className="space-y-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
+            <HeartHandshake className="w-4 h-4 text-amber-400" />
+            <span>Fuentes e Iconografía: Mana Font y Keyrune</span>
+          </h4>
+          <p className="text-xs text-slate-400 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800">
+            Los iconos de símbolos de maná, acciones de girar/desgirar, palabras clave y contadores
+            emplean la fuente <strong>Mana</strong> (creada por Andrew Gioia; fuentes bajo SIL OFL 1.1,
+            código CSS bajo licencia MIT). Los símbolos de expansiones emplean la fuente <strong>Keyrune</strong>
+            (creada por Andrew Gioia; fuentes bajo SIL OFL 1.1, glifos GPL 3.0). Ambas fuentes están auto-alojadas
+            localmente en el servidor para cumplir con las directivas de seguridad CSP. Respaldos vectoriales bajo MPL-2.0.
+            Consulta el archivo <code>THIRD_PARTY_NOTICES.md</code> en el repositorio para los textos íntegros de las licencias.
+          </p>
+        </section>
+
         {/* Privacy & GDPR Right to Deletion */}
         <section className="space-y-1.5">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">

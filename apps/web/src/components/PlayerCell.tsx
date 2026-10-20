@@ -10,7 +10,6 @@ import type {
 } from '@mtgc/shared';
 import {
   Heart,
-  Skull,
   Maximize2,
   Image as ImageIcon,
   AlertTriangle,
@@ -851,7 +850,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   {/* Counter Badges Menu (Punto 6: se eliminan controles de tax de la pastilla de vida para evitar duplicidad) */}
                   <div className="pt-1.5 border-t border-slate-800 flex items-center justify-between bg-slate-950 px-2 py-1 rounded-lg text-[10px]">
                     <span className="text-emerald-400 flex items-center space-x-1">
-                      <Skull className="w-2.5 h-2.5" />
+                      <i className="ms ms-counter-skull text-xs flex-shrink-0" aria-hidden="true" />
                       <span>Veneno: {player.counters.poison}</span>
                     </span>
                     <div className="flex space-x-1">

@@ -11,67 +11,19 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { MtgSymbolIcon, KeyruneSetIcon } from '../utils/mana-icons';
 
 interface CardDetailsModalProps {
   card: CardDefinition;
   onClose: () => void;
 }
 
-// Renderizador de un símbolo individual de Maná o Acción
+// Renderizador de un símbolo individual de Maná o Acción con fuente Mana
 export const FormattedSymbol: React.FC<{ symbol: string; size?: 'sm' | 'md' }> = ({
   symbol,
   size = 'md',
 }) => {
-  const cleanSym = symbol.replace(/[{}]/g, '').toUpperCase();
-  const dim = size === 'sm' ? 'w-4 h-4 text-[9px]' : 'w-5 h-5 text-[11px]';
-
-  let colorClasses = 'bg-slate-700 text-slate-200 border-slate-600';
-  let content: React.ReactNode = cleanSym;
-
-  switch (cleanSym) {
-    case 'W':
-      colorClasses = 'bg-[#F9FAF4] text-slate-950 border-[#CBC2BF] shadow-amber-100/20';
-      break;
-    case 'U':
-      colorClasses = 'bg-[#0E68AB] text-white border-[#084572] shadow-sky-500/20';
-      break;
-    case 'B':
-      colorClasses = 'bg-[#2B2524] text-[#F3EFE0] border-[#150B00] shadow-purple-950/20';
-      break;
-    case 'R':
-      colorClasses = 'bg-[#D3202A] text-white border-[#9E121A] shadow-rose-600/20';
-      break;
-    case 'G':
-      colorClasses = 'bg-[#00733E] text-white border-[#004C28] shadow-emerald-600/20';
-      break;
-    case 'C':
-      colorClasses = 'bg-[#9D9D9F] text-slate-950 border-[#7D7D7F]';
-      break;
-    case 'T':
-      colorClasses = 'bg-[#9D9D9F] text-slate-950 border-[#7D7D7F] font-black';
-      content = '↷';
-      break;
-    case 'X':
-      colorClasses = 'bg-[#9D9D9F] text-slate-950 border-[#7D7D7F] font-bold';
-      break;
-    default:
-      if (/^\d+$/.test(cleanSym)) {
-        colorClasses = 'bg-[#9D9D9F] text-slate-950 border-[#7D7D7F] font-bold';
-      } else if (cleanSym.includes('/')) {
-        colorClasses =
-          'bg-gradient-to-r from-amber-200 to-sky-600 text-slate-950 text-[8px] font-bold border-slate-600';
-      }
-      break;
-  }
-
-  return (
-    <span
-      className={`inline-flex items-center justify-center rounded-full border font-mono font-bold leading-none select-none align-middle mx-0.5 shadow-sm ${dim} ${colorClasses}`}
-      title={`{${cleanSym}}`}
-    >
-      {content}
-    </span>
-  );
+  return <MtgSymbolIcon symbol={symbol} size={size} />;
 };
 
 // Formateador de texto Oracle con símbolos y párrafos
@@ -296,11 +248,16 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
               {(displayPower !== undefined || displayLoyalty !== undefined) && (
                 <span
                   data-testid="card-details-pt"
-                  className="font-mono font-black text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20"
+                  className="font-mono font-black text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 inline-flex items-center space-x-1"
                 >
-                  {displayPower !== undefined
-                    ? `${displayPower}/${displayToughness ?? '?'}`
-                    : `Lealtad: ${displayLoyalty}`}
+                  {displayPower !== undefined ? (
+                    <span>{`${displayPower}/${displayToughness ?? '?'}`}</span>
+                  ) : (
+                    <>
+                      <i className="ms ms-counter-loyalty text-xs text-amber-400 mr-1" aria-hidden="true" />
+                      <span>{`Lealtad: ${displayLoyalty}`}</span>
+                    </>
+                  )}
                 </span>
               )}
             </div>
@@ -324,10 +281,15 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                 </span>
                 <span
                   data-testid="card-details-set"
-                  className="font-semibold text-slate-200 truncate block"
+                  className="font-semibold text-slate-200 truncate flex items-center space-x-1.5"
                   title={card.setName || card.set}
                 >
-                  {card.setName || card.set?.toUpperCase() || 'Commander'}
+                  <KeyruneSetIcon
+                    setCode={card.set}
+                    rarity={card.rarity}
+                    className="text-sm text-amber-300"
+                  />
+                  <span className="truncate">{card.setName || card.set?.toUpperCase() || 'Commander'}</span>
                 </span>
               </div>
 
