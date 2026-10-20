@@ -251,6 +251,10 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
         2. "Palabras clave" (`data-testid="context-keywords-section"`): desplegable en línea con los 14 términos oficiales y un interruptor on/off (`role="switch"`) individual para cada una.
       - **Modificación universal y registro:** Cualquier jugador puede modificar los contadores y las palabras clave de cualquier carta visible en la mesa; el servidor valida y registra autoritativamente la acción en la bitácora pública con el nombre del autor.
       - **Ciclo de vida y reseteo:** Al salir la carta del campo de batalla (hacia cementerio, exilio, mano o biblioteca), todos sus contadores y palabras clave activas son reseteados y eliminados de la instancia.
+    - **REQ-9.7.31 (Vista previa grande con panel explicativo de contadores y palabras clave, Punto 5):**
+      - **Panel anexo en vista previa:** Al pasar el ratón (hover) sobre una carta con contadores o palabras clave activas, THE sistema SHALL desplegar junto a la vista previa grande un panel explicativo anexo (`data-testid="preview-keywords-counters-panel"`).
+      - **Contenido del panel explicativo:** Lista detallada de cada contador y palabra clave presentes, con su icono gráfico, nombre oficial en español con original en inglés entre paréntesis (p. ej. "Vuela (Flying)"), cantidad numérica para contadores y el texto de ayuda oficial (reminder text en español).
+      - **Tooltips en cartas pequeñas:** Las insignias de la carta pequeña en mesa disponen de tooltip nativo con esa misma información detallada.
 
 
 ### REQ-10 Sincronización y reconexión

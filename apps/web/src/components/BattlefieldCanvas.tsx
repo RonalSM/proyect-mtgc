@@ -90,7 +90,8 @@ interface BattlefieldCardItemProps {
   onSendToCommand?: () => void;
   showPreview: (
     card: CardDefinition,
-    posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent
+    posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent,
+    instance?: CardInstance
   ) => void;
   hidePreview: () => void;
 }
@@ -257,7 +258,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchEnd}
-      onMouseEnter={(e) => !card.isFaceDown && !isDragging && showPreview(card.definition, e)}
+      onMouseEnter={(e) => !card.isFaceDown && !isDragging && showPreview(card.definition, e, card)}
       onMouseLeave={hidePreview}
       onTransitionEnd={handleTransitionEnd}
       className={`card-slot-container absolute group select-none pointer-events-auto flex items-center justify-center ${

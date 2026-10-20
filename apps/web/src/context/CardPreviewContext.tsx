@@ -1,13 +1,17 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
-import type { CardDefinition } from '@mtgc/shared';
+import type { CardDefinition, CardInstance } from '@mtgc/shared';
+import { getKeywordDefinition, getCounterDefinition } from '@mtgc/shared';
 import { CardDisplay } from '../components/CardDisplay';
 import { CardDetailsModal } from '../components/CardDetailsModal';
 import { Portal } from '../components/Portal';
+import { KEYWORD_ICONS, COUNTER_ICONS } from '../components/CardBadges';
+import { Sparkles, Tag } from 'lucide-react';
 
 interface CardPreviewContextType {
   showPreview: (
     card: CardDefinition,
-    posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent
+    posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent,
+    instance?: CardInstance
   ) => void;
   hidePreview: () => void;
   setIsDragging: (isDragging: boolean) => void;
@@ -19,6 +23,7 @@ const CardPreviewContext = createContext<CardPreviewContextType | null>(null);
 
 export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeCard, setActiveCard] = useState<CardDefinition | null>(null);
+  const [activeInstance, setActiveInstance] = useState<CardInstance | null>(null);
   const [detailsCard, setDetailsCard] = useState<CardDefinition | null>(null);
   const [previewSide, setPreviewSide] = useState<'left' | 'right'>('right');
   const [isDragging, setIsDraggingState] = useState(false);
@@ -47,7 +52,8 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const showPreview = (
     card: CardDefinition,
-    posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent
+    posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent,
+    instance?: CardInstance
   ) => {
     if (isDragging) return;
 
@@ -66,6 +72,7 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setActiveCard(card);
+      setActiveInstance(instance || null);
     }, 100);
   };
 
@@ -75,6 +82,7 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
       timerRef.current = null;
     }
     setActiveCard(null);
+    setActiveInstance(null);
   };
 
   const setIsDragging = (dragging: boolean) => {
@@ -93,12 +101,16 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setDetailsCard(null);
   };
 
+  const activeKeywords = activeInstance?.keywords || [];
+  const activeCounters = Object.entries(activeInstance?.counters || {}).filter(([_, count]) => count > 0);
+  const hasExplanations = activeKeywords.length > 0 || activeCounters.length > 0;
+
   return (
     <CardPreviewContext.Provider
       value={{ showPreview, hidePreview, setIsDragging, openCardDetails, closeCardDetails }}
     >
       {children}
-      {/* Vista previa de carta centrada en la mitad opuesta sin contenedor ni marcos (Punto 9) */}
+      {/* Vista previa de carta centrada en la mitad opuesta con panel explicativo (Punto 5) */}
       {activeCard && !isDragging && (
         <Portal>
           <div
@@ -115,7 +127,9 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
               padding: 0,
               margin: 0,
             }}
-            className="select-none animate-in fade-in duration-100"
+            className={`select-none animate-in fade-in duration-100 flex items-center gap-4 ${
+              previewSide === 'right' ? 'flex-row-reverse' : 'flex-row'
+            }`}
           >
             <div
               data-testid="card-preview-image-wrapper"
@@ -126,7 +140,7 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 background: 'transparent',
                 border: 'none',
               }}
-              className="rounded-[4.5%] overflow-hidden"
+              className="rounded-[4.5%] overflow-hidden flex-shrink-0"
             >
               <CardDisplay
                 card={activeCard}
@@ -134,6 +148,88 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 className="bg-transparent border-0 shadow-none"
               />
             </div>
+
+            {/* Panel explicativo de contadores y palabras clave oficiales (Punto 5) */}
+            {hasExplanations && (
+              <div
+                data-testid="preview-keywords-counters-panel"
+                className="bg-slate-900/95 border border-slate-700/80 rounded-xl p-3 shadow-2xl backdrop-blur-md max-w-[280px] pointer-events-none flex flex-col space-y-2.5 animate-in fade-in duration-100"
+              >
+                <div className="text-[11px] font-bold text-amber-400 border-b border-slate-800 pb-1 flex items-center justify-between">
+                  <span>Contadores y Palabras Clave</span>
+                </div>
+
+                {/* Palabras Clave */}
+                {activeKeywords.length > 0 && (
+                  <div className="space-y-1.5">
+                    {activeKeywords.map(kwId => {
+                      const def = getKeywordDefinition(kwId);
+                      const IconComp = KEYWORD_ICONS[kwId.toLowerCase()] || Sparkles;
+                      const label = def?.label || kwId;
+                      const reminder = def?.reminderText || '';
+
+                      return (
+                        <div
+                          key={kwId}
+                          data-testid={`preview-keyword-${kwId}`}
+                          className="flex flex-col space-y-0.5 bg-slate-950/40 p-1.5 rounded border border-slate-800/80"
+                        >
+                          <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-300">
+                            <IconComp className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
+                            <span>{label}</span>
+                          </div>
+                          {reminder && (
+                            <p className="text-[10px] text-slate-300 italic pl-5 leading-tight">
+                              {reminder}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Contadores */}
+                {activeCounters.length > 0 && (
+                  <div className="space-y-1.5">
+                    {activeCounters.map(([type, count]) => {
+                      const def = getCounterDefinition(type);
+                      const IconComp = COUNTER_ICONS[type] || Tag;
+                      const label = def?.label || type;
+                      const reminder = def?.reminderText || '';
+                      const isPlus = type === '+1/+1';
+                      const isMinus = type === '−1/−1' || type === '-1/-1';
+                      const countDisplay = isPlus ? `+${count}` : isMinus ? `-${count}` : `×${count}`;
+
+                      return (
+                        <div
+                          key={type}
+                          data-testid={`preview-counter-${type}`}
+                          className="flex flex-col space-y-0.5 bg-slate-950/40 p-1.5 rounded border border-slate-800/80"
+                        >
+                          <div className="flex items-center justify-between text-xs font-bold text-slate-100">
+                            <div className="flex items-center space-x-1.5">
+                              <IconComp className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
+                              <span className="text-slate-200">{label}</span>
+                            </div>
+                            <span className={`font-mono text-xs px-1 rounded ${
+                              isPlus ? 'text-emerald-400 bg-emerald-950/60' : isMinus ? 'text-rose-400 bg-rose-950/60' : 'text-amber-300 bg-amber-950/60'
+                            }`}>
+                              {countDisplay}
+                            </span>
+                          </div>
+                          {reminder && (
+                            <p className="text-[10px] text-slate-300 italic pl-5 leading-tight">
+                              {reminder}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </Portal>
       )}
