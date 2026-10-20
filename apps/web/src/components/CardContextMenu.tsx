@@ -272,8 +272,8 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
         focusable[nextIndex]?.focus();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [onClose]);
 
   // Enfoque inicial al abrir el menú para permitir navegación inmediata con teclado
@@ -285,18 +285,88 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  // Ajustar posición para no desbordar los límites de la pantalla
-  // Ajustar posición para no desbordar límites (Punto 2: ancho máximo 240 px)
-  const menuW = 240;
-  const menuH = 380;
-  const clampedX =
-    typeof window !== 'undefined'
-      ? Math.max(8, Math.min(position.x, window.innerWidth - menuW - 8))
-      : position.x;
-  const clampedY =
-    typeof window !== 'undefined'
-      ? Math.max(8, Math.min(position.y, window.innerHeight - menuH - 8))
-      : position.y;
+  // Posicionamiento reactivo con márgenes de 8px y ResizeObserver (Punto 3 - SIEMPRE VISIBLE)
+  const posX = typeof position?.x === 'number' && !isNaN(position.x) ? position.x : 100;
+  const posY = typeof position?.y === 'number' && !isNaN(position.y) ? position.y : 100;
+
+  const [coords, setCoords] = useState<{ x: number; y: number }>(() => {
+    if (typeof window === 'undefined') return { x: posX, y: posY };
+    const winW = window.innerWidth;
+    const winH = window.innerHeight;
+    const MARGIN = 8;
+    const initialW = 240;
+    const initialH = 360;
+
+    let nextLeft = posX;
+    if (nextLeft + initialW > winW - MARGIN) {
+      nextLeft = Math.max(MARGIN, winW - initialW - MARGIN);
+    }
+    if (nextLeft < MARGIN) nextLeft = MARGIN;
+
+    let nextTop = posY;
+    if (nextTop + initialH > winH - MARGIN) {
+      if (posY - initialH >= MARGIN) {
+        nextTop = posY - initialH;
+      } else {
+        nextTop = Math.max(MARGIN, winH - initialH - MARGIN);
+      }
+    }
+    if (nextTop < MARGIN) nextTop = MARGIN;
+
+    return { x: nextLeft, y: nextTop };
+  });
+
+  useEffect(() => {
+    if (!menuRef.current) return;
+
+    const updatePosition = () => {
+      if (!menuRef.current) return;
+      const rect = menuRef.current.getBoundingClientRect();
+      const winW = window.innerWidth;
+      const winH = window.innerHeight;
+      const MARGIN = 8;
+      const menuWidth = Math.min(240, rect.width > 0 ? rect.width : 240);
+      const menuHeight = rect.height;
+
+      // Horizontal: dentro del viewport con margen de 8 px
+      let nextLeft = posX;
+      if (nextLeft + menuWidth > winW - MARGIN) {
+        nextLeft = Math.max(MARGIN, winW - menuWidth - MARGIN);
+      }
+      if (nextLeft < MARGIN) {
+        nextLeft = MARGIN;
+      }
+
+      // Vertical: abrir hacia arriba o desplazarse si no cabe abajo
+      let nextTop = posY;
+      if (nextTop + menuHeight > winH - MARGIN) {
+        if (posY - menuHeight >= MARGIN) {
+          nextTop = posY - menuHeight;
+        } else {
+          nextTop = Math.max(MARGIN, winH - menuHeight - MARGIN);
+        }
+      }
+      if (nextTop < MARGIN) {
+        nextTop = MARGIN;
+      }
+
+      setCoords({ x: Math.round(nextLeft), y: Math.round(nextTop) });
+    };
+
+    updatePosition();
+
+    // Recalcular posición al expandir o plegar secciones mediante ResizeObserver
+    const observer = new ResizeObserver(() => {
+      updatePosition();
+    });
+    observer.observe(menuRef.current);
+    window.addEventListener('resize', updatePosition);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [posX, posY]);
 
   // Destino: Mesa (con posición en cascada en sección propia, Punto 2)
   const handleSendToBattlefield = () => {
@@ -397,6 +467,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
     <Portal>
       <div
         className="fixed inset-0 z-[100]"
+        data-testid="context-menu-backdrop"
         onClick={handleBackdropClose}
         onDoubleClick={e => {
           e.stopPropagation();
@@ -409,8 +480,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
         <div
           ref={menuRef}
           style={{
-            top: `${clampedY}px`,
-            left: `${clampedX}px`,
+            top: `${coords.y}px`,
+            left: `${coords.x}px`,
+            maxHeight: 'calc(100vh - 16px)',
+            maxWidth: '240px',
           }}
           data-card-context-menu="true"
           onClick={e => e.stopPropagation()}
@@ -418,7 +491,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
           onPointerDown={e => e.stopPropagation()}
           onMouseDown={e => e.stopPropagation()}
           onContextMenu={e => e.stopPropagation()}
-          className="fixed bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 w-max max-w-[240px] max-h-[85vh] overflow-y-auto z-[110] backdrop-blur-md text-[14px] text-slate-200 select-none"
+          className="fixed bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 w-max max-w-[240px] overflow-y-auto z-[110] backdrop-blur-md text-[14px] text-slate-200 select-none"
         >
           {/* Header con nombre de carta (o Carta oculta / Carta boca abajo) */}
           <div className="px-2 py-1 text-[14px] font-bold text-amber-400 border-b border-slate-800 truncate max-w-[220px]">
