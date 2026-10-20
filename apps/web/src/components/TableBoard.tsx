@@ -84,16 +84,24 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       });
     };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    document.addEventListener('fullscreenchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('fullscreenchange', handleResize);
+    };
   }, []);
 
-  const cellWidth = isTwoPlayer
+  const cellWidth = expandedPlayerId
+    ? viewportSize.width
+    : isTwoPlayer
     ? viewportSize.width / 2
     : podSize <= 4
     ? viewportSize.width / 2
     : viewportSize.width / 3;
 
-  const cellHeight = isTwoPlayer
+  const cellHeight = expandedPlayerId
+    ? viewportSize.height
+    : isTwoPlayer
     ? viewportSize.height
     : viewportSize.height / 2;
 
@@ -612,7 +620,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         roomState={roomState}
         allBattlefieldCards={allBattlefieldCards}
         onAction={onAction}
-        onExpandCell={() => setExpandedPlayerId(expandedPlayerId === player.id ? null : player.id)}
+        onExpandCell={() => setExpandedPlayerId(prev => (prev === player.id ? null : player.id))}
       />
     );
   };
@@ -634,7 +642,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           '--card-w': `${cardPixelWidth}px`,
           '--card-h': `${cardPixelHeight}px`,
         } as React.CSSProperties}
-        className="relative w-screen h-[100dvh] overflow-hidden bg-black select-none"
+        className="relative w-full h-full overflow-hidden bg-black select-none"
       >
         {/* Full-bleed Table Grid (Visual Divisions & Floating Docks o Vista Ampliada) */}
         <TableGrid

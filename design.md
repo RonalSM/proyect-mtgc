@@ -634,6 +634,13 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
 
 
 
+- **Adaptación Fluida y Visibilidad en Pantalla Completa y Modo Expandido (Punto 6 de Correcciones del Cliente - C.6):**
+  - **Diagnóstico y eliminación del pantallazo azul:** Se identificaron y corrigieron las dos causas de fondos planos color azul pizarra (`bg-slate-950` / `#020617`) en pantalla completa:
+    1. *Modo Expandido:* Cierre de captura reactiva en `onExpandCell` mediante actualización funcional `setExpandedPlayerId(prev => prev === player.id ? null : player.id)`, vinculación dinámica de dimensiones de celda a pantalla completa (`cellWidth = viewportSize.width`, `cellHeight = viewportSize.height`) para que las cartas y el dock se escalen a tamaño completo, y renderizado del playmat a sangre con capas de contraste sin huecos.
+    2. *Pantalla Completa del Navegador:* Inclusión de botón en la esquina superior derecha (`fixed top-2 right-4 z-40`, `data-testid="fullscreen-btn"`) que alterna con `document.documentElement.requestFullscreen()` y `exitFullscreen()`, sincronizado con `fullscreenchange` (`Maximize2` / `Minimize2`).
+  - **Resets CSS Universales:** En `index.css`, reglas para `:fullscreen`, `:-webkit-full-screen`, `::backdrop`, `html`, `body`, `#root` y `#mesa-total` fijando fondo `#000000`, ancho y alto 100% y `overflow: hidden`, eliminando parpadeos y márgenes erróneos.
+  - **Certificación Visual Playwright E2E:** Suite automatizada en [`apps/web/e2e/fullscreen-visual.spec.ts`](apps/web/e2e/fullscreen-visual.spec.ts) validada en pods reales de 2, 4 y 6 jugadores: playmat cargado con `naturalWidth > 0`, dock y mano visibles, cartas visibles en el campo, varianza de imagen $> 5400$ (descartando pantallas vacías), salida con botón y tecla Esc, y 0 errores de consola.
+
 - Etiqueta de nombre: píldora pequeña con icono de ampliar; turno activo con borde de color y brillo suave.
 - Ranuras de pilas: rectángulos con proporción de carta; vacías con contorno punteado y etiqueta de zona.
 - Animaciones breves (robar, d20, pasar turno) solo con `transform` y `opacity`, desactivadas con `prefers-reduced-motion`.
