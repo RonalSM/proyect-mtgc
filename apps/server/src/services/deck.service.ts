@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { prisma } from '../db.js';
-import { CardDefinition, CardColor, parseDecklist } from '@mtgc/shared';
+import { CardDefinition, CardColor, parseDecklist, ParsedDeckLine } from '@mtgc/shared';
 import { randomUUID } from 'crypto';
 import { cardLocaleService } from './card-locale.service.js';
 import { tokenService } from './token.service.js';
@@ -254,7 +254,7 @@ export class DeckService {
             .replace(/[^a-z0-9]/g, '-')}`;
           const cleanName = filename.replace(/^\d+-/, '').replace('.txt', '').replace(/-/g, ' ');
 
-          const cmdrCards: CardDefinition[] = parsed.commanderEntries.flatMap(e =>
+          const cmdrCards: CardDefinition[] = parsed.commanderEntries.flatMap((e: ParsedDeckLine) =>
             Array.from({ length: e.quantity }, (_, q) => ({
               scryfallId: `cmdr_${deckId}_${q}`,
               name: e.cardName,
@@ -265,7 +265,7 @@ export class DeckService {
               legalities: { commander: 'legal' },
             })),
           );
-          const mainCards: CardDefinition[] = parsed.maindeckEntries.flatMap(e =>
+          const mainCards: CardDefinition[] = parsed.maindeckEntries.flatMap((e: ParsedDeckLine) =>
             Array.from({ length: e.quantity }, (_, q) => ({
               scryfallId: `main_${deckId}_${e.cardName.replace(/\s+/g, '_')}_${q}`,
               name: e.cardName,
