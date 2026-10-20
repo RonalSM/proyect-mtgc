@@ -1044,9 +1044,20 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           <div
             className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={() => setActivePileModal(null)}
+            onDoubleClick={e => {
+              e.stopPropagation();
+              setActivePileModal(null);
+            }}
+            onPointerDown={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
+            onContextMenu={e => e.stopPropagation()}
           >
             <div
               onClick={e => e.stopPropagation()}
+              onDoubleClick={e => e.stopPropagation()}
+              onPointerDown={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+              onContextMenu={e => e.stopPropagation()}
               className={`bg-slate-900 border border-slate-800 rounded-2xl w-full ${
                 activePileModal === 'library' ? 'max-w-2xl' : 'max-w-lg'
               } max-h-[80vh] flex flex-col shadow-2xl overflow-hidden`}
@@ -1239,9 +1250,22 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           <div
             data-testid="playmat-modal-overlay"
             className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setIsPlaymatModalOpen(false)}
+            onDoubleClick={e => {
+              e.stopPropagation();
+              setIsPlaymatModalOpen(false);
+            }}
+            onPointerDown={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
+            onContextMenu={e => e.stopPropagation()}
           >
             <form
               onSubmit={handleSavePlaymat}
+              onClick={e => e.stopPropagation()}
+              onDoubleClick={e => e.stopPropagation()}
+              onPointerDown={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+              onContextMenu={e => e.stopPropagation()}
               className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl"
             >
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">

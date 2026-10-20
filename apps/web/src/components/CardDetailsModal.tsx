@@ -175,10 +175,21 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
       data-testid="card-details-modal"
       className="fixed inset-0 z-[60] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto select-none"
       onClick={onClose}
+      onDoubleClick={e => {
+        e.stopPropagation();
+        onClose();
+      }}
+      onPointerDown={e => e.stopPropagation()}
+      onMouseDown={e => e.stopPropagation()}
+      onContextMenu={e => e.stopPropagation()}
     >
       <div
         className="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-slate-100 animate-in fade-in zoom-in-95 duration-150"
         onClick={e => e.stopPropagation()}
+        onDoubleClick={e => e.stopPropagation()}
+        onPointerDown={e => e.stopPropagation()}
+        onMouseDown={e => e.stopPropagation()}
+        onContextMenu={e => e.stopPropagation()}
       >
         {/* Header Bar */}
         <div className="bg-slate-950/80 px-5 py-3 border-b border-slate-800 flex items-center justify-between">

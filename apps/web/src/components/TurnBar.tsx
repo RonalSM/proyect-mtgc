@@ -209,8 +209,25 @@ export const TurnBar: React.FC<TurnBarProps> = ({
 
       {/* Turn Order Modal (REQ-6.4) */}
       {showOrderModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-sm w-full shadow-2xl">
+        <div
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setShowOrderModal(false)}
+          onDoubleClick={e => {
+            e.stopPropagation();
+            setShowOrderModal(false);
+          }}
+          onPointerDown={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
+          onContextMenu={e => e.stopPropagation()}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            onDoubleClick={e => e.stopPropagation()}
+            onPointerDown={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
+            onContextMenu={e => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-800 rounded-2xl p-5 max-w-sm w-full shadow-2xl"
+          >
             <h3 className="text-sm font-bold text-white flex items-center space-x-2 mb-2">
               <ArrowUpDown className="w-4 h-4 text-amber-400" />
               <span>Corregir Orden de Turnos (REQ-6.4)</span>

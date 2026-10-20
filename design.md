@@ -638,6 +638,11 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
 
 
 
+- **Aislamiento de Eventos en Menús Contextuales y Modales contra Doble Clic y Mutaciones Involuntarias (Punto 2 de Correcciones del Cliente - A.2):**
+  - **Diagnóstico de propagación sintética en React:** A pesar de renderizarse a través de portales hacia `document.body` (`Portal.tsx`), el sistema de eventos sintéticos de React propaga los eventos a través de la jerarquía de componentes del árbol de React. Al estar `CardContextMenu` montado como descendiente del contenedor de la carta (`card-slot-container`), los eventos de `dblclick` ejecutados sobre opciones, campos de texto/números, separadores o bordes del menú burbujeaban hasta el manejador `onDoubleClick` de la carta, activando involuntariamente `handleDoubleClick` (`onTap`) y rotando la carta.
+  - **Intercepción exhaustiva de eventos:** Se aplicó `e.stopPropagation()` para `click`, `dblclick`, `pointerdown`, `mousedown` y `contextmenu` tanto en el contenedor del menú (`menuRef`) como en el telón de fondo (`backdrop`), así como en todos los modales del sistema (`CardDetailsModal`, `OpeningHandModal`, `RevealedCardModal`, `activePileModal`, `isPlaymatModalOpen`, `FloatingToolbar` y `TurnBar`).
+  - **Inmunidad garantizada:** Cualquier interacción con doble clic o pulsación sobre botones, inputs numéricos, bordes o fondos dentro del menú contextual o modales queda estrictamente contenida sin alterar el estado de las cartas ni activar giros accidentales.
+
 - **Adaptación Fluida y Visibilidad en Pantalla Completa y Modo Expandido (Punto 6 de Correcciones del Cliente - C.6):**
   - **Diagnóstico y eliminación del pantallazo azul:** Se identificaron y corrigieron las dos causas de fondos planos color azul pizarra (`bg-slate-950` / `#020617`) en pantalla completa:
     1. *Modo Expandido:* Cierre de captura reactiva en `onExpandCell` mediante actualización funcional `setExpandedPlayerId(prev => prev === player.id ? null : player.id)`, vinculación dinámica de dimensiones de celda a pantalla completa (`cellWidth = viewportSize.width`, `cellHeight = viewportSize.height`) para que las cartas y el dock se escalen a tamaño completo, y renderizado del playmat a sangre con capas de contraste sin huecos.

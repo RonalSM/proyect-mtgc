@@ -39,10 +39,21 @@ export const RevealedCardModal: React.FC<RevealedCardModalProps> = ({
       data-testid="revealed-card-modal"
       className="fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200"
       onClick={onClose}
+      onDoubleClick={e => {
+        e.stopPropagation();
+        onClose();
+      }}
+      onPointerDown={e => e.stopPropagation()}
+      onMouseDown={e => e.stopPropagation()}
+      onContextMenu={e => e.stopPropagation()}
     >
       <div
         className="relative bg-slate-900 border border-amber-500/80 rounded-2xl shadow-[0_0_60px_rgba(245,158,11,0.25)] p-5 max-w-sm w-full flex flex-col items-center space-y-4 text-center"
         onClick={e => e.stopPropagation()}
+        onDoubleClick={e => e.stopPropagation()}
+        onPointerDown={e => e.stopPropagation()}
+        onMouseDown={e => e.stopPropagation()}
+        onContextMenu={e => e.stopPropagation()}
       >
         {/* Botón de cierre superior derecho */}
         <button

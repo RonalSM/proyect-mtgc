@@ -321,6 +321,12 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
       <div
         className="fixed inset-0 z-[100]"
         onClick={handleBackdropClose}
+        onDoubleClick={e => {
+          e.stopPropagation();
+          onClose();
+        }}
+        onPointerDown={e => e.stopPropagation()}
+        onMouseDown={e => e.stopPropagation()}
         onContextMenu={handleBackdropClose}
       >
         <div
@@ -331,8 +337,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
           }}
           data-card-context-menu="true"
           onClick={e => e.stopPropagation()}
-          onContextMenu={e => e.stopPropagation()}
+          onDoubleClick={e => e.stopPropagation()}
           onPointerDown={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
+          onContextMenu={e => e.stopPropagation()}
           className="fixed bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 min-w-[190px] max-h-[85vh] overflow-y-auto z-[110] backdrop-blur-md text-xs text-slate-200 select-none"
         >
           {/* Header con nombre de carta (o Carta oculta / Carta boca abajo) */}
