@@ -9,21 +9,21 @@ class CardImageResolver {
   private inFlight: Map<string, Promise<string | null>> = new Map();
 
   /**
-   * Synchronously get a previously cached image URL for a card name
+   * Synchronously get a previously cached image URL for a card name with language support
    */
-  public getCached(cardName: string, size: 'small' | 'normal' = 'normal'): string | null {
+  public getCached(cardName: string, size: 'small' | 'normal' = 'normal', lang: 'es' | 'en' = 'es'): string | null {
     if (!cardName) return null;
-    const key = `${cardName.trim().toLowerCase()}_${size}`;
+    const key = `${cardName.trim().toLowerCase()}_${size}_${lang}`;
     return this.cache.get(key) || null;
   }
 
   /**
    * Asynchronously resolve image URL via backend with deduplication and in-memory cache
    */
-  public async resolve(cardName: string, size: 'small' | 'normal' = 'normal'): Promise<string | null> {
+  public async resolve(cardName: string, size: 'small' | 'normal' = 'normal', lang: 'es' | 'en' = 'es'): Promise<string | null> {
     if (!cardName) return null;
     const trimmed = cardName.trim();
-    const key = `${trimmed.toLowerCase()}_${size}`;
+    const key = `${trimmed.toLowerCase()}_${size}_${lang}`;
 
     if (this.cache.has(key)) {
       return this.cache.get(key) || null;
@@ -35,13 +35,20 @@ class CardImageResolver {
 
     const promise = (async () => {
       try {
-        const res = await fetch(`/api/cards/search?name=${encodeURIComponent(trimmed)}&exact=true`);
+        const res = await fetch(`/api/cards/search?name=${encodeURIComponent(trimmed)}&exact=true&lang=${lang}`);
         if (res.ok) {
           const cardDef = await res.json();
-          const targetUrl =
-            size === 'small'
-              ? cardDef.imageUrlSmall || cardDef.imageUrlNormal || null
-              : cardDef.imageUrlNormal || cardDef.imageUrlSmall || null;
+          let targetUrl: string | null = null;
+          if (lang === 'es' && cardDef.locales?.es) {
+            const es = cardDef.locales.es;
+            targetUrl = size === 'small' ? (es.imageUrlSmall || es.imageUrlNormal || null) : (es.imageUrlNormal || es.imageUrlSmall || null);
+          }
+          if (!targetUrl) {
+            targetUrl =
+              size === 'small'
+                ? cardDef.imageUrlSmall || cardDef.imageUrlNormal || null
+                : cardDef.imageUrlNormal || cardDef.imageUrlSmall || null;
+          }
 
           this.cache.set(key, targetUrl);
           return targetUrl;

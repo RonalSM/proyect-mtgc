@@ -66,6 +66,28 @@ model Ruling {
   @@map("rulings")
 }
 
+model CardLocale {
+  id              String    @id @default(uuid())
+  oracleId        String    @map("oracle_id")
+  lang            String    // "es", "en", etc.
+  printingId      String    @map("printing_id")
+  printedName     String    @map("printed_name")
+  printedText     String?   @map("printed_text")
+  printedTypeLine String?   @map("printed_type_line")
+  imageUrlSmall   String?   @map("image_url_small")
+  imageUrlNormal  String?   @map("image_url_normal")
+  imageUrlLarge   String?   @map("image_url_large")
+  imageUrlArtCrop String?   @map("image_url_art_crop")
+  releasedAt      DateTime? @map("released_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@unique([oracleId, lang])
+  @@index([oracleId])
+  @@index([lang])
+  @@index([printedName])
+  @@map("card_locales")
+}
+
 model Deck {
   id            String     @id @default(uuid())
   userId        String?

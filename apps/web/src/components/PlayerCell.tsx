@@ -41,7 +41,7 @@ const DraggableCommanderCard: React.FC<{
   isLocalPlayer: boolean;
   onClick: () => void;
 }> = ({ card, isLocalPlayer, onClick }) => {
-  const { showPreview, hidePreview } = useCardPreview();
+  const { showPreview, hidePreview, openCardDetails } = useCardPreview();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.instanceId,
     data: { card, fromZone: 'command' },
@@ -56,6 +56,11 @@ const DraggableCommanderCard: React.FC<{
       data-commander-card="true"
       data-card-instance-id={card.instanceId}
       onClick={onClick}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openCardDetails(card.definition);
+      }}
       onMouseEnter={(e) => !card.isFaceDown && !isDragging && showPreview(card.definition, e)}
       onMouseLeave={hidePreview}
       className={`w-full h-full relative cursor-grab active:cursor-grabbing select-none ${
@@ -319,30 +324,33 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
     if (activePileModal !== 'library') return list;
 
     return list.filter(card => {
-      // 1. Filtrar por nombre
+      // 1. Filtrar por nombre en ambos idiomas (Punto 5, C.5 - Español Prioritario)
       if (librarySearchQuery.trim()) {
         const q = librarySearchQuery.trim().toLowerCase();
-        const name = (card.definition?.name || '').toLowerCase();
-        if (!name.includes(q)) return false;
+        const enName = (card.definition?.name || '').toLowerCase();
+        const esName = (card.definition?.locales?.es?.printedName || '').toLowerCase();
+        if (!enName.includes(q) && !esName.includes(q)) return false;
       }
-      // 2. Filtrar por tipo (Punto 8)
+      // 2. Filtrar por tipo en ambos idiomas (Punto 5 y 8)
       if (libraryTypeFilter) {
         const typeLine = (card.definition?.typeLine || '').toLowerCase();
+        const esTypeLine = (card.definition?.locales?.es?.printedTypeLine || '').toLowerCase();
+        const combinedType = `${typeLine} ${esTypeLine}`;
         const filter = libraryTypeFilter.toLowerCase();
         if (filter === 'criaturas') {
-          if (!typeLine.includes('creature') && !typeLine.includes('criatura')) return false;
+          if (!combinedType.includes('creature') && !combinedType.includes('criatura')) return false;
         } else if (filter === 'instantáneos' || filter === 'instantaneos') {
-          if (!typeLine.includes('instant') && !typeLine.includes('instantáneo')) return false;
+          if (!combinedType.includes('instant') && !combinedType.includes('instantáneo')) return false;
         } else if (filter === 'conjuros') {
-          if (!typeLine.includes('sorcery') && !typeLine.includes('conjuro')) return false;
+          if (!combinedType.includes('sorcery') && !combinedType.includes('conjuro')) return false;
         } else if (filter === 'artefactos') {
-          if (!typeLine.includes('artifact') && !typeLine.includes('artefacto')) return false;
+          if (!combinedType.includes('artifact') && !combinedType.includes('artefacto')) return false;
         } else if (filter === 'encantamientos') {
-          if (!typeLine.includes('enchantment') && !typeLine.includes('encantamiento')) return false;
+          if (!combinedType.includes('enchantment') && !combinedType.includes('encantamiento')) return false;
         } else if (filter === 'tierras') {
-          if (!typeLine.includes('land') && !typeLine.includes('tierra')) return false;
+          if (!combinedType.includes('land') && !combinedType.includes('tierra')) return false;
         } else if (filter === 'planeswalkers') {
-          if (!typeLine.includes('planeswalker')) return false;
+          if (!combinedType.includes('planeswalker') && !combinedType.includes('caminante')) return false;
         }
       }
       return true;

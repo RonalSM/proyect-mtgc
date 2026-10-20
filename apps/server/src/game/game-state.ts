@@ -28,6 +28,7 @@ import {
 import { secureShuffle, secureRoll } from './csprng.js';
 import { randomUUID, randomInt } from 'crypto';
 import { redisSnapshotService } from '../services/redis-snapshot.service.js';
+import { cardLocaleService } from '../services/card-locale.service.js';
 import { LobbyManager } from './lobby-manager.js';
 import { GameStarter } from './game-starter.js';
 import { InitiativeService } from './initiative-service.js';
@@ -427,11 +428,35 @@ export class GameStateSession {
     zones.graveyard = [];
     zones.exile = [];
 
+    const enrichWithLocale = (def: CardDefinition): CardDefinition => {
+      if (def.oracleId && !def.locales?.es) {
+        const loc = cardLocaleService.getLocaleSync(def.oracleId, 'es');
+        if (loc) {
+          return {
+            ...def,
+            locales: {
+              ...(def.locales || {}),
+              es: {
+                printedName: loc.printedName,
+                printedTypeLine: loc.printedTypeLine,
+                printedText: loc.printedText,
+                imageUrlSmall: loc.imageUrlSmall,
+                imageUrlNormal: loc.imageUrlNormal,
+                imageUrlLarge: loc.imageUrlLarge,
+                imageUrlArtCrop: loc.imageUrlArtCrop,
+              },
+            },
+          };
+        }
+      }
+      return def;
+    };
+
     // 1. Setup Commander in Command Zone
     for (const cmd of commanderCards) {
       zones.command.push({
         instanceId: randomUUID(),
-        definition: cmd,
+        definition: enrichWithLocale(cmd),
         ownerId: playerId,
         controllerId: playerId,
         isCommander: true,
@@ -446,7 +471,7 @@ export class GameStateSession {
     for (const card of maindeckCards) {
       zones.library.push({
         instanceId: randomUUID(),
-        definition: card,
+        definition: enrichWithLocale(card),
         ownerId: playerId,
         controllerId: playerId,
         isCommander: false,

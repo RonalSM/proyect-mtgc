@@ -21,6 +21,16 @@ export interface CardFace {
   imageUrlArtCrop?: string;
 }
 
+export interface CardLocaleData {
+  printedName: string;
+  printedTypeLine?: string;
+  printedText?: string;
+  imageUrlSmall?: string;
+  imageUrlNormal?: string;
+  imageUrlLarge?: string;
+  imageUrlArtCrop?: string;
+}
+
 export interface CardDefinition {
   scryfallId: string;
   oracleId?: string;
@@ -48,6 +58,7 @@ export interface CardDefinition {
   imageUrlArtCrop?: string;
   isTwoFaced?: boolean;
   faces?: CardFace[];
+  locales?: Record<string, CardLocaleData>;
 }
 
 export interface CardInstance {

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { inferCardTypeLine, type CardDefinition } from '@mtgc/shared';
+import { inferCardTypeLine, getCardDisplayData, type CardDefinition } from '@mtgc/shared';
 import { Layers, RefreshCw } from 'lucide-react';
 import { cardImageResolver } from '../services/cardImageResolver';
 import { imageLoaderQueue, type ImageLoadStatus } from '../services/imageLoaderQueue';
 import { persistentImageCache } from '../services/persistentImageCache';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CardDisplayProps {
   card: CardDefinition;
@@ -24,6 +25,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   allowFaceToggle = true,
   size = 'normal',
 }) => {
+  const { language } = useLanguage();
   const [currentFaceIndex, setCurrentFaceIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
 
@@ -31,35 +33,34 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   const hasMultipleFaces = !!(card.faces && card.faces.length > 1);
   const activeFace = hasMultipleFaces ? card.faces![currentFaceIndex] : null;
 
-  const cardName = activeFace?.name || card.name || 'Carta Desconocida';
-  const cardType = inferCardTypeLine(cardName, activeFace?.typeLine || card.typeLine);
+  // Localized card display fields with English fallback (Punto 5, C.5 - Español Prioritario)
+  const display = getCardDisplayData(card, language, currentFaceIndex);
+
+  const cardName = display.name || 'Carta Desconocida';
+  const cardType = inferCardTypeLine(cardName, display.typeLine);
   const cardMana = activeFace?.manaCost || card.manaCost;
   const cardPower = activeFace?.power ?? card.power;
   const cardToughness = activeFace?.toughness ?? card.toughness;
-  const cardOracle = activeFace?.oracleText || card.oracleText;
+  const cardOracle = display.oracleText;
 
-  // Direct cards.scryfall.io URL from active face or card definition (Punto 2 y 3)
+  // Direct cards.scryfall.io URL from localized display data or active face
   const directUrl = (() => {
     if (size === 'small') {
       return (
-        activeFace?.imageUrlSmall ||
-        card.imageUrlSmall ||
-        activeFace?.imageUrlNormal ||
-        card.imageUrlNormal ||
+        display.imageUrlSmall ||
+        display.imageUrlNormal ||
         ''
       );
     }
     return (
-      activeFace?.imageUrlNormal ||
-      card.imageUrlNormal ||
-      activeFace?.imageUrlSmall ||
-      card.imageUrlSmall ||
+      display.imageUrlNormal ||
+      display.imageUrlSmall ||
       ''
     );
   })();
 
   const [asyncResolvedUrl, setAsyncResolvedUrl] = useState<string | null>(() => {
-    return directUrl || cardImageResolver.getCached(cardName, size);
+    return directUrl || cardImageResolver.getCached(cardName, size, language);
   });
 
   useEffect(() => {
@@ -75,11 +76,11 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
       cardName !== 'Carta Desconocida' &&
       cardName !== 'Carta Oculta'
     ) {
-      cardImageResolver.resolve(cardName, size).then(url => {
+      cardImageResolver.resolve(cardName, size, language).then(url => {
         if (url) setAsyncResolvedUrl(url);
       });
     }
-  }, [directUrl, cardName, isFaceDown, size]);
+  }, [directUrl, cardName, isFaceDown, size, language]);
 
   const rawImageUrl = directUrl || asyncResolvedUrl || '';
   const resolvedImageUrl = (() => {

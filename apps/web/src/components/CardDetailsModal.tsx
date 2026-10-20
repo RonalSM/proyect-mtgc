@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import type { CardDefinition, CardRuling } from '@mtgc/shared';
+import { getCardDisplayData, type CardDefinition, type CardRuling } from '@mtgc/shared';
 import { X, RefreshCw, ShieldCheck, ShieldAlert, Sparkles, User, Calendar, BookOpen } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CardDetailsModalProps {
   card: CardDefinition;
@@ -151,20 +152,22 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
     };
   }, [card.oracleId, card.rulings]);
 
-  // Valores de la cara activa
-  const displayName = activeFace?.name || card.name;
+  const { language } = useLanguage();
+
+  // Valores de la cara activa con localización en español y fallback en inglés (Punto 5)
+  const display = getCardDisplayData(card, language, activeFaceIndex);
+  const displayName = display.name;
   const displayMana = activeFace?.manaCost || card.manaCost;
-  const displayType = activeFace?.typeLine || card.typeLine;
-  const displayOracle = activeFace?.oracleText !== undefined ? activeFace.oracleText : card.oracleText;
+  const displayType = display.typeLine;
+  const displayOracle = display.oracleText;
   const displayPower = activeFace?.power !== undefined ? activeFace.power : card.power;
   const displayToughness = activeFace?.toughness !== undefined ? activeFace.toughness : card.toughness;
   const displayLoyalty = activeFace?.loyalty !== undefined ? activeFace.loyalty : card.loyalty;
   const displayArtist = activeFace?.artist || card.artist || 'Unknown Artist';
   const displayImage =
-    activeFace?.imageUrlLarge ||
-    card.imageUrlLarge ||
-    activeFace?.imageUrlNormal ||
-    card.imageUrlNormal ||
+    display.imageUrlLarge ||
+    display.imageUrlNormal ||
+    display.imageUrlSmall ||
     'https://cards.scryfall.io/back.png';
 
   const commanderLegality = card.legalities?.commander || 'legal';
@@ -359,7 +362,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
 
             {/* Dictámenes Oficiales (Rulings) */}
             <div className="border-t border-slate-800 pt-3">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-bold text-slate-300 flex items-center space-x-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                   <span>Dictámenes Oficiales (WotC / Gatherer Rulings)</span>
@@ -369,6 +372,9 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                     {rulings.length} dictamen(es)
                   </span>
                 )}
+              </div>
+              <div className="text-[10px] text-slate-400 italic mb-2">
+                Dictámenes oficiales emitidos por Wizards of the Coast en inglés original.
               </div>
 
               <div

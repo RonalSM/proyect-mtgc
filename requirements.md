@@ -396,6 +396,23 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Se preserva el soporte para deshacer (`UNDO`) que revierte la creación o restaura la ficha.
    - La vista previa flotante (`CardPreview`) y el modal «Ver carta» (`openCardDetails`) funcionan plenamente con fichas.
 
+### REQ-27 Idioma Español Prioritario con Fallback en Inglés (Punto 5 de Correcciones del Cliente - C.5)
+1. **Fuente de Datos y Tabla CardLocale:**
+   - Procesamiento por streaming offline del archivo masivo *All Cards* de Scryfall (~2 GB) en `processAllCardsLocales`, conservando solo impresiones con `lang === "es"` en el modelo PostgreSQL `CardLocale` (`oracleId`, `lang`, `printingId`, `printedName`, `printedText`, `printedTypeLine`, `imageUrlSmall`, `imageUrlNormal`, `imageUrlLarge`, `imageUrlArtCrop`, `releasedAt`).
+   - Por cada `oracle_id`, selección de la impresión más reciente que disponga de imagen.
+   - Esquema preparado para soportar más idiomas mediante la columna `lang`.
+   - Prohibición estricta de descargar *All Cards* en tiempo real o en cada arranque del servidor.
+2. **Prioridad y Reglas de Fallback:**
+   - Prioridad español para nombre, tipo, texto de reglas e imagen. Si la carta no cuenta con impresión en español, cae automáticamente a inglés (fallback transparente).
+   - Aplica a todas las superficies del cliente: mano privada (`HandFan`), campo de batalla (`BattlefieldCanvas`), vista previa flotante (`CardPreview`), modal de inspección («Ver carta» / `CardDetailsModal`), biblioteca (búsqueda y filtros por nombre y tipo en ambos idiomas), ventana de mulligan inicial (`OpeningHandModal`) y creador de fichas (`CreateTokenModal`).
+3. **Preferencia de Idioma del Usuario:**
+   - Control interactivo en el modal de ajustes («Ajustes de Mesa») con selector `[data-testid="language-select"]` para elegir entre `es` (Español, por defecto) y `en` (English).
+   - Al cambiar la preferencia, todas las cartas de la mesa y modales se actualizan reactivamente sin recargar la página.
+   - Los dictámenes oficiales (*rulings*) se mantienen siempre en inglés original de WotC, con indicación explícitamente legible en la interfaz del modal «Ver carta».
+4. **Caché y Red:**
+   - Las imágenes en español provienen directamente de `cards.scryfall.io`.
+   - La clave de caché en memoria de `cardImageResolver` y en `PersistentImageCache` incluye explícitamente el idioma (`${cardName}_${size}_${lang}`).
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
 **Historia:** Como jugador, quiero ver a todos en una cuadrícula a pantalla completa, cada uno con su propio fondo y su propio espacio, para sentir que estamos jugando juntos en una mesa.

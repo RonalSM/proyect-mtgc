@@ -20,6 +20,7 @@ import rateLimit from '@fastify/rate-limit';
 import { authService } from './services/auth.service.js';
 import { deckService } from './services/deck.service.js';
 import { tokenService } from './services/token.service.js';
+import { cardLocaleService } from './services/card-locale.service.js';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -423,6 +424,34 @@ server.get('/api/cards/:oracleId/rulings', async (request, reply) => {
   }
 });
 
+// Card Spanish localization (Punto 5, C.5 - Español Prioritario)
+server.get('/api/cards/:oracleId/locale', async (request, reply) => {
+  const { oracleId } = request.params as { oracleId: string };
+  const lang = ((request.query as { lang?: string }).lang || 'es').toLowerCase();
+  const locale = await cardLocaleService.getLocale(oracleId, lang);
+  if (!locale) {
+    return reply.status(404).send({ error: 'Locale not found', oracleId, lang });
+  }
+  return reply.send({ oracleId, lang, locale });
+});
+
+// Batch card localizations (Punto 5)
+server.post('/api/cards/locales', async (request, reply) => {
+  const body = request.body as { oracleIds?: string[]; lang?: string };
+  const oracleIds = body.oracleIds || [];
+  const lang = (body.lang || 'es').toLowerCase();
+  const results: Record<string, any> = {};
+
+  await Promise.all(
+    oracleIds.map(async id => {
+      const loc = await cardLocaleService.getLocale(id, lang);
+      if (loc) results[id] = loc;
+    })
+  );
+
+  return reply.send({ lang, locales: results });
+});
+
 // Seed test rulings in memory for local test/verification (Punto 5 / 8)
 server.post('/api/cards/seed-test-rulings', async (request, reply) => {
   const body = request.body as {
@@ -575,11 +604,26 @@ server.post('/api/decks/parse', async (request, reply) => {
 
   const validation = validateCommanderDeck(commanderCards, maindeckCards);
 
+  // Enrich with Spanish locale data (Punto 5)
+  const enrichedCommanderCards = await Promise.all(
+    commanderCards.map(async c => ({
+      ...c,
+      card: await cardLocaleService.enrichCardWithLocale(c.card, 'es'),
+    }))
+  );
+
+  const enrichedMaindeckCards = await Promise.all(
+    maindeckCards.map(async c => ({
+      ...c,
+      card: await cardLocaleService.enrichCardWithLocale(c.card, 'es'),
+    }))
+  );
+
   return reply.send({
     parsed,
     validation,
-    commanderCards,
-    maindeckCards,
+    commanderCards: enrichedCommanderCards,
+    maindeckCards: enrichedMaindeckCards,
   });
 });
 
