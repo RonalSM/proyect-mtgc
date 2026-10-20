@@ -324,7 +324,8 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Al quedarse tras $k$ mulligans ($k \ge 2$), el jugador pone al fondo de su biblioteca $\max(0, k - 1)$ cartas, en el orden exacto que elija.
    - El jugador puede repetir mulligans hasta quedarse con 0 cartas; cuando la mano resultante sería 0 cartas, solo queda disponible el botón "Quedarme".
 5. THE interfaz SHALL presentarse como "Opening hand" de playgroup.gg:
-   - Ventana modal sobre la mesa atenuada con las 7 cartas grandes (imágenes de Scryfall en alta resolución).
+   - Ventana modal sobre la mesa atenuada con las 7 cartas grandes (imágenes de Scryfall en alta resolución `size="normal"`).
+   - **Dimensiones optimizadas sin scroll (Punto 1 de correcciones):** Ancho mínimo de carta de 190 px a 1920x1080 (`width: clamp(140px, calc(9.4vw + 12px), 215px)`) y al menos 140 px a 1366x768, ajustándose dinámicamente a la ventana con contenedor `max-w-[1600px]`, sin scroll vertical y con los botones de acción ("Hacer Mulligan", "Quedarse con la Mano") siempre visibles tanto en la decisión inicial como en el paso de elegir cartas al fondo.
    - Botones "Quedarme con la mano" y "Mulligan".
    - Avisos informativos: "El primer mulligan es gratis" y "Si te quedas, pondrás N carta(s) al fondo".
    - Si $N > 0$, el jugador marca $N$ cartas interactivamente, visualizando el orden numérico de selección antes de confirmar la devolución al fondo de la biblioteca.

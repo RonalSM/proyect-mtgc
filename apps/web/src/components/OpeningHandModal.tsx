@@ -91,15 +91,15 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
     (cardsToBottomCount > 0 && selectedBottomCardIds.length !== cardsToBottomCount);
 
   return (
-    <div data-testid="opening-hand-modal" className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 select-none overflow-y-auto">
+    <div data-testid="opening-hand-modal" className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-between p-3 sm:p-5 select-none overflow-y-auto">
       {/* Top Header */}
-      <div className="w-full max-w-5xl flex flex-col items-center space-y-2 text-center pt-2">
+      <div className="w-full max-w-5xl flex flex-col items-center space-y-1.5 sm:space-y-2 text-center pt-1 sm:pt-2">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold tracking-wide">
           <Layers className="w-4 h-4" />
           <span>Fase de Mano Inicial & Mulligan (Regla de Londres)</span>
         </div>
 
-        <h2 className="text-2xl sm:text-3xl font-black text-white tracking-wide">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-wide">
           {myHasKept
             ? 'Te has quedado con tu mano inicial'
             : isMyDecisionTurn
@@ -108,7 +108,7 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
         </h2>
 
         {/* Turn order indicator chips */}
-        <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-0.5">
           {roomState.turnOrder.map((pid, idx) => {
             const p = roomState.players[pid];
             const pMull = mulligan?.players[pid];
@@ -119,7 +119,7 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
             return (
               <div
                 key={pid}
-                className={`flex items-center space-x-1.5 px-3 py-1 rounded-xl text-xs font-bold border transition-all ${
+                className={`flex items-center space-x-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-xl text-xs font-bold border transition-all ${
                   isCurrent
                     ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20 animate-pulse'
                     : hasKept
@@ -139,7 +139,7 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
 
         {/* Notice badge */}
         {!isSpectator && !myHasKept && (
-          <div className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-800 text-amber-300 border border-amber-500/30 flex items-center space-x-1.5 shadow-sm mt-1">
+          <div className="text-xs font-semibold px-3 py-0.5 sm:py-1 rounded-full bg-slate-800 text-amber-300 border border-amber-500/30 flex items-center space-x-1.5 shadow-sm mt-0.5">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>
               {(myMulligan?.mulliganCount || 0) === 0
@@ -151,11 +151,11 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
       </div>
 
       {/* Center: Cards Display */}
-      <div className="w-full max-w-6xl my-auto py-4 flex flex-col items-center">
+      <div className="w-full max-w-[1600px] my-auto py-2 sm:py-3 flex flex-col items-center">
         {!isSpectator && localHand.length > 0 ? (
-          <div className="flex flex-col items-center space-y-4 w-full">
+          <div className="flex flex-col items-center space-y-3 sm:space-y-4 w-full">
             {/* Cards row */}
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-full">
+            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5 lg:gap-4 max-w-full">
               {localHand.map(card => {
                 const isSelected = selectedBottomCardIds.includes(card.instanceId);
                 const selectionIndex = selectedBottomCardIds.indexOf(card.instanceId) + 1;
@@ -174,12 +174,12 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
                         : ''
                     }`}
                     style={{
-                      width: 'clamp(110px, 11vw, 150px)',
+                      width: 'clamp(140px, calc(9.4vw + 12px), 215px)',
                       aspectRatio: '5/7',
                     }}
                   >
                     <div className="w-full h-full rounded-xl overflow-hidden shadow-xl border border-slate-700/80">
-                      <CardDisplay card={card.definition} isFaceDown={false} allowFaceToggle={false} />
+                      <CardDisplay card={card.definition} isFaceDown={false} allowFaceToggle={false} size="normal" />
                     </div>
 
                     {/* Bottom selection badge */}
@@ -195,7 +195,7 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
 
             {/* Instruction if needs to put cards to bottom */}
             {cardsToBottomCount > 0 && isMyDecisionTurn && !myHasKept && (
-              <div className="bg-amber-950/60 border border-amber-500/40 text-amber-200 text-xs px-4 py-2 rounded-xl flex items-center space-x-2 animate-bounce">
+              <div className="bg-amber-950/60 border border-amber-500/40 text-amber-200 text-xs px-4 py-1.5 sm:py-2 rounded-xl flex items-center space-x-2 animate-bounce">
                 <ShieldAlert className="w-4 h-4 text-amber-400 flex-shrink-0" />
                 <span>
                   Debes seleccionar exactamente <strong>{cardsToBottomCount} carta(s)</strong> para poner en el fondo de la biblioteca ({selectedBottomCardIds.length}/{cardsToBottomCount} seleccionadas).
@@ -213,7 +213,7 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
       </div>
 
       {/* Bottom Controls */}
-      <div className="w-full max-w-3xl flex flex-col items-center space-y-3 pb-4">
+      <div className="w-full max-w-3xl flex flex-col items-center space-y-2 sm:space-y-3 pb-2 sm:pb-4">
         {/* Disconnected Player Warning & Host Force Action */}
         {currentDecidingPlayer && !currentDecidingPlayer.isConnected && (
           <div className="w-full bg-rose-950/80 border border-rose-500/60 rounded-2xl p-3 flex items-center justify-between shadow-xl">

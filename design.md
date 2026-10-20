@@ -137,7 +137,7 @@ Alternativa: Next.js para la parte web y un servicio WebSocket separado.
 1. Al resolverse la iniciativa, Game Server pasa a `status: "mulligan"`.
 2. Servidor baraja bibliotecas (CSPRNG Fisher-Yates) y reparte 7 cartas a cada jugador en estado oculto (la mano no aparece en el abanico inferior hasta que el jugador se queda y concluye la fase).
 3. Turno de decisión secuencial según `turnOrder` resuelto, empezando por el 1.º jugador. Solo decide el jugador activo (`mulligan.activePlayerId`); los demás ven "X está decidiendo".
-4. Ventana "Opening hand" en cliente: modal central sobre fondo oscurecido/desenfocado con 7 cartas grandes, botones "Quedarme con la mano" y "Mulligan".
+4. Ventana "Opening hand" en cliente: modal central sobre fondo oscurecido/desenfocado con 7 cartas grandes en alta resolución `size="normal"`, botones "Quedarme con la mano" y "Mulligan". Dimensiones adaptativas (`width: clamp(140px, calc(9.4vw + 12px), 215px)`) que garantizan $\ge 190\text{ px}$ de ancho a 1920x1080 y $\ge 140\text{ px}$ a 1366x768, con contenedor `max-w-[1600px]`, sin scroll vertical y con los botones visibles en todo momento (tanto en la decisión de mulligan como en la selección interactiva de cartas al fondo).
 5. Regla de Londres con Commander free mulligan:
    - Primer mulligan (k=1): gratis. Mano vuelve a biblioteca, se baraja con CSPRNG y roba 7.
    - Mulligans posteriores (k >= 2): roba 7 y debe elegir exactamente k - 1 cartas para poner al fondo de la biblioteca (`zones.library.push(...bottomCards)`). Selector interactivo muestra el orden de selección.
