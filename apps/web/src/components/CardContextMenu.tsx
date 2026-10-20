@@ -286,15 +286,16 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
   }, []);
 
   // Ajustar posición para no desbordar los límites de la pantalla
-  const menuW = 220;
+  // Ajustar posición para no desbordar límites (Punto 2: ancho máximo 240 px)
+  const menuW = 240;
   const menuH = 380;
   const clampedX =
     typeof window !== 'undefined'
-      ? Math.max(10, Math.min(position.x, window.innerWidth - menuW - 10))
+      ? Math.max(8, Math.min(position.x, window.innerWidth - menuW - 8))
       : position.x;
   const clampedY =
     typeof window !== 'undefined'
-      ? Math.max(10, Math.min(position.y, window.innerHeight - menuH - 10))
+      ? Math.max(8, Math.min(position.y, window.innerHeight - menuH - 8))
       : position.y;
 
   // Destino: Mesa (con posición en cascada en sección propia, Punto 2)
@@ -417,10 +418,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
           onPointerDown={e => e.stopPropagation()}
           onMouseDown={e => e.stopPropagation()}
           onContextMenu={e => e.stopPropagation()}
-          className="fixed bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 min-w-[190px] max-h-[85vh] overflow-y-auto z-[110] backdrop-blur-md text-xs text-slate-200 select-none"
+          className="fixed bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 w-max max-w-[240px] max-h-[85vh] overflow-y-auto z-[110] backdrop-blur-md text-[14px] text-slate-200 select-none"
         >
           {/* Header con nombre de carta (o Carta oculta / Carta boca abajo) */}
-          <div className="px-2 py-1 text-[11px] font-bold text-amber-400 border-b border-slate-800 truncate max-w-[200px]">
+          <div className="px-2 py-1 text-[14px] font-bold text-amber-400 border-b border-slate-800 truncate max-w-[220px]">
             {cardDisplayName}
           </div>
 
@@ -433,9 +434,9 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                 onClose();
                 openCardDetails(card.definition);
               }}
-              className="w-full flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-800 rounded-lg text-sky-300 hover:text-white cursor-pointer"
+              className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-sky-300 hover:text-white cursor-pointer text-[14px]"
             >
-              <Eye className="w-3.5 h-3.5 text-sky-400" />
+              <Eye className="w-4 h-4 text-sky-400 flex-shrink-0" />
               <span>Ver carta</span>
             </button>
           )}
@@ -446,7 +447,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
               className="py-1 border-t border-slate-800"
               data-testid="context-create-token-section"
             >
-              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-2 py-0.5">
+              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-2 py-0.5">
                 Crear ficha
               </div>
               {cardTokens.map(token => (
@@ -461,11 +462,11 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                     });
                     onClose();
                   }}
-                  className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
+                  className="w-full flex items-center justify-between px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors text-[14px]"
                 >
                   <div className="flex items-center space-x-2 truncate">
                     <Sparkles className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                    <span className="font-medium text-xs truncate">{token.name}</span>
+                    <span className="font-medium text-[14px] truncate">{token.name}</span>
                     {(token.power !== undefined || token.toughness !== undefined) && (
                       <span className="text-[10px] font-mono text-slate-400">
                         ({token.power}/{token.toughness})
@@ -483,9 +484,9 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             <>
               <div
                 data-testid="context-pt-section"
-                className="flex flex-col border-t border-slate-800 pt-2 pb-1.5 px-2 bg-slate-950/40 rounded-lg my-1 space-y-1.5"
+                className="flex flex-col border-t border-slate-800 pt-1.5 pb-1 px-2 bg-slate-950/40 rounded-lg my-0.5 space-y-1 text-[14px]"
               >
-                <div className="flex items-center justify-between text-xs font-bold text-slate-200">
+                <div className="flex items-center justify-between text-[14px] font-bold text-slate-200">
                   <div className="flex items-center space-x-1.5">
                     <Swords className="w-3.5 h-3.5 text-amber-400" />
                     <span>Poder y resistencia</span>
@@ -501,7 +502,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-[10px] pt-0.5">
+                <div className="grid grid-cols-2 gap-1.5 text-[12px] pt-0.5">
                   {/* Poder base */}
                   <div className="flex flex-col space-y-1">
                     <label className="text-slate-400 font-medium">Poder</label>
@@ -530,7 +531,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                         setInputBaseP(next);
                         emitPT(next, inputBaseTRef.current, inputPlus, inputMinus);
                       }}
-                      className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center text-xs font-mono text-slate-100 focus:outline-none focus:border-amber-400"
+                      className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-center text-[14px] font-mono text-slate-100 focus:outline-none focus:border-amber-400"
                     />
                   </div>
 
@@ -562,7 +563,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                         setInputBaseT(next);
                         emitPT(inputBasePRef.current, next, inputPlus, inputMinus);
                       }}
-                      className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center text-xs font-mono text-slate-100 focus:outline-none focus:border-amber-400"
+                      className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-center text-[14px] font-mono text-slate-100 focus:outline-none focus:border-amber-400"
                     />
                   </div>
                 </div>
@@ -574,7 +575,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   type="button"
                   data-testid="context-counters-toggle"
                   onClick={() => setIsCountersExpanded(!isCountersExpanded)}
-                  className={`w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg cursor-pointer transition-colors ${
+                  className={`w-full flex items-center justify-between px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg cursor-pointer transition-colors text-[14px] ${
                     isCountersExpanded ? 'bg-slate-800 text-amber-300' : 'text-slate-200'
                   }`}
                 >
@@ -599,7 +600,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                 {isCountersExpanded && (
                   <div
                     data-testid="context-counters-section"
-                    className="pl-3 pr-2 py-2 space-y-2 border-l-2 border-amber-500/50 bg-slate-950/40 rounded-r-lg my-1 max-h-60 overflow-y-auto"
+                    className="pl-2 pr-1.5 py-1.5 space-y-1 border-l-2 border-amber-500/50 bg-slate-950/40 rounded-r-lg my-0.5 max-h-56 overflow-y-auto text-[14px]"
                   >
                     {/* Lista de Contadores oficiales */}
                     {MTG_COUNTERS.map(c => {
@@ -612,7 +613,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                         return (
                           <div
                             key={c.id}
-                            className="flex items-center justify-between py-1 border-b border-slate-800/80"
+                            className="flex items-center justify-between py-0.5 border-b border-slate-800/80 text-[14px]"
                           >
                             <div className="flex items-center space-x-1.5 text-[11px] flex-1 min-w-0 pr-2">
                               <IconComponent className="w-3.5 h-3.5 flex-shrink-0 text-purple-400" />
@@ -643,7 +644,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                       return (
                         <div
                           key={c.id}
-                          className="flex items-center justify-between py-1 border-b border-slate-800/60 text-[10px]"
+                          className="flex items-center justify-between py-0.5 border-b border-slate-800/60 text-[14px]"
                         >
                           <div className="flex items-center space-x-1.5 flex-1 min-w-0 pr-2">
                             <IconComponent className="w-3.5 h-3.5 flex-shrink-0 text-amber-400" />
@@ -665,7 +666,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                               const step = e.deltaY < 0 ? 1 : -1;
                               handleSetCounter(c.id, Math.max(0, count + step));
                             }}
-                            className="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-center text-xs font-mono text-slate-100 focus:outline-none focus:border-amber-400"
+                            className="w-11 bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-center text-[14px] font-mono text-slate-100 focus:outline-none focus:border-amber-400 flex-shrink-0"
                           />
                         </div>
                       );
@@ -696,7 +697,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                                 const val = Math.max(0, parseInt(e.target.value, 10) || 0);
                                 handleSetCounter(name, val);
                               }}
-                              className="w-12 bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-center text-xs font-mono text-slate-100"
+                              className="w-10 bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-center text-[14px] font-mono text-slate-100 flex-shrink-0"
                             />
                             <button
                               type="button"
@@ -758,7 +759,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   type="button"
                   data-testid="context-keywords-toggle"
                   onClick={() => setIsKeywordsExpanded(!isKeywordsExpanded)}
-                  className={`w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg cursor-pointer transition-colors ${
+                  className={`w-full flex items-center justify-between px-2 py-1 hover:bg-slate-800 text-[14px] focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg cursor-pointer transition-colors ${
                     isKeywordsExpanded ? 'bg-slate-800 text-amber-300' : 'text-slate-200'
                   }`}
                 >
@@ -783,7 +784,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                 {isKeywordsExpanded && (
                   <div
                     data-testid="context-keywords-section"
-                    className="pl-3 pr-2 py-2 space-y-1.5 border-l-2 border-amber-500/50 bg-slate-950/40 rounded-r-lg my-1 max-h-60 overflow-y-auto"
+                    className="pl-2 pr-1.5 py-1.5 space-y-1 border-l-2 border-amber-500/50 bg-slate-950/40 rounded-r-lg my-0.5 max-h-56 overflow-y-auto text-[14px]"
                   >
                     {MTG_KEYWORDS.map(kw => {
                       const IconComponent = KEYWORD_ICONS[kw.id] || Sparkles;
@@ -830,7 +831,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                     onTap();
                     onClose();
                   }}
-                  className="w-full flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer"
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-200 text-[14px] hover:text-white cursor-pointer"
                 >
                   <RotateCw className="w-3.5 h-3.5 text-amber-400" />
                   <span>{card.isTapped ? 'Enderezar' : 'Girar'}</span>
@@ -845,7 +846,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                     onClone();
                     onClose();
                   }}
-                  className="w-full flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer"
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-200 text-[14px] hover:text-white cursor-pointer"
                 >
                   <Copy className="w-3.5 h-3.5 text-blue-400" />
                   <span>Clonar permanente</span>
@@ -860,7 +861,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                     onFlip();
                     onClose();
                   }}
-                  className="w-full flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer"
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-200 text-[14px] hover:text-white cursor-pointer"
                 >
                   <Eye className="w-3.5 h-3.5 text-indigo-400" />
                   <span>{card.isFaceDown ? 'Boca arriba' : 'Boca abajo'}</span>
@@ -882,7 +883,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                     onSendToCommand();
                     onClose();
                   }}
-                  className="w-full flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-800 rounded-lg text-amber-300 hover:text-amber-200 cursor-pointer"
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-amber-300 text-[14px] hover:text-amber-200 cursor-pointer"
                 >
                   <Shield className="w-3.5 h-3.5 text-amber-400" />
                   <span>A Zona de Comando</span>
@@ -895,7 +896,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   type="button"
                   data-testid="context-to-battlefield"
                   onClick={handleSendToBattlefield}
-                  className="w-full flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer"
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-200 text-[14px] hover:text-white cursor-pointer"
                 >
                   <Play className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Enviar a Mesa (cascada)</span>
@@ -908,7 +909,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   type="button"
                   data-testid="context-to-hand"
                   onClick={handleSendToHand}
-                  className="w-full flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer"
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-slate-200 text-[14px] hover:text-white cursor-pointer"
                 >
                   <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Enviar a Mano</span>
@@ -921,7 +922,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   type="button"
                   data-testid="context-to-graveyard"
                   onClick={handleSendToGraveyard}
-                  className="w-full flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-800 rounded-lg text-rose-300 hover:text-rose-200 cursor-pointer"
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-rose-300 text-[14px] hover:text-rose-200 cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-rose-400" />
                   <span>Enviar a Cementerio</span>
@@ -934,7 +935,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   type="button"
                   data-testid="context-to-exile"
                   onClick={handleSendToExile}
-                  className="w-full flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-800 rounded-lg text-purple-300 hover:text-purple-200 cursor-pointer"
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-purple-300 text-[14px] hover:text-purple-200 cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-purple-400" />
                   <span>Enviar a Exilio</span>
@@ -947,7 +948,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   type="button"
                   data-testid="context-to-library-menu"
                   onClick={() => setActiveSubmenu(activeSubmenu === 'library' ? null : 'library')}
-                  className={`w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg cursor-pointer transition-colors ${
+                  className={`w-full flex items-center justify-between px-2 py-1 hover:bg-slate-800 text-[14px] focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg cursor-pointer transition-colors ${
                     activeSubmenu === 'library' ? 'bg-slate-800 text-amber-300' : 'text-slate-200'
                   }`}
                 >
@@ -972,7 +973,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                       type="button"
                       data-testid="context-to-library-top"
                       onClick={() => handleSendToLibrary(0, false)}
-                      className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
+                      className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors text-[14px]"
                     >
                       <ArrowUp className="w-3.5 h-3.5 text-emerald-400" />
                       <span>Arriba (tope)</span>
@@ -981,7 +982,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                       type="button"
                       data-testid="context-to-library-bottom"
                       onClick={() => handleSendToLibrary(currentLibraryLength, false)}
-                      className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
+                      className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors text-[14px]"
                     >
                       <ArrowDown className="w-3.5 h-3.5 text-blue-400" />
                       <span>Abajo (fondo)</span>
@@ -990,7 +991,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                       type="button"
                       data-testid="context-to-library-random"
                       onClick={() => handleSendToLibrary(undefined, true)}
-                      className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
+                      className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors text-[14px]"
                     >
                       <Shuffle className="w-3.5 h-3.5 text-amber-400" />
                       <span>Aleatoria</span>
@@ -1011,7 +1012,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                     });
                     onClose();
                   }}
-                  className="w-full flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-800 rounded-lg text-rose-300 hover:text-white cursor-pointer transition-colors"
+                  className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 rounded-lg text-rose-300 text-[14px] hover:text-white cursor-pointer transition-colors"
                 >
                   <EyeOff className="w-3.5 h-3.5 text-rose-400" />
                   <span>Dejar de revelar</span>
@@ -1024,7 +1025,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   type="button"
                   data-testid="context-reveal-menu"
                   onClick={() => setActiveSubmenu(activeSubmenu === 'reveal' ? null : 'reveal')}
-                  className={`w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 rounded-lg cursor-pointer transition-colors ${
+                  className={`w-full flex items-center justify-between px-2 py-1 hover:bg-slate-800 text-[14px] focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 rounded-lg cursor-pointer transition-colors ${
                     activeSubmenu === 'reveal' ? 'bg-slate-800 text-cyan-300' : 'text-slate-200'
                   }`}
                 >
@@ -1049,7 +1050,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                       type="button"
                       data-testid="context-reveal-all"
                       onClick={() => handleReveal(undefined)}
-                      className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer font-medium transition-colors"
+                      className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 rounded-lg text-slate-200 hover:text-white cursor-pointer font-medium transition-colors text-[14px]"
                     >
                       <Users className="w-3.5 h-3.5 text-cyan-400" />
                       <span>A toda la mesa</span>
@@ -1066,7 +1067,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                             type="button"
                             data-testid={`context-reveal-player-${opp.id}`}
                             onClick={() => handleReveal(opp.id)}
-                            className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 rounded-lg text-slate-300 hover:text-white cursor-pointer truncate transition-colors"
+                            className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-slate-800 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 rounded-lg text-slate-300 hover:text-white cursor-pointer truncate transition-colors text-[14px]"
                           >
                             <User className="w-3.5 h-3.5 text-slate-400" />
                             <span className="truncate">{opp.name}</span>
