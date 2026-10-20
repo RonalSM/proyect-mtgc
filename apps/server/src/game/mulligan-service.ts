@@ -38,6 +38,7 @@ export class MulliganService {
         if (zones.hand.length === 0) {
           const drawCount = Math.min(7, zones.library.length);
           zones.hand = zones.library.splice(0, drawCount);
+    zones.hand.forEach(c => { delete c.revealedTo; });
         }
       }
 
@@ -100,13 +101,14 @@ export class MulliganService {
     }
 
     // Return hand to library and shuffle with CSPRNG
-    zones.library.push(...zones.hand);
+    zones.library.push(...zones.hand.map(c => { delete c.revealedTo; return c; }));
     zones.hand = [];
     zones.library = secureShuffle(zones.library);
 
     // Draw 7 cards
     const drawCount = Math.min(7, zones.library.length);
     zones.hand = zones.library.splice(0, drawCount);
+    zones.hand.forEach(c => { delete c.revealedTo; });
 
     pMulligan.mulliganCount++;
     const k = pMulligan.mulliganCount;
@@ -182,6 +184,7 @@ export class MulliganService {
         if (idx !== -1) {
           const [card] = zones.hand.splice(idx, 1);
           if (card) {
+            delete card.revealedTo;
             zones.library.push(card);
           }
         }
@@ -240,6 +243,7 @@ export class MulliganService {
         if (idx !== -1) {
           const [card] = zones.hand.splice(idx, 1);
           if (card) {
+            delete card.revealedTo;
             zones.library.push(card);
           }
         }

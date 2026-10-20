@@ -27,6 +27,7 @@ import {
   MulliganKeepSchema,
   MulliganForceDecisionSchema,
   RevealCardSchema,
+  UnrevealCardSchema,
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
@@ -336,6 +337,15 @@ export class WebSocketHandler {
               }
             }
 
+            this.broadcastRoomState(client.roomCode);
+          }
+          break;
+        }
+
+        case 'UNREVEAL_CARD': {
+          const valid = UnrevealCardSchema.parse(payload);
+          const success = session.unrevealCard(client.playerId, valid);
+          if (success) {
             this.broadcastRoomState(client.roomCode);
           }
           break;

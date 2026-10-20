@@ -7,6 +7,7 @@ import {
   Plus,
   Copy,
   Eye,
+  EyeOff,
   Shield,
   Trash2,
   Sparkles,
@@ -61,7 +62,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
 
   const targetPlayerId = localPlayerId || card.ownerId;
   const canMutate = card.ownerId === targetPlayerId || card.holderId === targetPlayerId;
-  const isPrivateHand = fromZone === 'hand' && card.ownerId !== targetPlayerId;
+  const isPrivateHand = fromZone === 'hand' && card.ownerId !== targetPlayerId && !card.revealedTo;
 
   const cardDisplayName = card.isFaceDown
     ? 'Carta boca abajo'
@@ -457,6 +458,22 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
               </div>
             )}
           </div>
+
+          {/* Opción 'Dejar de revelar' (Punto 1): visible solo si hay revelación activa */}
+          {fromZone === 'hand' && canMutate && !!card.revealedTo && (
+            <button
+              type="button"
+              data-testid="context-unreveal-btn"
+              onClick={() => {
+                onAction('UNREVEAL_CARD', { cardInstanceId: card.instanceId, fromZone: 'hand' });
+                onClose();
+              }}
+              className="w-full flex items-center space-x-2 px-2 py-1.5 hover:bg-slate-800 rounded-lg text-rose-300 hover:text-white cursor-pointer transition-colors"
+            >
+              <EyeOff className="w-3.5 h-3.5 text-rose-400" />
+              <span>Dejar de revelar</span>
+            </button>
+          )}
 
           {/* Opción: Revelar con Expansión en Línea (A todos o a jugador específico, Punto 7) */}
           <div className="flex flex-col border-t border-slate-800 pt-0.5">

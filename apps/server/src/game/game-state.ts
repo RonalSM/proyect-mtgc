@@ -17,6 +17,7 @@ import {
   SelectDeckPayload,
   SetReadyPayload,
   RevealCardPayload,
+  UnrevealCardPayload,
   toArtCropUrl,
   getCardDimensions,
 } from '@mtgc/shared';
@@ -454,6 +455,8 @@ export class GameStateSession {
 
     // 3. Secure CSPRNG Shuffle
     zones.library = secureShuffle(zones.library);
+    // Terminar revelaciones activas en mano al barajar (Punto 1)
+    zones.hand.forEach(c => { delete c.revealedTo; });
 
     // 4. Draw opening 7 cards
     const initialHandSize = Math.min(7, zones.library.length);
@@ -514,6 +517,8 @@ export class GameStateSession {
     if (!zones || zones.library.length <= 1) return;
 
     zones.library = secureShuffle(zones.library);
+    // Terminar revelaciones activas en mano al barajar (Punto 1)
+    zones.hand.forEach(c => { delete c.revealedTo; });
     this.addLog(playerId, `barajó su biblioteca`);
     this.incrementVersion();
   }
@@ -727,6 +732,11 @@ export class GameStateSession {
     const [card] = fromArray.splice(cardIndex, 1);
     if (!card) return;
 
+    // Al salir de la mano o moverse de zona, termina cualquier revelación activa (Punto 1)
+    if (payload.fromZone === 'hand' || card.revealedTo) {
+      delete card.revealedTo;
+    }
+
     // Target player zone
     let targetPlayerId = payload.toPlayerId || fromPlayerId || playerId;
 
@@ -899,6 +909,19 @@ export class GameStateSession {
 
     if (!foundCard) return undefined;
 
+    // A.1: Revelar persistente en la mano (Punto 1)
+    if (payload.targetPlayerId) {
+      if (foundCard.revealedTo !== 'all') {
+        const current = Array.isArray(foundCard.revealedTo) ? [...foundCard.revealedTo] : [];
+        if (!current.includes(payload.targetPlayerId)) {
+          current.push(payload.targetPlayerId);
+        }
+        foundCard.revealedTo = current;
+      }
+    } else {
+      foundCard.revealedTo = 'all';
+    }
+
     let targetPlayerName: string | undefined;
     if (payload.targetPlayerId && this.state.players[payload.targetPlayerId]) {
       targetPlayerName = this.state.players[payload.targetPlayerId]?.name || 'Jugador';
@@ -921,6 +944,31 @@ export class GameStateSession {
   /**
    * Taps or untaps a card on the battlefield (owner or holder)
    */
+  /**
+   * Deja de revelar una carta de la mano (Punto 1)
+   */
+  public unrevealCard(
+    playerId: string,
+    payload: UnrevealCardPayload,
+  ): boolean {
+    const zones = this.state.playerZones[playerId];
+    if (!zones) return false;
+
+    let foundCard = zones.hand.find(c => c.instanceId === payload.cardInstanceId);
+    if (!foundCard) {
+      for (const zoneList of Object.values(zones)) {
+        foundCard = (zoneList as CardInstance[]).find(c => c.instanceId === payload.cardInstanceId);
+        if (foundCard) break;
+      }
+    }
+
+    if (!foundCard || !foundCard.revealedTo) return false;
+
+    delete foundCard.revealedTo;
+    this.incrementVersion();
+    return true;
+  }
+
   public tapCard(playerId: string, payload: TapCardPayload): void {
     const found = this.findBattlefieldCard(payload.cardInstanceId);
     if (!found) return;

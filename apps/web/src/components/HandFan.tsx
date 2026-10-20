@@ -3,9 +3,25 @@ import type { CardInstance, GameActionType, CardDefinition, RoomState } from '@m
 import { useDraggable } from '@dnd-kit/core';
 import { CardDisplay } from './CardDisplay';
 import { CardContextMenu } from './CardContextMenu';
-import { Play, Trash2, Sparkles, Maximize2 } from 'lucide-react';
+import { Play, Trash2, Sparkles, Maximize2, Eye } from 'lucide-react';
 import { useCardPreview } from '../context/CardPreviewContext';
 import { getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
+
+export function getRevealedTooltipForOwner(revealedTo: string[] | 'all' | undefined, roomState?: RoomState): string {
+  if (!revealedTo) return '';
+  if (revealedTo === 'all') return 'Revelada a todos';
+  if (Array.isArray(revealedTo)) {
+    if (revealedTo.length === 0) return 'Revelada';
+    const names = revealedTo.map(id => roomState?.players[id]?.name || id);
+    return `Revelada a ${names.join(', ')}`;
+  }
+  return 'Revelada';
+}
+
+export function getRevealedTooltipForRecipient(ownerId: string, roomState?: RoomState): string {
+  const ownerName = roomState?.players[ownerId]?.name || 'Jugador';
+  return `Revelada por ${ownerName}`;
+}
 
 interface HandFanProps {
   cards: CardInstance[];
@@ -23,6 +39,7 @@ interface HandCardItemProps {
   index: number;
   totalCards: number;
   isSelected: boolean;
+  roomState?: RoomState;
   onSelect: () => void;
   onZoom: () => void;
   onPlay: (e: React.MouseEvent) => void;
@@ -41,6 +58,7 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
   index,
   totalCards,
   isSelected,
+  roomState,
   onSelect,
   onZoom,
   onPlay,
@@ -105,13 +123,22 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
             ? `rotate(${rot}deg) translateY(${transY}px)`
             : 'none',
         }}
-        className={`rounded-[6px] overflow-hidden border shadow-lg transition-transform duration-200 aspect-[5/7] bg-slate-900 ${
+        className={`relative rounded-[6px] overflow-hidden border shadow-lg transition-transform duration-200 aspect-[5/7] bg-slate-900 ${
           isSelected
             ? 'border-amber-400 ring-2 ring-amber-400/60 shadow-amber-500/20'
             : 'border-slate-800 hover:border-amber-400/90'
         }`}
       >
         <CardDisplay card={card.definition} isFaceDown={false} allowFaceToggle={false} />
+        {card.revealedTo && (
+          <div
+            data-testid="revealed-eye-badge"
+            title={getRevealedTooltipForOwner(card.revealedTo, roomState)}
+            className="absolute top-1 right-1 z-30 bg-slate-950/90 border border-red-500/80 rounded-full p-1 shadow-lg text-red-500 flex items-center justify-center pointer-events-auto"
+          >
+            <Eye className="w-3.5 h-3.5 fill-red-500/20 text-red-500" />
+          </div>
+        )}
       </div>
 
       {/* Action Toolbar on selection (accessible button alternative: REQ-9.2) */}
@@ -218,6 +245,7 @@ export const HandFan: React.FC<HandFanProps> = ({
 
   // ----------------------------------------------------
   // Opponent Hand: Face-down card backs fan with count badge (REQ-16.3, REQ-22.7.2)
+  // With persistent reveal support (Punto 1): recipients see revealed cards face-up with red eye icon
   // ----------------------------------------------------
   if (!isLocalPlayer) {
     if (handCount <= 0) {
@@ -228,55 +256,105 @@ export const HandFan: React.FC<HandFanProps> = ({
       );
     }
 
-    const cardsToShow = Math.min(handCount, 7);
+    const cardsToShow = cards.length > 0 ? cards.length : Math.min(handCount, 7);
+    const oppOverlap = cardsToShow > 3
+      ? Math.min(0.85, 0.50 + (cardsToShow - 3) * 0.065)
+      : cardsToShow > 1
+      ? 0.40
+      : 0;
 
     return (
-      <div className="relative flex items-end justify-center select-none pt-2 pb-0.5">
+      <div className="relative flex items-end justify-center select-none pt-2 pb-0.5 overflow-visible">
         {/* Count Badge */}
         <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-slate-950/90 border border-slate-700/80 px-2 py-0.5 rounded-full text-[9px] font-bold text-amber-300 shadow-md backdrop-blur-md z-30 whitespace-nowrap">
           {handCount} {handCount === 1 ? 'carta' : 'cartas'}
         </div>
 
-        {/* Fanned Card Backs */}
-        <div className="flex items-end justify-center">
-          {(() => {
-            const oppOverlap = cardsToShow > 3
-              ? Math.min(0.85, 0.50 + (cardsToShow - 3) * 0.065)
-              : cardsToShow > 1
-              ? 0.40
-              : 0;
-            return Array.from({ length: cardsToShow }, (_, i) => {
-              const offset = i - (cardsToShow - 1) / 2;
-              const rot = Math.max(-14, Math.min(14, offset * 4.5));
-              const transY = Math.abs(offset) * 2;
+        {/* Fanned Cards */}
+        <div className="flex items-end justify-center overflow-visible">
+          {Array.from({ length: cardsToShow }, (_, i) => {
+            const card = cards[i];
+            const offset = i - (cardsToShow - 1) / 2;
+            const rot = Math.max(-14, Math.min(14, offset * 4.5));
+            const transY = Math.abs(offset) * 2;
+            const isRevealed = card && card.revealedTo && card.definition?.scryfallId !== 'hidden_card';
 
+            if (isRevealed && card) {
               return (
                 <div
-                  key={i}
+                  key={card.instanceId || i}
+                  data-card-instance-id={card.instanceId}
+                  data-card-name={card.definition.name}
+                  data-hand-card="true"
+                  data-from-zone="hand"
+                  onMouseEnter={(e) => showPreview(card.definition, e)}
+                  onMouseLeave={hidePreview}
+                  onDoubleClick={() => onZoomCard && onZoomCard(card)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setContextMenu({ card, pos: { x: e.clientX, y: e.clientY } });
+                  }}
                   style={{
                     transform: `rotate(${rot}deg) translateY(${transY}px)`,
-                    zIndex: i + 1,
+                    zIndex: i + 10,
                     width: 'var(--card-w)',
                     height: 'var(--card-h)',
                     marginLeft: i === 0 ? 0 : `calc(var(--card-w) * -${oppOverlap.toFixed(2)})`,
                   }}
-                  className="rounded-md overflow-hidden border border-slate-700/80 bg-slate-950 shadow-md transition-transform duration-200 flex-shrink-0"
+                  className="relative rounded-md overflow-hidden border border-amber-400/80 bg-slate-950 shadow-md transition-transform duration-200 flex-shrink-0 cursor-pointer hover:-translate-y-3 hover:z-40"
                 >
-                  <img
-                    src="https://cards.scryfall.io/back.png"
-                    alt="Reverso de carta"
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover pointer-events-none"
-                    onError={e => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
+                  <CardDisplay card={card.definition} isFaceDown={false} allowFaceToggle={false} />
+                  <div
+                    data-testid="revealed-eye-badge"
+                    title={getRevealedTooltipForRecipient(card.ownerId, roomState)}
+                    className="absolute top-1 right-1 z-30 bg-slate-950/90 border border-red-500/80 rounded-full p-1 shadow-lg text-red-500 flex items-center justify-center pointer-events-auto"
+                  >
+                    <Eye className="w-3.5 h-3.5 fill-red-500/20 text-red-500" />
+                  </div>
                 </div>
               );
-            });
-          })()}
+            }
+
+            return (
+              <div
+                key={card?.instanceId || i}
+                style={{
+                  transform: `rotate(${rot}deg) translateY(${transY}px)`,
+                  zIndex: i + 1,
+                  width: 'var(--card-w)',
+                  height: 'var(--card-h)',
+                  marginLeft: i === 0 ? 0 : `calc(var(--card-w) * -${oppOverlap.toFixed(2)})`,
+                }}
+                className="rounded-md overflow-hidden border border-slate-700/80 bg-slate-950 shadow-md transition-transform duration-200 flex-shrink-0"
+              >
+                <img
+                  src="https://cards.scryfall.io/back.png"
+                  alt="Reverso de carta"
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover pointer-events-none"
+                  onError={e => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
+
+        {contextMenu && (
+          <CardContextMenu
+            card={contextMenu.card}
+            fromZone="hand"
+            position={contextMenu.pos}
+            onClose={() => setContextMenu(null)}
+            roomState={roomState}
+            localPlayerId={localPlayerId}
+            allBattlefieldCards={allBattlefieldCards}
+            onAction={onAction}
+          />
+        )}
       </div>
     );
   }
@@ -311,6 +389,7 @@ export const HandFan: React.FC<HandFanProps> = ({
             index={i}
             totalCards={numCards}
             isSelected={selectedCardId === card.instanceId}
+            roomState={roomState}
             onSelect={() => setSelectedCardId(selectedCardId === card.instanceId ? null : card.instanceId)}
             onZoom={() => onZoomCard && onZoomCard(card)}
             onPlay={e => handlePlayToBattlefield(card, e)}

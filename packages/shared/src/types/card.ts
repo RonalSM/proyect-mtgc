@@ -61,6 +61,7 @@ export interface CardInstance {
   isFaceDown: boolean;
   rotation: number; // 0, 90 (tap), 180, 270
   counters: Record<string, number>; // e.g., '+1/+1': 2, 'charge': 1
+  revealedTo?: string[] | 'all'; // Jugadores a quienes esta carta de la mano ha sido revelada de forma persistente (Punto 1)
   position?: {
     x: number;
     y: number;

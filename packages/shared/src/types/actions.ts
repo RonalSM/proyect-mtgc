@@ -43,8 +43,9 @@ export type GameActionType =
   | 'ROLL_D20_INITIATIVE'
   // Customization (REQ-22)
   | 'SET_PLAYMAT'
-  // Reveal card (Punto 7)
+  // Reveal card (Punto 7 & Corrección A.1)
   | 'REVEAL_CARD'
+  | 'UNREVEAL_CARD'
   // Live dragging (ephemeral, REQ-9)
   | 'CARD_DRAG_MOVE';
 
@@ -223,6 +224,11 @@ export interface RevealCardPayload {
   cardInstanceId: string;
   fromZone?: ZoneType;
   targetPlayerId?: string;
+}
+
+export interface UnrevealCardPayload {
+  cardInstanceId: string;
+  fromZone?: ZoneType;
 }
 
 export interface CardRevealedPayload {

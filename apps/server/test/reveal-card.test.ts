@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
 import { GameStateSession } from '../src/game/game-state.js';
+import { filterRoomStateForPlayer } from '../src/game/visibility-filter.js';
 import type { RoomState, CardInstance } from '@mtgc/shared';
 
 function createMockRoomState(): RoomState {
@@ -242,4 +243,129 @@ test('Punto 7: Submenú Biblioteca (Arriba, Abajo, Posición N) e inserción en 
   assert.strictEqual(exile.length, 1);
   assert.strictEqual(exile[0]!.instanceId, 'hand_c');
   assert.strictEqual(session.state.playerZones['p1']!.graveyard.length, 0);
+});
+
+test('Corrección A.1: Revelación persistente en mano, filtrado de destinatarios en VisibilityFilter, unreveal y limpieza al salir de la mano o barajar', () => {
+  const roomState = createMockRoomState();
+  // Añadir un tercer jugador para verificar que el no destinatario no recibe nada
+  roomState.players['p3'] = {
+    id: 'p3',
+    name: 'Charlie',
+    seatNumber: 2,
+    isHost: false,
+    isSpectator: false,
+    isConnected: true,
+    life: 40,
+    commanderDamage: {},
+    counters: { poison: 0, energy: 0, experience: 0, commanderTax: 0, custom: {} },
+    isEliminated: false,
+    isAtRisk: false,
+    deckLoaded: true,
+    handCount: 0,
+    libraryCount: 0,
+    graveyardCount: 0,
+    exileCount: 0,
+  };
+  roomState.playerZones['p3'] = {
+    library: [],
+    hand: [],
+    battlefield: [],
+    graveyard: [],
+    exile: [],
+    command: [],
+  };
+
+  const session = new GameStateSession(roomState);
+
+  const card1: CardInstance = {
+    instanceId: 'c1',
+    definition: { scryfallId: 'sf1', name: 'Sol Ring', cmc: 1, typeLine: 'Artifact', colors: [], colorIdentity: [] },
+    ownerId: 'p1',
+    controllerId: 'p1',
+  };
+  const card2: CardInstance = {
+    instanceId: 'c2',
+    definition: { scryfallId: 'sf2', name: 'Mana Crypt', cmc: 0, typeLine: 'Artifact', colors: [], colorIdentity: [] },
+    ownerId: 'p1',
+    controllerId: 'p1',
+  };
+
+  session.state.playerZones['p1']!.hand = [card1, card2];
+  session.syncPlayerCounts('p1');
+
+  // 1. Alice (p1) revela card1 exclusivamente a Bob (p2)
+  session.revealCard('p1', {
+    cardInstanceId: 'c1',
+    targetPlayerId: 'p2',
+  });
+
+  assert.deepStrictEqual(card1.revealedTo, ['p2']);
+  assert.strictEqual(card2.revealedTo, undefined);
+
+  // Comprobar visibilidad:
+  // Alice (propietaria p1) ve ambas cartas completas y card1 tiene revealedTo
+  const stateAlice = filterRoomStateForPlayer(session.state, 'p1');
+  const aliceHand = stateAlice.playerZones['p1']!.hand;
+  assert.strictEqual(aliceHand[0]!.definition.name, 'Sol Ring');
+  assert.deepStrictEqual(aliceHand[0]!.revealedTo, ['p2']);
+  assert.strictEqual(aliceHand[1]!.definition.name, 'Mana Crypt');
+
+  // Bob (destinatario p2) ve card1 con su identidad real y revealedTo, pero card2 está enmascarada
+  const stateBob = filterRoomStateForPlayer(session.state, 'p2');
+  const bobViewOfHand = stateBob.playerZones['p1']!.hand;
+  assert.strictEqual(bobViewOfHand[0]!.definition.name, 'Sol Ring');
+  assert.deepStrictEqual(bobViewOfHand[0]!.revealedTo, ['p2']);
+  assert.strictEqual(bobViewOfHand[1]!.definition.scryfallId, 'hidden_card');
+  assert.strictEqual(bobViewOfHand[1]!.definition.name, 'Carta Oculta');
+  assert.strictEqual(bobViewOfHand[1]!.revealedTo, undefined);
+
+  // Charlie (p3, no destinatario) NO ve card1 (está enmascarada) ni card2, y revealedTo no existe
+  const stateCharlie = filterRoomStateForPlayer(session.state, 'p3');
+  const charlieViewOfHand = stateCharlie.playerZones['p1']!.hand;
+  assert.strictEqual(charlieViewOfHand[0]!.definition.scryfallId, 'hidden_card');
+  assert.strictEqual(charlieViewOfHand[0]!.revealedTo, undefined);
+  assert.strictEqual(charlieViewOfHand[1]!.definition.scryfallId, 'hidden_card');
+  assert.strictEqual(charlieViewOfHand[1]!.revealedTo, undefined);
+
+  // 2. Deshacer revelación con unrevealCard (Dejar de revelar)
+  const unrevealed = session.unrevealCard('p1', { cardInstanceId: 'c1', fromZone: 'hand' });
+  assert.strictEqual(unrevealed, true);
+  assert.strictEqual(card1.revealedTo, undefined);
+
+  // Ahora Bob ya no ve card1
+  const stateBobAfterUnreveal = filterRoomStateForPlayer(session.state, 'p2');
+  assert.strictEqual(stateBobAfterUnreveal.playerZones['p1']!.hand[0]!.definition.scryfallId, 'hidden_card');
+
+  // 3. Revelar a todos
+  session.revealCard('p1', {
+    cardInstanceId: 'c1',
+  });
+  assert.strictEqual(card1.revealedTo, 'all');
+
+  const stateBobAll = filterRoomStateForPlayer(session.state, 'p2');
+  assert.strictEqual(stateBobAll.playerZones['p1']!.hand[0]!.definition.name, 'Sol Ring');
+  const stateCharlieAll = filterRoomStateForPlayer(session.state, 'p3');
+  assert.strictEqual(stateCharlieAll.playerZones['p1']!.hand[0]!.definition.name, 'Sol Ring');
+
+  // 4. Terminar revelación cuando la carta sale de la mano (jugar al campo de batalla)
+  session.moveCard('p1', {
+    cardInstanceId: 'c1',
+    fromZone: 'hand',
+    toZone: 'battlefield',
+    position: { x: 0.5, y: 0.5 },
+  });
+  const bfCard = session.state.playerZones['p1']!.battlefield.find(c => c.instanceId === 'c1');
+  assert.ok(bfCard);
+  assert.strictEqual(bfCard.revealedTo, undefined);
+
+  // 5. Revelar card2 y comprobar que al barajar la biblioteca se cancela la revelación en mano
+  session.revealCard('p1', { cardInstanceId: 'c2' });
+  assert.strictEqual(card2.revealedTo, 'all');
+
+  session.state.playerZones['p1']!.library = [
+    { instanceId: 'l1', definition: { scryfallId: 'sl1', name: 'Forest', cmc: 0, typeLine: 'Basic Land', colors: [], colorIdentity: ['G'] }, ownerId: 'p1' },
+    { instanceId: 'l2', definition: { scryfallId: 'sl2', name: 'Forest', cmc: 0, typeLine: 'Basic Land', colors: [], colorIdentity: ['G'] }, ownerId: 'p1' },
+  ];
+  session.shuffleLibrary('p1');
+  assert.strictEqual(card2.revealedTo, undefined);
 });
