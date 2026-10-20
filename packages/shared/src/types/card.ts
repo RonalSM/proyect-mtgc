@@ -61,6 +61,9 @@ export interface CardInstance {
   isFaceDown: boolean;
   rotation: number; // 0, 90 (tap), 180, 270
   counters: Record<string, number>; // e.g., '+1/+1': 2, 'charge': 1
+  basePower?: number; // Poder base modificado o definido (Punto 2 & Punto 3)
+  baseToughness?: number; // Resistencia base modificada o definida (Punto 2 & Punto 3)
+  keywords?: string[]; // Palabras clave activas (Punto 4)
   revealedTo?: string[] | 'all'; // Jugadores a quienes esta carta de la mano ha sido revelada de forma persistente (Punto 1)
   position?: {
     x: number;

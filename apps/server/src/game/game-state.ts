@@ -788,6 +788,10 @@ export class GameStateSession {
       card.isTapped = false;
       card.isFaceDown = false;
       card.holderId = undefined; // Fuera del campo de batalla no hay titular temporal
+      card.counters = {};
+      delete card.basePower;
+      delete card.baseToughness;
+      delete card.keywords;
       // Fuera del campo de batalla siempre regresa a zonas del propietario original (salvo donación explícita)
       targetPlayerId = payload.toPlayerId || card.ownerId;
     }

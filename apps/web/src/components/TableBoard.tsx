@@ -18,7 +18,7 @@ import {
 } from '@dnd-kit/core';
 import { TableGrid } from './TableGrid';
 import { PlayerCell } from './PlayerCell';
-import { BattlefieldCanvas } from './BattlefieldCanvas';
+import { BattlefieldCanvas, CardPTBadge } from './BattlefieldCanvas';
 import { CardDisplay } from './CardDisplay';
 import { Portal } from './Portal';
 import { CardPreviewProvider, useCardPreview } from '../context/CardPreviewContext';
@@ -705,6 +705,9 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
                     isTapped={activeDragItem.card.isTapped}
                   />
                 </div>
+                {!activeDragItem.card.isFaceDown && (
+                  <CardPTBadge card={activeDragItem.card} />
+                )}
               </div>
             ) : null}
           </DragOverlay>

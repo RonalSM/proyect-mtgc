@@ -610,6 +610,16 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
     5. *Comprobación de fecha de sincronización:* Endpoint `POST /api/cards/sync-rulings` verificado con `skipped: true, reason: 'not_modified', syncedCount: 0` ejecutado en 149 ms sin descargas redundantes.
     6. *Atribución en selector de playmat:* Modal de personalización de playmat verificado con bloque de atribución (`data-testid="playmat-attribution-box"`), artista ("Ilustrado por ..."), copyright ("Wizards of the Coast"), y botón "Ver carta" abriendo `CardDetailsModal` sobre el selector.
     7. *Artefactos generados:* Capturas al 200% archivadas en el directorio de artefactos: [`card-details-single-faced.png`](card-details-single-faced.png) y [`card-details-double-faced.png`](card-details-double-faced.png).
+- **Indicador de Poder y Resistencia (P/T) Efectivo en Mesa (Punto 2 de Correcciones del Cliente - B.2):**
+  - **Fórmula de cálculo:** $\text{P/T Efectivo} = \text{Base} + \text{Contadores } +1/+1 - \text{Contadores } -1/-1$ (evaluando indistintamente claves `-1/-1` y `−1/−1` Unicode).
+  - **Ubicación y anclaje geométrico:** El componente `CardPTBadge` se renderiza como hijo directo de `.card-slot-container`, anclado a la esquina inferior izquierda (`absolute -bottom-2.5 -left-1`). Al estar fuera de `.card-rotator`, permanece 100% erguido sin rotar con la carta. Al ubicarse a `-bottom-2.5`, se proyecta completamente por fuera del marco de la imagen, respetando la línea inferior que alberga el nombre del artista y el copyright legal según las directrices de Scryfall.
+  - **Feedback cromático:**
+    - Verde (`text-emerald-400`, borde `border-emerald-500/80`, halo esmeralda): si el valor efectivo supera el valor base.
+    - Rojo (`text-rose-400`, borde `border-rose-500/80`, halo carmesí): si el valor efectivo es inferior al valor base.
+    - Neutro (`text-slate-200`, borde `border-slate-700/80`): si el valor efectivo coincide con el valor base.
+  - **P/T variable con `*`:** Cartas con `*` en su definición (p. ej. `*/*`, `1+*`) muestran `*` hasta que el jugador define un valor base numérico en el menú contextual.
+  - **Valores negativos:** Admite 0 y cifras negativas (p. ej. `-1/-1`) sin destrucción automática, dado que la mesa no incluye motor de reglas.
+  - **Reinicio autoritativo:** En el servidor (`GameStateSession.moveCard`), al abandonar el campo de batalla (`toZone !== 'battlefield'`), se reinician automáticamente `card.counters = {}`, `delete card.basePower`, `delete card.baseToughness` y `delete card.keywords`.
 
 
 

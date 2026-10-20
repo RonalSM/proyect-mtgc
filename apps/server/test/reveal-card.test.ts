@@ -369,3 +369,47 @@ test('Corrección A.1: Revelación persistente en mano, filtrado de destinatario
   session.shuffleLibrary('p1');
   assert.strictEqual(card2.revealedTo, undefined);
 });
+
+test('Punto 2 & Punto 3: Reseteo de contadores y P/T al salir la carta del campo de batalla', () => {
+  const roomState = createMockRoomState();
+  const session = new GameStateSession(roomState);
+
+  const creatureCard: CardInstance = {
+    instanceId: 'creature_pt_1',
+    definition: {
+      scryfallId: 'sf_creature',
+      name: 'Tarmogoyf',
+      cmc: 2,
+      typeLine: 'Creature — Lhurgoyf',
+      colors: ['G'],
+      colorIdentity: ['G'],
+      power: '*',
+      toughness: '1+*',
+    },
+    ownerId: 'p1',
+    controllerId: 'p1',
+    counters: { '+1/+1': 3, '−1/−1': 1, charge: 2 },
+    basePower: 4,
+    baseToughness: 5,
+    keywords: ['Vuela (Flying)'],
+    position: { x: 0.5, y: 0.5, zIndex: 10 },
+  };
+
+  session.state.playerZones['p1']!.battlefield = [creatureCard];
+  session.syncPlayerCounts('p1');
+
+  // Mover al cementerio
+  session.moveCard('p1', {
+    cardInstanceId: 'creature_pt_1',
+    fromZone: 'battlefield',
+    toZone: 'graveyard',
+  });
+
+  const gyCard = session.state.playerZones['p1']!.graveyard.find(c => c.instanceId === 'creature_pt_1');
+  assert.ok(gyCard, 'La carta debe estar en el cementerio');
+  assert.deepStrictEqual(gyCard.counters, {}, 'Los contadores deben reiniciarse a {}');
+  assert.strictEqual(gyCard.basePower, undefined, 'basePower debe ser eliminado');
+  assert.strictEqual(gyCard.baseToughness, undefined, 'baseToughness debe ser eliminado');
+  assert.strictEqual(gyCard.keywords, undefined, 'keywords debe ser eliminado');
+  assert.strictEqual(gyCard.position, undefined, 'position debe ser eliminada');
+});

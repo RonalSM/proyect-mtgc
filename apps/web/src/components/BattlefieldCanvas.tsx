@@ -1,10 +1,48 @@
 import React, { useState } from 'react';
 import type { CardInstance, GameActionType, CardDefinition, RoomState } from '@mtgc/shared';
+import { computeCardPT } from '@mtgc/shared';
 import { useDraggable } from '@dnd-kit/core';
 import { CardDisplay } from './CardDisplay';
 import { CardContextMenu } from './CardContextMenu';
 import { useCardPreview } from '../context/CardPreviewContext';
 import type { RemoteDragState } from '../hooks/useGameSocket';
+
+export const CardPTBadge: React.FC<{ card: CardInstance }> = ({ card }) => {
+  const pt = computeCardPT(card);
+  if (!pt) return null;
+
+  const { effectiveP, effectiveT, baseP, baseT, pStatus, tStatus, overallStatus } = pt;
+
+  let badgeBorderBg = 'bg-slate-950/95 border-slate-700/80 text-slate-200 shadow-sm';
+  if (overallStatus === 'up') {
+    badgeBorderBg = 'bg-slate-950/95 border-emerald-500/80 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.35)]';
+  } else if (overallStatus === 'down') {
+    badgeBorderBg = 'bg-slate-950/95 border-rose-500/80 text-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.35)]';
+  }
+
+  let pColor = 'text-slate-100 font-bold';
+  if (pStatus === 'up') pColor = 'text-emerald-400 font-extrabold';
+  else if (pStatus === 'down') pColor = 'text-rose-400 font-extrabold';
+
+  let tColor = 'text-slate-100 font-bold';
+  if (tStatus === 'up') tColor = 'text-emerald-400 font-extrabold';
+  else if (tStatus === 'down') tColor = 'text-rose-400 font-extrabold';
+
+  return (
+    <div
+      data-testid="card-pt-indicator"
+      data-pt-effective={`${effectiveP}/${effectiveT}`}
+      data-pt-status={overallStatus}
+      data-base-pt={`${baseP ?? '*'}/${baseT ?? '*'}`}
+      title={`P/T: ${effectiveP}/${effectiveT} (Base: ${baseP ?? '*'}/${baseT ?? '*'})`}
+      className={`absolute -bottom-2.5 -left-1 z-20 pointer-events-none px-1.5 py-0.5 rounded text-[10px] font-mono leading-none border shadow-md flex items-center justify-center space-x-0.5 select-none ${badgeBorderBg}`}
+    >
+      <span className={pColor}>{effectiveP}</span>
+      <span className="text-slate-400 text-[8px] font-normal">/</span>
+      <span className={tColor}>{effectiveT}</span>
+    </div>
+  );
+};
 
 export interface ViewFraming {
   xMin: number;
@@ -274,6 +312,9 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
           </div>
         )}
       </div>
+
+      {/* Indicador P/T efectivo anclado a la esquina inferior izquierda de la caja visual sin girar con ella (Punto 2) */}
+      {!card.isFaceDown && <CardPTBadge card={card} />}
 
       {/* Menú contextual unificado con destinos (mano, cementerio, exilio, biblioteca) y revelar (Punto 7) */}
       {contextMenuPos && (
