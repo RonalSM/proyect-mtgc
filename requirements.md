@@ -376,6 +376,26 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
    - Cero errores de consola de React o del navegador (`cleanErrors: []`).
 
+### REQ-26 Creación y Gestión de Fichas (Tokens) (Punto 4 de Correcciones del Cliente - B.4)
+1. **Resolución y Deduplicación de Fichas desde Scryfall:**
+   - Consulta de objetos relacionados en `all_parts` con `component: "token"`. Deduplicación estricta de fichas idénticas (mismo nombre, tipo, colores, P/T y texto).
+   - Servicio backend `TokenService` con resolución puntual y caché en memoria (`cardTokensCache`, `tokenDetailsCache`), precarga de cartas frecuentes y fichas comunes (Tesoro, Comida, Pista, Sangre, Mapa).
+2. **Creación desde Clic Derecho en Carta:**
+   - Al hacer clic derecho sobre una carta visible en mano, mesa, cementerio o exilio, se presenta la sección «Crear ficha» que contiene ÚNICAMENTE las fichas que dicha carta genera.
+   - Si la carta no crea ninguna ficha registrada, la sección «Crear ficha» permanece completamente oculta (no se muestra).
+3. **Creación desde Espacio Vacío de la División del Jugador:**
+   - Al hacer clic derecho sobre un espacio vacío de la división del jugador local (`PlayerCell`), se despliega la ventana modal `CreateTokenModal` con 3 pestañas:
+     - **(a) Fichas de mi mazo:** Fichas de las cartas pertenecientes al mazo del jugador (biblioteca, mano, mesa, cementerio, exilio, comando), agrupadas por carta de origen y con buscador interactivo en vivo.
+     - **(b) Fichas comunes:** Fichas estándar de Magic (Tesoro, Comida, Pista, Sangre, Mapa) con arte oficial de Scryfall y texto de reglas.
+     - **(c) Ficha personalizada:** Formulario para definir nombre libre, poder, resistencia, colores (W, U, B, R, G) y línea de tipo.
+4. **Ciclo de Vida de las Fichas:**
+   - La ficha se genera en el centro de la sección del jugador con desplazamiento en cascada (`computePlayerDivisionCenter`).
+   - `ownerId` y `holderId` se asignan al jugador que la crea.
+   - Al salir de la mesa (enviarse a mano, cementerio, exilio o biblioteca mediante drag & drop o menú contextual), la ficha DESAPARECE automáticamente (no ingresa a la zona destino, sin motor de reglas complejo).
+   - Se registra en la bitácora pública de la partida: `"X creó una ficha [nombre]"` y `"La ficha [nombre] desapareció al salir de la mesa"`.
+   - Se preserva el soporte para deshacer (`UNDO`) que revierte la creación o restaura la ficha.
+   - La vista previa flotante (`CardPreview`) y el modal «Ver carta» (`openCardDetails`) funcionan plenamente con fichas.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
 **Historia:** Como jugador, quiero ver a todos en una cuadrícula a pantalla completa, cada uno con su propio fondo y su propio espacio, para sentir que estamos jugando juntos en una mesa.

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { CardColor } from '../types/card.js';
 
 export const ZoneTypeSchema = z.enum([
   'library',
@@ -78,6 +79,35 @@ export const FlipCardSchema = z.object({
 
 export const CloneTokenSchema = z.object({
   cardInstanceId: z.string().min(1),
+});
+
+export const CreateTokenSchema = z.object({
+  tokenDefinition: z.object({
+    scryfallId: z.string().default('token'),
+    name: z.string().min(1),
+    typeLine: z.string(),
+    manaCost: z.string().optional(),
+    cmc: z.number().default(0),
+    oracleText: z.string().optional(),
+    colors: z.array(z.string()).default([]) as unknown as z.ZodType<CardColor[]>,
+    colorIdentity: z.array(z.string()).default([]) as unknown as z.ZodType<CardColor[]>,
+    power: z.string().optional(),
+    toughness: z.string().optional(),
+    loyalty: z.string().optional(),
+    artist: z.string().optional(),
+    copyright: z.string().optional(),
+    imageUrlNormal: z.string().optional(),
+    imageUrlSmall: z.string().optional(),
+    imageUrlLarge: z.string().optional(),
+    imageUrlArtCrop: z.string().optional(),
+  }),
+  targetPlayerId: z.string().optional(),
+  position: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+    })
+    .optional(),
 });
 
 export const DrawCardsSchema = z.object({
@@ -201,6 +231,7 @@ export const ActionEnvelopeSchema = z.object({
     'UNTAP_ALL',
     'FLIP_CARD',
     'CLONE_TOKEN',
+    'CREATE_TOKEN',
     'DRAW_CARDS',
     'MULLIGAN',
     'MULLIGAN_TAKE',

@@ -15,6 +15,7 @@ import {
   TapCardPayload,
   FlipCardPayload,
   CloneTokenPayload,
+  CreateTokenPayload,
   ConfirmUndoPayload,
   SelectDeckPayload,
   SetReadyPayload,
@@ -740,6 +741,35 @@ export class GameStateSession {
       delete card.revealedTo;
     }
 
+    // Punto 4: Si una ficha sale de la mesa, desaparece (sin motor de reglas)
+    const isToken = !!(
+      card.isToken ||
+      (card.definition as any).layout === 'token' ||
+      card.definition.typeLine?.toLowerCase().includes('token') ||
+      card.definition.name?.includes('(Token)')
+    );
+
+    if (payload.fromZone === 'battlefield' && payload.toZone !== 'battlefield' && isToken) {
+      this.addLog(playerId, `La ficha "${card.definition.name}" desapareció al salir de la mesa`);
+      this.undoStack.push({
+        playerId,
+        description: `Restaurar ficha ${card.definition.name}`,
+        revert: () => {
+          const bf = this.state.playerZones[fromPlayerId]?.battlefield;
+          if (bf) {
+            card.position = previousPosition || {
+              ...this.computePlayerDivisionCenter(fromPlayerId),
+              zIndex: 1,
+            };
+            card.holderId = previousHolderId || fromPlayerId;
+            bf.push(card);
+          }
+        },
+      });
+      this.incrementVersion();
+      return;
+    }
+
     // Target player zone
     let targetPlayerId = payload.toPlayerId || fromPlayerId || playerId;
 
@@ -1047,6 +1077,7 @@ export class GameStateSession {
       isCommander: false,
       isTapped: false,
       isFaceDown: false,
+      isToken: true,
       rotation: 0,
       counters: { ...sourceCard.counters },
       position: {
@@ -1075,6 +1106,88 @@ export class GameStateSession {
     });
 
     this.incrementVersion();
+  }
+
+  /**
+   * Creates a token on the battlefield (Punto 4, B.4)
+   */
+  public createToken(playerId: string, payload: CreateTokenPayload): CardInstance {
+    const targetPlayerId = payload.targetPlayerId || playerId;
+    const cascadePos = this.computePlayerDivisionCenter(targetPlayerId);
+    const pos = payload.position || cascadePos;
+
+    // Detect base power / toughness
+    let baseP: number | undefined = undefined;
+    let baseT: number | undefined = undefined;
+    if (payload.tokenDefinition.power !== undefined && !isNaN(parseInt(payload.tokenDefinition.power, 10))) {
+      baseP = parseInt(payload.tokenDefinition.power, 10);
+    }
+    if (payload.tokenDefinition.toughness !== undefined && !isNaN(parseInt(payload.tokenDefinition.toughness, 10))) {
+      baseT = parseInt(payload.tokenDefinition.toughness, 10);
+    }
+
+    // Detect keywords from oracleText
+    const kws: string[] = [];
+    if (payload.tokenDefinition.oracleText) {
+      const text = payload.tokenDefinition.oracleText.toLowerCase();
+      const standardKws = [
+        'deathtouch', 'defender', 'double strike', 'fear', 'first strike',
+        'flying', 'haste', 'hexproof', 'indestructible', 'lifelink',
+        'menace', 'reach', 'trample', 'vigilance',
+      ];
+      for (const kw of standardKws) {
+        if (new RegExp(`\\b${kw}\\b`, 'i').test(text)) {
+          kws.push(kw);
+        }
+      }
+    }
+
+    const tokenInstance: CardInstance = {
+      instanceId: randomUUID(),
+      definition: {
+        ...payload.tokenDefinition,
+        name: payload.tokenDefinition.name,
+      },
+      ownerId: playerId,
+      controllerId: playerId,
+      holderId: this.computeHolderId(pos, false) || targetPlayerId,
+      isCommander: false,
+      isTapped: false,
+      isFaceDown: false,
+      isToken: true,
+      rotation: 0,
+      counters: {},
+      basePower: baseP,
+      baseToughness: baseT,
+      keywords: kws.length > 0 ? kws : undefined,
+      position: {
+        ...pos,
+        zIndex: 10,
+      },
+    };
+
+    const targetZones = this.state.playerZones[tokenInstance.holderId || targetPlayerId] || this.state.playerZones[targetPlayerId];
+    if (targetZones) {
+      targetZones.battlefield.push(tokenInstance);
+    }
+
+    this.addLog(playerId, `creó una ficha "${payload.tokenDefinition.name}"`, true);
+
+    this.undoStack.push({
+      playerId,
+      description: `Revertir creación de ficha ${payload.tokenDefinition.name}`,
+      revert: () => {
+        if (targetZones) {
+          const idx = targetZones.battlefield.findIndex(c => c.instanceId === tokenInstance.instanceId);
+          if (idx !== -1) {
+            targetZones.battlefield.splice(idx, 1);
+          }
+        }
+      },
+    });
+
+    this.incrementVersion();
+    return tokenInstance;
   }
 
   /**

@@ -18,6 +18,7 @@ import {
 import { HandFan } from './HandFan';
 import { CardDisplay } from './CardDisplay';
 import { CardContextMenu } from './CardContextMenu';
+import { CreateTokenModal } from './CreateTokenModal';
 import { Portal } from './Portal';
 import { VirtualizedCardGrid } from './VirtualizedCardGrid';
 import { useCardPreview } from '../context/CardPreviewContext';
@@ -349,7 +350,26 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   }, [zones, activePileModal, librarySearchQuery, libraryTypeFilter]);
   const [isPlaymatModalOpen, setIsPlaymatModalOpen] = useState(false);
   const [customPlaymatInput, setCustomPlaymatInput] = useState('');
+  const [isCreateTokenModalOpen, setIsCreateTokenModalOpen] = useState(false);
   const [zoomedCard, setZoomedCard] = useState<CardInstance | null>(null);
+
+  const handleCellContextMenu = (e: React.MouseEvent) => {
+    if (!isLocalPlayer) return;
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('button') ||
+      target.closest('input') ||
+      target.closest('[data-modal-card-item]') ||
+      target.closest('[data-player-dock]') ||
+      target.closest('[data-dock-zone]') ||
+      target.closest('[data-portal-root]') ||
+      target.closest('[data-player-header]')
+    ) {
+      return;
+    }
+    e.preventDefault();
+    setIsCreateTokenModalOpen(true);
+  };
 
   // Droppable hooks para pilas individuales (Punto 6)
   const { setNodeRef: setLibDropRef, isOver: isLibOver } = useDroppable({
@@ -575,6 +595,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       data-row={row}
       data-col={col}
       data-two-player={isTwoPlayer ? 'true' : 'false'}
+      onContextMenu={handleCellContextMenu}
       style={{ containerType: 'size' } as React.CSSProperties}
       className={`relative w-full h-full transition-all duration-200 select-none ${
         isActiveTurn
@@ -1429,6 +1450,15 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           </div>
         </Portal>
       )}
+
+      {/* Modal Crear Fichas en espacio vacío de la división (Punto 4, B.4) */}
+      <CreateTokenModal
+        isOpen={isCreateTokenModalOpen}
+        onClose={() => setIsCreateTokenModalOpen(false)}
+        localPlayerId={player.id}
+        roomState={roomState}
+        onAction={onAction}
+      />
     </div>
   );
 };

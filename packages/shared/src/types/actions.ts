@@ -17,6 +17,7 @@ export type GameActionType =
   | 'UNTAP_ALL'
   | 'FLIP_CARD'
   | 'CLONE_TOKEN'
+  | 'CREATE_TOKEN'
   | 'DRAW_CARDS'
   | 'MULLIGAN'
   | 'MULLIGAN_TAKE'
@@ -128,6 +129,15 @@ export interface FlipCardPayload {
 
 export interface CloneTokenPayload {
   cardInstanceId: string;
+}
+
+export interface CreateTokenPayload {
+  tokenDefinition: CardDefinition;
+  targetPlayerId?: string;
+  position?: {
+    x: number;
+    y: number;
+  };
 }
 
 export interface DrawCardsPayload {

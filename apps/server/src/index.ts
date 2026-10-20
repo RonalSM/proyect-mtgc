@@ -19,6 +19,7 @@ import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import { authService } from './services/auth.service.js';
 import { deckService } from './services/deck.service.js';
+import { tokenService } from './services/token.service.js';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -433,6 +434,27 @@ server.post('/api/cards/seed-test-rulings', async (request, reply) => {
     return reply.send({ success: true, oracleId: body.oracleId, count: body.rulings.length });
   }
   return reply.status(400).send({ error: 'Falta oracleId o rulings' });
+});
+
+// Common tokens (Punto 4)
+server.get('/api/tokens/common', async () => {
+  return { tokens: tokenService.getCommonTokens() };
+});
+
+// Card tokens (Punto 4)
+server.get('/api/cards/:cardNameOrId/tokens', async (request, reply) => {
+  const { cardNameOrId } = request.params as { cardNameOrId: string };
+  if (!cardNameOrId) return reply.status(400).send({ error: 'Falta cardNameOrId' });
+  const tokens = await tokenService.getTokensForCard(cardNameOrId);
+  return reply.send({ cardNameOrId, tokens });
+});
+
+// Deck tokens (Punto 4)
+server.post('/api/decks/tokens', async (request, reply) => {
+  const body = request.body as { cardNames?: string[] };
+  const cardNames = body?.cardNames || [];
+  const deckTokens = await tokenService.getTokensForDeck(cardNames);
+  return reply.send({ deckTokens });
 });
 
 // Parse and validate decklist

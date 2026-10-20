@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { CardInstance, GameActionType, RoomState, ZoneType } from '@mtgc/shared';
+import type { CardInstance, CardDefinition, GameActionType, RoomState, ZoneType } from '@mtgc/shared';
 import { Portal } from './Portal';
 import {
   Play,
@@ -46,6 +46,8 @@ export interface CardContextMenuProps {
   onFlip?: () => void;
   onSendToCommand?: () => void;
 }
+
+const cardTokensClientCache = new Map<string, CardDefinition[]>();
 
 export const CardContextMenu: React.FC<CardContextMenuProps> = ({
   card,
@@ -98,6 +100,40 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
     setInputBaseP(pVal);
     setInputBaseT(tVal);
   }, [card.instanceId, card.counters, card.basePower, card.baseToughness, printedPower, printedToughness]);
+
+  // Fichas que puede crear esta carta (Punto 4, B.4)
+  const [cardTokens, setCardTokens] = useState<CardDefinition[]>(() => {
+    const name = card?.definition?.name?.trim().toLowerCase();
+    return name && cardTokensClientCache.has(name) ? cardTokensClientCache.get(name)! : [];
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    const name = card?.definition?.name?.trim();
+    if (!name) return;
+
+    const key = name.toLowerCase();
+    if (cardTokensClientCache.has(key)) {
+      setCardTokens(cardTokensClientCache.get(key)!);
+      return;
+    }
+
+    fetch(`/api/cards/${encodeURIComponent(name)}/tokens`)
+      .then(r => r.json())
+      .then(data => {
+        if (!isMounted) return;
+        const tokens = Array.isArray(data.tokens) ? data.tokens : [];
+        cardTokensClientCache.set(key, tokens);
+        setCardTokens(tokens);
+      })
+      .catch(() => {
+        if (isMounted) setCardTokens([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [card?.definition?.name]);
 
   const emitPT = (p: number | '', t: number | '', plus: number, minus: number) => {
     onAction('SET_CARD_PT', {
@@ -363,10 +399,44 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             </button>
           )}
 
+          {/* Sección Crear ficha (Punto 4, B.4) - SOLO visible si la carta crea alguna ficha */}
+          {isVisible && cardTokens.length > 0 && (
+            <div className="py-1 border-t border-slate-800" data-testid="context-create-token-section">
+              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-2 py-0.5">
+                Crear ficha
+              </div>
+              {cardTokens.map(token => (
+                <button
+                  key={token.scryfallId || token.name}
+                  type="button"
+                  data-testid={`create-token-${token.name.toLowerCase().replace(/\s+/g, '-')}`}
+                  onClick={() => {
+                    onAction('CREATE_TOKEN', {
+                      tokenDefinition: token,
+                      targetPlayerId: localPlayerId,
+                    });
+                    onClose();
+                  }}
+                  className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-slate-800 rounded-lg text-slate-200 hover:text-white cursor-pointer transition-colors"
+                >
+                  <div className="flex items-center space-x-2 truncate">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                    <span className="font-medium text-xs truncate">{token.name}</span>
+                    {(token.power !== undefined || token.toughness !== undefined) && (
+                      <span className="text-[10px] font-mono text-slate-400">({token.power}/{token.toughness})</span>
+                    )}
+                  </div>
+                  <Plus className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Sección siempre visible: Poder y resistencia (Punto 3) - Visible en mesa para cualquier jugador */}
           {fromZone === 'battlefield' && !card.isFaceDown && (
-            <div
-              data-testid="context-pt-section"
+            <>
+              <div
+                data-testid="context-pt-section"
               className="flex flex-col border-t border-slate-800 pt-2 pb-1.5 px-2 bg-slate-950/40 rounded-lg my-1 space-y-1.5"
             >
               <div className="flex items-center justify-between text-xs font-bold text-slate-200">
@@ -445,7 +515,6 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                 </div>
               </div>
             </div>
-          )}
 
             {/* Contadores (Punto 4): accesible para cualquier jugador sobre cartas visibles de la mesa */}
             <div className="flex flex-col">

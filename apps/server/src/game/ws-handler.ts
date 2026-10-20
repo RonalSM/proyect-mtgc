@@ -11,6 +11,7 @@ import {
   TapCardSchema,
   FlipCardSchema,
   CloneTokenSchema,
+  CreateTokenSchema,
   DrawCardsSchema,
   RollDiceSchema,
   ChatMessageSchema,
@@ -385,6 +386,12 @@ export class WebSocketHandler {
         case 'CLONE_TOKEN': {
           const valid = CloneTokenSchema.parse(payload);
           session.cloneToken(client.playerId, valid);
+          break;
+        }
+
+        case 'CREATE_TOKEN': {
+          const valid = CreateTokenSchema.parse(payload);
+          session.createToken(client.playerId, valid);
           break;
         }
 

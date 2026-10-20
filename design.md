@@ -636,6 +636,29 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Interacción por teclado y rueda de ratón:** Modificables directamente escribiendo, mediante flechas arriba/abajo y con la rueda del ratón (`onWheel` ajustando en $\pm 1$ con prevención de scroll).
   - **Interacción universal en mesa:** Disponible para cualquier jugador en cualquier permanente visible del campo de batalla sin restricción por `canMutate`, registrando la autoría en la bitácora pública de la partida mediante la acción `SET_CARD_PT`.
 
+- **Creación y Gestión de Fichas (Tokens) Asociadas a Cartas, Comunes y Personalizadas (Punto 4 de Correcciones del Cliente - B.4):**
+  - **Servicio Backend TokenService:** En [`apps/server/src/services/token.service.ts`](apps/server/src/services/token.service.ts), resuelve fichas asociadas mediante la propiedad `all_parts` de Scryfall con `component: "token"`. Deduplica fichas idénticas comparando signatura canónica (`name`, `typeLine`, `power`, `toughness`, `colors`, `oracleText`). Dispone de caché en memoria de 2 niveles (`cardTokensCache`, `tokenDetailsCache`) e integra las 5 fichas comunes universales (Tesoro, Comida, Pista, Sangre, Mapa).
+  - **Endpoints REST de Fichas:**
+    - `GET /api/tokens/common`: entrega el catálogo de fichas comunes.
+    - `GET /api/cards/:cardNameOrId/tokens`: resuelve las fichas creadas por una carta específica.
+    - `POST /api/decks/tokens`: recibe la lista de nombres de cartas de un mazo y retorna las fichas agrupadas por carta de origen `{ sourceCard, tokens }`.
+  - **Acción Autoritativa CREATE_TOKEN:**
+    - Esquema y carga útil en `@mtgc/shared` (`CreateTokenSchema`, `CreateTokenPayload`).
+    - En `GameStateSession.createToken`, genera una `CardInstance` con `instanceId` único, `ownerId: playerId`, `controllerId: playerId`, `isToken: true`, y calcula posición centrada en la división del jugador con desplazamiento en cascada mediante `computePlayerDivisionCenter`.
+    - Detecta estadísticas base (`basePower`, `baseToughness`) y palabras clave desde `oracleText`.
+    - Registra en bitácora `"X creó una ficha [nombre]"` y añade registro a `undoStack`.
+  - **Ciclo de Vida y Desaparición al Salir de la Mesa:**
+    - En `GameStateSession.moveCard`, si una carta con `isToken: true` abandona el campo de batalla (`fromZone === 'battlefield' && toZone !== 'battlefield'`), se elimina del estado sin insertarse en la zona destino, registrando `"La ficha [nombre] desapareció al salir de la mesa"` y permitiendo revertir con deshacer.
+  - **Sección «Crear ficha» en Menú de Carta (`CardContextMenu.tsx`):**
+    - Al abrir el menú sobre cualquier carta en mano, mesa, cementerio o exilio, consulta de forma reactiva las fichas que genera. Si crea al menos una, renderiza la sección `context-create-token-section` con botones individuales; si no genera fichas (ej. *Sol Ring*), la sección permanece completamente oculta.
+  - **Modal de Espacio Vacío de División (`CreateTokenModal.tsx`):**
+    - Al hacer clic derecho en un espacio vacío de la división del jugador en [`PlayerCell.tsx`](apps/web/src/components/PlayerCell.tsx), se abre `CreateTokenModal` con 3 pestañas:
+      - (a) *Fichas de mi mazo:* cartas del mazo del jugador agrupadas por carta fuente con buscador.
+      - (b) *Fichas comunes:* Tesoro, Comida, Pista, Sangre, Mapa con ilustración oficial y descripción.
+      - (c) *Ficha personalizada:* creador de fichas con nombre, P/T, colores y tipo.
+    - Contenedor y backdrop con `e.stopPropagation()` en todos los eventos de puntero y clic.
+  - **Certificación Automatizada E2E:** Suite Playwright en [`apps/web/e2e/token-creation.spec.ts`](apps/web/e2e/token-creation.spec.ts) certificando creación de Tesoro común, ficha personalizada Dragón 5/5, centrado en división con cascada, desaparición al salir de la mesa (0 cartas en cementerio), registro en bitácora, presencia de fichas en Smothering Tithe y ausencia en Sol Ring. Artefactos archivados: [`test-tokens-created-on-table.png`](test-tokens-created-on-table.png) y [`test-tokens-disappearance-log.png`](test-tokens-disappearance-log.png).
+
 
 
 - **Aislamiento de Eventos en Menús Contextuales y Modales contra Doble Clic y Mutaciones Involuntarias (Punto 2 de Correcciones del Cliente - A.2):**
