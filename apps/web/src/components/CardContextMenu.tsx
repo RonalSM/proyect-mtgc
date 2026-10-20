@@ -739,11 +739,8 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             </>
           )}
 
-          {/* Opciones de mutación y movimiento (exclusivas del dueño o controlador de la carta) */}
-          {canMutate && (
-            <>
-              {/* Opciones exclusivas de campo de batalla */}
-              {fromZone === 'battlefield' && (
+          {/* Opciones exclusivas de campo de batalla para cualquier jugador (Punto 7) */}
+          {fromZone === 'battlefield' && (
             <>
               {onTap && (
                 <button
@@ -790,7 +787,14 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                 </button>
               )}
 
-              {card.isCommander && onSendToCommand && (
+              <div className="border-t border-slate-800 my-0.5" />
+            </>
+          )}
+
+          {/* Opciones de traslado entre zonas (gobernadas estrictamente por propietario y titular, Punto 7) */}
+          {canMutate && (
+            <>
+              {fromZone === 'battlefield' && card.isCommander && onSendToCommand && (
                 <button
                   type="button"
                   data-testid="context-to-command"
@@ -804,10 +808,6 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   <span>A Zona de Comando</span>
                 </button>
               )}
-
-              <div className="border-t border-slate-800 my-0.5" />
-            </>
-          )}
 
           {/* Destino: Mesa (si no está ya en la mesa) */}
           {fromZone !== 'battlefield' && (

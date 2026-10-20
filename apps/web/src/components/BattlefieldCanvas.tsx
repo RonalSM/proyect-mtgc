@@ -139,23 +139,15 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     setContextMenuPos({ x: e.clientX, y: e.clientY });
   };
 
-  // Doble clic gira o endereza si tiene permiso
+  // Doble clic gira o endereza (cualquier jugador puede girar o enderezar permanentes visibles, Punto 7)
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (canMove) {
-      onTap();
-    } else {
-      onUnauthorizedAttempt?.(card);
-    }
+    onTap();
   };
 
-  // Táctil: pulsación larga de 500 ms abre menú contextual si tiene permiso
+  // Táctil: pulsación larga de 500 ms abre menú contextual en cartas visibles
   const handleTouchStart = () => {
-    if (!canMove) {
-      onUnauthorizedAttempt?.(card);
-      return;
-    }
     longPressTimerRef.current = setTimeout(() => {
       setContextMenuPos({
         x: typeof window !== 'undefined' ? window.innerWidth / 2 - 90 : 200,
@@ -261,10 +253,8 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       onMouseEnter={(e) => !card.isFaceDown && !isDragging && showPreview(card.definition, e, card)}
       onMouseLeave={hidePreview}
       onTransitionEnd={handleTransitionEnd}
-      className={`card-slot-container absolute group select-none pointer-events-auto flex items-center justify-center ${
+      className={`card-slot-container absolute group select-none pointer-events-auto flex items-center justify-center cursor-pointer ${
         isAnimatingTap ? 'is-animating-tap' : ''
-      } ${
-        canMove ? 'cursor-pointer' : 'cursor-not-allowed'
       } ${
         isDragging || isRemoteDragging ? 'opacity-0 pointer-events-none' : ''
       }`}

@@ -332,6 +332,16 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 7. WHEN todos los jugadores se han quedado, la fase pasa automáticamente a `playing` y empieza el turno del primer jugador. La bitácora registra "X hizo mulligan" y "X se quedó con N cartas".
 8. THE sistema SHALL rechazar y eliminar cualquier acción de mulligan suelta durante la partida (`playing`); el mulligan solo existe en esta fase.
 
+
+### REQ-24 Flexibilización de mutaciones sobre permanentes visibles de la mesa (Punto 7 de Correcciones del Cliente - D.7)
+1. **Interacción universal sobre permanentes visibles del campo de batalla:**
+   - CUALQUIER jugador de la mesa CAN girar o enderezar (`onTap`, mediante doble clic o menú contextual), voltear boca arriba/abajo (`onFlip`), clonar fichas o permanentes (`onClone`), definir o modificar contadores (`setCardCounter`), ajustar poder/resistencia base y contadores (`setCardPT`) y alternar palabras clave (`toggleCardKeyword`) sobre cualquier carta visible del campo de batalla (`fromZone === 'battlefield' && !card.isFaceDown`).
+   - El servidor registra autoritativamente la autoría en la bitácora pública de la partida (`this.addLog(playerId, ...)`).
+2. **Protección estricta de traslados entre zonas y propiedad:**
+   - El movimiento y arrastre de cartas entre zonas (hacia la mano, cementerio, exilio, biblioteca o zona de comando) SHALL continuar gobernado estrictamente por el propietario original (`ownerId`) o el titular temporal (`holderId`) (`canMove` / `canMutate`).
+3. **Protección inviolable de información oculta:**
+   - La identidad de las cartas ocultas (manos ajenas no reveladas, bibliotecas ajenas y cartas boca abajo) SHALL permanecer estrictamente protegida por el servidor (`VisibilityFilter`) sin ofrecer nunca opciones de inspección («Ver carta») ni mutación.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
 **Historia:** Como jugador, quiero ver a todos en una cuadrícula a pantalla completa, cada uno con su propio fondo y su propio espacio, para sentir que estamos jugando juntos en una mesa.

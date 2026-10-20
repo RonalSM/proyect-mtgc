@@ -981,12 +981,6 @@ export class GameStateSession {
     if (!found) return;
 
     const card = found.card;
-    const isOwner = card.ownerId === playerId;
-    const isHolder = card.holderId === playerId;
-    if (!isOwner && !isHolder) {
-      throw new Error('No autorizado: solo el propietario original o el titular temporal pueden girar esta carta.');
-    }
-
     card.isTapped = payload.isTapped;
     card.rotation = payload.isTapped ? 90 : 0;
     const actionDesc = payload.isTapped ? 'giró' : 'enderezó';
@@ -1018,12 +1012,6 @@ export class GameStateSession {
     if (!found) return;
 
     const card = found.card;
-    const isOwner = card.ownerId === playerId;
-    const isHolder = card.holderId === playerId;
-    if (!isOwner && !isHolder) {
-      throw new Error('No autorizado: solo el propietario original o el titular temporal pueden voltear esta carta.');
-    }
-
     card.isFaceDown = payload.isFaceDown;
     this.addLog(
       playerId,
@@ -1040,12 +1028,6 @@ export class GameStateSession {
     if (!found) return;
 
     const sourceCard = found.card;
-    const isOwner = sourceCard.ownerId === playerId;
-    const isHolder = sourceCard.holderId === playerId;
-    if (!isOwner && !isHolder) {
-      throw new Error('No autorizado: solo el propietario original o el titular temporal pueden clonar este permanente.');
-    }
-
     const clonedPos = {
       x: Math.min(0.9, (sourceCard.position?.x ?? 0.5) + 0.03),
       y: Math.min(0.9, (sourceCard.position?.y ?? 0.5) + 0.03),

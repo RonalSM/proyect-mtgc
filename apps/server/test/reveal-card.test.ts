@@ -528,3 +528,61 @@ test('Punto 4: toggleCardKeyword y setCardCounter con conteo exacto y palabras c
   assert.strictEqual(gyCard.keywords, undefined);
   assert.deepStrictEqual(gyCard.counters, {});
 });
+
+test('Punto 7 (Revisión canMutate): Cualquier jugador puede girar, voltear y clonar permanentes visibles de otros jugadores, mientras mover cartas sigue protegido', () => {
+  const roomState = createMockRoomState();
+  const session = new GameStateSession(roomState);
+
+  const permanent: CardInstance = {
+    instanceId: 'perm_alice',
+    definition: {
+      scryfallId: 's_sol_ring',
+      name: 'Sol Ring',
+      cmc: 1,
+      typeLine: 'Artifact',
+      colors: [],
+      colorIdentity: [],
+    },
+    ownerId: 'p1',
+    controllerId: 'p1',
+    holderId: 'p1',
+    isTapped: false,
+    isFaceDown: false,
+    position: { x: 0.25, y: 0.25 },
+  };
+
+  session.state.playerZones['p1']!.battlefield = [permanent];
+  session.syncPlayerCounts('p1');
+
+  // 1. Bob (p2) puede girar la carta de Alice
+  session.tapCard('p2', { cardInstanceId: 'perm_alice', isTapped: true });
+  assert.strictEqual(permanent.isTapped, true);
+  assert.strictEqual(permanent.rotation, 90);
+
+  // 2. Bob (p2) puede enderezar la carta de Alice
+  session.tapCard('p2', { cardInstanceId: 'perm_alice', isTapped: false });
+  assert.strictEqual(permanent.isTapped, false);
+  assert.strictEqual(permanent.rotation, 0);
+
+  // 3. Bob (p2) puede voltear la carta de Alice
+  session.flipCard('p2', { cardInstanceId: 'perm_alice', isFaceDown: true });
+  assert.strictEqual(permanent.isFaceDown, true);
+  session.flipCard('p2', { cardInstanceId: 'perm_alice', isFaceDown: false });
+  assert.strictEqual(permanent.isFaceDown, false);
+
+  // 4. Bob (p2) puede clonar la carta de Alice (la ficha resultante pertenece a Bob)
+  session.cloneToken('p2', { cardInstanceId: 'perm_alice' });
+  const allBf = Object.values(session.state.playerZones).flatMap(z => z.battlefield);
+  const clone = allBf.find(c => c.definition.name.includes('(Token)'));
+  assert.ok(clone, 'El clon debe haberse creado');
+  assert.strictEqual(clone.ownerId, 'p2', 'El dueño del clon debe ser quien lo creó (Bob)');
+
+  // 5. Pero Bob (p2) NO puede trasladar la carta de Alice a la mano ni al cementerio (solo dueño o titular)
+  assert.throws(() => {
+    session.moveCard('p2', {
+      cardInstanceId: 'perm_alice',
+      fromZone: 'battlefield',
+      toZone: 'graveyard',
+    });
+  }, /no autorizada/i);
+});
