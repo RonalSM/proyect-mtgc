@@ -43,9 +43,15 @@ class CardImageResolver {
 
     const promise = (async () => {
       try {
-        const res = await fetch(
+        let res = await fetch(
           `/api/cards/search?name=${encodeURIComponent(trimmed)}&exact=true&lang=${lang}`,
         );
+        if (!res.ok && lang === 'es') {
+          // Fallback a inglés si la carta no existe en español en base de datos local (Punto 6)
+          res = await fetch(
+            `/api/cards/search?name=${encodeURIComponent(trimmed)}&exact=true&lang=en`,
+          );
+        }
         if (res.ok) {
           const cardDef = await res.json();
           let targetUrl: string | null = null;

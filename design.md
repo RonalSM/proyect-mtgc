@@ -252,6 +252,11 @@ Fase 1 solo enlaza a Discord/Meet. Fase 2 evalúa LiveKit.
      - `api.scryfall.com`: 0 errores HTTP 429.
    - _Validación de políticas de seguridad:_ 0 violaciones de CSP (`securitypolicyviolation`), 0 errores de cuota en `Cache API` (`QuotaExceededError`) y 0 acciones autoritativas WebSocket rechazadas.
    - _Plan de solución para Punto 6:_ Implementar en `CardDisplay.tsx` la cadena de respaldo obligatoria $\text{Español} \to \text{Inglés} \to \text{Marco de texto estilizado}$, eliminando cualquier posibilidad de icono de imagen rota en pantalla.
+9. **Cadena de Respaldo Progresiva y Resolución de Fichas sin 429 (Punto 6):**
+   - _Máquina de estados en `CardDisplay`:_ `fallbackStage: 'spanish' | 'english' | 'frame'`. Si la URL de imagen en español falla (404 de Scryfall o timeout en cola), conmuta de inmediato a la URL en inglés (`card.imageUrlNormal` o cara activa). Si la URL en inglés también falla, cae al marco estructurado de texto MTG con botón de reintento.
+   - _Resolución en capas en `TokenService`:_ Coincidencia en memoria con `COMMON_TOKENS`, consulta en base de datos local `prisma.card` y fallback controlado a Scryfall evitando bloqueos HTTP 429.
+   - _Ampliación CSP:_ Inclusión de `'https://cards.scryfall.io'` y `'https://*.scryfall.io'` en `connectSrc` de Fastify Helmet (`apps/server/src/index.ts`).
+   - _Fallback en `cardImageResolver`:_ Reintento automático con `lang=en` si `lang=es` devuelve 404, resolviendo cartas sin traducción.
 
 ### COMP-5 Game Server
 

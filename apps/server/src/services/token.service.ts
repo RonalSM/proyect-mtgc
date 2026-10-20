@@ -1,5 +1,6 @@
 import { CardDefinition } from '@mtgc/shared';
 import { scryfallService } from './scryfall.service.js';
+import { prisma } from '../db.js';
 
 export const COMMON_TOKENS: CardDefinition[] = [
   {
@@ -208,6 +209,51 @@ export class TokenService {
 
       for (const part of tokenParts) {
         let tokenDef = this.tokenDetailsCache.get(part.id);
+
+        // 1. Chequeo en catálogo de fichas comunes predefinidas (cero llamadas de red)
+        if (!tokenDef) {
+          const commonMatch = COMMON_TOKENS.find(
+            t => t.scryfallId === part.id || t.name.toLowerCase() === part.name.toLowerCase(),
+          );
+          if (commonMatch) {
+            tokenDef = commonMatch;
+            this.tokenDetailsCache.set(part.id, tokenDef);
+          }
+        }
+
+        // 2. Chequeo en base de datos local PostgreSQL
+        if (!tokenDef && prisma) {
+          try {
+            const dbCard = await (prisma as any).card?.findUnique({
+              where: { scryfallId: part.id },
+            });
+            if (dbCard) {
+              tokenDef = {
+                scryfallId: dbCard.scryfallId,
+                name: dbCard.name,
+                cmc: dbCard.cmc || 0,
+                typeLine: dbCard.typeLine,
+                oracleText: dbCard.oracleText || '',
+                power: dbCard.power,
+                toughness: dbCard.toughness,
+                loyalty: dbCard.loyalty,
+                colors: dbCard.colors || [],
+                colorIdentity: dbCard.colorIdentity || [],
+                imageUrlNormal: dbCard.imageUrlNormal,
+                imageUrlSmall: dbCard.imageUrlSmall,
+                imageUrlLarge: dbCard.imageUrlLarge,
+                imageUrlArtCrop: dbCard.imageUrlArtCrop,
+                artist: dbCard.artist || 'Unknown Artist',
+                copyright: '™ & © Wizards of the Coast',
+              };
+              this.tokenDetailsCache.set(part.id, tokenDef);
+            }
+          } catch {
+            // Continuar con resolución externa o fallback
+          }
+        }
+
+        // 3. Fallback a Scryfall externo con control de tasa y manejo de 429
         if (!tokenDef) {
           try {
             const tokenRaw = (await (scryfallService as any).rateLimitedFetch(
@@ -239,7 +285,7 @@ export class TokenService {
               this.tokenDetailsCache.set(part.id, tokenDef);
             }
           } catch {
-            // Fallback si falla Scryfall puntual
+            // Fallback limpio sin error en pantalla
             tokenDef = {
               scryfallId: part.id,
               name: part.name,
@@ -248,8 +294,11 @@ export class TokenService {
               oracleText: '',
               colors: [],
               colorIdentity: [],
+              imageUrlNormal: 'https://cards.scryfall.io/back.png',
+              imageUrlSmall: 'https://cards.scryfall.io/back.png',
               copyright: '™ & © Wizards of the Coast',
             };
+            this.tokenDetailsCache.set(part.id, tokenDef);
           }
         }
 

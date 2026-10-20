@@ -27,7 +27,6 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
 }) => {
   const { language } = useLanguage();
   const [currentFaceIndex, setCurrentFaceIndex] = useState(0);
-  const [imageError, setImageError] = useState(false);
 
   // If card has multiple faces, determine the active face
   const hasMultipleFaces = !!(card.faces && card.faces.length > 1);
@@ -43,21 +42,53 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   const cardToughness = activeFace?.toughness ?? card.toughness;
   const cardOracle = display.oracleText;
 
-  // Direct cards.scryfall.io URL from localized display data or active face
-  const directUrl = (() => {
-    if (size === 'small') {
-      return display.imageUrlSmall || display.imageUrlNormal || '';
-    }
-    return display.imageUrlNormal || display.imageUrlSmall || '';
+  // Candidatas de URL para la cadena de respaldo (Punto 6: Español -> Inglés -> Marco de texto)
+  const spanishCandidate = (() => {
+    if (language !== 'es' || !card.locales?.es) return '';
+    const es = card.locales.es;
+    return size === 'small'
+      ? es.imageUrlSmall || es.imageUrlNormal || ''
+      : es.imageUrlNormal || es.imageUrlSmall || '';
   })();
 
+  const englishCandidate = (() => {
+    if (activeFace) {
+      return size === 'small'
+        ? activeFace.imageUrlSmall || card.imageUrlSmall || activeFace.imageUrlNormal || card.imageUrlNormal || ''
+        : activeFace.imageUrlNormal || card.imageUrlNormal || activeFace.imageUrlSmall || card.imageUrlSmall || '';
+    }
+    return size === 'small'
+      ? card.imageUrlSmall || card.imageUrlNormal || ''
+      : card.imageUrlNormal || card.imageUrlSmall || '';
+  })();
+
+  // Etapa de fallback progresivo: 'spanish' -> 'english' -> 'frame' (Punto 6)
+  const [fallbackStage, setFallbackStage] = useState<'spanish' | 'english' | 'frame'>(() => {
+    if (language === 'es' && spanishCandidate) return 'spanish';
+    if (englishCandidate) return 'english';
+    return 'english';
+  });
+
+  // Reiniciar etapa al cambiar de carta, idioma o cara
+  useEffect(() => {
+    if (language === 'es' && spanishCandidate) {
+      setFallbackStage('spanish');
+    } else if (englishCandidate) {
+      setFallbackStage('english');
+    } else {
+      setFallbackStage('english');
+    }
+  }, [card.scryfallId, card.name, currentFaceIndex, language, spanishCandidate, englishCandidate]);
+
   const [asyncResolvedUrl, setAsyncResolvedUrl] = useState<string | null>(() => {
-    return directUrl || cardImageResolver.getCached(cardName, size, language);
+    const direct = fallbackStage === 'spanish' ? spanishCandidate : englishCandidate;
+    return direct || cardImageResolver.getCached(cardName, size, language);
   });
 
   useEffect(() => {
-    if (directUrl) {
-      setAsyncResolvedUrl(directUrl);
+    const direct = fallbackStage === 'spanish' ? spanishCandidate : englishCandidate;
+    if (direct) {
+      setAsyncResolvedUrl(direct);
       return;
     }
     if (
@@ -72,9 +103,14 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
         if (url) setAsyncResolvedUrl(url);
       });
     }
-  }, [directUrl, cardName, isFaceDown, size, language]);
+  }, [fallbackStage, spanishCandidate, englishCandidate, cardName, isFaceDown, size, language]);
 
-  const rawImageUrl = directUrl || asyncResolvedUrl || '';
+  const rawImageUrl = (() => {
+    if (fallbackStage === 'spanish') return spanishCandidate;
+    if (fallbackStage === 'english') return englishCandidate || asyncResolvedUrl || '';
+    return '';
+  })();
+
   const resolvedImageUrl = (() => {
     if (!rawImageUrl) return '';
     if (size === 'small') {
@@ -84,12 +120,23 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   })();
 
   const [imageStatus, setImageStatus] = useState<ImageLoadStatus>(() => {
-    if (!resolvedImageUrl || isFaceDown) return 'idle';
+    if (!resolvedImageUrl || isFaceDown || fallbackStage === 'frame') return 'idle';
     return imageLoaderQueue.getStatus(resolvedImageUrl);
   });
 
+  // Manejador centralizado de errores de imagen (Punto 6)
+  const handleImageError = () => {
+    if (fallbackStage === 'spanish' && englishCandidate && englishCandidate !== spanishCandidate) {
+      // Reintentar de inmediato con inglés
+      setFallbackStage('english');
+    } else {
+      // Cae a marco de texto estilizado (cero iconos de imagen rota)
+      setFallbackStage('frame');
+    }
+  };
+
   useEffect(() => {
-    if (!resolvedImageUrl || isFaceDown) {
+    if (!resolvedImageUrl || isFaceDown || fallbackStage === 'frame') {
       setImageStatus('idle');
       return;
     }
@@ -107,19 +154,26 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
     });
 
     return unsub;
-  }, [resolvedImageUrl, isFaceDown, size]);
+  }, [resolvedImageUrl, isFaceDown, size, fallbackStage]);
+
+  // Si la cola de imágenes falla la descarga (ej. HTTP 404 en CDN de Scryfall), avanzar en la cadena
+  useEffect(() => {
+    if (imageStatus === 'failed') {
+      handleImageError();
+    }
+  }, [imageStatus, fallbackStage, englishCandidate, spanishCandidate]);
 
   const [cachedBlobUrl, setCachedBlobUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (resolvedImageUrl && !isFaceDown) {
+    if (resolvedImageUrl && !isFaceDown && fallbackStage !== 'frame') {
       persistentImageCache.getBlobUrl(resolvedImageUrl).then(bUrl => {
         if (bUrl) setCachedBlobUrl(bUrl);
       });
     } else {
       setCachedBlobUrl(null);
     }
-  }, [resolvedImageUrl, isFaceDown]);
+  }, [resolvedImageUrl, isFaceDown, fallbackStage]);
 
   const activeDisplayUrl = cachedBlobUrl || resolvedImageUrl;
 
@@ -127,7 +181,6 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
     e.stopPropagation();
     if (hasMultipleFaces) {
       setCurrentFaceIndex(prev => (prev === 0 ? 1 : 0));
-      setImageError(false);
     }
   };
 
@@ -160,9 +213,13 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   }
 
   const isPendingOrLoading =
-    resolvedImageUrl && (imageStatus === 'pending' || imageStatus === 'loading') && !imageError;
+    resolvedImageUrl &&
+    fallbackStage !== 'frame' &&
+    (imageStatus === 'pending' || imageStatus === 'loading');
   const isImageReady =
-    resolvedImageUrl && !imageError && (imageStatus === 'loaded' || imageStatus === 'idle');
+    resolvedImageUrl &&
+    fallbackStage !== 'frame' &&
+    (imageStatus === 'loaded' || imageStatus === 'idle');
 
   return (
     <div
@@ -194,13 +251,14 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
           width={size === 'small' ? 146 : 488}
           height={size === 'small' ? 204 : 680}
           data-image-size={size}
+          data-fallback-stage={fallbackStage}
           loading="eager"
           decoding="async"
-          onError={() => setImageError(true)}
+          onError={handleImageError}
           className={`w-full h-full object-fill pointer-events-none rounded-[6px] aspect-[5/7] ${imageClassName}`}
         />
       ) : (
-        /* 3. Fallback Card Frame: High-contrast legible MTG card frame with name, mana, type, P/T and retry button (Punto 4) */
+        /* 3. Fallback Card Frame: High-contrast legible MTG card frame with name, mana, type, P/T and retry button (Punto 4, Punto 6) */
         <div className="w-full h-full rounded-md border border-slate-700 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 flex flex-col p-1.5 justify-between text-left select-none overflow-hidden shadow-inner">
           {/* Header Bar */}
           <div className="flex items-start justify-between gap-1 border-b border-slate-800 pb-1">
@@ -223,22 +281,25 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
             <p className="text-[9px] text-slate-400 font-medium leading-tight line-clamp-3 px-0.5">
               {cardOracle ? cardOracle.slice(0, 75) : cardName}
             </p>
-            {resolvedImageUrl && (
-              <button
-                type="button"
-                data-testid="card-retry-image-btn"
-                onClick={e => {
-                  e.stopPropagation();
-                  setImageError(false);
-                  imageLoaderQueue.retryUrl(resolvedImageUrl);
-                }}
-                className="mt-1 px-1.5 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/40 border border-amber-500/40 text-amber-300 text-[8px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                title="Reintentar carga de imagen"
-              >
-                <RefreshCw className="w-2.5 h-2.5" />
-                <span>Reintentar</span>
-              </button>
-            )}
+            <button
+              type="button"
+              data-testid="card-retry-image-btn"
+              onClick={e => {
+                e.stopPropagation();
+                if (language === 'es' && spanishCandidate) {
+                  setFallbackStage('spanish');
+                  imageLoaderQueue.retryUrl(spanishCandidate);
+                } else if (englishCandidate) {
+                  setFallbackStage('english');
+                  imageLoaderQueue.retryUrl(englishCandidate);
+                }
+              }}
+              className="mt-1 px-1.5 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/40 border border-amber-500/40 text-amber-300 text-[8px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+              title="Reintentar carga de imagen"
+            >
+              <RefreshCw className="w-2.5 h-2.5" />
+              <span>Reintentar</span>
+            </button>
           </div>
 
           {/* Bottom Bar: Type Line & P/T */}
