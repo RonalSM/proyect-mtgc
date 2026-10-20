@@ -244,6 +244,14 @@ Fase 1 solo enlaza a Discord/Meet. Fase 2 evalúa LiveKit.
    - _Apertura en frío certificada:_ Vaciado de caché (`caches.delete`) y reinicio de cola en los 4 clientes previo a la apertura simultánea de bibliotecas (372 cartas). Tiempo de resolución: **845 ms** (< 35 s).
    - _Peticiones CDN y códigos de respuesta:_ 37 peticiones directas a `cards.scryfall.io`, 100% con código 200 OK (`{"200": 37}`), 5 reintentos automáticos, 0 fallos 4xx/5xx de servidor. 372/372 cartas con `naturalWidth > 0`.
    - _Reapertura con Cache API persistente:_ **185 ms** (sustancialmente menor a la apertura en frío).
+8. **Diagnóstico y Telemetría de Errores de Red y Carga de Cartas (Punto 5):**
+   - _Reproducción integral automatizada:_ Suite Playwright `apps/web/e2e/card-loading-reproduction.spec.ts` cubriendo el pod completo de 4 jugadores: creación de sala, selección de mazos predefinidos, inicio de partida, tirada automática de iniciativa D20, London Mulligan turn-by-turn con `keep-btn`, inspección de bibliotecas, inspección de cementerio y exilio, apertura de «Ver carta» en mano, creación de fichas desde espacio vacío de celda y vista ampliada.
+   - _Mapeo empírico de errores por dominio y código HTTP:_
+     - `cards.scryfall.io`: 16 errores HTTP 404 y 28 bloqueos `net::ERR_BLOCKED_BY_ORB` por imágenes en español inexistentes en el CDN de Scryfall.
+     - `localhost`: 2 peticiones HTTP 401 (`/api/decks` para usuarios anónimos/invitados con fallback transparente) y 11 peticiones HTTP 404 (`/api/cards/search?name=...&lang=es` por cartas sin impresión española en `CardLocale`).
+     - `api.scryfall.com`: 0 errores HTTP 429.
+   - _Validación de políticas de seguridad:_ 0 violaciones de CSP (`securitypolicyviolation`), 0 errores de cuota en `Cache API` (`QuotaExceededError`) y 0 acciones autoritativas WebSocket rechazadas.
+   - _Plan de solución para Punto 6:_ Implementar en `CardDisplay.tsx` la cadena de respaldo obligatoria $\text{Español} \to \text{Inglés} \to \text{Marco de texto estilizado}$, eliminando cualquier posibilidad de icono de imagen rota en pantalla.
 
 ### COMP-5 Game Server
 

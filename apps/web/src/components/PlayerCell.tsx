@@ -379,6 +379,18 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const [isCreateTokenModalOpen, setIsCreateTokenModalOpen] = useState(false);
   const [zoomedCard, setZoomedCard] = useState<CardInstance | null>(null);
 
+  // Cerrar modal de inspección de pila con tecla Escape
+  useEffect(() => {
+    if (!activePileModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActivePileModal(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activePileModal]);
+
   const handleCellContextMenu = (e: React.MouseEvent) => {
     if (!isLocalPlayer) return;
     const target = e.target as HTMLElement;
