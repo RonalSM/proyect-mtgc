@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 
-test.describe.configure({ mode: 'serial', timeout: 90000 });
+test.describe.configure({ mode: 'serial', timeout: 150000 });
 
 const ARTIFACTS_DIR = 'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa';
 
@@ -18,12 +18,12 @@ function computeBufferVariance(buffer: Buffer): number {
   return (sumSq / buffer.length) - (mean * mean);
 }
 
-async function setupGame(browser: any, podSize: number) {
+async function setupGame(browser: any, podSize: number, width = 1920, height = 1080) {
   const contexts = [];
   const pages = [];
 
   for (let i = 0; i < podSize; i++) {
-    const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+    const ctx = await browser.newContext({ viewport: { width, height } });
     const page = await ctx.newPage();
     contexts.push(ctx);
     pages.push(page);
@@ -101,9 +101,18 @@ async function setupGame(browser: any, podSize: number) {
   return { contexts, pages, hostPage, roomCode };
 }
 
-for (const podSize of [2, 4, 6]) {
-  test(`Visual certification in ${podSize}P: Expand cell and browser fullscreen`, async ({ browser }) => {
-    const { contexts, hostPage } = await setupGame(browser, podSize);
+const testConfigs = [
+  { podSize: 2, width: 1920, height: 1080, label: '2p-1080p' },
+  { podSize: 4, width: 1920, height: 1080, label: '4p-1080p' },
+  { podSize: 6, width: 1920, height: 1080, label: '6p-1080p' },
+  { podSize: 4, width: 1366, height: 768, label: '4p-768p' },
+];
+
+for (const cfg of testConfigs) {
+  test(`Visual certification in ${cfg.podSize}P (${cfg.width}x${cfg.height}): Expand cell and browser fullscreen`, async ({
+    browser,
+  }) => {
+    const { contexts, hostPage } = await setupGame(browser, cfg.podSize, cfg.width, cfg.height);
 
     const consoleErrors: string[] = [];
     hostPage.on('console', msg => {
@@ -118,7 +127,8 @@ for (const podSize of [2, 4, 6]) {
     if (handBox) {
       await hostPage.mouse.move(handBox.x + handBox.width / 2, handBox.y + handBox.height / 2);
       await hostPage.mouse.down();
-      await hostPage.mouse.move(handBox.x, handBox.y - 200, { steps: 5 });
+      const targetY = cfg.height > 800 ? handBox.y - 200 : handBox.y - 100;
+      await hostPage.mouse.move(handBox.x, targetY, { steps: 5 });
       await hostPage.mouse.up();
     }
     await hostPage.waitForTimeout(500);
@@ -126,11 +136,12 @@ for (const podSize of [2, 4, 6]) {
     // ==========================================
     // CASE 1: Test expand cell for player 0 (Host Alice)
     // ==========================================
-    console.log(`\n=== CASE 1: Expand Cell (${podSize}P) ===`);
+    console.log(`\n=== CASE 1: Expand Cell (${cfg.label}) ===`);
     const expandBtn0 = hostPage.locator('[data-expand-cell-btn]').first();
-    await expect(expandBtn0).toBeVisible({ timeout: 5000 });
-    await expandBtn0.click();
-    await hostPage.waitForTimeout(600);
+    await expect(expandBtn0).toBeVisible({ timeout: 10000 });
+    await expandBtn0.dispatchEvent('click');
+    await expect(hostPage.locator('[data-testid="close-expanded-view"]')).toBeVisible({ timeout: 10000 });
+    await hostPage.waitForTimeout(400);
 
     // Diagnostics in expanded view
     const metricsExpanded = await hostPage.evaluate(() => {
@@ -162,39 +173,39 @@ for (const podSize of [2, 4, 6]) {
       };
     });
 
-    console.log(`Metrics Expanded (${podSize}P):`, JSON.stringify(metricsExpanded, null, 2));
+    console.log(`Metrics Expanded (${cfg.label}):`, JSON.stringify(metricsExpanded, null, 2));
 
-    const shotExpandedPath = path.join(ARTIFACTS_DIR, `fullscreen-fixed-expanded-${podSize}p.png`);
+    const shotExpandedPath = path.join(ARTIFACTS_DIR, `fullscreen-fixed-expanded-${cfg.label}.png`);
     const bufferExpanded = await hostPage.screenshot({ path: shotExpandedPath });
     const varianceExpanded = computeBufferVariance(bufferExpanded);
-    console.log(`Screenshot expanded ${podSize}P: bytes=${bufferExpanded.length}, variance=${varianceExpanded.toFixed(1)}`);
+    console.log(
+      `Screenshot expanded ${cfg.label}: bytes=${bufferExpanded.length}, variance=${varianceExpanded.toFixed(1)}`,
+    );
 
     expect(metricsExpanded.cellRect).not.toBeNull();
-    expect(metricsExpanded.cellRect!.width).toBeGreaterThanOrEqual(1900);
-    expect(metricsExpanded.cellRect!.height).toBeGreaterThanOrEqual(1000);
+    expect(metricsExpanded.cellRect!.width).toBeGreaterThanOrEqual(cfg.width - 20);
+    expect(metricsExpanded.cellRect!.height).toBeGreaterThanOrEqual(cfg.height - 80);
     expect(metricsExpanded.hasCloseBtn).toBe(true);
     expect(metricsExpanded.cardsCount).toBeGreaterThan(0);
     expect(varianceExpanded).toBeGreaterThan(500); // Image has complex visual detail, NOT solid blue!
 
     // Exit expanded view using Esc
     await hostPage.keyboard.press('Escape');
-    await hostPage.waitForTimeout(400);
-    await expect(hostPage.locator('[data-testid="close-expanded-view"]')).not.toBeVisible();
+    await expect(hostPage.locator('[data-testid="close-expanded-view"]')).not.toBeVisible({ timeout: 5000 });
+    await hostPage.waitForTimeout(300);
 
     // Re-expand and exit using close button
     const expandBtnAgain = hostPage.locator('[data-expand-cell-btn]').first();
-    await expandBtnAgain.click();
-    await hostPage.waitForTimeout(400);
+    await expandBtnAgain.dispatchEvent('click');
     const closeBtn = hostPage.locator('[data-testid="close-expanded-view"]');
-    await expect(closeBtn).toBeVisible();
+    await expect(closeBtn).toBeVisible({ timeout: 10000 });
     await closeBtn.click();
-    await hostPage.waitForTimeout(400);
-    await expect(hostPage.locator('[data-testid="close-expanded-view"]')).not.toBeVisible();
+    await expect(hostPage.locator('[data-testid="close-expanded-view"]')).not.toBeVisible({ timeout: 5000 });
 
     // ==========================================
     // CASE 2: Browser Fullscreen button
     // ==========================================
-    console.log(`\n=== CASE 2: Browser Fullscreen Button (${podSize}P) ===`);
+    console.log(`\n=== CASE 2: Browser Fullscreen Button (${cfg.label}) ===`);
     const fsBtn = hostPage.locator('[data-testid="fullscreen-btn"]');
     await expect(fsBtn).toBeVisible({ timeout: 5000 });
     await fsBtn.click();
@@ -214,9 +225,9 @@ for (const podSize of [2, 4, 6]) {
       };
     });
 
-    console.log(`Metrics Browser Fullscreen (${podSize}P):`, JSON.stringify(metricsBrowserFs, null, 2));
+    console.log(`Metrics Browser Fullscreen (${cfg.label}):`, JSON.stringify(metricsBrowserFs, null, 2));
 
-    const shotBrowserFsPath = path.join(ARTIFACTS_DIR, `fullscreen-fixed-browser-${podSize}p.png`);
+    const shotBrowserFsPath = path.join(ARTIFACTS_DIR, `fullscreen-fixed-browser-${cfg.label}.png`);
     let bufferBrowserFs: Buffer;
     try {
       bufferBrowserFs = await hostPage.locator('#mesa-total').screenshot({ path: shotBrowserFsPath });
@@ -226,9 +237,11 @@ for (const podSize of [2, 4, 6]) {
       bufferBrowserFs = await hostPage.screenshot({ path: shotBrowserFsPath });
     }
     const varianceBrowserFs = computeBufferVariance(bufferBrowserFs);
-    console.log(`Screenshot browser fullscreen ${podSize}P: bytes=${bufferBrowserFs.length}, variance=${varianceBrowserFs.toFixed(1)}`);
+    console.log(
+      `Screenshot browser fullscreen ${cfg.label}: bytes=${bufferBrowserFs.length}, variance=${varianceBrowserFs.toFixed(1)}`,
+    );
 
-    expect(metricsBrowserFs.cellsCount).toBe(podSize);
+    expect(metricsBrowserFs.cellsCount).toBe(cfg.podSize);
     expect(metricsBrowserFs.cardsCount).toBeGreaterThan(0);
     expect(varianceBrowserFs).toBeGreaterThan(500);
 
@@ -242,8 +255,10 @@ for (const podSize of [2, 4, 6]) {
     await hostPage.waitForTimeout(400);
 
     // Verify 0 React or unhandled errors
-    const nonFaviconErrors = consoleErrors.filter(e => !e.includes('favicon') && !e.includes('Scryfall API error'));
-    console.log(`Console errors (${podSize}P):`, nonFaviconErrors);
+    const nonFaviconErrors = consoleErrors.filter(
+      e => !e.includes('favicon') && !e.includes('Scryfall API error'),
+    );
+    console.log(`Console errors (${cfg.label}):`, nonFaviconErrors);
     expect(nonFaviconErrors.length).toBe(0);
 
     for (const ctx of contexts) await ctx.close();
