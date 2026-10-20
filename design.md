@@ -257,6 +257,10 @@ Fase 1 solo enlaza a Discord/Meet. Fase 2 evalúa LiveKit.
    - _Resolución en capas en `TokenService`:_ Coincidencia en memoria con `COMMON_TOKENS`, consulta en base de datos local `prisma.card` y fallback controlado a Scryfall evitando bloqueos HTTP 429.
    - _Ampliación CSP:_ Inclusión de `'https://cards.scryfall.io'` y `'https://*.scryfall.io'` en `connectSrc` de Fastify Helmet (`apps/server/src/index.ts`).
    - _Fallback en `cardImageResolver`:_ Reintento automático con `lang=en` si `lang=es` devuelve 404, resolviendo cartas sin traducción.
+10. **Panel de Diagnóstico (?debug=1) y Registro en Servidor (Punto 7):**
+    - _Activación condicional:_ Activado cuando la URL incluye `?debug=1`. Despliega el componente `DiagnosticPanel` (`apps/web/src/components/DiagnosticPanel.tsx`).
+    - _Servicio de telemetría local:_ `diagnosticsService` (`apps/web/src/services/diagnosticsService.ts`) que captura fallos de carga con URL, estado, motivo, marca de tiempo y opciones de reintento.
+    - _Endpoints del servidor:_ `POST /api/diagnostics/card-errors` para registro en log estructurado (`[CARD-ERROR-DIAGNOSTIC]`) y buffer circular de 150 elementos, junto a `GET` y `DELETE` en Fastify.
 
 ### COMP-5 Game Server
 

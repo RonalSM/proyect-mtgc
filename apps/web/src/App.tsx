@@ -9,6 +9,7 @@ import { RevealedCardModal } from './components/RevealedCardModal';
 import { DeckImporter } from './components/DeckImporter';
 import { LegalModal } from './components/LegalModal';
 import { FontGlyphsAudit } from './components/FontGlyphsAudit';
+import { DiagnosticPanel } from './components/DiagnosticPanel';
 import { RefreshCw, Layers, Users } from 'lucide-react';
 
 export default function App() {
@@ -159,6 +160,7 @@ export default function App() {
           />
         )}
         <LegalModal isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
+        <DiagnosticPanel />
       </div>
     );
   }
@@ -293,6 +295,7 @@ export default function App() {
       )}
       <LegalModal isOpen={isLegalOpen} onClose={() => setIsLegalOpen(false)} />
       {isFontAuditOpen && <FontGlyphsAudit onClose={() => setIsFontAuditOpen(false)} />}
+      <DiagnosticPanel />
     </div>
   );
 }

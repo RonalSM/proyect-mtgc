@@ -4,6 +4,7 @@ import { Layers, RefreshCw } from 'lucide-react';
 import { cardImageResolver } from '../services/cardImageResolver';
 import { imageLoaderQueue, type ImageLoadStatus } from '../services/imageLoaderQueue';
 import { persistentImageCache } from '../services/persistentImageCache';
+import { diagnosticsService } from '../services/diagnosticsService';
 import { useLanguage } from '../context/LanguageContext';
 
 interface CardDisplayProps {
@@ -124,12 +125,31 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
     return imageLoaderQueue.getStatus(resolvedImageUrl);
   });
 
-  // Manejador centralizado de errores de imagen (Punto 6)
+  // Manejador centralizado de errores de imagen (Punto 6, Punto 7)
   const handleImageError = () => {
+    const failedUrl = activeDisplayUrl || resolvedImageUrl;
     if (fallbackStage === 'spanish' && englishCandidate && englishCandidate !== spanishCandidate) {
+      if (failedUrl) {
+        diagnosticsService.recordFailure({
+          url: failedUrl,
+          cardName,
+          status: 404,
+          reason: 'Impresión en español inexistente en CDN (fallback a inglés)',
+          lang: 'es',
+        });
+      }
       // Reintentar de inmediato con inglés
       setFallbackStage('english');
     } else {
+      if (failedUrl) {
+        diagnosticsService.recordFailure({
+          url: failedUrl,
+          cardName,
+          status: 404,
+          reason: 'Fallo de imagen en Scryfall (fallback a marco de texto)',
+          lang: language,
+        });
+      }
       // Cae a marco de texto estilizado (cero iconos de imagen rota)
       setFallbackStage('frame');
     }

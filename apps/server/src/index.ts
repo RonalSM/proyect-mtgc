@@ -782,6 +782,56 @@ server.get('/api/cards/sync-status', async (_request, reply) => {
   return reply.send(bulkSyncService.getStatus());
 });
 
+// Panel de diagnóstico y registro en el servidor de errores de datos de cartas (Punto 7)
+interface CardErrorLogEntry {
+  id: string;
+  cardName?: string;
+  url?: string;
+  status?: number | string;
+  reason?: string;
+  lang?: string;
+  timestamp: number;
+}
+
+const recentCardErrors: CardErrorLogEntry[] = [];
+const MAX_CARD_ERRORS = 150;
+
+server.post('/api/diagnostics/card-errors', async (request, reply) => {
+  const body = (request.body || {}) as Partial<CardErrorLogEntry>;
+  const entry: CardErrorLogEntry = {
+    id: `err_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    cardName: body.cardName || 'Desconocida',
+    url: body.url || '',
+    status: body.status || 'ERROR',
+    reason: body.reason || 'Fallo de carga desconocido',
+    lang: body.lang || 'es',
+    timestamp: body.timestamp || Date.now(),
+  };
+
+  server.log.warn(
+    `[CARD-ERROR-DIAGNOSTIC] Card: "${entry.cardName}" | URL: "${entry.url}" | Status: ${entry.status} | Reason: "${entry.reason}" | Lang: ${entry.lang}`,
+  );
+
+  recentCardErrors.unshift(entry);
+  if (recentCardErrors.length > MAX_CARD_ERRORS) {
+    recentCardErrors.pop();
+  }
+
+  return reply.status(201).send({ ok: true, entry });
+});
+
+server.get('/api/diagnostics/card-errors', async (_request, reply) => {
+  return reply.send({
+    total: recentCardErrors.length,
+    errors: recentCardErrors,
+  });
+});
+
+server.delete('/api/diagnostics/card-errors', async (_request, reply) => {
+  recentCardErrors.length = 0;
+  return reply.send({ ok: true, cleared: true });
+});
+
 // Create Room REST endpoint
 server.post('/api/rooms', async (request, reply) => {
   const parseResult = CreateRoomInputSchema.safeParse(request.body);
