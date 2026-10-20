@@ -847,6 +847,10 @@ try {
 
   if (process.env.NODE_ENV !== 'test') {
     bulkSyncService.startNightlyCron();
+    // Sincronización automática de dictámenes de Scryfall al arrancar si la tabla está vacía (Punto 6)
+    bulkSyncService.syncRulingsIfEmpty().catch(err => {
+      server.log.warn(`⚠️ [BulkSync] Error al sincronizar dictámenes de Scryfall al arrancar: ${err?.message || err}`);
+    });
   }
 } catch (err) {
   server.log.error(err);
