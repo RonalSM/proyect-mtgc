@@ -441,6 +441,12 @@ validateCommander(deck: ResolvedDeck): ValidationReport
   - **Rulings Oficiales:** Streaming de dictámenes de Scryfall indexados por lotes de 2,000 en la tabla `rulings` (79,706 dictámenes en ~10 s).
   - **Traducciones (All Cards):** Streaming de All Cards filtrando impresiones en español (`lang = 'es'`), seleccionando la mejor versión con arte e indexando 30,349 registros en `card_locales`.
   - **Auto-Boot Ingestion:** Al iniciar el servidor en `index.ts`, si la tabla `cards` cuenta con menos de 10,000 filas, se dispara automáticamente la sincronización en segundo plano sin bloquear el arranque de Fastify.
+- **Resolución Estricta de Mazos Listos y Purga de URLs Sintéticas (Punto 3 - A.3):**
+  - **Resolución sin Falsificación:** `deckService.resolveCardFromDb(cardName)` consulta la tabla `cards` por nombre exacto, por prefijo de cara frontal (`${name} //`) para cartas DFC/Aventuras, y por contención. Asocia impresiones en español directamente desde `prisma.cardLocale` según el `oracleId` de la carta.
+  - **Fallo Rápido si Faltan Cartas:** Si una carta no se encuentra en la base local, `DeckService.loadPresetDecks()` y `generate-preset-decks.ts` abortan inmediatamente lanzando un error detallado con los nombres faltantes (`missingCards.join(', ')`), prohibiendo generar identificadores sintéticos (`cmdr_`, `main_`, `id_`).
+  - **Purga de `PRESEEDED_SPANISH_LOCALES`:** Eliminación total de colecciones estáticas en código fuente que inyectaban IDs inventados (`5b492372-8820-410a-b363-d1f855263641`) y URLs con marcas de tiempo artificiales terminadas en `01` con múltiplos de 100 (`...jpg?1789755201`).
+  - **Legalidad de Identidad de Color:** Sustitución de *Quartzwood Crasher* (identidad Gruul [R, G]) por *Thorn Mammoth* (identidad Mono-Verde [G]) en el mazo listo de Goreclaw (`02-goreclaw-terror-of-qal-sisma.txt`).
+  - **Siembra y Validación 100% Real:** Ejecución de `npm run seed:presets` certificando que los 8 mazos listos quedan persistidos con 100 cartas resueltas desde Scryfall local.
 
 ### COMP-4 Room Manager
 

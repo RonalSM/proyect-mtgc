@@ -1,15 +1,20 @@
-import { describe, it } from 'node:test';
+import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { getCardDisplayData, CardDefinition } from '@mtgc/shared';
-import {
-  cardLocaleService,
-  PRESEEDED_SPANISH_LOCALES,
-} from '../src/services/card-locale.service.js';
+import { cardLocaleService } from '../src/services/card-locale.service.js';
+import { connectDatabase, disconnectDatabase } from '../src/db.js';
 
 describe('Punto 5 (C.5) - Idioma Español Prioritario y Fallback en Inglés', () => {
+  before(async () => {
+    await connectDatabase();
+  });
+
+  after(async () => {
+    await disconnectDatabase();
+  });
   const sampleCardWithSpanish: CardDefinition = {
     scryfallId: '17726514-6296-4171-b6a3-2287f394c86b',
-    oracleId: 'b320d044-301b-4395-a841-be80e0c03d52',
+    oracleId: '6ad8011d-3471-4369-9d68-b264cc027487',
     name: 'Sol Ring',
     cmc: 1,
     typeLine: 'Artifact',
@@ -70,13 +75,13 @@ describe('Punto 5 (C.5) - Idioma Español Prioritario y Fallback en Inglés', ()
     assert.equal(display.isSpanish, false);
   });
 
-  it('4. CardLocaleService reconoce grapas Commander presembradas en español', () => {
-    const solRingLocale = cardLocaleService.getLocaleSync('b320d044-301b-4395-a841-be80e0c03d52');
+  it('4. CardLocaleService reconoce grapas Commander en español desde la base de datos', async () => {
+    const solRingLocale = await cardLocaleService.getLocale('6ad8011d-3471-4369-9d68-b264cc027487');
     assert.ok(solRingLocale);
     assert.equal(solRingLocale.printedName, 'Anillo solar');
-    assert.equal(solRingLocale.printedTypeLine, 'Artefacto');
+    assert.equal(solRingLocale.printedTypeLine, 'Artifact');
 
-    const titheLocale = cardLocaleService.getLocaleSync('a9e144f8-1976-4d0d-95cf-0f135b376d29');
+    const titheLocale = await cardLocaleService.getLocale('153376c9-dffd-458c-8ce3-a4c8269bc4e9');
     assert.ok(titheLocale);
     assert.equal(titheLocale.printedName, 'Diezmo asfixiante');
   });
@@ -84,7 +89,7 @@ describe('Punto 5 (C.5) - Idioma Español Prioritario y Fallback en Inglés', ()
   it('5. enrichCardWithLocale añade locales.es correctamente a una CardDefinition', async () => {
     const rawSolRing: CardDefinition = {
       scryfallId: 'test-sol-ring',
-      oracleId: 'b320d044-301b-4395-a841-be80e0c03d52',
+      oracleId: '6ad8011d-3471-4369-9d68-b264cc027487',
       name: 'Sol Ring',
       cmc: 1,
       typeLine: 'Artifact',
@@ -95,7 +100,7 @@ describe('Punto 5 (C.5) - Idioma Español Prioritario y Fallback en Inglés', ()
     const enriched = await cardLocaleService.enrichCardWithLocale(rawSolRing, 'es');
     assert.ok(enriched.locales?.es);
     assert.equal(enriched.locales.es.printedName, 'Anillo solar');
-    assert.equal(enriched.locales.es.printedTypeLine, 'Artefacto');
+    assert.equal(enriched.locales.es.printedTypeLine, 'Artifact');
   });
 
   it('6. matchesName valida concordancia tanto en inglés como en español', () => {

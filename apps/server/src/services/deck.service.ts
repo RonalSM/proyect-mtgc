@@ -1,9 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { prisma } from '../db.js';
-import { CardDefinition, CardColor, parseDecklist, ParsedDeckLine } from '@mtgc/shared';
+import { CardDefinition, CardColor, parseDecklist } from '@mtgc/shared';
 import { randomUUID } from 'crypto';
-import { cardLocaleService } from './card-locale.service.js';
 import { tokenService } from './token.service.js';
 
 export interface SavedDeck {
@@ -113,7 +112,85 @@ export class DeckService {
   private presetDecks: SavedDeck[] = [];
 
   /**
-   * Loads preset decks from apps/server/prisma/seed/preset-decks/*.txt (Punto 8)
+   * Resuelve una carta por su nombre directamente desde la base de datos local (Punto 3).
+   * Soporta nombres exactos, caras frontales de DFC (e.g. "Lovestruck Beast // Heart's Desire")
+   * y enriquece con la impresión en español si existe en card_locales.
+   * NUNCA inventa IDs ni URLs.
+   */
+  public async resolveCardFromDb(cardName: string): Promise<CardDefinition | null> {
+    const cleanName = cardName.replace(/\s*\*CMDR\*\s*$/, '').trim();
+
+    // 1. Coincidencia exacta
+    let dbCard = await prisma.card.findFirst({
+      where: { name: { equals: cleanName, mode: 'insensitive' } },
+    });
+
+    // 2. Coincidencia de cara frontal para cartas dobles (DFC / Aventuras / Split)
+    if (!dbCard) {
+      dbCard = await prisma.card.findFirst({
+        where: { name: { startsWith: `${cleanName} //`, mode: 'insensitive' } },
+      });
+    }
+
+    // 3. Coincidencia por contención como respaldo
+    if (!dbCard) {
+      dbCard = await prisma.card.findFirst({
+        where: { name: { contains: cleanName, mode: 'insensitive' } },
+      });
+    }
+
+    if (!dbCard) return null;
+
+    // Buscar si existe traducción e impresión en español en la tabla card_locales
+    let locales: CardDefinition['locales'] = undefined;
+    if (dbCard.oracleId) {
+      const loc = await prisma.cardLocale.findUnique({
+        where: {
+          oracleId_lang: {
+            oracleId: dbCard.oracleId,
+            lang: 'es',
+          },
+        },
+      });
+      if (loc) {
+        locales = {
+          es: {
+            printedName: loc.printedName,
+            printedTypeLine: loc.printedTypeLine || undefined,
+            printedText: loc.printedText || undefined,
+            imageUrlSmall: loc.imageUrlSmall || undefined,
+            imageUrlNormal: loc.imageUrlNormal || undefined,
+            imageUrlLarge: loc.imageUrlLarge || undefined,
+            imageUrlArtCrop: loc.imageUrlArtCrop || undefined,
+          },
+        };
+      }
+    }
+
+    return {
+      scryfallId: dbCard.scryfallId,
+      oracleId: dbCard.oracleId || undefined,
+      name: dbCard.name,
+      manaCost: dbCard.manaCost || undefined,
+      cmc: dbCard.cmc,
+      typeLine: dbCard.typeLine,
+      oracleText: dbCard.oracleText || undefined,
+      colors: (dbCard.colors || []) as any,
+      colorIdentity: (dbCard.colorIdentity || []) as any,
+      power: dbCard.power || undefined,
+      toughness: dbCard.toughness || undefined,
+      imageUrlSmall: dbCard.imageUrlSmall || undefined,
+      imageUrlNormal: dbCard.imageUrlNormal || undefined,
+      imageUrlLarge: dbCard.imageUrlNormal || undefined,
+      imageUrlArtCrop: dbCard.imageUrlArtCrop || undefined,
+      legalities: (dbCard.legalities as any) || { commander: 'legal' },
+      locales,
+    };
+  }
+
+  /**
+   * Loads preset decks from apps/server/prisma/seed/preset-decks/*.txt (Punto 8 y Punto 3)
+   * Resuelve cada carta contra la base de datos local y FALLA listando las cartas no encontradas.
    */
   public async loadPresetDecks(): Promise<SavedDeck[]> {
     if (this.presetDecks.length > 0) {
@@ -139,55 +216,47 @@ export class DeckService {
       if (!rawText) continue;
 
       const parsed = parseDecklist(rawText);
+      const missingCards: string[] = [];
 
-      // Expand entries into individual CardDefinitions
+      // Expand entries into individual CardDefinitions desde datos REALES de la base
       const commanderCards: CardDefinition[] = [];
       for (const entry of parsed.commanderEntries) {
+        const resolved = await this.resolveCardFromDb(entry.cardName);
+        if (!resolved) {
+          missingCards.push(entry.cardName);
+          continue;
+        }
         for (let q = 0; q < entry.quantity; q++) {
-          commanderCards.push({
-            scryfallId: `cmdr_${meta.id}_${q}`,
-            name: entry.cardName,
-            cmc: 4,
-            typeLine: 'Legendary Creature',
-            colorIdentity: meta.colorIdentity,
-            colors: meta.colorIdentity,
-            imageUrlNormal: meta.imageUrl.replace('/art_crop/', '/normal/'),
-            imageUrlSmall: meta.imageUrl.replace('/art_crop/', '/small/'),
-            imageUrlArtCrop: meta.imageUrl,
-            legalities: { commander: 'legal' },
-          });
+          commanderCards.push({ ...resolved });
         }
       }
 
       const maindeckCards: CardDefinition[] = [];
       for (const entry of parsed.maindeckEntries) {
-        const isBasic =
-          entry.cardName.includes('Plains') ||
-          entry.cardName.includes('Island') ||
-          entry.cardName.includes('Swamp') ||
-          entry.cardName.includes('Mountain') ||
-          entry.cardName.includes('Forest') ||
-          entry.cardName.includes('Wastes');
-
+        const resolved = await this.resolveCardFromDb(entry.cardName);
+        if (!resolved) {
+          missingCards.push(entry.cardName);
+          continue;
+        }
         for (let q = 0; q < entry.quantity; q++) {
-          maindeckCards.push({
-            scryfallId: `main_${meta.id}_${entry.cardName.replace(/\s+/g, '_')}_${q}`,
-            name: entry.cardName,
-            cmc: isBasic ? 0 : 3,
-            typeLine: isBasic ? 'Basic Land' : 'Spell',
-            colorIdentity: meta.colorIdentity,
-            colors: meta.colorIdentity,
-            legalities: { commander: 'legal' },
-          });
+          maindeckCards.push({ ...resolved });
         }
       }
 
-      // Enrich with Spanish locale (Punto 5) and pre-warm tokens (Punto 4)
-      const enrichedCommanderCards = await cardLocaleService.enrichCards(commanderCards, 'es');
-      const enrichedMaindeckCards = await cardLocaleService.enrichCards(maindeckCards, 'es');
+      // FALLAR si faltan cartas en la base de datos (Punto 3)
+      if (missingCards.length > 0) {
+        throw new Error(
+          `[DeckService] Error sembrando mazo listo "${meta.name}": Cartas no encontradas en base local: ${missingCards.join(', ')}`,
+        );
+      }
 
-      // Pre-warm token resolution in background
-      tokenService.getTokensForCard(meta.commander).catch(() => {});
+      // Pre-warm token resolution
+      await tokenService.getTokensForCard(meta.commander).catch(() => {});
+
+      const commanderRealImg =
+        commanderCards[0]?.imageUrlArtCrop ||
+        commanderCards[0]?.imageUrlNormal ||
+        meta.imageUrl;
 
       const deckItem: SavedDeck = {
         id: meta.id,
@@ -196,11 +265,11 @@ export class DeckService {
         format: 'commander',
         commanderName: meta.commander,
         colorIdentity: meta.colorIdentity,
-        cardCount: enrichedCommanderCards.length + enrichedMaindeckCards.length,
+        cardCount: commanderCards.length + maindeckCards.length,
         rawDecklist: rawText,
-        commanderCards: enrichedCommanderCards,
-        maindeckCards: enrichedMaindeckCards,
-        commanderImageUrl: meta.imageUrl,
+        commanderCards,
+        maindeckCards,
+        commanderImageUrl: commanderRealImg,
         isPreset: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -254,31 +323,23 @@ export class DeckService {
             .replace(/[^a-z0-9]/g, '-')}`;
           const cleanName = filename.replace(/^\d+-/, '').replace('.txt', '').replace(/-/g, ' ');
 
-          const cmdrCards: CardDefinition[] = parsed.commanderEntries.flatMap((e: ParsedDeckLine) =>
-            Array.from({ length: e.quantity }, (_, q) => ({
-              scryfallId: `cmdr_${deckId}_${q}`,
-              name: e.cardName,
-              cmc: 4,
-              typeLine: 'Legendary Creature',
-              colorIdentity: [],
-              colors: [],
-              legalities: { commander: 'legal' },
-            })),
-          );
-          const mainCards: CardDefinition[] = parsed.maindeckEntries.flatMap((e: ParsedDeckLine) =>
-            Array.from({ length: e.quantity }, (_, q) => ({
-              scryfallId: `main_${deckId}_${e.cardName.replace(/\s+/g, '_')}_${q}`,
-              name: e.cardName,
-              cmc: 3,
-              typeLine: 'Spell',
-              colorIdentity: [],
-              colors: [],
-              legalities: { commander: 'legal' },
-            })),
-          );
+          const cmdrCards: CardDefinition[] = [];
+          for (const e of parsed.commanderEntries) {
+            const resolved = await this.resolveCardFromDb(e.cardName);
+            if (!resolved) continue;
+            for (let q = 0; q < e.quantity; q++) {
+              cmdrCards.push({ ...resolved });
+            }
+          }
 
-          const enrichedCmdr = await cardLocaleService.enrichCards(cmdrCards, 'es');
-          const enrichedMain = await cardLocaleService.enrichCards(mainCards, 'es');
+          const mainCards: CardDefinition[] = [];
+          for (const e of parsed.maindeckEntries) {
+            const resolved = await this.resolveCardFromDb(e.cardName);
+            if (!resolved) continue;
+            for (let q = 0; q < e.quantity; q++) {
+              mainCards.push({ ...resolved });
+            }
+          }
 
           const extraDeck: SavedDeck = {
             id: deckId,
@@ -287,11 +348,11 @@ export class DeckService {
             format: 'commander',
             commanderName: cmdrName,
             colorIdentity: [],
-            cardCount: enrichedCmdr.length + enrichedMain.length,
+            cardCount: cmdrCards.length + mainCards.length,
             rawDecklist: rawText,
-            commanderCards: enrichedCmdr,
-            maindeckCards: enrichedMain,
-            commanderImageUrl: undefined,
+            commanderCards: cmdrCards,
+            maindeckCards: mainCards,
+            commanderImageUrl: cmdrCards[0]?.imageUrlNormal,
             isPreset: true,
             createdAt: new Date(),
             updatedAt: new Date(),

@@ -538,6 +538,24 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Recuento final verificado en base local: $\ge 30,000$ cartas (`cards`: 38,941), $\ge 500$ fichas (`tokens`: 969), $\ge 70,000$ dictámenes (`rulings`: 79,706) y $\ge 20,000$ traducciones (`card_locales`: 30,349).
    - Cobertura de pruebas en `apps/server/test/sync-cards.test.ts` (4/4 pruebas aprobadas).
 
+### REQ-39 Mazos Listos con Resolución Real y Purga de URLs Sintéticas (Punto 3 de Correcciones del Cliente - A.3)
+
+**Historia:** Como jugador y administrador del sistema, quiero que todos los mazos predeterminados (presets) se resuelvan exclusivamente contra registros reales de Scryfall presentes en la base de datos local, prohibiendo terminantemente la invención de identificadores o URLs de imágenes sintéticas que ocasionen errores 404, y abortando con un error explícito si alguna carta del mazo no existe en la base.
+
+1. **Resolución Estricta contra Base de Datos Local:**
+   - THE servicio `DeckService.loadPresetDecks()` y el script generador `generate-preset-decks.ts` SHALL resolver cada línea de los archivos `.txt` de mazos listos contra la base de datos local (`prisma.card`).
+   - Los archivos de mazos `.txt` SHALL contener únicamente nombres de carta y la marca de comandante (`*CMDR*`), sin identificadores Scryfall ni URLs fijas.
+   - Si una carta no se encuentra en la base local tras evaluar nombre exacto, cara frontal DFC (`${name} //`) y contención, THE sistema SHALL fallar inmediatamente abortando la siembra y listando los nombres no resueltos (`missingCards.join(', ')`), sin inventar jamás registros ficticios.
+2. **Purga de Fuentes de URLs e Identificadores Sintéticos:**
+   - THE sistema SHALL eliminar por completo cualquier catálogo simulado en memoria (`PRESEEDED_SPANISH_LOCALES` en `card-locale.service.ts` y `card-search.service.ts`), origen raíz de las URLs con sufijos de timestamp incrementales en múltiplos de 100 (`...jpg?1789755201` a `...jpg?1789755501`) e identificadores ficticios (`5b492372-8820-410a-b363-d1f855263641`).
+   - Toda información de cartas, textos localizados y URLs de imagen (`small`, `normal`, `large`, `art_crop`) SHALL originarse únicamente en `cards` y `card_locales` pobladas desde los volcados masivos oficiales de Scryfall.
+3. **Validación de Identidad y Re-Siembra Exitosa:**
+   - Cada uno de los 8 mazos listos SHALL cumplir al 100% las reglas de construcción de Commander (100 cartas singleton incluyendo comandantes válidos, con identidad de color legal; sustituyendo *Quartzwood Crasher* [RG] por *Thorn Mammoth* [G] en el mazo mono-verde de Goreclaw).
+   - La ejecución de `npm run seed:presets` SHALL certificar los 8 mazos listos con 100/100 cartas encontradas y resueltas exitosamente en la base de datos local.
+4. **Verificación Automatizada:**
+   - Pruebas unitarias en `apps/server/test/preset-resolution.test.ts` (3/3 aprobadas) certificando que `loadPresetDecks` carga los 8 mazos sin IDs sintéticos (`cmdr_`, `main_`, `id_`) ni sufijos de timestamp falsos (`178975`), y que `resolveCardFromDb` resuelve correctamente cartas regulares y DFC/Aventuras (`Sol Ring`, `Lovestruck Beast`) devolviendo `null` ante nombres inexistentes.
+   - Pruebas de localización en `apps/server/test/card-locale.test.ts` (6/6 aprobadas) validadas con la base de datos real.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -800,5 +818,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-36        | COMP-1, COMP-6, COMP-7                 |
 | REQ-37        | COMP-1, COMP-4, COMP-7                 |
 | REQ-38        | COMP-4, COMP-6, COMP-7                 |
+| REQ-39        | COMP-4, COMP-6, COMP-7                 |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

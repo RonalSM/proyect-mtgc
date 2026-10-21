@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseDecklist, validateCommanderDeck, type CardDefinition } from '@mtgc/shared';
+import { connectDatabase, disconnectDatabase } from '../db.js';
+import { deckService } from '../services/deck.service.js';
 
 function getPresetDir(): string {
   if (fs.existsSync(path.resolve('prisma/seed'))) {
@@ -146,7 +148,7 @@ const DECKS: DeckConfig[] = [
 1 Woodfall Primus
 1 Vorinclex, Voice of Hunger
 1 Kogla, the Titan Ape
-1 Quartzwood Crasher
+1 Thorn Mammoth
 1 Defiler of Vigor
 1 Elder Gargaroth
 1 Thrun, Breaker of Silence
@@ -656,8 +658,9 @@ const DECKS: DeckConfig[] = [
   },
 ];
 
-export function runGenerator() {
+export async function runGenerator() {
   console.log(`Writing ${DECKS.length} preset decks to ${PRESET_DIR}...`);
+  await connectDatabase();
 
   for (const d of DECKS) {
     const filePath = path.join(PRESET_DIR, d.filename);
@@ -674,59 +677,59 @@ export function runGenerator() {
       throw new Error(`Deck ${d.name} has ${total} cards (must be exactly 100)!`);
     }
 
-    // Build dummy definitions to run validator
-    const commanderCards = parsed.commanderEntries.map(e => ({
-      card: {
-        scryfallId: `id_${e.cardName}`,
-        name: e.cardName,
-        cmc: 4,
-        typeLine: 'Legendary Creature',
-        colorIdentity: d.colorIdentity as any,
-        colors: d.colorIdentity as any,
-        legalities: { commander: 'legal' },
-      } as CardDefinition,
-      quantity: e.quantity,
-      isCommander: true,
-    }));
+    // Resolver cartas REALES contra la base de datos (Punto 3)
+    const missingCards: string[] = [];
 
-    const maindeckCards = parsed.maindeckEntries.map(e => ({
-      card: {
-        scryfallId: `id_${e.cardName}`,
-        name: e.cardName,
-        cmc:
-          e.cardName.includes('Plains') ||
-          e.cardName.includes('Island') ||
-          e.cardName.includes('Swamp') ||
-          e.cardName.includes('Mountain') ||
-          e.cardName.includes('Forest') ||
-          e.cardName.includes('Wastes')
-            ? 0
-            : 3,
-        typeLine:
-          e.cardName.includes('Plains') ||
-          e.cardName.includes('Island') ||
-          e.cardName.includes('Swamp') ||
-          e.cardName.includes('Mountain') ||
-          e.cardName.includes('Forest') ||
-          e.cardName.includes('Wastes')
-            ? 'Basic Land'
-            : 'Spell',
-        colorIdentity: d.colorIdentity as any,
-        colors: d.colorIdentity as any,
-        legalities: { commander: 'legal' },
-      } as CardDefinition,
-      quantity: e.quantity,
-      isCommander: false,
-    }));
+    const commanderCards: { card: CardDefinition; quantity: number; isCommander: boolean }[] = [];
+    for (const entry of parsed.commanderEntries) {
+      const resolved = await deckService.resolveCardFromDb(entry.cardName);
+      if (!resolved) {
+        missingCards.push(entry.cardName);
+      } else {
+        commanderCards.push({
+          card: resolved,
+          quantity: entry.quantity,
+          isCommander: true,
+        });
+      }
+    }
+
+    const maindeckCards: { card: CardDefinition; quantity: number; isCommander: boolean }[] = [];
+    for (const entry of parsed.maindeckEntries) {
+      const resolved = await deckService.resolveCardFromDb(entry.cardName);
+      if (!resolved) {
+        missingCards.push(entry.cardName);
+      } else {
+        maindeckCards.push({
+          card: resolved,
+          quantity: entry.quantity,
+          isCommander: false,
+        });
+      }
+    }
+
+    // Regla dura Punto 3: FALLAR si no se encuentran cartas en la base
+    if (missingCards.length > 0) {
+      throw new Error(
+        `❌ Error sembrando mazo listo "${d.name}": ${missingCards.length} cartas NO encontradas en base de datos local: ${missingCards.join(', ')}`,
+      );
+    }
 
     const valResult = validateCommanderDeck(commanderCards, maindeckCards);
     if (!valResult.isValid) {
       throw new Error(`Deck ${d.name} failed validation: ${valResult.errors.join(', ')}`);
     }
-    console.log(`Validated: ${d.name} (${total} cards, commander: ${d.commander}) - OK`);
+    console.log(`Validated with real DB cards: ${d.name} (${total} cards, commander: ${d.commander}) - OK`);
   }
 
-  console.log('All 8 preset decks successfully generated and validated!');
+  // Cargar y persistir mazos en base de datos
+  await deckService.loadPresetDecks();
+  console.log('All 8 preset decks successfully generated, resolved from DB, and validated!');
+
+  await disconnectDatabase();
 }
 
-runGenerator();
+runGenerator().catch(err => {
+  console.error(err);
+  process.exit(1);
+});

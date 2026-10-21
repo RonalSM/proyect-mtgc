@@ -1,7 +1,7 @@
 import { prisma } from '../db.js';
 import { scryfallService } from './scryfall.service.js';
 import { CardDefinition } from '@mtgc/shared';
-import { cardLocaleService, PRESEEDED_SPANISH_LOCALES } from './card-locale.service.js';
+import { cardLocaleService } from './card-locale.service.js';
 
 export class CardSearchService {
   // Simple in-memory LRU cache for recent autocomplete searches
@@ -42,12 +42,7 @@ export class CardSearchService {
       // Local DB might not be connected or populated yet; fallback to Scryfall
     }
 
-    // 2.5. Include Spanish matches from preseeded and DB locales
-    const spanishMatches = Object.values(PRESEEDED_SPANISH_LOCALES)
-      .filter(l => l.printedName.toLowerCase().includes(trimmed))
-      .map(l => l.printedName);
-    results = Array.from(new Set([...results, ...spanishMatches]));
-
+    // 2.5. Include Spanish matches from CardLocale table
     try {
       const dbLocales = await (prisma as any).cardLocale?.findMany({
         where: {
@@ -57,13 +52,16 @@ export class CardSearchService {
           },
         },
         select: { printedName: true },
-        take: 5,
+        distinct: ['printedName'],
+        take: 10,
       });
-      if (dbLocales) {
-        results = Array.from(new Set([...results, ...dbLocales.map((l: any) => l.printedName)]));
+
+      if (dbLocales && dbLocales.length > 0) {
+        const spanishNames = dbLocales.map((l: any) => l.printedName);
+        results = Array.from(new Set([...results, ...spanishNames]));
       }
     } catch {
-      // Ignore if DB not ready
+      // Continuar con los resultados encontrados
     }
 
     // 3. Fallback to Scryfall API if DB returned few results
@@ -120,28 +118,19 @@ export class CardSearchService {
       // Fallback
     }
 
-    // 2. Check if name is in Spanish (preseeded or DB locales)
-    const lowerTrimmed = trimmed.toLowerCase();
-    const preseededLocale = Object.values(PRESEEDED_SPANISH_LOCALES).find(l =>
-      exact
-        ? l.printedName.toLowerCase() === lowerTrimmed
-        : l.printedName.toLowerCase().includes(lowerTrimmed),
-    );
-
-    let spanishOracleId: string | undefined = preseededLocale?.oracleId;
-    if (!spanishOracleId) {
-      try {
-        const dbLocale = await (prisma as any).cardLocale?.findFirst({
-          where: exact
-            ? { printedName: { equals: trimmed, mode: 'insensitive' } }
-            : { printedName: { contains: trimmed, mode: 'insensitive' } },
-        });
-        if (dbLocale) {
-          spanishOracleId = dbLocale.oracleId;
-        }
-      } catch {
-        // Fallback
+    // 2. Check if name is in Spanish in DB card_locales
+    let spanishOracleId: string | undefined;
+    try {
+      const dbLocale = await (prisma as any).cardLocale?.findFirst({
+        where: exact
+          ? { printedName: { equals: trimmed, mode: 'insensitive' } }
+          : { printedName: { contains: trimmed, mode: 'insensitive' } },
+      });
+      if (dbLocale) {
+        spanishOracleId = dbLocale.oracleId;
       }
+    } catch {
+      // Fallback
     }
 
     if (spanishOracleId) {
