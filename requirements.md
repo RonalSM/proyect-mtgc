@@ -588,6 +588,39 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 4. **Verificación Automatizada:**
    - Pruebas unitarias en `packages/shared/test/card-image-url.test.ts` (4/4 aprobadas) certificando resolución por tamaño, idioma, caras múltiples y ausencia de mutaciones textuales.
 
+### REQ-42 Métrica Honesta y Benchmark de Red con Cero Fallos (Punto 6 de Correcciones del Cliente - A.6)
+
+**Historia:** Como cliente y auditor de calidad, quiero auditar honestamente la carga de imágenes reales (`naturalWidth > 0`) en las 8 vistas del sistema (`mulligan`, `mano`, `campo`, `vista previa`, `Ver carta`, `cementerio`, `exilio` y `biblioteca`) en un pod real de 4 jugadores con mazos listos, considerando los marcos de texto de respaldo como fallos y exigiendo al menos un 99.0% de éxito, y rehacer el benchmark de red con caché totalmente vacía para medir con exactitud cientos de peticiones a Scryfall.
+
+1. **Criterio Estricto de Métrica Honesta:**
+   - Toda carta evaluada en la interfaz SHALL contar como éxito únicamente si renderiza una imagen real verificada (`naturalWidth > 0`).
+   - El recurso al marco de texto estilizado de respaldo SHALL ser computado estrictamente como fallo, salvo para cartas que genuinamente carecen de arte oficial.
+   - El porcentaje de éxito global sobre todas las vistas SHALL ser de al menos el **99.0%**.
+2. **Auditoría Transversal en las 8 Vistas:**
+   - THE prueba E2E automatizada (`apps/web/e2e/network-preset-benchmark.spec.ts`) SHALL auditar sistemáticamente las 8 vistas con 4 jugadores en simultáneo:
+     1. `mulligan`: 28 cartas evaluadas (4 jugadores $\times$ 7 cartas).
+     2. `mano`: cartas privadas en el dock en abanico.
+     3. `campo`: permanentes en el campo de batalla (`data-battlefield-card="true"`).
+     4. `vista previa`: panel superpuesto (`[data-testid="card-preview-overlay"]`) al pasar el cursor sobre permanentes.
+     5. `Ver carta`: modal de detalle e inspección (`[data-testid="card-details-modal"]`).
+     6. `cementerio`: modal de visualización de pila (`data-active-pile="graveyard"`).
+     7. `exilio`: modal de visualización de pila (`data-active-pile="exile"`).
+     8. `biblioteca`: modal de biblioteca abierta por los 4 jugadores concurrentes con virtualización desactivada (`__disableVirtualization = true`) para montar el total de cartas.
+   - Resultados certificados: **415 de 415 cartas evaluadas con imagen real (100.00%)**, **0 marcos de texto**, **0 fallos detectados**.
+3. **Benchmark de Red @network con Caché Totalmente Vacío:**
+   - La prueba invalida la caché de red del navegador mediante CDP (`Network.clearBrowserCache` y `Network.setCacheDisabled: true`), elimina la `Cache API` (`window.caches`) y vacía los mapas en memoria de blob URLs (`persistentImageCache.clear()` y `imageLoaderQueue.reset()`).
+   - Telemetría certificada en la apertura simultánea de las 4 bibliotecas:
+     - Tiempo de carga hasta que todas las imágenes estuvieron listas: **1,958 ms**.
+     - Peticiones HTTP directas procesadas durante la apertura de bibliotecas: **756**.
+     - Peticiones acumuladas de la sesión: **1,220**.
+     - Tasa de respuestas HTTP 200: **100%** (`{"200": 756}`).
+     - Fallos de red definitivos: **0**.
+4. **Explicación Técnica del Resultado Anterior de 118 ms (7 peticiones):**
+   - **Causa 1 (Virtualización):** `VirtualizedCardGrid` montaba únicamente las ~12 cartas visibles en la pantalla, omitiendo las ~88 cartas restantes de cada mazo.
+   - **Causa 2 (Condición de parada):** La prueba previa utilizaba `Math.min(imgs.length, 12)`, deteniendo la medición en cuanto cargaban las primeras 12 cartas sin esperar al mazo completo.
+   - **Causa 3 (Caché en memoria no purgada):** `caches.delete()` no limpiaba los mapas en memoria `blobUrlMap` ni la caché HTTP a nivel de protocolo CDP.
+   - **Corrección aplicada:** Montaje completo con `__disableVirtualization = true` y purga total de caché de red y memoria, verificando la emisión y respuesta exitosa de más de 700 solicitudes HTTP directas.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).

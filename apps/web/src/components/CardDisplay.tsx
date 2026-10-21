@@ -265,7 +265,10 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
         />
       ) : (
         /* 3. Fallback Card Frame: High-contrast legible MTG card frame with name, mana, type, P/T and retry button (Punto 4, Punto 6) */
-        <div className="w-full h-full rounded-md border border-slate-700 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 flex flex-col p-1.5 justify-between text-left select-none overflow-hidden shadow-inner">
+        <div
+          data-card-text-frame="true"
+          className="w-full h-full rounded-md border border-slate-700 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 flex flex-col p-1.5 justify-between text-left select-none overflow-hidden shadow-inner"
+        >
           {/* Header Bar */}
           <div className="flex items-start justify-between gap-1 border-b border-slate-800 pb-1">
             <span

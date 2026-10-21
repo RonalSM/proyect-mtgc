@@ -76,6 +76,13 @@ export default function App() {
       enabled: !!roomCode,
     });
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__mtgcSendAction = sendAction;
+      (window as any).__mtgcRoomState = roomState;
+    }
+  }, [sendAction, roomState]);
+
   const handleCreateRoom = async (data: {
     name: string;
     hostName: string;

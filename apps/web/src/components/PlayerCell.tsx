@@ -1120,6 +1120,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       {activePileModal && (
         <Portal>
           <div
+            data-testid="pile-viewer-modal"
+            data-active-pile={activePileModal}
             className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={() => setActivePileModal(null)}
             onDoubleClick={e => {

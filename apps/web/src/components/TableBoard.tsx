@@ -674,6 +674,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     >
       <div
         id="mesa-total"
+        data-drop-zone="battlefield"
         ref={setTabletopRef}
         style={
           {

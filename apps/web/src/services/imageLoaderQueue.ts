@@ -122,6 +122,10 @@ class ImageLoaderQueue {
     this.notify();
   }
 
+  public clear() {
+    this.reset();
+  }
+
   /**
    * Enqueue an image URL to load with given priority
    */

@@ -15,7 +15,7 @@ let pgliteDbInstance: any = null;
 export const pool = new pg.Pool({
   connectionString,
   ssl: false,
-  max: 10,
+  max: 2,
 });
 
 const adapter = new PrismaPg(pool);
@@ -218,7 +218,7 @@ export async function connectDatabase(): Promise<void> {
       });
 
       await pgliteServerInstance.start();
-      if ((pgliteServerInstance as any).server?.unref) {
+      if (process.env.NODE_ENV === 'test' && (pgliteServerInstance as any).server?.unref) {
         (pgliteServerInstance as any).server.unref();
       }
       console.log(`✅ Servidor PostgreSQL (PGlite) activo en puerto ${port} (datos en ${dataDir}).`);

@@ -113,10 +113,10 @@ export class BulkSyncService {
     }
 
     const memoryCount = this.rulingsByOracleId.size;
-    const hasData = dbCount > 0 || memoryCount > 0;
 
-    // Si ya hay datos y ya tenemos la marca de actualización previa, no hace falta descargar
-    if (hasData && this.lastRulingsUpdatedAt) {
+    // Si la base de datos ya contiene dictámenes indexados, no descargar nuevamente al arrancar
+    if (dbCount > 1000 || (memoryCount > 1000 && this.lastRulingsUpdatedAt)) {
+      this.lastRulingsUpdatedAt = new Date();
       return {
         syncedCount: dbCount || memoryCount,
         durationMs: 0,

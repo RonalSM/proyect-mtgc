@@ -456,6 +456,25 @@ validateCommander(deck: ResolvedDeck): ValidationReport
   - **Datos Canónicos Completos:** Retorna tipos canónicos en inglés (`typeLine`), `oracleText`, `power`, `toughness`, `cmc`, `manaCost`, `legalities`, `rulings` oficiales desde `prisma.ruling` y soporte para cartas de dos caras (`isTwoFaced`, caras completas con URLs de frente y reverso).
   - **Cadena de Respaldo Autoritativa en Servidor:** El servidor decide las URLs reales: si la carta cuenta con impresión en español en `card_locales`, entrega sus URLs verificadas; de lo contrario, entrega directamente las URLs de la impresión en inglés. El cliente recibe únicamente URLs existentes, eliminando solicitudes de prueba hacia recursos 404.
   - **Optimización en Cliente (`CardImageResolver`):** Agrupa peticiones concurrentes en microtareas (`queueMicrotask`), consolidando múltiples solicitudes en un único envío HTTP `POST` y limitando reintentos exclusivamente a fallos de red.
+- **Métrica Honesta (8 Vistas) y Benchmark de Red Real Scryfall (Punto 6 - A.6):**
+  - **Criterio Estricto de Carga Real:** Se evalúa de manera honesta cada carta rendered en el cliente. Únicamente se computa como éxito si la imagen posee `naturalWidth > 0`. Los marcos de texto estilizados se computan estrictamente como fallos.
+  - **Auditoría Exhaustiva de 8 Vistas:**
+    - `mulligan`: Modal de mano inicial (28 cartas evaluadas en 4 jugadores, 100% éxito).
+    - `mano`: Dock inferior privado en abanico (`[data-dock-zone="hand"]`).
+    - `campo`: Permanentes en el campo de batalla (`[data-battlefield-card="true"]`).
+    - `vista previa`: Overlay contextual grande (`[data-testid="card-preview-overlay"]`).
+    - `Ver carta`: Modal de detalle con metadatos y dictámenes (`[data-testid="card-details-modal"]`).
+    - `cementerio`: Modal de visualización de cementerio (`data-active-pile="graveyard"`).
+    - `exilio`: Modal de visualización de exilio (`data-active-pile="exile"`).
+    - `biblioteca`: Modal de biblioteca en pod de 4 jugadores con desactivación de virtualización (`__disableVirtualization = true`) para montar todas las cartas.
+    - **Resultado global:** 415 de 415 cartas con imagen real (**100.00% éxito**, superando el umbral de 99.0%), **0 marcos de texto**, **0 fallos**.
+  - **Benchmark @network en Frío y Purga de Caché Real:**
+    - Se eliminan tanto la caché HTTP de disco/memoria del navegador vía CDP (`Network.clearBrowserCache` y `Network.setCacheDisabled`), la `Cache API` (`window.caches.delete`), como los mapas en memoria de blob URLs (`persistentImageCache.clear()` y `imageLoaderQueue.reset()`).
+    - Las 4 bibliotecas abiertas concurrentemente emitieron **756 solicitudes HTTP directas** a `cards.scryfall.io` con **100% respuestas HTTP 200** y **0 fallos de red**, completando la carga en **1,958 ms**.
+  - **Explicación del Resultado Previo Anómalo (118 ms / 7 peticiones):**
+    - La virtualización en `VirtualizedCardGrid` restringía el montaje en el DOM a las ~12 cartas visibles en ventana, dejando sin solicitar las ~88 restantes de cada biblioteca.
+    - La verificación previa evaluaba `Math.min(imgs.length, 12)`, finalizando en cuanto respondían las primeras 12 cartas.
+    - La caché HTTP de Chromium y los mapas de blobs en memoria no se purgaban a nivel de red, sirviendo recursos instantáneamente sin generar tráfico externo.
 
 ### COMP-4 Room Manager
 

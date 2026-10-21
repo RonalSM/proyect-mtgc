@@ -137,6 +137,25 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
     getCardImageUrl(card, { size: 'normal', lang: language, faceIndex: activeFaceIndex }) ||
     'https://cards.scryfall.io/back.png';
 
+  const englishFallbackImage =
+    getCardImageUrl(card, { size: 'large', lang: 'en', faceIndex: activeFaceIndex }) ||
+    getCardImageUrl(card, { size: 'normal', lang: 'en', faceIndex: activeFaceIndex }) ||
+    'https://cards.scryfall.io/back.png';
+
+  const [currentImageSrc, setCurrentImageSrc] = useState(displayImage);
+
+  useEffect(() => {
+    setCurrentImageSrc(displayImage);
+  }, [displayImage]);
+
+  const handleDetailImageError = () => {
+    if (currentImageSrc !== englishFallbackImage && englishFallbackImage) {
+      setCurrentImageSrc(englishFallbackImage);
+    } else {
+      setCurrentImageSrc('https://cards.scryfall.io/back.png');
+    }
+  };
+
   const commanderLegality = card.legalities?.commander || 'legal';
   const isCommanderLegal = commanderLegality === 'legal';
 
@@ -203,8 +222,9 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-700/60 bg-slate-950 aspect-[5/7] max-w-[320px] w-full">
               <img
                 data-testid="card-details-image"
-                src={displayImage}
+                src={currentImageSrc}
                 alt={displayName}
+                onError={handleDetailImageError}
                 className="w-full h-full object-fill pointer-events-none rounded-xl"
               />
             </div>
