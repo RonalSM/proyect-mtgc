@@ -145,10 +145,12 @@ export class BulkSyncService {
 
     try {
       console.log('🔄 [BulkSync] Consultando catálogo de bulk data de Scryfall...');
+      const userAgent =
+        process.env.SCRYFALL_USER_AGENT || 'MTGCommanderVirtualTable/1.0.0 (admin@mtgc.local)';
+
       const response = await fetch('https://api.scryfall.com/bulk-data', {
         headers: {
-          'User-Agent':
-            process.env.SCRYFALL_USER_AGENT || 'MTGCommanderVirtualTable/1.0.0 (admin@mtgc.local)',
+          'User-Agent': userAgent,
           Accept: 'application/json',
         },
       });
@@ -159,77 +161,92 @@ export class BulkSyncService {
 
       const bulkMeta = (await response.json()) as BulkDataResponse;
       const oracleDataInfo = bulkMeta.data.find(item => item.type === 'oracle_cards');
+      const downloadUri = oracleDataInfo?.jsonl_download_uri || oracleDataInfo?.download_uri;
 
-      if (!oracleDataInfo?.download_uri) {
+      if (!oracleDataInfo || !downloadUri) {
         throw new Error('No se encontró el archivo bulk "oracle_cards" en Scryfall.');
       }
 
-      console.log(`⬇️ [BulkSync] Descargando Oracle Cards desde: ${oracleDataInfo.download_uri}`);
-      const cardsResponse = await fetch(oracleDataInfo.download_uri);
-      if (!cardsResponse.ok) {
+      console.log(`⬇️ [BulkSync] Descargando y procesando Oracle Cards por streaming desde: ${downloadUri}`);
+      const cardsResponse = await fetch(downloadUri, {
+        headers: { 'User-Agent': userAgent },
+      });
+
+      if (!cardsResponse.ok || !cardsResponse.body) {
         throw new Error(`Error al descargar el archivo bulk: ${cardsResponse.statusText}`);
       }
 
-      const cards = (await cardsResponse.json()) as any[];
-      const totalToProcess = limit ? Math.min(cards.length, limit) : cards.length;
-      console.log(`📦 [BulkSync] Procesando ${totalToProcess} cartas...`);
+      const { Readable } = await import('node:stream');
+      const readline = await import('node:readline');
+      const zlibMod = await import('node:zlib');
 
-      const batchSize = 100;
-      for (let i = 0; i < totalToProcess; i += batchSize) {
-        const batch = cards.slice(i, i + batchSize);
-        await Promise.all(
-          batch.map(async rawCard => {
-            try {
-              const def = scryfallService.toCardDefinition(rawCard);
-              await prisma.card.upsert({
-                where: { scryfallId: def.scryfallId },
-                update: {
-                  name: def.name,
-                  manaCost: def.manaCost,
-                  cmc: def.cmc,
-                  typeLine: def.typeLine,
-                  oracleText: def.oracleText,
-                  colors: def.colors,
-                  colorIdentity: def.colorIdentity,
-                  power: def.power,
-                  toughness: def.toughness,
-                  imageUrlSmall: def.imageUrlSmall,
-                  imageUrlNormal: def.imageUrlNormal,
-                  imageUrlArtCrop: def.imageUrlArtCrop,
-                  layout: rawCard.layout,
-                  legalities: rawCard.legalities,
-                },
-                create: {
-                  scryfallId: def.scryfallId,
-                  oracleId: def.oracleId,
-                  name: def.name,
-                  manaCost: def.manaCost,
-                  cmc: def.cmc,
-                  typeLine: def.typeLine,
-                  oracleText: def.oracleText,
-                  colors: def.colors,
-                  colorIdentity: def.colorIdentity,
-                  power: def.power,
-                  toughness: def.toughness,
-                  imageUrlSmall: def.imageUrlSmall,
-                  imageUrlNormal: def.imageUrlNormal,
-                  imageUrlArtCrop: def.imageUrlArtCrop,
-                  layout: rawCard.layout,
-                  legalities: rawCard.legalities,
-                },
-              });
-              syncedCount++;
-            } catch {
-              // Gracefully continue if DB is offline or item error
-            }
-          }),
-        );
+      const isGzip = downloadUri.endsWith('.gz');
+      let stream: any = Readable.fromWeb(cardsResponse.body as any);
+      if (isGzip) {
+        stream = stream.pipe(zlibMod.createGunzip());
+      }
+
+      const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
+
+      const batchSize = 1000;
+      let batch: any[] = [];
+
+      for await (const line of rl) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed === '[' || trimmed === ']') continue;
+        const cleanLine = trimmed.endsWith(',') ? trimmed.slice(0, -1) : trimmed;
+
+        try {
+          const rawCard = JSON.parse(cleanLine);
+          const def = scryfallService.toCardDefinition(rawCard);
+          batch.push({
+            scryfallId: def.scryfallId,
+            oracleId: def.oracleId || null,
+            name: def.name,
+            manaCost: def.manaCost || null,
+            cmc: def.cmc || 0,
+            typeLine: def.typeLine,
+            oracleText: def.oracleText || null,
+            colors: def.colors || [],
+            colorIdentity: def.colorIdentity || [],
+            power: def.power || null,
+            toughness: def.toughness || null,
+            imageUrlSmall: def.imageUrlSmall || null,
+            imageUrlNormal: def.imageUrlNormal || null,
+            imageUrlArtCrop: def.imageUrlArtCrop || null,
+            layout: rawCard.layout || null,
+            legalities: rawCard.legalities || null,
+            isCommander:
+              def.typeLine.includes('Legendary') &&
+              (def.typeLine.includes('Creature') || def.typeLine.includes('Planeswalker')),
+          });
+
+          if (batch.length >= batchSize) {
+            await (prisma as any).card.createMany({
+              data: batch,
+              skipDuplicates: true,
+            });
+            syncedCount += batch.length;
+            batch = [];
+            if (limit && syncedCount >= limit) break;
+          }
+        } catch {
+          // Ignorar líneas malformadas
+        }
+      }
+
+      if (batch.length > 0) {
+        await (prisma as any).card.createMany({
+          data: batch,
+          skipDuplicates: true,
+        });
+        syncedCount += batch.length;
       }
 
       this.lastSyncTime = new Date();
       const durationMs = Date.now() - startTime;
       console.log(
-        `✅ [BulkSync] Sincronización completada: ${syncedCount} cartas en ${durationMs}ms`,
+        `✅ [BulkSync] Sincronización completada: ${syncedCount} cartas indexadas en ${durationMs}ms`,
       );
       return { syncedCount, durationMs };
     } finally {
@@ -393,9 +410,21 @@ export class BulkSyncService {
       const totalToProcess = limit ? Math.min(rawRulings.length, limit) : rawRulings.length;
       console.log(`📦 [BulkSync] Procesando ${totalToProcess} dictámenes oficiales de Scryfall...`);
 
+      const batchSize = 2000;
+      let rulingBatch: any[] = [];
+
       for (let i = 0; i < totalToProcess; i++) {
         const r = rawRulings[i];
         if (!r.oracle_id || !r.comment) continue;
+
+        const pubDate = r.published_at ? new Date(r.published_at) : new Date();
+
+        rulingBatch.push({
+          oracleId: r.oracle_id,
+          source: r.source || 'wotc',
+          publishedAt: pubDate,
+          comment: r.comment,
+        });
 
         const rulingItem: RulingItem = {
           publishedAt: r.published_at || new Date().toISOString().slice(0, 10),
@@ -407,6 +436,25 @@ export class BulkSyncService {
         existing.push(rulingItem);
         this.rulingsByOracleId.set(r.oracle_id, existing);
         syncedCount++;
+
+        if (rulingBatch.length >= batchSize) {
+          try {
+            await (prisma as any).ruling?.createMany({
+              data: rulingBatch,
+              skipDuplicates: true,
+            });
+          } catch {}
+          rulingBatch = [];
+        }
+      }
+
+      if (rulingBatch.length > 0) {
+        try {
+          await (prisma as any).ruling?.createMany({
+            data: rulingBatch,
+            skipDuplicates: true,
+          });
+        } catch {}
       }
 
       // Asegurar dictámenes oficiales de Sol Ring (Punto 6)

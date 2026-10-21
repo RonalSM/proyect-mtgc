@@ -178,6 +178,25 @@ export async function ensureTablesExist(): Promise<void> {
   await pool.query(ddl);
 }
 
+function getRootDataDir(): string {
+  let curr = process.cwd();
+  while (curr) {
+    const pkgPath = path.join(curr, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+        if (pkg.workspaces) {
+          return path.resolve(curr, 'data/postgres');
+        }
+      } catch {}
+    }
+    const parent = path.dirname(curr);
+    if (parent === curr) break;
+    curr = parent;
+  }
+  return path.resolve(process.cwd(), 'data/postgres');
+}
+
 export async function connectDatabase(): Promise<void> {
   const port = 5432;
   const isAvailable = await isPortOpen(port);
@@ -188,7 +207,7 @@ export async function connectDatabase(): Promise<void> {
       const { PGlite } = await import('@electric-sql/pglite');
       const { PGLiteSocketServer } = await import('@electric-sql/pglite-socket');
 
-      const dataDir = path.resolve(process.cwd(), 'data/postgres');
+      const dataDir = getRootDataDir();
       fs.mkdirSync(dataDir, { recursive: true });
 
       pgliteDbInstance = await PGlite.create({ dataDir });

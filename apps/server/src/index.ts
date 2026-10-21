@@ -977,6 +977,23 @@ try {
         `⚠️ [BulkSync] Error al sincronizar dictámenes de Scryfall al arrancar: ${err?.message || err}`,
       );
     });
+
+    // Sincronización automática de Oracle Cards al arrancar si la tabla está vacía o muy por debajo de lo esperado (Punto 2)
+    (async () => {
+      try {
+        const cardCount = await prisma.card.count();
+        if (cardCount < 10000) {
+          server.log.info(
+            `🔄 [BulkSync] Tabla 'cards' con ${cardCount} registros (esperado > 10,000). Lanzando sincronización automática de Oracle Cards...`,
+          );
+          await bulkSyncService.syncOracleCards();
+        }
+      } catch (err: any) {
+        server.log.warn(
+          `⚠️ [BulkSync] Error al verificar/sincronizar cartas al inicio: ${err?.message || err}`,
+        );
+      }
+    })();
   }
 } catch (err) {
   server.log.error(err);

@@ -436,6 +436,11 @@ validateCommander(deck: ResolvedDeck): ValidationReport
 - **Visualización en `DiagnosticPanel` (`?debug=1`):**
   - Interfaz de diagnóstico con pestañas "Cargas / Red" y "Base Local".
   - Grid de métricas en tarjetas y tarjetas expandibles por mazo listo con badges coloreados (verde para 100%, ámbar para parcial, rojo para vacío).
+- **Mecanismo de Ingesta y Sincronización Real (`npm run sync:cards` - Punto 2):**
+  - **Oracle Cards:** Streaming HTTP descomprimido al vuelo vía `jsonl.gz` con `zlib.createGunzip()` e inserciones masivas `prisma.card.createMany({ data: batch, skipDuplicates: true })` en lotes de 1,000 registros (38,940 cartas indexadas en ~16 s).
+  - **Rulings Oficiales:** Streaming de dictámenes de Scryfall indexados por lotes de 2,000 en la tabla `rulings` (79,706 dictámenes en ~10 s).
+  - **Traducciones (All Cards):** Streaming de All Cards filtrando impresiones en español (`lang = 'es'`), seleccionando la mejor versión con arte e indexando 30,349 registros en `card_locales`.
+  - **Auto-Boot Ingestion:** Al iniciar el servidor en `index.ts`, si la tabla `cards` cuenta con menos de 10,000 filas, se dispara automáticamente la sincronización en segundo plano sin bloquear el arranque de Fastify.
 
 ### COMP-4 Room Manager
 

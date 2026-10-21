@@ -20,7 +20,8 @@
     "typecheck": "npm run build:shared && npm run --workspaces --if-present typecheck",
     "lint": "npm run --workspaces --if-present lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "sync:cards": "npm run --workspace=@mtgc/server sync:cards"
   },
   "dependencies": {
     "prisma": "^7.10.0"

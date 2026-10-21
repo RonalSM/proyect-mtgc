@@ -59,19 +59,47 @@ interface LocaleCandidate {
  *   npx tsx src/scripts/process-all-cards-locales.ts --file path/to/all-cards.json
  */
 export async function processAllCardsLocales(
-  filePath: string,
+  filePathOrUrl?: string,
   targetLang = 'es',
 ): Promise<{ processed: number; upserted: number }> {
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Archivo no encontrado: ${filePath}`);
+  let stream: any;
+
+  if (filePathOrUrl && fs.existsSync(filePathOrUrl)) {
+    console.log(
+      `[LocaleSync] Iniciando procesamiento streaming de archivo local ${filePathOrUrl} para idioma "${targetLang}"...`,
+    );
+    stream = fs.createReadStream(filePathOrUrl, { encoding: 'utf-8' });
+  } else {
+    console.log(
+      `[LocaleSync] Consultando catálogo de Scryfall para streaming de All Cards ("${targetLang}")...`,
+    );
+    const userAgent =
+      process.env.SCRYFALL_USER_AGENT || 'MTGCommanderVirtualTable/1.0.0 (admin@mtgc.local)';
+    const metaRes = await fetch('https://api.scryfall.com/bulk-data', {
+      headers: { 'User-Agent': userAgent, Accept: 'application/json' },
+    });
+    if (!metaRes.ok) throw new Error(`Error en bulk-data: ${metaRes.statusText}`);
+    const meta = (await metaRes.json()) as any;
+    const allCardsInfo = meta.data.find((d: any) => d.type === 'all_cards');
+    const downloadUri = allCardsInfo?.jsonl_download_uri || allCardsInfo?.download_uri;
+    if (!downloadUri) throw new Error('No se encontró archivo bulk all_cards en Scryfall');
+
+    console.log(`[LocaleSync] Descargando y procesando streaming desde: ${downloadUri}`);
+    const response = await fetch(downloadUri, { headers: { 'User-Agent': userAgent } });
+    if (!response.ok || !response.body) {
+      throw new Error(`Error descargando all_cards: ${response.statusText}`);
+    }
+
+    const { Readable } = await import('node:stream');
+    const zlib = await import('node:zlib');
+    stream = Readable.fromWeb(response.body as any);
+    if (downloadUri.endsWith('.gz')) {
+      stream = stream.pipe(zlib.createGunzip());
+    }
   }
 
-  console.log(
-    `[LocaleSync] Iniciando procesamiento streaming de ${filePath} para idioma "${targetLang}"...`,
-  );
-  const fileStream = fs.createReadStream(filePath, { encoding: 'utf-8' });
   const rl = readline.createInterface({
-    input: fileStream,
+    input: stream,
     crlfDelay: Infinity,
   });
 
@@ -151,50 +179,33 @@ export async function processAllCardsLocales(
   );
 
   let upserted = 0;
-  const batchSize = 100;
+  const batchSize = 1000;
   const candidatesArray = Array.from(bestCandidates.values());
 
   for (let i = 0; i < candidatesArray.length; i += batchSize) {
-    const batch = candidatesArray.slice(i, i + batchSize);
-    await Promise.all(
-      batch.map(item =>
-        (prisma as any).cardLocale
-          ?.upsert({
-            where: {
-              oracleId_lang: {
-                oracleId: item.oracleId,
-                lang: item.lang,
-              },
-            },
-            create: {
-              oracleId: item.oracleId,
-              lang: item.lang,
-              printingId: item.printingId,
-              printedName: item.printedName,
-              printedText: item.printedText,
-              printedTypeLine: item.printedTypeLine,
-              imageUrlSmall: item.imageUrlSmall,
-              imageUrlNormal: item.imageUrlNormal,
-              imageUrlLarge: item.imageUrlLarge,
-              imageUrlArtCrop: item.imageUrlArtCrop,
-              releasedAt: item.releasedAt ? new Date(item.releasedAt) : null,
-            },
-            update: {
-              printingId: item.printingId,
-              printedName: item.printedName,
-              printedText: item.printedText,
-              printedTypeLine: item.printedTypeLine,
-              imageUrlSmall: item.imageUrlSmall,
-              imageUrlNormal: item.imageUrlNormal,
-              imageUrlLarge: item.imageUrlLarge,
-              imageUrlArtCrop: item.imageUrlArtCrop,
-              releasedAt: item.releasedAt ? new Date(item.releasedAt) : null,
-            },
-          })
-          .catch(() => null),
-      ),
-    );
-    upserted += batch.length;
+    const batch = candidatesArray.slice(i, i + batchSize).map(item => ({
+      oracleId: item.oracleId,
+      lang: item.lang,
+      printingId: item.printingId,
+      printedName: item.printedName,
+      printedText: item.printedText || null,
+      printedTypeLine: item.printedTypeLine || null,
+      imageUrlSmall: item.imageUrlSmall || null,
+      imageUrlNormal: item.imageUrlNormal || null,
+      imageUrlLarge: item.imageUrlLarge || null,
+      imageUrlArtCrop: item.imageUrlArtCrop || null,
+      releasedAt: item.releasedAt ? new Date(item.releasedAt) : null,
+    }));
+
+    try {
+      await (prisma as any).cardLocale?.createMany({
+        data: batch,
+        skipDuplicates: true,
+      });
+      upserted += batch.length;
+    } catch (err: any) {
+      console.warn(`[LocaleSync] Error insertando lote:`, err?.message || err);
+    }
   }
 
   console.log(`[LocaleSync] Completado exitosamente: ${upserted} registros guardados.`);

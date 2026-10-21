@@ -521,6 +521,23 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Pruebas unitarias de servidor en `apps/server/test/health-cards.test.ts` verificando la inicialización de esquemas y el cálculo de estadísticas de mazos listos.
    - Prueba E2E en `apps/web/e2e/diagnostic-panel.spec.ts` validando el renderizado de la pestaña de base de datos y la captura `audit-p1-diagnostic-database-panel.png`.
 
+### REQ-38 Sincronización Automática e Ingesta de Catálogo Scryfall Local (Punto 2 de Correcciones del Cliente - A.2)
+
+**Historia:** Como operador del sistema, quiero que la base de datos local contenga el catálogo completo de cartas, dictámenes y traducciones oficiales de Scryfall poblados automáticamente mediante streaming masivo de alta velocidad, disponiendo de un comando `npm run sync:cards` documentado y un mecanismo de ingesta al arrancar para que nunca falten cartas en el entorno de desarrollo o producción.
+
+1. **Comando Documentado de Sincronización `npm run sync:cards`:**
+   - THE repositorio SHALL proveer el script `npm run sync:cards` (tanto en la raíz del monorepo como en el workspace `@mtgc/server`).
+   - El script ejecuta secuencialmente:
+     - Ingesta por streaming comprimido `jsonl.gz` de Oracle Cards de Scryfall (~38,940 cartas), mapeadas con `toCardDefinition` y persistidas mediante inserción masiva por lotes de 1,000 cartas en la tabla `cards`.
+     - Ingesta de Rulings oficiales (~79,706 dictámenes) de Scryfall, indexados por lotes de 2,000 en la tabla `rulings`.
+     - Ingesta por streaming de All Cards filtrando impresiones en español (`lang = 'es'`), seleccionando la mejor impresión con arte y registrando más de 30,000 entradas en `card_locales`.
+2. **Auto-Lanzamiento al Arrancar el Servidor:**
+   - Durante la inicialización en `apps/server/src/index.ts`, THE servidor SHALL consultar el recuento de filas en la tabla `cards`.
+   - Si `prisma.card.count() < 10000`, THE servidor SHALL lanzar automáticamente `bulkSyncService.syncOracleCards()` y `bulkSyncService.syncRulings()`.
+3. **Criterios de Aceptación y Métricas Certificadas:**
+   - Recuento final verificado en base local: $\ge 30,000$ cartas (`cards`: 38,941), $\ge 500$ fichas (`tokens`: 969), $\ge 70,000$ dictámenes (`rulings`: 79,706) y $\ge 20,000$ traducciones (`card_locales`: 30,349).
+   - Cobertura de pruebas en `apps/server/test/sync-cards.test.ts` (4/4 pruebas aprobadas).
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -782,5 +799,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-35        | COMP-1, COMP-5                         |
 | REQ-36        | COMP-1, COMP-6, COMP-7                 |
 | REQ-37        | COMP-1, COMP-4, COMP-7                 |
+| REQ-38        | COMP-4, COMP-6, COMP-7                 |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).
