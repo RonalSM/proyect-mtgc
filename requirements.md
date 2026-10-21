@@ -621,6 +621,27 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - **Causa 3 (Caché en memoria no purgada):** `caches.delete()` no limpiaba los mapas en memoria `blobUrlMap` ni la caché HTTP a nivel de protocolo CDP.
    - **Corrección aplicada:** Montaje completo con `__disableVirtualization = true` y purga total de caché de red y memoria, verificando la emisión y respuesta exitosa de más de 700 solicitudes HTTP directas.
 
+### REQ-43 Indicador P/T en Esquina Inferior Izquierda con Datos Reales (Punto 7 de Correcciones del Cliente - B.7)
+
+**Historia:** Como jugador, quiero que al entrar a la mesa toda carta con poder y resistencia muestre su indicador en la esquina inferior izquierda (por fuera del borde de la imagen) con el P/T impreso tomado de la base de datos local (por ejemplo Krenko, Mob Boss 3/3 o Krenko, Tin Street Kingpin 1/2), que las tierras y artefactos sin P/T no lo muestren, y que al girar la carta el indicador permanezca erguido sin rotar.
+
+1. **Activación Automática al Entrar al Campo:**
+   - Toda carta que ingrese al campo de batalla (`toZone: 'battlefield'`) que posea poder y/o resistencia (`power !== undefined` o `toughness !== undefined` en su definición o cara activa) SHALL renderizar automáticamente el componente `CardPTBadge` (`data-testid="card-pt-indicator"`).
+   - Cartas sin poder y resistencia (tierras, artefactos, conjuros, etc.) SHALL NOT mostrar indicador P/T (`computeCardPT` retorna `null`).
+2. **Extracción Estricta desde Datos Reales de la Base:**
+   - El P/T base SHALL originarse en los valores impresos reales de la tabla `cards` en PostgreSQL local (`definition.power`, `definition.toughness` o `faces[activeFaceIndex]`).
+   - Se certifica con datos reales de los mazos listos:
+     - *Krenko, Mob Boss*: P/T impreso `3/3`.
+     - *Krenko, Tin Street Kingpin*: P/T impreso `1/2`.
+     - *Goreclaw, Terror of Qal Sisma*: P/T impreso `4/3`.
+     - *Mountain*: `null` (sin indicador).
+3. **Ubicación Geométrica Exterior e Invarianza de Rotación:**
+   - El indicador SHALL posicionarse en la esquina inferior izquierda de la ranura de la carta (`card-slot-container`), anclado por fuera del borde delimitador de la imagen (`absolute -bottom-2.5 -left-1`, equivalente a `bottom: -10px, left: -4px`).
+   - WHEN la permanente es girada (`isTapped: true`), la imagen gira $90^\circ$ dentro de su contenedor de rotación, pero el indicador `CardPTBadge` permanece 100% erguido y anclado en la esquina inferior izquierda sin rotar con la carta.
+4. **Verificación Automatizada:**
+   - Pruebas unitarias en `packages/shared/test/card-pt.test.ts` (8/8 aprobadas).
+   - Prueba E2E Playwright en `apps/web/e2e/card-pt-indicator.spec.ts` aprobada al 100% con captura de pantalla `audit-p7-card-pt-indicator.png`.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).

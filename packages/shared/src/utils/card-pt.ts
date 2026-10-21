@@ -23,11 +23,28 @@ export function computeCardPT(card: CardInstance): CardPTInfo | null {
   const minusCounters = (card.counters?.['-1/-1'] || 0) + (card.counters?.['−1/−1'] || 0);
   const delta = plusCounters - minusCounters;
 
+  const activeFace =
+    card.definition?.faces && card.definition.faces.length > 0
+      ? card.definition.faces[card.activeFaceIndex || 0]
+      : null;
+
+  const rawP =
+    card.basePower !== undefined
+      ? card.basePower
+      : card.definition?.power !== undefined
+        ? card.definition.power
+        : activeFace?.power;
+
+  const rawT =
+    card.baseToughness !== undefined
+      ? card.baseToughness
+      : card.definition?.toughness !== undefined
+        ? card.definition.toughness
+        : activeFace?.toughness;
+
   let baseP: number | '*' | null = null;
-  if (card.basePower !== undefined) {
-    baseP = card.basePower;
-  } else if (card.definition?.power !== undefined) {
-    const pStr = String(card.definition.power).trim();
+  if (rawP !== undefined && rawP !== null) {
+    const pStr = String(rawP).trim();
     if (pStr.includes('*') || pStr.includes('?')) {
       baseP = '*';
     } else {
@@ -37,10 +54,8 @@ export function computeCardPT(card: CardInstance): CardPTInfo | null {
   }
 
   let baseT: number | '*' | null = null;
-  if (card.baseToughness !== undefined) {
-    baseT = card.baseToughness;
-  } else if (card.definition?.toughness !== undefined) {
-    const tStr = String(card.definition.toughness).trim();
+  if (rawT !== undefined && rawT !== null) {
+    const tStr = String(rawT).trim();
     if (tStr.includes('*') || tStr.includes('?')) {
       baseT = '*';
     } else {

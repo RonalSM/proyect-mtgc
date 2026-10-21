@@ -475,6 +475,11 @@ validateCommander(deck: ResolvedDeck): ValidationReport
     - La virtualización en `VirtualizedCardGrid` restringía el montaje en el DOM a las ~12 cartas visibles en ventana, dejando sin solicitar las ~88 restantes de cada biblioteca.
     - La verificación previa evaluaba `Math.min(imgs.length, 12)`, finalizando en cuanto respondían las primeras 12 cartas.
     - La caché HTTP de Chromium y los mapas de blobs en memoria no se purgaban a nivel de red, sirviendo recursos instantáneamente sin generar tráfico externo.
+- **Indicador P/T en Esquina Inferior Izquierda con Datos Reales (Punto 7 - B.7):**
+  - **Detección y Cómputo Automático:** Función `computeCardPT` en `@mtgc/shared` que extrae el P/T impreso tomado de la base de datos PostgreSQL local (`dbCard.power`, `dbCard.toughness` o caras `faces[activeFaceIndex]` para cartas DFC/split/adventure). Retorna `null` para cartas sin P/T (tierras, artefactos, etc.).
+  - **Anclaje Exterior al Borde de la Imagen:** Componente `CardPTBadge` (`data-testid="card-pt-indicator"`) ubicado con `absolute -bottom-2.5 -left-1`, situándose por fuera del borde delimitador de la carta (`card-rotator`) en la esquina inferior izquierda.
+  - **Invarianza de Rotación al Girar Permanente:** Cuando la carta se gira (`isTapped: true`), `card-rotator` rota $90^\circ$ internamente, pero `CardPTBadge` es un hermano independiente que permanece erguido y anclado a la esquina inferior izquierda.
+  - **Certificación con Datos Reales de Mazos Listos:** Probado con *Krenko, Mob Boss* (`3/3`), *Krenko, Tin Street Kingpin* (`1/2`), *Goreclaw* (`4/3`) y *Mountain* (`null`, sin badge) en suite unitaria y Playwright E2E (`apps/web/e2e/card-pt-indicator.spec.ts`, captura `audit-p7-card-pt-indicator.png`).
 
 ### COMP-4 Room Manager
 

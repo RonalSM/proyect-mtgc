@@ -158,3 +158,107 @@ test('Punto 2: Cartas sin P/T (tierras, artefactos sin base) retornan null', () 
   assert.strictEqual(ptAnimated.effectiveT, 3);
   assert.strictEqual(ptAnimated.text, '3/3');
 });
+
+test('Punto 7: computeCardPT extrae el P/T impreso tomado de la base para criaturas reales de mazos listos', () => {
+  // Krenko, Tin Street Kingpin 1/2
+  const krenkoTin = createMockCard({
+    definition: {
+      scryfallId: 'sf_krenko_tin',
+      name: 'Krenko, Tin Street Kingpin',
+      cmc: 3,
+      typeLine: 'Legendary Creature — Goblin',
+      colors: ['R'],
+      colorIdentity: ['R'],
+      power: '1',
+      toughness: '2',
+    },
+  });
+  const ptKrenkoTin = computeCardPT(krenkoTin);
+  assert.ok(ptKrenkoTin);
+  assert.strictEqual(ptKrenkoTin.hasPT, true);
+  assert.strictEqual(ptKrenkoTin.baseP, 1);
+  assert.strictEqual(ptKrenkoTin.baseT, 2);
+  assert.strictEqual(ptKrenkoTin.effectiveP, 1);
+  assert.strictEqual(ptKrenkoTin.effectiveT, 2);
+  assert.strictEqual(ptKrenkoTin.text, '1/2');
+
+  // Krenko, Mob Boss 3/3
+  const krenkoMob = createMockCard({
+    definition: {
+      scryfallId: 'sf_krenko_mob',
+      name: 'Krenko, Mob Boss',
+      cmc: 4,
+      typeLine: 'Legendary Creature — Goblin',
+      colors: ['R'],
+      colorIdentity: ['R'],
+      power: '3',
+      toughness: '3',
+    },
+  });
+  const ptKrenkoMob = computeCardPT(krenkoMob);
+  assert.ok(ptKrenkoMob);
+  assert.strictEqual(ptKrenkoMob.baseP, 3);
+  assert.strictEqual(ptKrenkoMob.baseT, 3);
+  assert.strictEqual(ptKrenkoMob.text, '3/3');
+
+  // Goreclaw, Terror of Qal Sisma 4/3
+  const goreclaw = createMockCard({
+    definition: {
+      scryfallId: 'sf_goreclaw',
+      name: 'Goreclaw, Terror of Qal Sisma',
+      cmc: 4,
+      typeLine: 'Legendary Creature — Bear',
+      colors: ['G'],
+      colorIdentity: ['G'],
+      power: '4',
+      toughness: '3',
+    },
+  });
+  const ptGoreclaw = computeCardPT(goreclaw);
+  assert.ok(ptGoreclaw);
+  assert.strictEqual(ptGoreclaw.baseP, 4);
+  assert.strictEqual(ptGoreclaw.baseT, 3);
+  assert.strictEqual(ptGoreclaw.text, '4/3');
+
+  // Carta DFC con caras (faces) donde la cara frontal tiene P/T
+  const dfcCreature = createMockCard({
+    definition: {
+      scryfallId: 'sf_dfc_werewolf',
+      name: 'Afflicted Deserter // Werewolf Ransacker',
+      cmc: 4,
+      typeLine: 'Creature — Human Werewolf // Creature — Werewolf',
+      colors: ['R'],
+      colorIdentity: ['R'],
+      isTwoFaced: true,
+      faces: [
+        {
+          name: 'Afflicted Deserter',
+          typeLine: 'Creature — Human Werewolf',
+          power: '3',
+          toughness: '2',
+        },
+        {
+          name: 'Werewolf Ransacker',
+          typeLine: 'Creature — Werewolf',
+          power: '5',
+          toughness: '4',
+        },
+      ],
+    },
+    activeFaceIndex: 0,
+  });
+
+  const ptFace0 = computeCardPT(dfcCreature);
+  assert.ok(ptFace0);
+  assert.strictEqual(ptFace0.baseP, 3);
+  assert.strictEqual(ptFace0.baseT, 2);
+  assert.strictEqual(ptFace0.text, '3/2');
+
+  // Al voltear a la cara 1:
+  dfcCreature.activeFaceIndex = 1;
+  const ptFace1 = computeCardPT(dfcCreature);
+  assert.ok(ptFace1);
+  assert.strictEqual(ptFace1.baseP, 5);
+  assert.strictEqual(ptFace1.baseT, 4);
+  assert.strictEqual(ptFace1.text, '5/4');
+});
