@@ -424,6 +424,19 @@ validateCommander(deck: ResolvedDeck): ValidationReport
   - Por su parte, el CDN directo `cards.scryfall.io` con User-Agent de navegador respondió con **HTTP 200 OK** en el 100 % de las solicitudes concurrentes (`{"200": 60}`).
 - **Directriz de diseño:** Prohibición estricta de invocar `api.scryfall.com/cards/named` en cliente para renderizar cartas en la mesa o biblioteca. Todas las URLs deben consumirse directamente desde `cards.scryfall.io` guardadas en base de datos.
 
+### COMP-6 Card Service y Telemetría de Base de Datos Local (Punto 1 - A.1)
+
+- **Arquitectura de Base de Datos Embebida Persistente (PGlite):**
+  - Para garantizar disponibilidad completa en entornos de desarrollo sin Docker o servicios nativos Windows de PostgreSQL, el servidor inicializa un motor PostgreSQL embebido (PGlite Socket Server) escuchando en puerto 5432 con almacenamiento físico en `data/postgres/`.
+  - La verificación de disponibilidad de puerto (`isPortOpen`) toma menos de 100 ms y previene colisiones si un PostgreSQL externo ya se encuentra escuchando.
+  - La ejecución automática de DDL crea y valida las tablas relacionales (`users`, `cards`, `rulings`, `card_locales`, `decks`, `deck_cards`, `tables`, `game_records`, `action_log_entries`).
+- **Endpoint de Telemetría `GET /api/health/cards`:**
+  - Consulta en tiempo real los recuentos agregados de `cards`, `tokens` (layout token o typeLine token), `rulings` (dictámenes) y `card_locales` (traducciones).
+  - Evalúa la presencia de cada carta de los 8 mazos listos predefinidos contra la tabla `cards`, calculando `existingInDb` vs `totalUniqueCards` y listando los nombres faltantes (`missingInDb`).
+- **Visualización en `DiagnosticPanel` (`?debug=1`):**
+  - Interfaz de diagnóstico con pestañas "Cargas / Red" y "Base Local".
+  - Grid de métricas en tarjetas y tarjetas expandibles por mazo listo con badges coloreados (verde para 100%, ámbar para parcial, rojo para vacío).
+
 ### COMP-4 Room Manager
 
 Crea y cierra mesas, gestiona códigos, asientos, anfitrión, expiración (mesa inactiva > 2 h se cierra) y `LobbyManager`.

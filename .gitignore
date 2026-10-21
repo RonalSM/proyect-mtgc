@@ -47,3 +47,8 @@ playwright-report/
 # Agent skills
 .agents/
 
+# Local database data
+data/
+*.db
+
+

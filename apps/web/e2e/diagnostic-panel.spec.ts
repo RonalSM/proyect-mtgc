@@ -82,4 +82,35 @@ test.describe('Punto 7: Panel de Diagnóstico (?debug=1) y Registro de Errores e
       fullPage: false,
     });
   });
+
+  test('Punto 1 (A.1): Pestaña Base de Datos muestra telemetria de cards, tokens, rulings, cardLocales y presencia de mazos listos', async ({
+    page,
+  }) => {
+    await page.goto('http://localhost:3000?debug=1');
+
+    const tabDb = page.locator('[data-testid="diagnostic-tab-database"]');
+    await expect(tabDb).toBeVisible({ timeout: 10000 });
+    await tabDb.click();
+
+    // Debe mostrar la vista de base de datos
+    await expect(page.locator('[data-testid="diagnostic-database-view"]')).toBeVisible();
+    await expect(page.locator('[data-testid="diagnostic-metric-cards"]')).toBeVisible();
+    await expect(page.locator('[data-testid="diagnostic-metric-tokens"]')).toBeVisible();
+    await expect(page.locator('[data-testid="diagnostic-metric-rulings"]')).toBeVisible();
+    await expect(page.locator('[data-testid="diagnostic-metric-locales"]')).toBeVisible();
+
+    // Debe mostrar al menos un mazo listo
+    await expect(
+      page.locator('[data-testid="diagnostic-preset-deck-preset-krenko-mob-boss"]'),
+    ).toBeVisible();
+
+    // Esperar a que los datos se rendericen
+    await page.waitForTimeout(1000);
+
+    // Capturar screenshot del panel con la pestaña de base de datos activa
+    await page.screenshot({
+      path: 'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa/audit-p1-diagnostic-database-panel.png',
+      fullPage: false,
+    });
+  });
 });

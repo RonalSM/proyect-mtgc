@@ -108,6 +108,49 @@ server.get('/api/health', async () => {
   };
 });
 
+// Health check para cartas, fichas, dictamenes y mazos listos en la BD local (Punto 1)
+server.get('/api/health/cards', async () => {
+  try {
+    const cardCount = await prisma.card.count();
+    const tokenCount = await prisma.card.count({
+      where: {
+        OR: [
+          { layout: 'token' },
+          { typeLine: { contains: 'Token', mode: 'insensitive' } },
+        ],
+      },
+    });
+    const rulingCount = await prisma.ruling.count();
+    const localeCount = await prisma.cardLocale.count();
+    const presetDecks = await deckService.getPresetDecksDbStats();
+
+    return {
+      status: 'ok',
+      counts: {
+        cards: cardCount,
+        tokens: tokenCount,
+        rulings: rulingCount,
+        cardLocales: localeCount,
+      },
+      presetDecks,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (error: any) {
+    return {
+      status: 'error',
+      message: error?.message || 'Error consultando telemetria de cartas',
+      counts: {
+        cards: 0,
+        tokens: 0,
+        rulings: 0,
+        cardLocales: 0,
+      },
+      presetDecks: [],
+      timestamp: new Date().toISOString(),
+    };
+  }
+});
+
 // Metrics and Observability (Fase 7.2)
 server.get('/api/metrics', async () => {
   const mem = process.memoryUsage();

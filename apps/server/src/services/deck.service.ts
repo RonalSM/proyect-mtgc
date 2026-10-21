@@ -495,6 +495,87 @@ export class DeckService {
       return this.inMemoryDecks.delete(deckId);
     }
   }
+
+  /**
+   * Obtiene estadísticas de presencia en la base de datos local para cada mazo listo
+   */
+  public async getPresetDecksDbStats(): Promise<
+    {
+      id: string;
+      name: string;
+      filename: string;
+      totalUniqueCards: number;
+      existingInDb: number;
+      missingInDb: string[];
+    }[]
+  > {
+    const presetDir = fs.existsSync(path.resolve('apps/server/prisma/seed/preset-decks'))
+      ? path.resolve('apps/server/prisma/seed/preset-decks')
+      : path.resolve('prisma/seed/preset-decks');
+
+    const stats: {
+      id: string;
+      name: string;
+      filename: string;
+      totalUniqueCards: number;
+      existingInDb: number;
+      missingInDb: string[];
+    }[] = [];
+
+    if (!fs.existsSync(presetDir)) {
+      return stats;
+    }
+
+    for (const meta of PRESET_METAS) {
+      const filePath = path.join(presetDir, meta.filename);
+      if (!fs.existsSync(filePath)) continue;
+
+      try {
+        const raw = fs.readFileSync(filePath, 'utf-8');
+        const lines = raw
+          .split('\n')
+          .map(l => l.trim())
+          .filter(l => l && !l.startsWith('//') && !l.startsWith('#'));
+
+        const names = lines.map(l => {
+          const m = l.match(/^(\d+x?\s+)?(.+?)(?:\s+\([A-Z0-9]+\)\s+\d+.*)?$/);
+          return m && m[2] ? m[2].trim() : l;
+        });
+        const uniqueNames = [...new Set(names)];
+        const missing: string[] = [];
+        let found = 0;
+
+        for (const name of uniqueNames) {
+          try {
+            const inDb = await prisma.card.findFirst({
+              where: { name: { equals: name, mode: 'insensitive' } },
+              select: { id: true },
+            });
+            if (inDb) {
+              found++;
+            } else {
+              missing.push(name);
+            }
+          } catch {
+            missing.push(name);
+          }
+        }
+
+        stats.push({
+          id: meta.id,
+          name: meta.name,
+          filename: meta.filename,
+          totalUniqueCards: uniqueNames.length,
+          existingInDb: found,
+          missingInDb: missing,
+        });
+      } catch {
+        // Ignorar fallos de lectura de archivo individual
+      }
+    }
+
+    return stats;
+  }
 }
 
 export const deckService = new DeckService();

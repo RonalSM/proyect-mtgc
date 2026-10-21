@@ -496,6 +496,31 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Códigos de error 404 de CDN resueltos limpiamente por la cadena de respaldo progresiva hacia inglés y marco MTG: **7** (`{"404": 7}`).
    - Tasa de imágenes rotas en pantalla: **0** (0% de imágenes rotas, 100% de cartas legibles y estables).
 
+### REQ-37 Diagnóstico de Base de Datos Local y Telemetría de Presencia de Cartas (Punto 1 de Correcciones del Cliente - A.1)
+
+**Historia:** Como desarrollador y operador del sistema, quiero verificar mediante una ruta de telemetría y el panel de diagnóstico que la base de datos local contenga las filas reales de cartas, fichas, dictámenes y traducciones, y conocer con exactitud cuáles cartas de los mazos listos faltan o existen en la base de datos para no diagnosticar falsamente problemas de idioma cuando la causa raíz es la ausencia de datos en PostgreSQL.
+
+1. **Diagnóstico de Causa Raíz de Búsquedas Fallidas:**
+   - Evidencia en consola: Las búsquedas locales fallaban en inglés (`lang=en` con 404 para cartas básicas y del formato como Mountain, Island, Ponder, Preordain, Krenko, Tin Street Kingpin) porque el servidor PostgreSQL no estaba en ejecución en el entorno local (sin Docker ni servicio Windows), obligando a Prisma a operar desconectado en fallback sobre una base vacía (1 sola fila de prueba).
+   - Solución arquitectónica: Integración de servidor PostgreSQL embebido persistente (PGlite Socket Server) en puerto 5432 con almacenamiento en `data/postgres/`, garantizando persistencia y esquemas automáticos para todas las tablas (`users`, `cards`, `rulings`, `card_locales`, `decks`, `deck_cards`, `tables`, `game_records`, `action_log_entries`).
+2. **Endpoint de Telemetría `GET /api/health/cards`:**
+   - THE servidor SHALL exponer el endpoint público `GET /api/health/cards`.
+   - THE respuesta SHALL devolver:
+     - `counts.cards`: Recuento total de cartas registradas en la tabla `cards`.
+     - `counts.tokens`: Recuento de cartas con `layout = 'token'` o `typeLine ILIKE '%Token%'`.
+     - `counts.rulings`: Recuento de dictámenes oficiales de Scryfall indexados en la tabla `rulings`.
+     - `counts.cardLocales`: Recuento de traducciones localizadas en la tabla `card_locales`.
+     - `presetDecks`: Lista con el estado de cada uno de los 8 mazos listos predefinidos (`id`, `name`, `filename`, `totalUniqueCards`, `existingInDb`, y lista de `missingInDb`).
+3. **Pestaña de Base de Datos en Panel de Diagnóstico (`?debug=1`):**
+   - THE componente `DiagnosticPanel` SHALL incluir una barra de pestañas que permita alternar entre "Cargas / Red" y "Base Local".
+   - Al seleccionar "Base Local", THE interfaz SHALL consultar `GET /api/health/cards` y presentar:
+     - Métricas en tarjetas para `cards`, `tokens`, `rulings` y `cardLocales`.
+     - Lista de los 8 mazos listos con insignias de cartas encontradas vs totales (`existingInDb / totalUniqueCards`) y selector para desplegar la lista de nombres faltantes.
+     - Botón de refresco manual con icono interactivo.
+4. **Verificación Automatizada:**
+   - Pruebas unitarias de servidor en `apps/server/test/health-cards.test.ts` verificando la inicialización de esquemas y el cálculo de estadísticas de mazos listos.
+   - Prueba E2E en `apps/web/e2e/diagnostic-panel.spec.ts` validando el renderizado de la pestaña de base de datos y la captura `audit-p1-diagnostic-database-panel.png`.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -756,5 +781,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-34        | COMP-1, COMP-6, COMP-7                 |
 | REQ-35        | COMP-1, COMP-5                         |
 | REQ-36        | COMP-1, COMP-6, COMP-7                 |
+| REQ-37        | COMP-1, COMP-4, COMP-7                 |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

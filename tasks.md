@@ -375,7 +375,29 @@
       - [x] 6. **Punto 6 (D.6 - Cadena de Respaldo Progresiva y Resolución de Fichas sin 429)**: Implementación de la máquina de estados de respaldo en `CardDisplay.tsx` ($\text{Español} \to \text{Inglés} \to \text{Marco de texto MTG}$), garantizando cero imágenes rotas en pantalla; resolución multi-capa en `TokenService` (catálogo estático `COMMON_TOKENS`, base de datos PostgreSQL local `prisma.card` y llamadas externas con límite de tasa y fallback de seguridad); autorización de `cards.scryfall.io` y `*.scryfall.io` en directiva `connectSrc` de Fastify Helmet (`apps/server/src/index.ts`); fallback bilingüe a inglés en `cardImageResolver.ts` ante consultas 404 en español; certificado con suite Playwright [`apps/web/e2e/card-fallback-chain.spec.ts`](apps/web/e2e/card-fallback-chain.spec.ts) (0 imágenes rotas detectadas). Commit `4435b8a`.
       - [x] 7. **Punto 7 (D.7 - Panel de Diagnóstico ?debug=1 y Registro de Errores de Cartas en Servidor)**: Componente reactivo flotante `DiagnosticPanel.tsx` (`apps/web/src/components/DiagnosticPanel.tsx`) activado condicionalmente mediante parámetro `?debug=1`, listando cargas fallidas en tiempo real (URL, estado HTTP, motivo detallado, estampa temporal y reintento individual y masivo); endpoints REST `POST /api/diagnostics/card-errors` para persistencia en buffer circular de 150 eventos y registro en logs del servidor con prefijo `[CARD-ERROR-DIAGNOSTIC]`, junto a `GET` y `DELETE`; certificado con suite Playwright [`apps/web/e2e/diagnostic-panel.spec.ts`](apps/web/e2e/diagnostic-panel.spec.ts) (captura archivada `audit-p7-diagnostic-panel.png`). Commit `c9473d0`.
       - [x] 8. **Punto 8 (D.8 - Benchmark de Red @network con Mazos Listos en Español e Inglés)**: Ejecución automatizada de la suite Playwright `@network` [`apps/web/e2e/network-preset-benchmark.spec.ts`](apps/web/e2e/network-preset-benchmark.spec.ts) con 4 jugadores simultáneos utilizando mazos listos (Krenko y Goreclaw en español, Brago y Meren en inglés). Cifras oficiales: tiempo total en frío de 118 ms (límite: 45,000 ms), reapertura con Cache API local en 22 ms (límite: 3,000 ms), 7 peticiones procesadas, 2 reintentos, 7 códigos HTTP 404 manejados limpiamente por la cadena de respaldo, y 0 imágenes rotas en pantalla; documentado en [`reporte-punto-8-benchmark-red-mazos-listos.md`](C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa/reporte-punto-8-benchmark-red-mazos-listos.md). Commit `63e9b7b`.
-      - [x] 9. **Punto 9 (E.9 - Sincronización Final de Requisitos, Diseño y Matriz de Tareas)**: Actualización integral de `requirements.md` (REQ-31 a REQ-36 y matriz de trazabilidad), `design.md` (arquitectura de correcciones ronda 2 y delegación a F11) y `tasks.md` (matriz de conformidad al 100%). Commit actual.
+      - [x] 9. **Punto 9 (E.9 - Sincronización Final de Requisitos, Diseño y Matriz de Tareas)**: Actualización integral de `requirements.md` (REQ-31 a REQ-36 y matriz de trazabilidad), `design.md` (arquitectura de correcciones ronda 2 y delegación a F11) y `tasks.md` (matriz de conformidad al 100%). Commit `7ca5819`.
+  - [ ] 8.20 Correcciones del Cliente - Ronda 9: Datos Reales, Menú Contextual, Conexión y Suite E2E (Puntos 1 al 20)
+    - Implementación rigurosa punto a punto con exactamente 1 commit por punto, sin inventar IDs ni URLs:
+      - [x] 1. **Punto 1 (A.1 - Diagnóstico Causa Raíz de Cartas y Telemetría GET /api/health/cards)**: Diagnóstico certero evidenciado en consola donde las búsquedas locales fallaban tanto en español como en inglés debido a que la base local no tenía las cartas (tabla `cards` vacía con 1 fila de prueba por ausencia de servidor PostgreSQL activo). Implementación de PostgreSQL embebido persistente (PGlite Socket Server) en puerto 5432 con almacenamiento en `data/postgres/` y auto-creación de esquemas DDL. Endpoint público `GET /api/health/cards` retornando recuentos de `cards` (1), `tokens` (0), `rulings` (79,706 descargados oficialmente) y `cardLocales` (0), junto con la telemetría de presencia de cartas para cada uno de los 8 mazos listos. Pestaña dedicada "Base Local" en `DiagnosticPanel` (`?debug=1`) con tarjetas de métricas, insignias de estado por mazo y lista desplegable de cartas faltantes. Pruebas unitarias de servidor aprobadas (2/2) y prueba Playwright E2E con captura `audit-p1-diagnostic-database-panel.png`. Commit actual.
+      - [ ] 2. **Punto 2 (A.2 - Poblar la Base con Sincronización Real)**
+      - [ ] 3. **Punto 3 (A.3 - Mazos Listos con Resolución Real contra DB)**
+      - [ ] 4. **Punto 4 (A.4 - Resolvedor por Lotes POST /api/cards/resolve)**
+      - [ ] 5. **Punto 5 (A.5 - Image URLs Unificadas de image_uris)**
+      - [ ] 6. **Punto 6 (A.6 - Métrica Honesta y Benchmark de Red)**
+      - [ ] 7. **Punto 7 (B.7 - Indicador P/T en Esquina Inferior Izquierda)**
+      - [ ] 8. **Punto 8 (B.8 - Ver Carta Completo con Datos Reales y Rulings)**
+      - [ ] 9. **Punto 9 (B.9 - Filtros Canónicos de Biblioteca en Inglés)**
+      - [ ] 10. **Punto 10 (C.10 - Quitar Nombre del Encabezado del Menú Contextual)**
+      - [ ] 11. **Punto 11 (C.11 - Vista Previa al Hover sin Explicación de Keywords)**
+      - [ ] 12. **Punto 12 (C.12 - Orden Estricto de Acciones en Menú Contextual)**
+      - [ ] 13. **Punto 13 (C.13 - Fila Poder y Resistencia Compacta)**
+      - [ ] 14. **Punto 14 (C.14 - Reparación Completa de Clonar Carta)**
+      - [ ] 15. **Punto 15 (C.15 - Voltear y Transformar Cartas DFC/MDFC)**
+      - [ ] 16. **Punto 16 (D.16 - Reconexión WebSocket Backoff y Jitter)**
+      - [ ] 17. **Punto 17 (D.17 - GET /api/decks Silencioso para Invitados)**
+      - [ ] 18. **Punto 18 (D.18 - Quitar keyrune.css y Usar Fuentes SIL OFL 1.1)**
+      - [ ] 19. **Punto 19 (D.19 - Confirmación de Trabajo en Rama main)**
+      - [ ] 20. **Punto 20 (E.20 - Suite Integral Playwright y Documentación Final)**
 
 ## Fases posteriores (post-MVP)
 
