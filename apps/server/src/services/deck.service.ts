@@ -135,6 +135,17 @@ export class DeckService {
       ? path.resolve('prisma/seed/preset-decks')
       : path.resolve('apps/server/prisma/seed/preset-decks');
     const loadedPresets: SavedDeck[] = [];
+    const resolvedCache = new Map<string, CardDefinition | null>();
+
+    const getResolved = async (cardName: string): Promise<CardDefinition | null> => {
+      const clean = cardName.trim();
+      if (resolvedCache.has(clean)) {
+        return resolvedCache.get(clean)!;
+      }
+      const resolved = await this.resolveCardFromDb(clean);
+      resolvedCache.set(clean, resolved);
+      return resolved;
+    };
 
     for (const meta of PRESET_METAS) {
       const filePath = path.join(presetDir, meta.filename);
@@ -155,7 +166,7 @@ export class DeckService {
       // Expand entries into individual CardDefinitions desde datos REALES de la base
       const commanderCards: CardDefinition[] = [];
       for (const entry of parsed.commanderEntries) {
-        const resolved = await this.resolveCardFromDb(entry.cardName);
+        const resolved = await getResolved(entry.cardName);
         if (!resolved) {
           missingCards.push(entry.cardName);
           continue;
@@ -167,7 +178,7 @@ export class DeckService {
 
       const maindeckCards: CardDefinition[] = [];
       for (const entry of parsed.maindeckEntries) {
-        const resolved = await this.resolveCardFromDb(entry.cardName);
+        const resolved = await getResolved(entry.cardName);
         if (!resolved) {
           missingCards.push(entry.cardName);
           continue;
@@ -533,8 +544,9 @@ export class DeckService {
           .filter(l => l && !l.startsWith('//') && !l.startsWith('#'));
 
         const names = lines.map(l => {
-          const m = l.match(/^(\d+x?\s+)?(.+?)(?:\s+\([A-Z0-9]+\)\s+\d+.*)?$/);
-          return m && m[2] ? m[2].trim() : l;
+          const cleanLine = l.replace(/\*cmdr\*|\*commander\*|\(commander\)/gi, '').trim();
+          const m = cleanLine.match(/^(\d+x?\s+)?(.+?)(?:\s+\([A-Z0-9]+\)\s+\d+.*)?$/);
+          return m && m[2] ? m[2].trim() : cleanLine;
         });
         const uniqueNames = [...new Set(names)];
         const missing: string[] = [];
@@ -543,7 +555,12 @@ export class DeckService {
         for (const name of uniqueNames) {
           try {
             const inDb = await prisma.card.findFirst({
-              where: { name: { equals: name, mode: 'insensitive' } },
+              where: {
+                OR: [
+                  { name: { equals: name, mode: 'insensitive' } },
+                  { name: { startsWith: `${name} //`, mode: 'insensitive' } },
+                ],
+              },
               select: { id: true },
             });
             if (inDb) {

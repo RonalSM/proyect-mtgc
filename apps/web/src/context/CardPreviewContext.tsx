@@ -99,6 +99,18 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setDetailsCard(card);
   };
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__mtgc_open_details = openCardDetails;
+      (window as any).__mtgc_preview_context = {
+        showPreview,
+        hidePreview,
+        openCardDetails,
+        closeCardDetails,
+      };
+    }
+  }, []);
+
   const closeCardDetails = () => {
     setDetailsCard(null);
   };

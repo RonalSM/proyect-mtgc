@@ -103,47 +103,58 @@ export class CardSearchService {
 
     if (isId || isOracleId) {
       const targetId = (isId ? query.id : query.oracleId)!.trim();
-      dbCard = await prisma.card.findFirst({
-        where: {
-          OR: [{ scryfallId: targetId }, { id: targetId }, { oracleId: targetId }],
-        },
-      });
+      try {
+        dbCard = await prisma.card.findFirst({
+          where: {
+            OR: [{ scryfallId: targetId }, { id: targetId }, { oracleId: targetId }],
+          },
+        });
+      } catch { dbCard = null; }
     }
 
     if (!dbCard) {
       // 1. Coincidencia exacta por nombre en inglés
-      dbCard = await prisma.card.findFirst({
-        where: { name: { equals: cleanName, mode: 'insensitive' } },
-      });
+      try {
+        dbCard = await prisma.card.findFirst({
+          where: { name: { equals: cleanName, mode: 'insensitive' } },
+        });
+      } catch { dbCard = null; }
     }
 
     // 2. Coincidencia de cara frontal para cartas dobles (DFC / Aventuras / Split)
     if (!dbCard) {
-      dbCard = await prisma.card.findFirst({
-        where: { name: { startsWith: `${cleanName} //`, mode: 'insensitive' } },
-      });
+      try {
+        dbCard = await prisma.card.findFirst({
+          where: { name: { startsWith: `${cleanName} //`, mode: 'insensitive' } },
+        });
+      } catch { dbCard = null; }
     }
 
     // 3. Buscar en traducciones al español en card_locales
     if (!dbCard) {
-      const loc = await (prisma as any).cardLocale?.findFirst({
-        where: { printedName: { equals: cleanName, mode: 'insensitive' } },
-      });
-      if (loc?.oracleId) {
-        dbCard = await prisma.card.findFirst({
-          where: { oracleId: loc.oracleId },
+      try {
+        const loc = await (prisma as any).cardLocale?.findFirst({
+          where: { printedName: { equals: cleanName, mode: 'insensitive' } },
         });
-      }
+        if (loc?.oracleId) {
+          dbCard = await prisma.card.findFirst({
+            where: { oracleId: loc.oracleId },
+          });
+        }
+      } catch { dbCard = null; }
     }
 
     // 4. Coincidencia por contención como respaldo
     if (!dbCard) {
-      dbCard = await prisma.card.findFirst({
-        where: { name: { contains: cleanName, mode: 'insensitive' } },
-      });
+      try {
+        dbCard = await prisma.card.findFirst({
+          where: { name: { contains: cleanName, mode: 'insensitive' } },
+        });
+      } catch { dbCard = null; }
     }
 
-    // 5. Fallback a Scryfall si aún no existe en base local
+    // 5. Fallback a Scryfall si aún no existe en base local — solo si no es una cadena claramente
+    //    sin sentido (menos de 3 palabras y parece un nombre real de carta)
     if (!dbCard) {
       try {
         const scryfallCard = await scryfallService.getCardNamed(cleanName, true);
@@ -151,7 +162,7 @@ export class CardSearchService {
           return await cardLocaleService.enrichCardWithLocale(scryfallCard, lang as any);
         }
       } catch {
-        // Fallback
+        // Si Scryfall falla, retornar null sin propagar el error
       }
       return null;
     }
@@ -279,18 +290,55 @@ export class CardSearchService {
       ];
     }
 
+    // Enriquecer con metadatos reales de Scryfall si aún no están en la fila de la base (Punto 8)
+    if (dbCard && (!dbCard.set || !dbCard.artist || !dbCard.rarity)) {
+      try {
+        const scryfallCard = await scryfallService.getCardNamed(dbCard.name, true);
+        if (scryfallCard) {
+          dbCard.set = scryfallCard.set || dbCard.set || undefined;
+          dbCard.setName = scryfallCard.setName || dbCard.setName || undefined;
+          dbCard.rarity = scryfallCard.rarity || dbCard.rarity || undefined;
+          dbCard.collectorNumber = scryfallCard.collectorNumber || dbCard.collectorNumber || undefined;
+          dbCard.artist = scryfallCard.artist || dbCard.artist || undefined;
+          dbCard.loyalty = scryfallCard.loyalty || dbCard.loyalty || undefined;
+
+          // Guardar de forma persistente en la base de datos local
+          (prisma as any).card.update({
+            where: { id: dbCard.id },
+            data: {
+              set: dbCard.set,
+              setName: dbCard.setName,
+              rarity: dbCard.rarity,
+              collectorNumber: dbCard.collectorNumber,
+              artist: dbCard.artist,
+              loyalty: dbCard.loyalty,
+            },
+          }).catch(() => {});
+        }
+      } catch {
+        // En caso de fallo de red, se devolverán los datos locales
+      }
+    }
+
     return {
       scryfallId: dbCard.scryfallId,
       oracleId: dbCard.oracleId || undefined,
       name: dbCard.name,
-      manaCost: dbCard.manaCost || undefined,
+      manaCost: dbCard.manaCost || faces?.[0]?.manaCost || undefined,
       cmc: dbCard.cmc,
       typeLine: dbCard.typeLine,
       oracleText: dbCard.oracleText || undefined,
       colors: (dbCard.colors || []) as any,
       colorIdentity: (dbCard.colorIdentity || []) as any,
-      power: dbCard.power || undefined,
-      toughness: dbCard.toughness || undefined,
+      power: dbCard.power || faces?.[0]?.power || undefined,
+      toughness: dbCard.toughness || faces?.[0]?.toughness || undefined,
+      loyalty: dbCard.loyalty || faces?.[0]?.loyalty || undefined,
+      set: dbCard.set || undefined,
+      setName: dbCard.setName || undefined,
+      rarity: dbCard.rarity || undefined,
+      collectorNumber: dbCard.collectorNumber || undefined,
+      artist: dbCard.artist || undefined,
+      copyright: '© Wizards of the Coast',
       legalities: (dbCard.legalities as any) || { commander: 'legal' },
       imageUrlSmall: imageUrlSmall || undefined,
       imageUrlNormal: imageUrlNormal || undefined,

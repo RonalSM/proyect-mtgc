@@ -7,6 +7,7 @@ export default defineConfig({
   reporter: 'list',
   use: {
     baseURL: 'http://localhost:3000',
+    extraHTTPHeaders: {},
     trace: 'on-first-retry',
   },
   projects: [

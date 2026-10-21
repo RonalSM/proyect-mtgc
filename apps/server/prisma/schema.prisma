@@ -38,6 +38,12 @@ model Card {
   colorIdentity   String[]    @default([])
   power           String?
   toughness       String?
+  loyalty         String?
+  set             String?
+  setName         String?
+  rarity          String?
+  collectorNumber String?
+  artist          String?
   imageUrlSmall   String?
   imageUrlNormal  String?
   imageUrlArtCrop String?

@@ -14,9 +14,11 @@ import {
   User,
   Calendar,
   BookOpen,
+  AlertTriangle,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { MtgSymbolIcon, KeyruneSetIcon } from '../utils/mana-icons';
+import { diagnosticsService } from '../services/diagnosticsService';
 
 interface CardDetailsModalProps {
   card: CardDefinition;
@@ -69,12 +71,57 @@ export const FormattedOracleText: React.FC<{ text?: string }> = ({ text }) => {
 };
 
 export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClose }) => {
+  const [enrichedCard, setEnrichedCard] = useState<CardDefinition>(card);
   const [activeFaceIndex, setActiveFaceIndex] = useState(0);
   const [rulings, setRulings] = useState<CardRuling[]>(card.rulings || []);
   const [isLoadingRulings, setIsLoadingRulings] = useState(false);
 
-  const hasMultipleFaces = !!(card.isTwoFaced || (card.faces && card.faces.length > 1));
-  const activeFace = hasMultipleFaces && card.faces ? card.faces[activeFaceIndex] : null;
+  const isNotInDb =
+    (card as any).isMissingFromDb ||
+    (card as any).notFoundInDb ||
+    (!card.scryfallId && !card.oracleId) ||
+    card.typeLine === 'Unknown';
+
+  const { language } = useLanguage();
+
+  // Enriquecer dinámicamente si falta set o artista y no está marcada como ausente en DB
+  useEffect(() => {
+    setEnrichedCard(card);
+    if (!card.set && !card.artist && card.name && !isNotInDb) {
+      fetch('/api/cards/resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ names: [card.name], lang: language }),
+      })
+        .then(res => (res.ok ? res.json() : null))
+        .then(data => {
+          if (data?.cards?.[0]) {
+            setEnrichedCard(prev => ({
+              ...prev,
+              ...data.cards[0],
+            }));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [card, language, isNotInDb]);
+
+  // Si no está en la base, registrar en el servicio de diagnóstico (Punto 8)
+  useEffect(() => {
+    if (isNotInDb) {
+      diagnosticsService.recordFailure({
+        url: `local-db://${card.scryfallId || card.oracleId || encodeURIComponent(card.name)}`,
+        cardName: card.name,
+        status: 404,
+        reason: 'Carta no encontrada en la base de datos local',
+        lang: language,
+      });
+    }
+  }, [isNotInDb, card.name, card.scryfallId, card.oracleId, language]);
+
+  const currentCard = enrichedCard;
+  const hasMultipleFaces = !!(currentCard.isTwoFaced || (currentCard.faces && currentCard.faces.length > 1));
+  const activeFace = hasMultipleFaces && currentCard.faces ? currentCard.faces[activeFaceIndex] : null;
 
   // Escuchar tecla Escape para cerrar
   useEffect(() => {
@@ -89,12 +136,12 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
 
   // Cargar dictámenes oficiales desde la base de datos local
   useEffect(() => {
-    if (card.rulings && card.rulings.length > 0) {
-      setRulings(card.rulings);
+    if (currentCard.rulings && currentCard.rulings.length > 0) {
+      setRulings(currentCard.rulings);
       return;
     }
 
-    const oracleId = card.oracleId;
+    const oracleId = currentCard.oracleId;
     if (!oracleId) return;
 
     let isMounted = true;
@@ -117,29 +164,27 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
     return () => {
       isMounted = false;
     };
-  }, [card.oracleId, card.rulings]);
+  }, [currentCard.oracleId, currentCard.rulings]);
 
-  const { language } = useLanguage();
-
-  // Valores de la cara activa con localización en español y fallback en inglés (Punto 5)
-  const display = getCardDisplayData(card, language, activeFaceIndex);
+  // Valores de la cara activa con localización en español y fallback en inglés (Punto 5 y 8)
+  const display = getCardDisplayData(currentCard, language, activeFaceIndex);
   const displayName = display.name;
-  const displayMana = activeFace?.manaCost || card.manaCost;
+  const displayMana = activeFace?.manaCost || currentCard.manaCost;
   const displayType = display.typeLine;
   const displayOracle = display.oracleText;
-  const displayPower = activeFace?.power !== undefined ? activeFace.power : card.power;
+  const displayPower = activeFace?.power !== undefined ? activeFace.power : currentCard.power;
   const displayToughness =
-    activeFace?.toughness !== undefined ? activeFace.toughness : card.toughness;
-  const displayLoyalty = activeFace?.loyalty !== undefined ? activeFace.loyalty : card.loyalty;
-  const displayArtist = activeFace?.artist || card.artist || 'Unknown Artist';
+    activeFace?.toughness !== undefined ? activeFace.toughness : currentCard.toughness;
+  const displayLoyalty = activeFace?.loyalty !== undefined ? activeFace.loyalty : currentCard.loyalty;
+  const displayArtist = activeFace?.artist || currentCard.artist || 'Unknown Artist';
   const displayImage =
-    getCardImageUrl(card, { size: 'large', lang: language, faceIndex: activeFaceIndex }) ||
-    getCardImageUrl(card, { size: 'normal', lang: language, faceIndex: activeFaceIndex }) ||
+    getCardImageUrl(currentCard, { size: 'large', lang: language, faceIndex: activeFaceIndex }) ||
+    getCardImageUrl(currentCard, { size: 'normal', lang: language, faceIndex: activeFaceIndex }) ||
     'https://cards.scryfall.io/back.png';
 
   const englishFallbackImage =
-    getCardImageUrl(card, { size: 'large', lang: 'en', faceIndex: activeFaceIndex }) ||
-    getCardImageUrl(card, { size: 'normal', lang: 'en', faceIndex: activeFaceIndex }) ||
+    getCardImageUrl(currentCard, { size: 'large', lang: 'en', faceIndex: activeFaceIndex }) ||
+    getCardImageUrl(currentCard, { size: 'normal', lang: 'en', faceIndex: activeFaceIndex }) ||
     'https://cards.scryfall.io/back.png';
 
   const [currentImageSrc, setCurrentImageSrc] = useState(displayImage);
@@ -217,6 +262,19 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+          {isNotInDb && (
+            <div
+              data-testid="card-not-in-db-warning"
+              className="md:col-span-12 bg-amber-500/20 border border-amber-500/60 text-amber-200 px-4 py-3 rounded-xl flex items-center space-x-3 shadow"
+            >
+              <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
+              <div className="text-xs">
+                <strong className="block font-bold text-amber-300">Aviso: Carta no encontrada en la base local</strong>
+                <span>Esta carta no se encuentra en la base de datos local de Scryfall. Se muestran los datos disponibles y el fallo se ha registrado en el panel de diagnóstico.</span>
+              </div>
+            </div>
+          )}
+
           {/* Columna Izquierda: Imagen Grande de la Carta */}
           <div className="md:col-span-5 flex flex-col items-center">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-700/60 bg-slate-950 aspect-[5/7] max-w-[320px] w-full">
@@ -245,7 +303,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                 data-testid="card-details-copyright"
                 className="text-[10px] text-slate-500 font-mono"
               >
-                {card.copyright || '™ & © Wizards of the Coast'}
+                {currentCard.copyright || '™ & © Wizards of the Coast'}
               </div>
             </div>
           </div>
@@ -255,12 +313,16 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
             {/* Cabecera: Nombre y Coste de Maná con Símbolos */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <span className="font-bold text-sm text-slate-200">{displayName}</span>
-              {displayMana && (
+              {displayMana ? (
                 <div data-testid="card-details-mana" className="flex items-center flex-wrap">
                   {displayMana.match(/\{[^}]+\}/g)?.map((sym, i) => (
                     <FormattedSymbol key={i} symbol={sym} />
                   ))}
                 </div>
+              ) : (
+                <span data-testid="card-details-mana" className="text-xs text-slate-500 italic">
+                  Sin coste
+                </span>
               )}
             </div>
 
@@ -290,7 +352,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
             <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 shadow-inner">
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center space-x-1">
                 <BookOpen className="w-3 h-3 text-amber-400" />
-                <span>Texto Oracle Oficial (English)</span>
+                <span>{display.isSpanish ? 'Texto en Español (Impreso)' : 'Texto Oracle Oficial (English)'}</span>
               </div>
               <div data-testid="card-details-oracle">
                 <FormattedOracleText text={displayOracle} />
@@ -306,14 +368,14 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                 <span
                   data-testid="card-details-set"
                   className="font-semibold text-slate-200 truncate flex items-center space-x-1.5"
-                  title={card.setName || card.set}
+                  title={currentCard.setName || currentCard.set}
                 >
                   <KeyruneSetIcon
-                    setCode={card.set}
-                    rarity={card.rarity}
+                    setCode={currentCard.set}
+                    rarity={currentCard.rarity}
                     className="text-sm text-amber-300"
                   />
-                  <span className="truncate">{card.setName || card.set?.toUpperCase() || 'Commander'}</span>
+                  <span className="truncate">{currentCard.setName || currentCard.set?.toUpperCase() || 'Commander'}</span>
                 </span>
               </div>
 
@@ -323,7 +385,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                   data-testid="card-details-rarity"
                   className="font-semibold text-amber-300 capitalize"
                 >
-                  {card.rarity || 'Desconocida'}
+                  {currentCard.rarity || 'Desconocida'}
                 </span>
               </div>
 
@@ -335,7 +397,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                   data-testid="card-details-collector-number"
                   className="font-mono text-slate-300"
                 >
-                  {card.collectorNumber ? `#${card.collectorNumber}` : '-'}
+                  {currentCard.collectorNumber ? `#${currentCard.collectorNumber}` : '-'}
                 </span>
               </div>
 
@@ -365,11 +427,11 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
             </div>
 
             {/* Identidad de Color */}
-            {card.colorIdentity && card.colorIdentity.length > 0 && (
+            {currentCard.colorIdentity && currentCard.colorIdentity.length > 0 && (
               <div className="flex items-center space-x-2 text-xs text-slate-400">
                 <span className="font-bold text-[10px] uppercase">Identidad de Color:</span>
                 <div data-testid="card-details-color-identity" className="flex items-center">
-                  {card.colorIdentity.map((c, i) => (
+                  {currentCard.colorIdentity.map((c, i) => (
                     <FormattedSymbol key={i} symbol={c} size="sm" />
                   ))}
                 </div>

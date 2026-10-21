@@ -116,7 +116,7 @@ export class BulkSyncService {
 
     // Si la base de datos ya contiene dictámenes indexados, no descargar nuevamente al arrancar
     if (dbCount > 1000 || (memoryCount > 1000 && this.lastRulingsUpdatedAt)) {
-      this.lastRulingsUpdatedAt = new Date();
+      this.lastRulingsUpdatedAt = new Date().toISOString();
       return {
         syncedCount: dbCount || memoryCount,
         durationMs: 0,
@@ -211,6 +211,12 @@ export class BulkSyncService {
             colorIdentity: def.colorIdentity || [],
             power: def.power || null,
             toughness: def.toughness || null,
+            loyalty: def.loyalty || null,
+            set: def.set || null,
+            setName: def.setName || null,
+            rarity: def.rarity || null,
+            collectorNumber: def.collectorNumber || null,
+            artist: def.artist || null,
             imageUrlSmall: def.imageUrlSmall || null,
             imageUrlNormal: def.imageUrlNormal || null,
             imageUrlArtCrop: def.imageUrlArtCrop || null,

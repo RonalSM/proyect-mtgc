@@ -73,6 +73,12 @@ export async function ensureTablesExist(): Promise<void> {
       "colorIdentity" TEXT[] NOT NULL DEFAULT '{}',
       "power" TEXT,
       "toughness" TEXT,
+      "loyalty" TEXT,
+      "set" TEXT,
+      "setName" TEXT,
+      "rarity" TEXT,
+      "collectorNumber" TEXT,
+      "artist" TEXT,
       "imageUrlSmall" TEXT,
       "imageUrlNormal" TEXT,
       "imageUrlArtCrop" TEXT,
@@ -83,6 +89,12 @@ export async function ensureTablesExist(): Promise<void> {
       "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     CREATE INDEX IF NOT EXISTS "cards_name_idx" ON "cards"("name");
+    ALTER TABLE "cards" ADD COLUMN IF NOT EXISTS "set" TEXT;
+    ALTER TABLE "cards" ADD COLUMN IF NOT EXISTS "setName" TEXT;
+    ALTER TABLE "cards" ADD COLUMN IF NOT EXISTS "rarity" TEXT;
+    ALTER TABLE "cards" ADD COLUMN IF NOT EXISTS "collectorNumber" TEXT;
+    ALTER TABLE "cards" ADD COLUMN IF NOT EXISTS "artist" TEXT;
+    ALTER TABLE "cards" ADD COLUMN IF NOT EXISTS "loyalty" TEXT;
     CREATE INDEX IF NOT EXISTS "cards_oracleId_idx" ON "cards"("oracleId");
 
     CREATE TABLE IF NOT EXISTS "rulings" (
