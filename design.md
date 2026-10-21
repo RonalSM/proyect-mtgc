@@ -447,6 +447,12 @@ validateCommander(deck: ResolvedDeck): ValidationReport
   - **Purga de `PRESEEDED_SPANISH_LOCALES`:** Eliminación total de colecciones estáticas en código fuente que inyectaban IDs inventados (`5b492372-8820-410a-b363-d1f855263641`) y URLs con marcas de tiempo artificiales terminadas en `01` con múltiplos de 100 (`...jpg?1789755201`).
   - **Legalidad de Identidad de Color:** Sustitución de *Quartzwood Crasher* (identidad Gruul [R, G]) por *Thorn Mammoth* (identidad Mono-Verde [G]) en el mazo listo de Goreclaw (`02-goreclaw-terror-of-qal-sisma.txt`).
   - **Siembra y Validación 100% Real:** Ejecución de `npm run seed:presets` certificando que los 8 mazos listos quedan persistidos con 100 cartas resueltas desde Scryfall local.
+- **Resolvedor Canónico por Lotes `POST /api/cards/resolve` (Punto 4 - A.4):**
+  - **Endpoint Consolidado:** `POST /api/cards/resolve` sustituye las llamadas individuales por carta `GET /api/cards/search`, recibiendo lotes de nombres o IDs (`names`, `ids`, `cards`, `lang`).
+  - **Servicio Unificado `cardSearchService.resolveCards`:** Resuelve nombres exactos, caras frontales DFC, traducciones en español y contención en PostgreSQL local, deduplicando consultas a la base de datos.
+  - **Datos Canónicos Completos:** Retorna tipos canónicos en inglés (`typeLine`), `oracleText`, `power`, `toughness`, `cmc`, `manaCost`, `legalities`, `rulings` oficiales desde `prisma.ruling` y soporte para cartas de dos caras (`isTwoFaced`, caras completas con URLs de frente y reverso).
+  - **Cadena de Respaldo Autoritativa en Servidor:** El servidor decide las URLs reales: si la carta cuenta con impresión en español en `card_locales`, entrega sus URLs verificadas; de lo contrario, entrega directamente las URLs de la impresión en inglés. El cliente recibe únicamente URLs existentes, eliminando solicitudes de prueba hacia recursos 404.
+  - **Optimización en Cliente (`CardImageResolver`):** Agrupa peticiones concurrentes en microtareas (`queueMicrotask`), consolidando múltiples solicitudes en un único envío HTTP `POST` y limitando reintentos exclusivamente a fallos de red.
 
 ### COMP-4 Room Manager
 

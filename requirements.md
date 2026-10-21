@@ -556,6 +556,23 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Pruebas unitarias en `apps/server/test/preset-resolution.test.ts` (3/3 aprobadas) certificando que `loadPresetDecks` carga los 8 mazos sin IDs sintéticos (`cmdr_`, `main_`, `id_`) ni sufijos de timestamp falsos (`178975`), y que `resolveCardFromDb` resuelve correctamente cartas regulares y DFC/Aventuras (`Sol Ring`, `Lovestruck Beast`) devolviendo `null` ante nombres inexistentes.
    - Pruebas de localización en `apps/server/test/card-locale.test.ts` (6/6 aprobadas) validadas con la base de datos real.
 
+### REQ-40 Resolvedor Canónico por Lotes `POST /api/cards/resolve` (Punto 4 de Correcciones del Cliente - A.4)
+
+**Historia:** Como cliente web y desarrollador, quiero un endpoint unificado por lotes `POST /api/cards/resolve` que reciba nombres o identificadores de cartas junto con el idioma preferido, resuelva toda la información canónica desde la base de datos local y decida en el servidor la cadena de respaldo devolviendo exclusivamente URLs de imágenes que existen en las impresiones reales para no realizar pruebas a ciegas ni llamadas individuales redundantes.
+
+1. **Endpoint Unificado por Lotes `POST /api/cards/resolve`:**
+   - THE servidor SHALL exponer el endpoint `POST /api/cards/resolve` recibiendo `{ names?: string[], ids?: string[], cards?: Array<string | { name?: string, id?: string, oracleId?: string }>, lang?: string }`.
+   - THE servidor SHALL procesar las consultas deduplicando identificadores y retornando `{ cards: CardDefinition[], byQuery: Record<string, CardDefinition | null>, count: number }`.
+2. **Datos Canónicos y Completos desde Base Local:**
+   - THE respuesta SHALL incluir tipos canónicos en inglés (`typeLine`), `oracleText`, `cmc`, `manaCost`, `colors`, `colorIdentity`, `power`, `toughness`, `legalities` y `rulings` oficiales desde `prisma.ruling`.
+   - Para cartas de dos caras (`isTwoFaced: true`), THE respuesta SHALL incluir el arreglo `faces` con nombres, tipos, costes y URLs de imagen independientes para caras transform/modal DFC/reversible y caras unificadas para aventuras/split.
+3. **Decisión Autoritativa de URLs de Imagen en el Servidor:**
+   - Si `lang === 'es'` y existe una impresión en español en `card_locales` con imágenes, THE servidor SHALL asignar sus URLs reales (`imageUrlSmall`, `imageUrlNormal`, `imageUrlLarge`, `imageUrlArtCrop`) y adjuntar `locales.es`.
+   - Si no existe impresión en español, THE servidor SHALL asignar directamente las URLs reales de la impresión en inglés (`card.imageUrlSmall`, `card.imageUrlNormal`, etc.) sin que el cliente pruebe URLs inexistentes que provoquen errores HTTP 404.
+   - THE cliente (`CardImageResolver`) SHALL agrupar peticiones en microtareas, enviar lotes consolidados y reintentar únicamente ante fallos reales de red.
+4. **Verificación Automatizada:**
+   - Pruebas unitarias en `apps/server/test/cards-resolve.test.ts` (3/3 aprobadas) validando resolución por nombres en inglés y español, cartas DFC/Aventuras (`Lovestruck Beast`, `Dowsing Dagger`), tipos canónicos en inglés, dictámenes oficiales (`rulings`), y cadena de respaldo autoritativa sin invención de URLs.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -819,5 +836,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-37        | COMP-1, COMP-4, COMP-7                 |
 | REQ-38        | COMP-4, COMP-6, COMP-7                 |
 | REQ-39        | COMP-4, COMP-6, COMP-7                 |
+| REQ-40        | COMP-6, COMP-7, COMP-8                 |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

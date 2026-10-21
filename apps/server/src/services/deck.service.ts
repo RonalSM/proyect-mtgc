@@ -4,6 +4,7 @@ import { prisma } from '../db.js';
 import { CardDefinition, CardColor, parseDecklist } from '@mtgc/shared';
 import { randomUUID } from 'crypto';
 import { tokenService } from './token.service.js';
+import { cardSearchService } from './card-search.service.js';
 
 export interface SavedDeck {
   id: string;
@@ -118,74 +119,7 @@ export class DeckService {
    * NUNCA inventa IDs ni URLs.
    */
   public async resolveCardFromDb(cardName: string): Promise<CardDefinition | null> {
-    const cleanName = cardName.replace(/\s*\*CMDR\*\s*$/, '').trim();
-
-    // 1. Coincidencia exacta
-    let dbCard = await prisma.card.findFirst({
-      where: { name: { equals: cleanName, mode: 'insensitive' } },
-    });
-
-    // 2. Coincidencia de cara frontal para cartas dobles (DFC / Aventuras / Split)
-    if (!dbCard) {
-      dbCard = await prisma.card.findFirst({
-        where: { name: { startsWith: `${cleanName} //`, mode: 'insensitive' } },
-      });
-    }
-
-    // 3. Coincidencia por contención como respaldo
-    if (!dbCard) {
-      dbCard = await prisma.card.findFirst({
-        where: { name: { contains: cleanName, mode: 'insensitive' } },
-      });
-    }
-
-    if (!dbCard) return null;
-
-    // Buscar si existe traducción e impresión en español en la tabla card_locales
-    let locales: CardDefinition['locales'] = undefined;
-    if (dbCard.oracleId) {
-      const loc = await prisma.cardLocale.findUnique({
-        where: {
-          oracleId_lang: {
-            oracleId: dbCard.oracleId,
-            lang: 'es',
-          },
-        },
-      });
-      if (loc) {
-        locales = {
-          es: {
-            printedName: loc.printedName,
-            printedTypeLine: loc.printedTypeLine || undefined,
-            printedText: loc.printedText || undefined,
-            imageUrlSmall: loc.imageUrlSmall || undefined,
-            imageUrlNormal: loc.imageUrlNormal || undefined,
-            imageUrlLarge: loc.imageUrlLarge || undefined,
-            imageUrlArtCrop: loc.imageUrlArtCrop || undefined,
-          },
-        };
-      }
-    }
-
-    return {
-      scryfallId: dbCard.scryfallId,
-      oracleId: dbCard.oracleId || undefined,
-      name: dbCard.name,
-      manaCost: dbCard.manaCost || undefined,
-      cmc: dbCard.cmc,
-      typeLine: dbCard.typeLine,
-      oracleText: dbCard.oracleText || undefined,
-      colors: (dbCard.colors || []) as any,
-      colorIdentity: (dbCard.colorIdentity || []) as any,
-      power: dbCard.power || undefined,
-      toughness: dbCard.toughness || undefined,
-      imageUrlSmall: dbCard.imageUrlSmall || undefined,
-      imageUrlNormal: dbCard.imageUrlNormal || undefined,
-      imageUrlLarge: dbCard.imageUrlNormal || undefined,
-      imageUrlArtCrop: dbCard.imageUrlArtCrop || undefined,
-      legalities: (dbCard.legalities as any) || { commander: 'legal' },
-      locales,
-    };
+    return await cardSearchService.resolveSingleCard(cardName, 'es');
   }
 
   /**

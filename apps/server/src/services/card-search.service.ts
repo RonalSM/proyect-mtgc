@@ -81,98 +81,307 @@ export class CardSearchService {
   }
 
   /**
-   * Find a card by exact or fuzzy name (supports English and Spanish names)
+   * Resuelve una carta desde la base de datos local por nombre, scryfallId o oracleId (Punto 4),
+   * adjuntando tipos canónicos en inglés, texto Oracle, P/T, caras, rulings y
+   * resolviendo en el servidor la cadena de respaldo (español si existe en impresiones reales, si no inglés).
    */
-  public async findCardByName(name: string, exact = false): Promise<CardDefinition | null> {
-    const trimmed = name.trim();
-    if (!trimmed) return null;
+  public async resolveSingleCard(
+    query: string | { name?: string; id?: string; oracleId?: string },
+    lang = 'es',
+  ): Promise<CardDefinition | null> {
+    const cleanQuery =
+      typeof query === 'string'
+        ? query.trim()
+        : (query.name || query.id || query.oracleId || '').trim();
+    if (!cleanQuery) return null;
 
-    // 1. Try local database by English name
-    try {
-      const dbCard = await prisma.card.findFirst({
-        where: exact
-          ? { name: { equals: trimmed, mode: 'insensitive' } }
-          : { name: { contains: trimmed, mode: 'insensitive' } },
+    const isId = typeof query === 'object' && query.id;
+    const isOracleId = typeof query === 'object' && query.oracleId;
+    const cleanName = cleanQuery.replace(/\s*\*CMDR\*\s*$/, '').trim();
+
+    let dbCard: any = null;
+
+    if (isId || isOracleId) {
+      const targetId = (isId ? query.id : query.oracleId)!.trim();
+      dbCard = await prisma.card.findFirst({
+        where: {
+          OR: [{ scryfallId: targetId }, { id: targetId }, { oracleId: targetId }],
+        },
       });
-
-      if (dbCard) {
-        const cardDef: CardDefinition = {
-          scryfallId: dbCard.scryfallId,
-          oracleId: dbCard.oracleId ?? undefined,
-          name: dbCard.name,
-          manaCost: dbCard.manaCost ?? undefined,
-          cmc: dbCard.cmc,
-          typeLine: dbCard.typeLine,
-          oracleText: dbCard.oracleText ?? undefined,
-          colors: dbCard.colors as any,
-          colorIdentity: dbCard.colorIdentity as any,
-          power: dbCard.power ?? undefined,
-          toughness: dbCard.toughness ?? undefined,
-          imageUrlSmall: dbCard.imageUrlSmall ?? undefined,
-          imageUrlNormal: dbCard.imageUrlNormal ?? undefined,
-          imageUrlArtCrop: dbCard.imageUrlArtCrop ?? undefined,
-        };
-        return await cardLocaleService.enrichCardWithLocale(cardDef, 'es');
-      }
-    } catch {
-      // Fallback
     }
 
-    // 2. Check if name is in Spanish in DB card_locales
-    let spanishOracleId: string | undefined;
-    try {
-      const dbLocale = await (prisma as any).cardLocale?.findFirst({
-        where: exact
-          ? { printedName: { equals: trimmed, mode: 'insensitive' } }
-          : { printedName: { contains: trimmed, mode: 'insensitive' } },
+    if (!dbCard) {
+      // 1. Coincidencia exacta por nombre en inglés
+      dbCard = await prisma.card.findFirst({
+        where: { name: { equals: cleanName, mode: 'insensitive' } },
       });
-      if (dbLocale) {
-        spanishOracleId = dbLocale.oracleId;
-      }
-    } catch {
-      // Fallback
     }
 
-    if (spanishOracleId) {
-      // Try to find the English card in DB by oracleId
-      try {
-        const dbCard = await prisma.card.findFirst({
-          where: { oracleId: spanishOracleId },
+    // 2. Coincidencia de cara frontal para cartas dobles (DFC / Aventuras / Split)
+    if (!dbCard) {
+      dbCard = await prisma.card.findFirst({
+        where: { name: { startsWith: `${cleanName} //`, mode: 'insensitive' } },
+      });
+    }
+
+    // 3. Buscar en traducciones al español en card_locales
+    if (!dbCard) {
+      const loc = await (prisma as any).cardLocale?.findFirst({
+        where: { printedName: { equals: cleanName, mode: 'insensitive' } },
+      });
+      if (loc?.oracleId) {
+        dbCard = await prisma.card.findFirst({
+          where: { oracleId: loc.oracleId },
         });
-        if (dbCard) {
-          const cardDef: CardDefinition = {
-            scryfallId: dbCard.scryfallId,
-            oracleId: dbCard.oracleId ?? undefined,
-            name: dbCard.name,
-            manaCost: dbCard.manaCost ?? undefined,
-            cmc: dbCard.cmc,
-            typeLine: dbCard.typeLine,
-            oracleText: dbCard.oracleText ?? undefined,
-            colors: dbCard.colors as any,
-            colorIdentity: dbCard.colorIdentity as any,
-            power: dbCard.power ?? undefined,
-            toughness: dbCard.toughness ?? undefined,
-            imageUrlSmall: dbCard.imageUrlSmall ?? undefined,
-            imageUrlNormal: dbCard.imageUrlNormal ?? undefined,
-            imageUrlArtCrop: dbCard.imageUrlArtCrop ?? undefined,
-          };
-          return await cardLocaleService.enrichCardWithLocale(cardDef, 'es');
+      }
+    }
+
+    // 4. Coincidencia por contención como respaldo
+    if (!dbCard) {
+      dbCard = await prisma.card.findFirst({
+        where: { name: { contains: cleanName, mode: 'insensitive' } },
+      });
+    }
+
+    // 5. Fallback a Scryfall si aún no existe en base local
+    if (!dbCard) {
+      try {
+        const scryfallCard = await scryfallService.getCardNamed(cleanName, true);
+        if (scryfallCard) {
+          return await cardLocaleService.enrichCardWithLocale(scryfallCard, lang as any);
         }
+      } catch {
+        // Fallback
+      }
+      return null;
+    }
+
+    // Buscar si existe traducción e impresión en español en la tabla card_locales
+    let locales: CardDefinition['locales'] = undefined;
+    let spanishLocale: any = null;
+
+    if (dbCard.oracleId) {
+      spanishLocale = await (prisma as any).cardLocale?.findUnique({
+        where: {
+          oracleId_lang: {
+            oracleId: dbCard.oracleId,
+            lang: 'es',
+          },
+        },
+      });
+
+      if (spanishLocale) {
+        locales = {
+          es: {
+            printedName: spanishLocale.printedName,
+            printedTypeLine: spanishLocale.printedTypeLine || undefined,
+            printedText: spanishLocale.printedText || undefined,
+            imageUrlSmall: spanishLocale.imageUrlSmall || undefined,
+            imageUrlNormal: spanishLocale.imageUrlNormal || undefined,
+            imageUrlLarge: spanishLocale.imageUrlLarge || undefined,
+            imageUrlArtCrop: spanishLocale.imageUrlArtCrop || undefined,
+          },
+        };
+      }
+    }
+
+    // Buscar rulings oficiales si tiene oracleId
+    let rulings: any[] = [];
+    if (dbCard.oracleId) {
+      try {
+        rulings =
+          (await (prisma as any).ruling?.findMany({
+            where: { oracleId: dbCard.oracleId },
+            orderBy: { publishedAt: 'desc' },
+          })) || [];
       } catch {
         // Fallback
       }
     }
 
-    // 3. Query Scryfall directly
-    try {
-      const card = await scryfallService.getCardNamed(trimmed, exact);
-      if (card) {
-        return await cardLocaleService.enrichCardWithLocale(card, 'es');
-      }
-      return null;
-    } catch {
-      return null;
+    // Decisión de URLs por el servidor: si lang === 'es' y existe en español con imagen real, usarla; si no, inglés.
+    const useSpanish =
+      lang === 'es' &&
+      spanishLocale &&
+      (spanishLocale.imageUrlNormal || spanishLocale.imageUrlSmall);
+
+    const imageUrlSmall = useSpanish
+      ? spanishLocale.imageUrlSmall || dbCard.imageUrlSmall
+      : dbCard.imageUrlSmall;
+    const imageUrlNormal = useSpanish
+      ? spanishLocale.imageUrlNormal || dbCard.imageUrlNormal
+      : dbCard.imageUrlNormal;
+    const imageUrlLarge = useSpanish
+      ? spanishLocale.imageUrlLarge ||
+        (dbCard.imageUrlNormal ? dbCard.imageUrlNormal.replace('/normal/', '/large/') : undefined)
+      : dbCard.imageUrlNormal
+        ? dbCard.imageUrlNormal.replace('/normal/', '/large/')
+        : undefined;
+    const imageUrlArtCrop = useSpanish
+      ? spanishLocale.imageUrlArtCrop || dbCard.imageUrlArtCrop
+      : dbCard.imageUrlArtCrop;
+
+    // Manejo de caras (faces) si es carta DFC, transform, modal_dfc, adventure, split
+    const isTwoFaced =
+      dbCard.name.includes(' // ') ||
+      ['transform', 'modal_dfc', 'reversible_card', 'adventure', 'split', 'flip'].includes(
+        dbCard.layout || '',
+      );
+
+    let faces: any[] | undefined = undefined;
+    if (isTwoFaced && dbCard.name.includes(' // ')) {
+      const faceNames = dbCard.name.split(' // ');
+      const faceTypes = (dbCard.typeLine || '').split(' // ');
+      const faceManas = (dbCard.manaCost || '').split(' // ');
+      const faceTexts = (dbCard.oracleText || '').split(/\n\s*---\s*\n|\n\s*\/\/\s*\n/);
+
+      const hasSeparateBackImage = ['transform', 'modal_dfc', 'reversible_card'].includes(
+        dbCard.layout || '',
+      );
+
+      faces = [
+        {
+          name: faceNames[0].trim(),
+          manaCost: faceManas[0]?.trim() || undefined,
+          typeLine: faceTypes[0]?.trim() || dbCard.typeLine,
+          oracleText: faceTexts[0]?.trim() || dbCard.oracleText || '',
+          power: dbCard.power || undefined,
+          toughness: dbCard.toughness || undefined,
+          imageUrlSmall: imageUrlSmall || undefined,
+          imageUrlNormal: imageUrlNormal || undefined,
+          imageUrlLarge: imageUrlLarge || undefined,
+          imageUrlArtCrop: imageUrlArtCrop || undefined,
+        },
+        {
+          name: faceNames[1]?.trim() || faceNames[0].trim(),
+          manaCost: faceManas[1]?.trim() || undefined,
+          typeLine: faceTypes[1]?.trim() || faceTypes[0]?.trim() || dbCard.typeLine,
+          oracleText: faceTexts[1]?.trim() || '',
+          power: undefined,
+          toughness: undefined,
+          imageUrlSmall:
+            hasSeparateBackImage && imageUrlSmall
+              ? imageUrlSmall.replace('/front/', '/back/')
+              : imageUrlSmall || undefined,
+          imageUrlNormal:
+            hasSeparateBackImage && imageUrlNormal
+              ? imageUrlNormal.replace('/front/', '/back/')
+              : imageUrlNormal || undefined,
+          imageUrlLarge:
+            hasSeparateBackImage && imageUrlLarge
+              ? imageUrlLarge.replace('/front/', '/back/')
+              : imageUrlLarge || undefined,
+          imageUrlArtCrop:
+            hasSeparateBackImage && imageUrlArtCrop
+              ? imageUrlArtCrop.replace('/front/', '/back/')
+              : imageUrlArtCrop || undefined,
+        },
+      ];
     }
+
+    return {
+      scryfallId: dbCard.scryfallId,
+      oracleId: dbCard.oracleId || undefined,
+      name: dbCard.name,
+      manaCost: dbCard.manaCost || undefined,
+      cmc: dbCard.cmc,
+      typeLine: dbCard.typeLine,
+      oracleText: dbCard.oracleText || undefined,
+      colors: (dbCard.colors || []) as any,
+      colorIdentity: (dbCard.colorIdentity || []) as any,
+      power: dbCard.power || undefined,
+      toughness: dbCard.toughness || undefined,
+      legalities: (dbCard.legalities as any) || { commander: 'legal' },
+      imageUrlSmall: imageUrlSmall || undefined,
+      imageUrlNormal: imageUrlNormal || undefined,
+      imageUrlLarge: imageUrlLarge || undefined,
+      imageUrlArtCrop: imageUrlArtCrop || undefined,
+      isTwoFaced,
+      faces,
+      locales,
+      rulings: rulings.map((r: any) => ({
+        oracleId: r.oracleId,
+        source: r.source,
+        publishedAt: r.publishedAt.toISOString().split('T')[0],
+        comment: r.comment,
+      })),
+    };
+  }
+
+  /**
+   * Resuelve un lote de cartas por nombres o IDs (Punto 4 - POST /api/cards/resolve)
+   */
+  public async resolveCards(params: {
+    names?: string[];
+    ids?: string[];
+    cards?: Array<string | { name?: string; id?: string; oracleId?: string }>;
+    lang?: string;
+  }): Promise<{
+    cards: CardDefinition[];
+    byQuery: Record<string, CardDefinition | null>;
+    count: number;
+  }> {
+    const lang = (params.lang || 'es').toLowerCase();
+    const queryItems: Array<string | { name?: string; id?: string; oracleId?: string }> = [];
+
+    if (params.names) {
+      for (const n of params.names) {
+        if (n) queryItems.push(n);
+      }
+    }
+    if (params.ids) {
+      for (const id of params.ids) {
+        if (id) queryItems.push({ id });
+      }
+    }
+    if (params.cards) {
+      for (const c of params.cards) {
+        if (c) queryItems.push(c);
+      }
+    }
+
+    const cards: CardDefinition[] = [];
+    const byQuery: Record<string, CardDefinition | null> = {};
+    const resolvedMap = new Map<string, CardDefinition | null>();
+
+    for (const item of queryItems) {
+      const key =
+        typeof item === 'string'
+          ? item.trim()
+          : (item.name || item.id || item.oracleId || '').trim();
+      const lowerKey = key.toLowerCase();
+
+      let resolved: CardDefinition | null = null;
+      if (resolvedMap.has(lowerKey)) {
+        resolved = resolvedMap.get(lowerKey)!;
+      } else {
+        resolved = await this.resolveSingleCard(item, lang);
+        resolvedMap.set(lowerKey, resolved);
+      }
+
+      byQuery[key] = resolved;
+      byQuery[lowerKey] = resolved;
+      if (resolved) {
+        cards.push(resolved);
+      }
+    }
+
+    return {
+      cards,
+      byQuery,
+      count: cards.length,
+    };
+  }
+
+  /**
+   * Find a card by exact or fuzzy name (supports English and Spanish names)
+   */
+  public async findCardByName(
+    name: string,
+    _exact = false,
+    lang = 'es',
+  ): Promise<CardDefinition | null> {
+    return await this.resolveSingleCard(name, lang);
   }
 }
 

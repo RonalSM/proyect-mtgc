@@ -218,6 +218,9 @@ export async function connectDatabase(): Promise<void> {
       });
 
       await pgliteServerInstance.start();
+      if ((pgliteServerInstance as any).server?.unref) {
+        (pgliteServerInstance as any).server.unref();
+      }
       console.log(`✅ Servidor PostgreSQL (PGlite) activo en puerto ${port} (datos en ${dataDir}).`);
     } catch (err: any) {
       console.warn('⚠️ No se pudo iniciar el servidor PGlite embebido:', err?.message || err);
@@ -238,17 +241,19 @@ export async function connectDatabase(): Promise<void> {
   }
 }
 
-export async function disconnectDatabase(): Promise<void> {
+export async function disconnectDatabase(stopServer = false): Promise<void> {
   try {
     await prisma.$disconnect();
-    await pool.end();
-    if (pgliteServerInstance) {
-      await pgliteServerInstance.stop();
-      pgliteServerInstance = null;
-    }
-    if (pgliteDbInstance) {
-      await pgliteDbInstance.close();
-      pgliteDbInstance = null;
+    if (stopServer) {
+      await pool.end();
+      if (pgliteServerInstance) {
+        await pgliteServerInstance.stop();
+        pgliteServerInstance = null;
+      }
+      if (pgliteDbInstance) {
+        await pgliteDbInstance.close();
+        pgliteDbInstance = null;
+      }
     }
   } catch {
     // Ignore cleanup errors

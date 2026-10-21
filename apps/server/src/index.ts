@@ -456,11 +456,27 @@ server.get('/api/cards/autocomplete', async (request, reply) => {
   return reply.send({ query, results });
 });
 
-// Search card by name
+// Endpoint por lotes para resolución de cartas desde base local con datos reales (Punto 4 - A.4)
+server.post('/api/cards/resolve', async (request, reply) => {
+  const body =
+    (request.body as {
+      names?: string[];
+      ids?: string[];
+      cards?: Array<string | { name?: string; id?: string; oracleId?: string }>;
+      lang?: string;
+    }) || {};
+
+  const result = await cardSearchService.resolveCards(body);
+  return reply.send(result);
+});
+
+// Search card by name (delegado a resolvedor único con soporte de idioma)
 server.get('/api/cards/search', async (request, reply) => {
-  const name = (request.query as { name?: string }).name || '';
-  const exact = (request.query as { exact?: string }).exact === 'true';
-  const card = await cardSearchService.findCardByName(name, exact);
+  const query = request.query as { name?: string; exact?: string; lang?: string };
+  const name = query.name || '';
+  const exact = query.exact === 'true';
+  const lang = query.lang || 'es';
+  const card = await cardSearchService.findCardByName(name, exact, lang);
 
   if (!card) {
     return reply.status(404).send({ error: 'Card not found', name });
