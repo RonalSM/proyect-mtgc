@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { getCardDisplayData, type CardDefinition, type CardRuling } from '@mtgc/shared';
+import {
+  getCardDisplayData,
+  getCardImageUrl,
+  type CardDefinition,
+  type CardRuling,
+} from '@mtgc/shared';
 import {
   X,
   RefreshCw,
@@ -128,9 +133,8 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
   const displayLoyalty = activeFace?.loyalty !== undefined ? activeFace.loyalty : card.loyalty;
   const displayArtist = activeFace?.artist || card.artist || 'Unknown Artist';
   const displayImage =
-    display.imageUrlLarge ||
-    display.imageUrlNormal ||
-    display.imageUrlSmall ||
+    getCardImageUrl(card, { size: 'large', lang: language, faceIndex: activeFaceIndex }) ||
+    getCardImageUrl(card, { size: 'normal', lang: language, faceIndex: activeFaceIndex }) ||
     'https://cards.scryfall.io/back.png';
 
   const commanderLegality = card.legalities?.commander || 'legal';

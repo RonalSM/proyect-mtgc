@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { RoomState, GameActionType } from '@mtgc/shared';
+import { getCardImageUrl, type RoomState, type GameActionType } from '@mtgc/shared';
 import { Dices, Sparkles, Crown } from 'lucide-react';
 import { imageLoaderQueue } from '../services/imageLoaderQueue';
 
@@ -42,9 +42,7 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
       }
       if (pZones.library) {
         for (const card of pZones.library) {
-          const smallUrl =
-            card.definition?.imageUrlSmall ||
-            card.definition?.imageUrlNormal?.replace('/normal/', '/small/');
+          const smallUrl = getCardImageUrl(card.definition, { size: 'small' });
           if (smallUrl) imageLoaderQueue.enqueue(smallUrl, 1);
         }
       }

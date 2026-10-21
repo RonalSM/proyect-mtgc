@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   getCardDisplayData,
+  getCardImageUrl,
   type CardDefinition,
   type GameActionType,
   type RoomState,
@@ -418,9 +419,9 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                                 className="flex items-center justify-between p-2.5 bg-slate-900 border border-slate-800 hover:border-amber-400/60 rounded-xl transition-all group"
                               >
                                 <div className="flex items-center space-x-2.5 min-w-0 pr-2">
-                                  {display.imageUrlSmall || token.imageUrlSmall ? (
+                                  {getCardImageUrl(token, { size: 'small', lang: language }) ? (
                                     <img
-                                      src={display.imageUrlSmall || token.imageUrlSmall}
+                                      src={getCardImageUrl(token, { size: 'small', lang: language })}
                                       alt={display.name}
                                       className="w-10 h-14 object-cover rounded shadow flex-shrink-0"
                                     />
@@ -478,7 +479,7 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                     >
                       <div className="flex items-center space-x-3 min-w-0 pr-2">
                         <img
-                          src={display.imageUrlSmall || token.imageUrlSmall}
+                          src={getCardImageUrl(token, { size: 'small', lang: language })}
                           alt={display.name}
                           className="w-12 h-16 object-cover rounded shadow flex-shrink-0"
                         />

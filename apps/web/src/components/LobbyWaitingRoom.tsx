@@ -5,6 +5,7 @@ import {
   validateCommanderDeck,
   toArtCropUrl,
   inferCardTypeLine,
+  getCardImageUrl,
 } from '@mtgc/shared';
 import { imageLoaderQueue } from '../services/imageLoaderQueue';
 import {
@@ -300,13 +301,13 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
     }
     if (deck.commanderCards) {
       for (const cmdr of deck.commanderCards) {
-        const url = cmdr.imageUrlNormal || cmdr.imageUrlSmall;
+        const url = getCardImageUrl(cmdr, { size: 'normal' });
         if (url) imageLoaderQueue.enqueue(url, 10);
       }
     }
     if (deck.maindeckCards) {
       for (const card of deck.maindeckCards) {
-        const smallUrl = card.imageUrlSmall || card.imageUrlNormal?.replace('/normal/', '/small/');
+        const smallUrl = getCardImageUrl(card, { size: 'small' });
         if (smallUrl) imageLoaderQueue.enqueue(smallUrl, 1);
       }
     }

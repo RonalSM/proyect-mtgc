@@ -1,6 +1,7 @@
 import type { CardDefinition, CardFace } from '../types/card.js';
 
 export type SupportedLanguage = 'es' | 'en';
+export type CardImageSize = 'small' | 'normal' | 'large' | 'art_crop';
 
 export interface CardDisplayData {
   name: string;
@@ -60,4 +61,38 @@ export function getCardDisplayData(
     imageUrlArtCrop: card.imageUrlArtCrop,
     isSpanish: false,
   };
+}
+
+/**
+ * Función unificada para obtener la URL de imagen de una carta según tamaño e idioma (Punto 5 - A.5).
+ * Utiliza exclusivamente las URLs guardadas de image_uris y NUNCA deriva small o normal
+ * reemplazando texto en una URL.
+ */
+export function getCardImageUrl(
+  card?: CardDefinition | null,
+  options?: {
+    size?: CardImageSize;
+    lang?: SupportedLanguage;
+    faceIndex?: number;
+  },
+): string | undefined {
+  if (!card) return undefined;
+  const size = options?.size || 'normal';
+  const lang = options?.lang || 'es';
+  const faceIndex = options?.faceIndex || 0;
+
+  const display = getCardDisplayData(card, lang, faceIndex);
+
+  switch (size) {
+    case 'small':
+      return display.imageUrlSmall || display.imageUrlNormal || undefined;
+    case 'normal':
+      return display.imageUrlNormal || display.imageUrlSmall || undefined;
+    case 'large':
+      return display.imageUrlLarge || display.imageUrlNormal || display.imageUrlSmall || undefined;
+    case 'art_crop':
+      return display.imageUrlArtCrop || display.imageUrlNormal || undefined;
+    default:
+      return display.imageUrlNormal || display.imageUrlSmall || undefined;
+  }
 }

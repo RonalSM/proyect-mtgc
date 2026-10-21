@@ -573,6 +573,21 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 4. **Verificación Automatizada:**
    - Pruebas unitarias en `apps/server/test/cards-resolve.test.ts` (3/3 aprobadas) validando resolución por nombres en inglés y español, cartas DFC/Aventuras (`Lovestruck Beast`, `Dowsing Dagger`), tipos canónicos en inglés, dictámenes oficiales (`rulings`), y cadena de respaldo autoritativa sin invención de URLs.
 
+### REQ-41 Resolución Unificada de URLs de Imágenes sin Manipulación de Texto (Punto 5 de Correcciones del Cliente - A.5)
+
+**Historia:** Como desarrollador y usuario del sistema, quiero que todos los componentes visuales (mano, campo, biblioteca, cementerio, exilio, vista previa, Ver carta, mulligan y fichas) utilicen la misma función canónica `getCardImageUrl` consumiendo exclusivamente las URLs guardadas en `image_uris` y prohibiendo terminantemente derivar tamaños (`small` o `normal`) mediante reemplazo de subcadenas en las URLs para evitar corrupciones de rutas y errores de carga.
+
+1. **Función Canónica `getCardImageUrl`:**
+   - THE función `getCardImageUrl(card, options?: { size?, lang?, faceIndex? })` en `@mtgc/shared` SHALL ser la única fuente de resolución de URLs de imagen para todos los componentes de la interfaz.
+   - Soporta tamaños `'small'`, `'normal'`, `'large'` y `'art_crop'`, respetando el idioma solicitado (`es` con fallback a `en`) y la cara activa para cartas de dos caras (`isTwoFaced`).
+2. **Prohibición Estricta de Reemplazo de Subcadenas en URLs:**
+   - THE sistema SHALL NOT utilizar `.replace('/normal/', '/small/')`, `.replace('/small/', '/normal/')` ni manipulaciones de cadenas para inferir o alternar resoluciones de imagen.
+   - Toda URL de imagen servida y renderizada SHALL provenir directamente de los campos verificados de `CardDefinition` (`imageUrlSmall`, `imageUrlNormal`, `imageUrlLarge`, `imageUrlArtCrop`, o caras correspondientes).
+3. **Consistencia Transversal en Todos los Componentes:**
+   - Aplicado de manera uniforme en mano (`HandFan`), campo (`BattlefieldCanvas`), biblioteca (`LibraryModal`), cementerio (`GraveyardModal`), exilio (`ExileModal`), vista previa (`CardPreviewContext`), modal de detalle (`CardDetailsModal`), ventana de mulligan (`OpeningHandModal`), sala de espera (`LobbyWaitingRoom`) y catálogo de fichas (`CreateTokenModal`).
+4. **Verificación Automatizada:**
+   - Pruebas unitarias en `packages/shared/test/card-image-url.test.ts` (4/4 aprobadas) certificando resolución por tamaño, idioma, caras múltiples y ausencia de mutaciones textuales.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -837,5 +852,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-38        | COMP-4, COMP-6, COMP-7                 |
 | REQ-39        | COMP-4, COMP-6, COMP-7                 |
 | REQ-40        | COMP-6, COMP-7, COMP-8                 |
+| REQ-41        | COMP-1, COMP-7, COMP-8                 |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

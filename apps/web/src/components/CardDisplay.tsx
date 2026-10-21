@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { inferCardTypeLine, getCardDisplayData, type CardDefinition } from '@mtgc/shared';
+import {
+  inferCardTypeLine,
+  getCardDisplayData,
+  getCardImageUrl,
+  type CardDefinition,
+} from '@mtgc/shared';
 import { Layers, RefreshCw } from 'lucide-react';
 import { cardImageResolver } from '../services/cardImageResolver';
 import { imageLoaderQueue, type ImageLoadStatus } from '../services/imageLoaderQueue';
@@ -43,25 +48,14 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   const cardToughness = activeFace?.toughness ?? card.toughness;
   const cardOracle = display.oracleText;
 
-  // Candidatas de URL para la cadena de respaldo (Punto 6: Español -> Inglés -> Marco de texto)
-  const spanishCandidate = (() => {
-    if (language !== 'es' || !card.locales?.es) return '';
-    const es = card.locales.es;
-    return size === 'small'
-      ? es.imageUrlSmall || es.imageUrlNormal || ''
-      : es.imageUrlNormal || es.imageUrlSmall || '';
-  })();
+  // Candidatas de URL para la cadena de respaldo mediante resolvedor unificado (Punto 5 - A.5)
+  const spanishCandidate =
+    language === 'es' && card.locales?.es
+      ? getCardImageUrl(card, { size, lang: 'es', faceIndex: currentFaceIndex }) || ''
+      : '';
 
-  const englishCandidate = (() => {
-    if (activeFace) {
-      return size === 'small'
-        ? activeFace.imageUrlSmall || card.imageUrlSmall || activeFace.imageUrlNormal || card.imageUrlNormal || ''
-        : activeFace.imageUrlNormal || card.imageUrlNormal || activeFace.imageUrlSmall || card.imageUrlSmall || '';
-    }
-    return size === 'small'
-      ? card.imageUrlSmall || card.imageUrlNormal || ''
-      : card.imageUrlNormal || card.imageUrlSmall || '';
-  })();
+  const englishCandidate =
+    getCardImageUrl(card, { size, lang: 'en', faceIndex: currentFaceIndex }) || '';
 
   // Etapa de fallback progresivo: 'spanish' -> 'english' -> 'frame' (Punto 6)
   const [fallbackStage, setFallbackStage] = useState<'spanish' | 'english' | 'frame'>(() => {
@@ -106,18 +100,10 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
     }
   }, [fallbackStage, spanishCandidate, englishCandidate, cardName, isFaceDown, size, language]);
 
-  const rawImageUrl = (() => {
+  const resolvedImageUrl = (() => {
     if (fallbackStage === 'spanish') return spanishCandidate;
     if (fallbackStage === 'english') return englishCandidate || asyncResolvedUrl || '';
     return '';
-  })();
-
-  const resolvedImageUrl = (() => {
-    if (!rawImageUrl) return '';
-    if (size === 'small') {
-      return rawImageUrl.replace('/normal/', '/small/').replace('version=normal', 'version=small');
-    }
-    return rawImageUrl.replace('/small/', '/normal/').replace('version=small', 'version=normal');
   })();
 
   const [imageStatus, setImageStatus] = useState<ImageLoadStatus>(() => {

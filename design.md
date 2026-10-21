@@ -423,6 +423,9 @@ validateCommander(deck: ResolvedDeck): ValidationReport
   - Al abrir la biblioteca con ~60–92 cartas simultáneas, `api.scryfall.com` respondió con **HTTP 429 Too Many Requests** en el 100 % de las solicitudes en ráfaga (`{"429": 60}`). En solicitudes individuales no espaciadas retornó `HTTP 302` (Redirect temporal a Cloudflare).
   - Por su parte, el CDN directo `cards.scryfall.io` con User-Agent de navegador respondió con **HTTP 200 OK** en el 100 % de las solicitudes concurrentes (`{"200": 60}`).
 - **Directriz de diseño:** Prohibición estricta de invocar `api.scryfall.com/cards/named` en cliente para renderizar cartas en la mesa o biblioteca. Todas las URLs deben consumirse directamente desde `cards.scryfall.io` guardadas en base de datos.
+- **Resolución Unificada de URLs de Imágenes sin Manipulación de Texto (Punto 5 - A.5):**
+  - **Función Canónica Transversal:** Implementación de `getCardImageUrl(card, { size, lang, faceIndex })` en `@mtgc/shared`, adoptada por todos los componentes visuales: mano (`HandFan`), campo (`BattlefieldCanvas`), biblioteca (`LibraryModal`), cementerio (`GraveyardModal`), exilio (`ExileModal`), vista previa (`CardPreviewContext`), modal de detalle (`CardDetailsModal`), ventana de mulligan (`OpeningHandModal`), sala de espera (`LobbyWaitingRoom`) y fichas (`CreateTokenModal`).
+  - **Erradicación de Manipulación de Cadenas:** Eliminación total de `.replace('/normal/', '/small/')` y `.replace('/small/', '/normal/')`. Las URLs se extraen directamente de las propiedades nativas de `CardDefinition` (`imageUrlSmall`, `imageUrlNormal`, `imageUrlLarge`, `imageUrlArtCrop`, o caras correspondientes en cartas de doble cara).
 
 ### COMP-6 Card Service y Telemetría de Base de Datos Local (Punto 1 - A.1)
 

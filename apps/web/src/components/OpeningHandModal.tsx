@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { RoomState, GameActionType } from '@mtgc/shared';
+import { getCardImageUrl, type RoomState, type GameActionType } from '@mtgc/shared';
 import { CardDisplay } from './CardDisplay';
 import { RotateCcw, Check, UserX, Crown, ShieldAlert, Sparkles, Layers } from 'lucide-react';
 import { imageLoaderQueue } from '../services/imageLoaderQueue';
@@ -41,15 +41,13 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
 
     const cmdrList = roomState.playerZones[localPlayerId]?.command || [];
     for (const cmdr of cmdrList) {
-      const url = cmdr.definition?.imageUrlNormal || cmdr.definition?.imageUrlSmall;
+      const url = getCardImageUrl(cmdr.definition, { size: 'normal' });
       if (url) imageLoaderQueue.enqueue(url, 10);
     }
 
     const libraryCards = roomState.playerZones[localPlayerId]?.library || [];
     for (const card of libraryCards) {
-      const smallUrl =
-        card.definition?.imageUrlSmall ||
-        card.definition?.imageUrlNormal?.replace('/normal/', '/small/');
+      const smallUrl = getCardImageUrl(card.definition, { size: 'small' });
       if (smallUrl) imageLoaderQueue.enqueue(smallUrl, 1);
     }
   }, [localHand, roomState.playerZones, localPlayerId]);
