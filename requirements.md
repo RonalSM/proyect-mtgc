@@ -773,6 +773,15 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Se confirma formalmente que la rama activa de desarrollo para la resolución integral de las correcciones del cliente (Puntos 1 al 20) es `main`.
    - La rama previa `v2-mesa` queda registrada como referencia histórica de etapas anteriores, consolidándose toda la suite de correcciones y estabilizaciones directamente sobre `main`.
 
+### REQ-56 Suite Integral de Pruebas E2E y Certificación Final de Correcciones (Punto 20 de Correcciones del Cliente - E.20)
+
+**Historia:** Como cliente y auditor técnico, quiero disponer de una suite integral automatizada en Playwright que certifique con datos reales todos los puntos de corrección del cliente (Puntos 1 al 19), registrando métricas cuantitativas, capturas de pantalla de evidencia y manteniendo actualizados los documentos `requirements.md` y `design.md`.
+
+1. **Cobertura E2E Integral:**
+   - THE suite de pruebas en `apps/web/e2e/corrections-suite.spec.ts` SHALL ejecutar de extremo a extremo la verificación de carga de fuentes SIL OFL 1.1 sin hojas de estilo GPL 3.0, la supresión de llamadas 401 a mazos guardados para invitados anónimos, la selección de mazos listos reales, y la confirmación de la rama de trabajo.
+2. **Evidencias y Métricas Archivadas:**
+   - Toda ejecución SHALL generar y almacenar evidencias visuales en el directorio de artefactos (`audit-p20-lobby-ready.png`), verificando el cumplimiento estricto del criterio de cero datos sintéticos (`cmdr_`, `main_`, `id_`, `?178975`).
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -1052,5 +1061,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-53        | COMP-1, COMP-6                         |
 | REQ-54        | COMP-1, COMP-5                         |
 | REQ-55        | COMP-1                                 |
+| REQ-56        | COMP-1, COMP-6, COMP-7                 |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

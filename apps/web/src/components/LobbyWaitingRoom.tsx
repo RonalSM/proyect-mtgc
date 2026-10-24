@@ -88,11 +88,16 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
   // Load user saved decks from /api/decks (silent for guests/unauthenticated, Punto 17)
   useEffect(() => {
     const fetchDecks = async () => {
-      // Si no hay token de autenticación ni sesión activa, no realizar la llamada para evitar 401 en consola
-      const token = localStorage.getItem('token') || localStorage.getItem('mtgc_access_token');
-      // También podemos comprobar si hay cookies accesibles o flag de invitado
-      const isGuest = localStorage.getItem('mtgc_is_guest') === 'true';
-      if (!token && isGuest) {
+      // D.17: "GET /api/decks da 401 a los invitados en cada carga: no lo llames sin sesión o gestiónalo en silencio, sin errores en consola."
+      // Comprobar si hay sesión explícita en localStorage o cookie de sesión
+      const token =
+        localStorage.getItem('token') ||
+        localStorage.getItem('mtgc_access_token') ||
+        localStorage.getItem('mtgc_auth_token');
+      const hasAuthCookie = typeof document !== 'undefined' && document.cookie.includes('mtgc_access_token');
+
+      // Si no hay indicio de sesión autenticada, los usuarios son invitados y NO se debe llamar a /api/decks
+      if (!token && !hasAuthCookie) {
         setSavedDecks([]);
         setIsLoadingDecks(false);
         return;

@@ -397,7 +397,7 @@
       - [x] 17. **Punto 17 (D.17 - GET /api/decks Silencioso para Invitados)**: Condicional previo en `LobbyWaitingRoom.tsx` para no invocar `GET /api/decks` cuando no existe sesión activa o el usuario es un invitado anónimo, y gestión silenciosa si la respuesta del servidor es HTTP 401, evitando ruido y errores en la consola del navegador.
       - [x] 18. **Punto 18 (D.18 - Quitar keyrune.css y Usar Fuentes SIL OFL 1.1)**: Eliminación de la dependencia de `keyrune.css` (GPL 3.0), reemplazándola por `keyrune-custom.css` que consume exclusivamente los binarios de fuentes de Keyrune bajo SIL OFL 1.1 con mapeo propio de glifos Unicode. Actualización de `THIRD_PARTY_NOTICES.md` y `LegalModal.tsx` para certificar la conformidad de licencias.
       - [x] 19. **Punto 19 (D.19 - Confirmación de Trabajo en Rama main)**: Confirmación deliberada y explícita del desarrollo sobre la rama `main` en `requirements.md` (REQ-55), `design.md` y `tasks.md`, unificando en `main` todas las correcciones del cliente.
-      - [ ] 20. **Punto 20 (E.20 - Suite Integral Playwright y Documentación Final)**
+      - [x] 20. **Punto 20 (E.20 - Suite Integral Playwright y Documentación Final)**: Implementación y certificación de la suite de pruebas automatizadas en `apps/web/e2e/corrections-suite.spec.ts` validando de extremo a extremo las correcciones de los puntos 9 al 19 con datos reales, captura de pantalla de evidencia (`audit-p20-lobby-ready.png`) y actualización completa de la matriz de conformidad en `requirements.md` (REQ-56), `design.md` y `tasks.md`. Cierre exitoso y detención estricta al concluir el Punto 20.
 
 ## Fases posteriores (post-MVP)
 

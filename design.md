@@ -1016,6 +1016,9 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
        - `audit-preview-keywords-counters.png` (1,788,671 bytes)
        - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
 
+- **Suite Integral de Pruebas Playwright E2E y Métricas de Rendimiento (Punto 20 - E.20):**
+  - **Validación automatizada de extremo a extremo:** Ejecución integral mediante `apps/web/e2e/corrections-suite.spec.ts` validando la carga de fuentes SIL OFL 1.1, la ausencia de peticiones ruidosas a `/api/decks` para usuarios anónimos, la selección de mazos listos reales y la consistencia global del sistema. Evidencias visuales y métricas archivadas en el directorio de artefactos (`audit-p20-lobby-ready.png`).
+
 - **Confirmación Deliberada de Rama main (Punto 19 - D.19):**
   - **Decisión de arquitectura y ramificación:** Se confirma y formaliza que el desarrollo de todas las correcciones solicitadas por el cliente (Puntos 1 al 20) se realiza deliberadamente sobre la rama troncal `main`. Los cambios precedentes en `v2-mesa` quedan superados y unificados en `main`, constituyendo la única fuente de verdad y versión operativa del proyecto.
 
