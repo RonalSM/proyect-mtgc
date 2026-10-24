@@ -1016,6 +1016,9 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
        - `audit-preview-keywords-counters.png` (1,788,671 bytes)
        - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
 
+- **Vista Previa al Hover sin Recordatorio de Palabras Clave (Punto 11 - C.11):**
+  - **Depuración visual en hover:** Se retiran los bloques de `reminderText` de las palabras clave en `CardPreviewContext.tsx`, presentando únicamente el icono vectorial y la etiqueta en una fila horizontal estilizada, conservando la sección inferior de contadores con sus multiplicadores y códigos de color.
+
 - **Menú Contextual sin Encabezado de Nombre de Carta (Punto 10 - C.10):**
   - **Eliminación de encabezado:** Se suprime el contenedor de cabecera con `cardDisplayName`, eliminando elementos de sólo lectura y permitiendo que el primer elemento enfocable y visible sea la acción inmediata de interacción.
 

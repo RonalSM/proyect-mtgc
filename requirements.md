@@ -671,6 +671,15 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - THE menú `CardContextMenu` SHALL NOT renderizar un encabezado o barra de título con el nombre de la carta en la parte superior.
    - El contenedor del menú SHALL desplegar directamente las opciones de acción de forma ergonómica y compacta.
 
+### REQ-47 Vista Previa al Hover sin Explicación de Palabras Clave (Punto 11 de Correcciones del Cliente - C.11)
+
+**Historia:** Como jugador, quiero que al pasar el cursor sobre una permanente con palabras clave el panel lateral complementario de vista previa muestre únicamente el icono y nombre de cada palabra clave sin el párrafo de explicación/recordatorio, preservando intacto el resto del panel con sus contadores.
+
+1. **Eliminación de Recordatorios en Vista Previa:**
+   - THE panel explicativo de vista previa `preview-keywords-counters-panel` SHALL NOT renderizar párrafos de texto recordatorio (`reminderText`) para las palabras clave activas.
+   - Cada palabra clave SHALL mostrarse en una fila compacta con su icono oficial de la fuente Mana y su nombre oficial.
+   - La sección de contadores SHALL mantenerse inalterada con sus valores, insignias y textos.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -941,5 +950,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-44        | COMP-1, COMP-4, COMP-7                 |
 | REQ-45        | COMP-1, COMP-7                         |
 | REQ-46        | COMP-1, COMP-7                         |
+| REQ-47        | COMP-1, COMP-7                         |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

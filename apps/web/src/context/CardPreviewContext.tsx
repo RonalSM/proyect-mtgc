@@ -181,27 +181,19 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                     {activeKeywords.map(kwId => {
                       const def = getKeywordDefinition(kwId);
                       const label = def?.label || kwId;
-                      const reminder = def?.reminderText || '';
 
                       return (
                         <div
                           key={kwId}
                           data-preview-item="true"
                           data-testid={`preview-keyword-${kwId}`}
-                          className="flex flex-col space-y-0.5 bg-slate-950/40 p-1.5 rounded border border-slate-800/80"
+                          className="flex items-center space-x-1.5 bg-slate-950/40 p-1.5 rounded border border-slate-800/80"
                         >
-                          <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-300">
-                            <MtgKeywordIcon
-                              keyword={kwId}
-                              className="w-3.5 h-3.5 flex-shrink-0 text-amber-400 text-sm"
-                            />
-                            <span>{label}</span>
-                          </div>
-                          {reminder && (
-                            <p className="text-[10px] text-slate-300 italic pl-5 leading-tight">
-                              {reminder}
-                            </p>
-                          )}
+                          <MtgKeywordIcon
+                            keyword={kwId}
+                            className="w-3.5 h-3.5 flex-shrink-0 text-amber-400 text-sm"
+                          />
+                          <span className="text-xs font-bold text-amber-300">{label}</span>
                         </div>
                       );
                     })}
