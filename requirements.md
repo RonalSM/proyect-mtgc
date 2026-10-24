@@ -680,6 +680,23 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Cada palabra clave SHALL mostrarse en una fila compacta con su icono oficial de la fuente Mana y su nombre oficial.
    - La sección de contadores SHALL mantenerse inalterada con sus valores, insignias y textos.
 
+### REQ-48 Orden Estricto de Opciones en Menú Contextual (Punto 12 de Correcciones del Cliente - C.12)
+
+**Historia:** Como jugador, quiero un orden coherente, predecible y estandarizado de acciones en el menú contextual de cartas en mesa para acceder primero a las acciones físicas y estadísticas más frecuentes y finalizar con las opciones de inspección detallada.
+
+1. **Secuencia Obligatoria de Acciones:**
+   - THE menú `CardContextMenu` SHALL desplegar estrictamente sus opciones en el siguiente orden secuencial:
+     1. `Girar` / `Enderezar` (con icono de tap/untap)
+     2. `Poder` (fila interactiva)
+     3. `Resistencia` (fila interactiva)
+     4. `Contadores` (sección desplegable)
+     5. `Palabras clave` (sección desplegable)
+     6. `Clonar` (opciones rápidas 1, 2, 3 y cantidad personalizada)
+     7. `Voltear` (cara activa para cartas DFC/transform)
+     8. `Boca abajo` / `Boca arriba` (toggle face-down)
+     9. Resto de opciones: `Crear ficha`, `A Zona de Comando`, `Enviar a Mesa`, `Enviar a Mano`, `Enviar a Cementerio`, `Enviar a Exilio`, `Biblioteca` y `Revelar`
+     10. `Ver carta` (al final del menú)
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -951,5 +968,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-45        | COMP-1, COMP-7                         |
 | REQ-46        | COMP-1, COMP-7                         |
 | REQ-47        | COMP-1, COMP-7                         |
+| REQ-48        | COMP-1, COMP-7                         |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).
