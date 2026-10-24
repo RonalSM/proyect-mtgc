@@ -359,22 +359,22 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
   });
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] max-w-6xl mx-auto space-y-4">
+    <div className="flex flex-col h-[calc(100vh-100px)] max-w-6xl mx-auto space-y-5">
       {/* Top Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl px-6 py-4 shadow-xl flex items-center justify-between">
+      <div className="bg-[#0c101a]/90 border border-zinc-800/90 rounded-2xl px-6 py-4.5 shadow-2xl backdrop-blur-xl flex items-center justify-between ring-1 ring-white/5">
         <div className="flex items-center space-x-4">
-          <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400">
-            <Users className="w-6 h-6" />
+          <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-400 shadow-inner">
+            <Users className="w-5 h-5" />
           </div>
           <div>
-            <div className="flex items-center space-x-2">
-              <h2 className="text-lg font-black text-white tracking-wide">{roomState.name}</h2>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                SALA DE ESPERA
+            <div className="flex items-center space-x-2.5">
+              <h2 className="text-lg font-cinzel font-bold text-zinc-100 tracking-wide">{roomState.name}</h2>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 uppercase tracking-wider">
+                Sala de Espera
               </span>
             </div>
-            <p className="text-xs text-slate-400">
-              {seatedPlayers.length} de {maxSeats} jugadores sentados &bull; Vida inicial:{' '}
+            <p className="text-xs text-zinc-400 mt-0.5">
+              {seatedPlayers.length} de {maxSeats} jugadores listos &bull; Vida inicial:{' '}
               {roomState.settings?.startingLife || 40}
             </p>
           </div>
@@ -383,20 +383,20 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         <div className="flex items-center space-x-3">
           <button
             onClick={copyCode}
-            className="flex items-center space-x-2 bg-slate-950 hover:bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-mono font-bold text-amber-300 transition-colors shadow-inner"
+            className="flex items-center space-x-2.5 bg-[#07090e] hover:bg-zinc-800/80 border border-zinc-700/80 px-3.5 py-2 rounded-xl text-xs font-mono font-bold text-amber-300 transition-all shadow-inner cursor-pointer"
             title="Copiar código de la sala"
           >
             <span>Código: {roomState.code}</span>
             {isCopied ? (
               <Check className="w-3.5 h-3.5 text-emerald-400" />
             ) : (
-              <Copy className="w-3.5 h-3.5 text-slate-400" />
+              <Copy className="w-3.5 h-3.5 text-zinc-400" />
             )}
           </button>
 
           <button
             onClick={onLeaveRoom}
-            className="flex items-center space-x-1.5 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-300 transition-colors"
+            className="flex items-center space-x-1.5 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 px-3.5 py-2 rounded-xl text-xs font-bold text-rose-300 transition-all cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Salir</span>

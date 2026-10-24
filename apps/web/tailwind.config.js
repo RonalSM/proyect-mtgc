@@ -4,19 +4,31 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        cinzel: ['Cinzel', 'serif'],
+        sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
+      },
       colors: {
-        mtg: {
-          bg: '#0f172a',
-          surface: '#1e293b',
-          border: '#334155',
-          gold: '#eab308',
-          // Mana colors
-          white: '#f8fafc',
-          blue: '#0284c7',
-          black: '#475569',
-          red: '#dc2626',
-          green: '#16a34a',
+        obsidian: {
+          950: '#06080d',
+          900: '#0b0f17',
+          800: '#121824',
+          700: '#1b2333',
+          600: '#263147',
         },
+        mana: {
+          w: '#fdfbf7',
+          u: '#0ea5e9',
+          b: '#1c1917',
+          r: '#ef4444',
+          g: '#10b981',
+          gold: '#e2b34a',
+        },
+      },
+      backgroundImage: {
+        'radial-glow': 'radial-gradient(circle at 50% 0%, rgba(226, 179, 74, 0.08), transparent 70%)',
+        'subtle-grid': 'linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px)',
       },
     },
   },

@@ -173,41 +173,52 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-[#07090e] text-zinc-100 flex flex-col font-sans select-none relative overflow-x-hidden selection:bg-amber-500/20 selection:text-amber-200">
+      {/* Background ambient lighting */}
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(226,179,74,0.12),transparent)] z-0" />
+      <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] z-0" />
+
       {/* Top Header */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-6">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center font-black text-slate-950 text-sm shadow-lg shadow-amber-500/20">
-              MTG
+      <header className="relative z-10 border-b border-zinc-800/80 bg-[#0b0f17]/80 backdrop-blur-xl px-6 py-3.5 flex items-center justify-between">
+        <div className="flex items-center space-x-8">
+          <div className="flex items-center space-x-3.5 group cursor-default">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 p-[1px] shadow-lg shadow-amber-500/15">
+              <div className="w-full h-full bg-[#0b0f17] rounded-[11px] flex items-center justify-center">
+                <i className="ms ms-planeswalker text-amber-400 text-lg group-hover:scale-110 transition-transform duration-200" aria-hidden="true" />
+              </div>
             </div>
             <div>
-              <h1 className="font-extrabold text-base leading-tight tracking-wide text-white">
-                Mesa Virtual de Commander
-              </h1>
-              <p className="text-[11px] text-slate-400">Sandbox multijugador en tiempo real</p>
+              <div className="flex items-center space-x-2">
+                <h1 className="font-cinzel font-bold text-sm tracking-widest text-zinc-100 uppercase">
+                  Mesa Virtual MTG
+                </h1>
+                <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-300 tracking-wider">
+                  EDH
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-400 font-medium">Commander Sandbox Multijugador</p>
             </div>
           </div>
 
           {!roomCode && (
-            <nav className="flex space-x-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <nav className="flex space-x-1 bg-zinc-900/90 p-1 rounded-xl border border-zinc-800/80 shadow-inner">
               <button
                 onClick={() => setActiveMainTab('lobby')}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex items-center space-x-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeMainTab === 'lobby'
-                    ? 'bg-amber-500 text-slate-950 shadow'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-amber-500 text-zinc-950 font-bold shadow-md shadow-amber-500/20'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
                 }`}
               >
                 <Users className="w-3.5 h-3.5" />
-                <span>Salas y Lobby</span>
+                <span>Salas y Mesas</span>
               </button>
               <button
                 onClick={() => setActiveMainTab('importer')}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex items-center space-x-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeMainTab === 'importer'
-                    ? 'bg-amber-500 text-slate-950 shadow'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-amber-500 text-zinc-950 font-bold shadow-md shadow-amber-500/20'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -217,28 +228,37 @@ export default function App() {
           )}
         </div>
 
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2 text-xs px-3 py-1 rounded-full bg-slate-800 border border-slate-700">
+        <div className="flex items-center space-x-4">
+          {/* Mana Colors Bar */}
+          <div className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-zinc-900/70 border border-zinc-800/80 text-xs text-zinc-400">
+            <i className="ms ms-w ms-cost text-[13px]" title="White" />
+            <i className="ms ms-u ms-cost text-[13px]" title="Blue" />
+            <i className="ms ms-b ms-cost text-[13px]" title="Black" />
+            <i className="ms ms-r ms-cost text-[13px]" title="Red" />
+            <i className="ms ms-g ms-cost text-[13px]" title="Green" />
+          </div>
+
+          <div className="flex items-center space-x-2 text-xs px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800/90 shadow-sm">
             <span
               className={`w-2 h-2 rounded-full ${
                 serverStatus === 'online'
-                  ? 'bg-emerald-400 animate-pulse'
+                  ? 'bg-emerald-400 ring-2 ring-emerald-500/20 animate-pulse'
                   : serverStatus === 'offline'
                     ? 'bg-rose-500'
                     : 'bg-amber-400'
               }`}
             />
-            <span className="text-[11px] text-slate-300">
+            <span className="text-[11px] font-medium text-zinc-300">
               {serverStatus === 'online'
-                ? 'Servidor en línea'
+                ? 'En línea'
                 : serverStatus === 'offline'
-                  ? 'Servidor desconectado'
-                  : 'Verificando...'}
+                  ? 'Desconectado'
+                  : 'Comprobando...'}
             </span>
             <button
               onClick={checkHealth}
               title="Reverificar servidor"
-              className="text-slate-400 hover:text-white transition-colors ml-1"
+              className="text-zinc-400 hover:text-zinc-200 transition-colors ml-1 cursor-pointer"
             >
               <RefreshCw className="w-3 h-3" />
             </button>
@@ -280,26 +300,31 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950 px-6 py-2.5 flex items-center justify-between text-[11px] text-slate-500">
-        <div>
-          Mesa Virtual de Commander &bull; No oficial, sin afiliación con Wizards of the Coast
-          &bull; Scryfall API &bull; Fuentes Mana &amp; Keyrune (SIL OFL 1.1 / MIT)
+      <footer className="relative z-10 border-t border-zinc-800/80 bg-[#07090e]/90 backdrop-blur px-6 py-3 flex items-center justify-between text-[11px] text-zinc-500">
+        <div className="flex items-center space-x-2">
+          <span>MTG Commander Tabletop</span>
+          <span>&bull;</span>
+          <span>No afiliado a WotC</span>
+          <span>&bull;</span>
+          <span>Scryfall API</span>
+          <span>&bull;</span>
+          <span>Mana &amp; Keyrune (OFL 1.1)</span>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-4">
           <button
             type="button"
             data-testid="open-font-glyphs-audit-btn"
             onClick={() => setIsFontAuditOpen(true)}
-            className="text-slate-400 hover:text-amber-400 underline transition-colors"
+            className="text-zinc-400 hover:text-amber-300 transition-colors cursor-pointer"
           >
             Glifos Mana &amp; Keyrune
           </button>
           <button
             type="button"
             onClick={() => setIsLegalOpen(true)}
-            className="text-slate-400 hover:text-amber-400 underline transition-colors"
+            className="text-zinc-400 hover:text-amber-300 transition-colors cursor-pointer"
           >
-            Avisos Legales y Privacidad
+            Avisos Legales
           </button>
         </div>
       </footer>

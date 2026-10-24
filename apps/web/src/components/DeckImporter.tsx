@@ -190,17 +190,19 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
       {/* Left 2 Cols: Textarea & Search */}
       <div className="lg:col-span-2 space-y-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold flex items-center space-x-2 text-amber-400">
-              <Layers className="w-5 h-5" />
-              <span>Pegar Lista de Mazos (Commander)</span>
+        <div className="bg-[#0c101a]/90 border border-zinc-800/90 rounded-2xl p-6 shadow-2xl backdrop-blur-xl ring-1 ring-white/5 space-y-4">
+          <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+            <h2 className="text-base font-cinzel font-bold flex items-center space-x-2.5 text-zinc-100">
+              <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <Layers className="w-4 h-4" />
+              </span>
+              <span>Importar Lista de Mazos (Commander)</span>
             </h2>
-            <span className="text-xs text-slate-400">
-              Compatible con Moxfield, Archidekt y MTGA
+            <span className="text-xs text-zinc-400 font-medium">
+              Formatos Moxfield, Archidekt y MTGA
             </span>
           </div>
 
@@ -212,11 +214,11 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded }) => {
                 value={searchQuery}
                 onChange={e => handleAutocomplete(e.target.value)}
                 placeholder="Buscar carta en Scryfall para añadir (ej. Sol Ring, Rhystic Study)..."
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-amber-400 transition-colors"
+                className="w-full bg-[#080b11] border border-zinc-800 focus:border-amber-400/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none transition-all shadow-inner"
               />
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
+              <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3" />
               {isSearching && (
-                <span className="absolute right-3 top-3 text-[11px] text-amber-400 animate-pulse">
+                <span className="absolute right-3.5 top-2.5 text-[11px] text-amber-400 animate-pulse font-mono">
                   Buscando...
                 </span>
               )}
@@ -224,15 +226,15 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded }) => {
 
             {/* Dropdown Results */}
             {searchResults.length > 0 && (
-              <div className="absolute z-20 left-0 right-0 mt-1 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl overflow-hidden max-h-60 overflow-y-auto">
+              <div className="absolute z-20 left-0 right-0 mt-1.5 bg-[#0b0f17] border border-zinc-700/80 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto backdrop-blur-md">
                 {searchResults.map(cardName => (
                   <button
                     key={cardName}
                     onClick={() => addCardToDeck(cardName)}
-                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-amber-500/10 hover:text-amber-300 transition-colors border-b border-slate-800/50 last:border-0 flex items-center justify-between"
+                    className="w-full text-left px-4 py-2.5 text-sm text-zinc-200 hover:bg-amber-500/10 hover:text-amber-300 transition-colors border-b border-zinc-800/60 last:border-0 flex items-center justify-between cursor-pointer"
                   >
-                    <span>{cardName}</span>
-                    <span className="text-[11px] text-slate-500">+ Añadir al mazo</span>
+                    <span className="font-medium">{cardName}</span>
+                    <span className="text-[11px] font-mono text-zinc-500">+ Añadir</span>
                   </button>
                 ))}
               </div>
@@ -243,7 +245,7 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded }) => {
             value={deckText}
             onChange={e => setDeckText(e.target.value)}
             rows={15}
-            className="w-full font-mono text-xs bg-slate-950 border border-slate-700 rounded-lg p-3.5 text-slate-200 focus:outline-none focus:border-amber-400 leading-relaxed resize-y"
+            className="w-full font-mono text-xs bg-[#080b11] border border-zinc-800 focus:border-amber-400/80 rounded-xl p-4 text-zinc-200 focus:outline-none leading-relaxed resize-y shadow-inner"
             placeholder="1 Atraxa, Praetors' Voice *CMDR*&#10;1 Sol Ring&#10;1 Arcane Signet..."
           />
 
