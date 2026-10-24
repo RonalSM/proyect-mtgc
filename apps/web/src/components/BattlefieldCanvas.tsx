@@ -288,7 +288,12 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
           transformOrigin: 'center center',
         }}
       >
-        <CardDisplay card={card.definition} isFaceDown={card.isFaceDown} isTapped={isTapped} />
+        <CardDisplay
+          card={card.definition}
+          isFaceDown={card.isFaceDown}
+          isTapped={isTapped}
+          activeFaceIndex={card.activeFaceIndex}
+        />
 
         {/* Insignias de Contadores y Palabras Clave oficiales (Punto 4): pegada al borde superior sin cubrir la linea inferior */}
         {!card.isFaceDown && <CardBadges card={card} />}

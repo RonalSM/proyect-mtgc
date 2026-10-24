@@ -20,6 +20,7 @@ interface CardDisplayProps {
   imageClassName?: string;
   allowFaceToggle?: boolean;
   size?: 'small' | 'normal';
+  activeFaceIndex?: number;
 }
 
 export const CardDisplay: React.FC<CardDisplayProps> = ({
@@ -30,9 +31,16 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   imageClassName = '',
   allowFaceToggle = true,
   size = 'normal',
+  activeFaceIndex: propActiveFaceIndex,
 }) => {
   const { language } = useLanguage();
-  const [currentFaceIndex, setCurrentFaceIndex] = useState(0);
+  const [currentFaceIndex, setCurrentFaceIndex] = useState(propActiveFaceIndex ?? 0);
+
+  useEffect(() => {
+    if (propActiveFaceIndex !== undefined) {
+      setCurrentFaceIndex(propActiveFaceIndex);
+    }
+  }, [propActiveFaceIndex]);
 
   // If card has multiple faces, determine the active face
   const hasMultipleFaces = !!(card.faces && card.faces.length > 1);

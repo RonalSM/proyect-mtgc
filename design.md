@@ -1016,6 +1016,9 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
        - `audit-preview-keywords-counters.png` (1,788,671 bytes)
        - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
 
+- **Volteo y Transformación Sincronizada de Cartas DFC/MDFC (Punto 15 - C.15):**
+  - **Soporte multi-cara reactivo:** Conmutación autoritativa de `activeFaceIndex` vía `FLIP_CARD` (`transformFace: true`), sincronizando en vivo las caras de cartas transformables (como Delver of Secrets) o modales (MDFC) reflejadas de inmediato en `CardDisplay`.
+
 - **Mecanismo Robusto de Clonación de Permanentes (Punto 14 - C.14):**
   - **Generación paramétrica:** Permite clonar copias individuales o múltiples en lote ($\times 1, \times 2, \times 3, N$), aplicando cascada posicional calculada, desvinculación de contadores y palabras clave, conservación de P/T base canónico y registro descriptivo en bitácora con posibilidad de reversión atómica (undo).
 

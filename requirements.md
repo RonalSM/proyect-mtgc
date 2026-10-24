@@ -721,6 +721,16 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Cada copia SHALL colocarse escalonada en cascada junto a la posición de la carta fuente.
    - La acción SHALL quedar asentada en la bitácora pública de la partida.
 
+### REQ-51 Transformación y Volteo Sincronizado de Cartas de Dos Caras DFC/MDFC (Punto 15 de Correcciones del Cliente - C.15)
+
+**Historia:** Como jugador, quiero una opción "Voltear cara activa" en el menú contextual que sea visible únicamente para cartas de doble cara o que se transforman (cara trasera, MDFC, transform), de modo que al activarla alterne la cara activa (imagen, nombre, tipo, texto y P/T) y se sincronice en tiempo real con todos los participantes de la mesa.
+
+1. **Visibilidad Condicional:**
+   - La opción `context-transform-btn` ("Voltear cara activa") SHALL mostrarse en el menú contextual únicamente si la permanente es de dos caras (`isTwoFaced === true` o `faces.length > 1`).
+2. **Alternancia y Sincronización de Cara:**
+   - La acción `FLIP_CARD` con `{ transformFace: true }` SHALL alternar `activeFaceIndex` en el servidor de juego y difundir el nuevo estado por WebSocket.
+   - Todos los clientes SHALL actualizar la permanente en pantalla mostrando la imagen de la cara correspondiente (`faces[activeFaceIndex].imageUrlNormal`), sus estadísticas de combate y datos de texto.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -995,5 +1005,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-48        | COMP-1, COMP-7                         |
 | REQ-49        | COMP-1, COMP-7                         |
 | REQ-50        | COMP-1, COMP-2, COMP-7                 |
+| REQ-51        | COMP-1, COMP-2, COMP-7                 |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).
