@@ -731,6 +731,17 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - La acción `FLIP_CARD` con `{ transformFace: true }` SHALL alternar `activeFaceIndex` en el servidor de juego y difundir el nuevo estado por WebSocket.
    - Todos los clientes SHALL actualizar la permanente en pantalla mostrando la imagen de la cara correspondiente (`faces[activeFaceIndex].imageUrlNormal`), sus estadísticas de combate y datos de texto.
 
+### REQ-52 Reconexión WebSocket con Retroceso Exponencial, Jitter y Protección contra 429 (Punto 16 de Correcciones del Cliente - D.16)
+
+**Historia:** Como jugador, quiero que ante una pérdida temporal de conexión o reinicio del servidor el cliente reintente la reconexión de forma inteligente con espera exponencial y variación aleatoria (jitter), mostrando un aviso visible en la interfaz, y que el servidor permita las reconexiones legítimas sin bloquearlas con errores HTTP 429 en el apretón de manos (handshake).
+
+1. **Retroceso Exponencial con Jitter:**
+   - THE hook `useGameSocket` SHALL calcular los intervalos de reconexión con retroceso exponencial (`baseDelay = min(1000 * 1.8^attempt, 20000)`) y variación aleatoria (`jitter = (random * 0.5 - 0.25) * baseDelay`), acotando el número de intentos continuos por ciclo a un máximo de 8.
+2. **Aviso Visual Reactivo de Reconexión:**
+   - WHILE el socket se encuentre en estado `'reconnecting'`, THE interfaz SHALL mostrar en pantalla el distintivo `ws-reconnecting-banner` ("Reconectando a la sala de juego...").
+3. **Exclusión de Rutas WebSocket en Rate Limiter:**
+   - THE configuración de `rateLimit` en el servidor HTTP Fastify SHALL excluir las rutas `/ws/*` mediante `allowList`, previniendo que los reintentos legítimos de clientes desconectados agoten la cuota de peticiones HTTP con errores 429.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -1006,5 +1017,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-49        | COMP-1, COMP-7                         |
 | REQ-50        | COMP-1, COMP-2, COMP-7                 |
 | REQ-51        | COMP-1, COMP-2, COMP-7                 |
+| REQ-52        | COMP-1, COMP-2, COMP-3                 |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

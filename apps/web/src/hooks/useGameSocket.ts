@@ -175,9 +175,15 @@ export function useGameSocket({
         setRemoteDraggingCards({});
         socketRef.current = null;
 
-        // Auto-reconnect with exponential backoff if enabled
+        // Auto-reconnect with exponential backoff and jitter (Punto 16)
         if (enabled && reconnectAttemptsRef.current < 8) {
-          const delay = Math.min(1000 * Math.pow(1.5, reconnectAttemptsRef.current), 10000);
+          const attempt = reconnectAttemptsRef.current;
+          // Espera exponencial base (1s, 2s, 4s, 8s...) con límite de 20s
+          const baseDelay = Math.min(1000 * Math.pow(1.8, attempt), 20000);
+          // Variación aleatoria (jitter) de ±25% para evitar reconexiones simultáneas sincronizadas
+          const jitter = (Math.random() * 0.5 - 0.25) * baseDelay;
+          const delay = Math.max(500, Math.round(baseDelay + jitter));
+
           reconnectAttemptsRef.current++;
           setStatus('reconnecting');
           reconnectTimeoutRef.current = setTimeout(() => {

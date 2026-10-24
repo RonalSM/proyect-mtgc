@@ -87,6 +87,11 @@ await server.register(jwt, {
 await server.register(rateLimit, {
   max: 150,
   timeWindow: '1 minute',
+  allowList: (req: any) => {
+    // Las conexiones y reconexiones legítimas a WebSocket no deben agotar el rate limit HTTP
+    const url = req.url || '';
+    return url.startsWith('/ws/');
+  },
 });
 
 await server.register(websocket);

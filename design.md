@@ -1016,6 +1016,10 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
        - `audit-preview-keywords-counters.png` (1,788,671 bytes)
        - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
 
+- **Reconexión Resiliente WebSocket con Jitter y Bypass de Rate Limit (Punto 16 - D.16):**
+  - **Algoritmo de reconexión:** Escalado exponencial con atenuación y dispersión aleatoria ($\pm 25\%$) para disipar avalanchas sincronizadas de reconexión, acompañado de aviso flotante reactivo (`ws-reconnecting-banner`).
+  - **Exclusión de handshake en servidor:** `allowList` en `@fastify/rate-limit` para prefijos `/ws/`, evitando falsos positivos de bloqueo 429 durante reconexiones concurrentes.
+
 - **Volteo y Transformación Sincronizada de Cartas DFC/MDFC (Punto 15 - C.15):**
   - **Soporte multi-cara reactivo:** Conmutación autoritativa de `activeFaceIndex` vía `FLIP_CARD` (`transformFace: true`), sincronizando en vivo las caras de cartas transformables (como Delver of Secrets) o modales (MDFC) reflejadas de inmediato en `CardDisplay`.
 

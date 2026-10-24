@@ -246,6 +246,17 @@ export default function App() {
         </div>
       </header>
 
+      {/* Banner de Reconexión WebSocket (Punto 16) */}
+      {status === 'reconnecting' && (
+        <div
+          data-testid="ws-reconnecting-banner"
+          className="fixed top-2 left-1/2 -translate-x-1/2 z-[200] bg-amber-500 text-slate-950 font-bold px-4 py-1.5 rounded-full shadow-2xl flex items-center space-x-2 text-xs animate-pulse border border-amber-400"
+        >
+          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+          <span>Reconectando a la sala de juego...</span>
+        </div>
+      )}
+
       {/* Main Container */}
       <main className="flex-1 p-4 max-w-7xl w-full mx-auto overflow-hidden">
         {roomCode && roomState ? (
