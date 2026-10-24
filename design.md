@@ -1016,6 +1016,9 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
        - `audit-preview-keywords-counters.png` (1,788,671 bytes)
        - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
 
+- **Mecanismo Robusto de Clonación de Permanentes (Punto 14 - C.14):**
+  - **Generación paramétrica:** Permite clonar copias individuales o múltiples en lote ($\times 1, \times 2, \times 3, N$), aplicando cascada posicional calculada, desvinculación de contadores y palabras clave, conservación de P/T base canónico y registro descriptivo en bitácora con posibilidad de reversión atómica (undo).
+
 - **Filas Compactas de Poder y Resistencia (Punto 13 - C.13):**
   - **Valores efectivos en línea:** Cada fila combina en un renglón horizontal la etiqueta del atributo, el valor efectivo reactivo con colorimetría semántica (verde/rojo/neutro) y la caja de texto numérica del valor base.
 

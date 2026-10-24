@@ -124,11 +124,13 @@ export interface TapCardPayload {
 
 export interface FlipCardPayload {
   cardInstanceId: string;
-  isFaceDown: boolean;
+  isFaceDown?: boolean;
+  transformFace?: boolean;
 }
 
 export interface CloneTokenPayload {
   cardInstanceId: string;
+  count?: number;
 }
 
 export interface CreateTokenPayload {

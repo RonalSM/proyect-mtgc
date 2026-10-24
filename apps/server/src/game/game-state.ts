@@ -1069,76 +1069,111 @@ export class GameStateSession {
   }
 
   /**
-   * Flips a card face down or face up
+   * Flips a card face down / face up, or transforms/toggles active face for DFC cards (Punto 15)
    */
   public flipCard(playerId: string, payload: FlipCardPayload): void {
     const found = this.findBattlefieldCard(payload.cardInstanceId);
     if (!found) return;
 
     const card = found.card;
-    card.isFaceDown = payload.isFaceDown;
-    this.addLog(
-      playerId,
-      `puso "${card.definition.name}" boca ${payload.isFaceDown ? 'abajo' : 'arriba'}`,
-    );
+    if (payload.transformFace) {
+      const facesCount = card.definition.faces?.length || 2;
+      card.activeFaceIndex = ((card.activeFaceIndex || 0) + 1) % facesCount;
+      const faceName =
+        card.definition.faces?.[card.activeFaceIndex]?.name || card.definition.name;
+      this.addLog(
+        playerId,
+        `volteó "${card.definition.name}" (cara activa: "${faceName}")`,
+      );
+    } else if (payload.isFaceDown !== undefined) {
+      card.isFaceDown = payload.isFaceDown;
+      this.addLog(
+        playerId,
+        `puso "${card.definition.name}" boca ${payload.isFaceDown ? 'abajo' : 'arriba'}`,
+      );
+    }
     this.incrementVersion();
   }
 
   /**
-   * Clones a token or permanent on the battlefield (REQ-9.4)
+   * Clones a token or permanent on the battlefield (REQ-9.4, Punto 14)
+   * Cada copia es una carta de la mesa con la misma identidad y el P/T base de la original,
+   * enderezada y sin contadores ni palabras clave añadidas, colocada en cascada junto a la original,
+   * que desaparece al salir de la mesa y queda en la bitácora.
    */
   public cloneToken(playerId: string, payload: CloneTokenPayload): void {
     const found = this.findBattlefieldCard(payload.cardInstanceId);
     if (!found) return;
 
     const sourceCard = found.card;
-    const clonedPos = {
-      x: Math.min(0.9, (sourceCard.position?.x ?? 0.5) + 0.03),
-      y: Math.min(0.9, (sourceCard.position?.y ?? 0.5) + 0.03),
-    };
-
-    const clonedInstance: CardInstance = {
-      instanceId: randomUUID(),
-      definition: {
-        ...sourceCard.definition,
-        name: sourceCard.definition.name.includes('(Token)')
-          ? sourceCard.definition.name
-          : `${sourceCard.definition.name} (Token)`,
-      },
-      ownerId: playerId, // Inmutable: para fichas el que las crea
-      controllerId: playerId,
-      holderId: this.computeHolderId(clonedPos, false),
-      isCommander: false,
-      isTapped: false,
-      isFaceDown: false,
-      isToken: true,
-      rotation: 0,
-      counters: { ...sourceCard.counters },
-      position: {
-        ...clonedPos,
-        zIndex: (sourceCard.position?.zIndex ?? 1) + 1,
-      },
-    };
+    const count = Math.max(1, payload.count || 1);
+    const createdInstances: CardInstance[] = [];
 
     const targetZones =
-      this.state.playerZones[clonedInstance.holderId || playerId] ||
+      this.state.playerZones[sourceCard.holderId || playerId] ||
       this.state.playerZones[playerId];
-    if (targetZones) {
-      targetZones.battlefield.push(clonedInstance);
+
+    const baseP =
+      sourceCard.definition.power !== undefined
+        ? parseInt(sourceCard.definition.power, 10)
+        : undefined;
+    const baseT =
+      sourceCard.definition.toughness !== undefined
+        ? parseInt(sourceCard.definition.toughness, 10)
+        : undefined;
+
+    for (let i = 0; i < count; i++) {
+      const step = (i + 1) * 0.025;
+      const clonedPos = {
+        x: Math.min(0.92, (sourceCard.position?.x ?? 0.5) + step),
+        y: Math.min(0.92, (sourceCard.position?.y ?? 0.5) + step),
+      };
+
+      const clonedInstance: CardInstance = {
+        instanceId: randomUUID(),
+        definition: {
+          ...sourceCard.definition,
+          name: sourceCard.definition.name.includes('(Token)')
+            ? sourceCard.definition.name
+            : `${sourceCard.definition.name} (Token)`,
+        },
+        ownerId: playerId,
+        controllerId: playerId,
+        holderId: this.computeHolderId(clonedPos, false),
+        isCommander: false,
+        isTapped: false,
+        isFaceDown: false,
+        isToken: true,
+        rotation: 0,
+        counters: {}, // Limpio: sin contadores
+        keywords: [], // Limpio: sin palabras clave añadidas
+        basePower: !isNaN(baseP as number) ? baseP : undefined,
+        baseToughness: !isNaN(baseT as number) ? baseT : undefined,
+        activeFaceIndex: sourceCard.activeFaceIndex || 0,
+        position: {
+          ...clonedPos,
+          zIndex: (sourceCard.position?.zIndex ?? 1) + 1 + i,
+        },
+      };
+
+      if (targetZones) {
+        targetZones.battlefield.push(clonedInstance);
+      }
+      createdInstances.push(clonedInstance);
     }
-    this.addLog(playerId, `clonó el token/permanente "${sourceCard.definition.name}"`, true);
+
+    const qtyText = count > 1 ? `${count} copias de` : 'copia de';
+    this.addLog(playerId, `creó ${qtyText} "${sourceCard.definition.name}"`, true);
 
     this.undoStack.push({
       playerId,
-      description: `Revertir clon de ${sourceCard.definition.name}`,
+      description: `Revertir clon (${count}) de ${sourceCard.definition.name}`,
       revert: () => {
         if (targetZones) {
-          const idx = targetZones.battlefield.findIndex(
-            c => c.instanceId === clonedInstance.instanceId,
+          const idsToRemove = new Set(createdInstances.map(c => c.instanceId));
+          targetZones.battlefield = targetZones.battlefield.filter(
+            c => !idsToRemove.has(c.instanceId),
           );
-          if (idx !== -1) {
-            targetZones.battlefield.splice(idx, 1);
-          }
         }
       },
     });

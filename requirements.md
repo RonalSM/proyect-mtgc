@@ -709,6 +709,18 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Si el valor efectivo es menor que el base: rojo rosado (`text-rose-400 bg-rose-950/60`).
    - Si el valor efectivo es igual al base: neutro (`text-slate-300`).
 
+### REQ-50 Clonación Robusta de Permanentes con Opciones Rápidas (Punto 14 de Correcciones del Cliente - C.14)
+
+**Historia:** Como jugador, quiero poder clonar una carta o ficha en el campo de batalla mediante opciones rápidas de 1, 2 y 3 copias o una cantidad personalizada, de modo que cada copia aparezca en cascada junto a la original, comparta su identidad y P/T base pero nazca enderezada, limpia de contadores y palabras clave añadidas, y se registre en la bitácora de la mesa.
+
+1. **Opciones Rápidas y Cantidad Libre:**
+   - THE menú contextual SHALL incluir un submenú de clonación con botones rápidos `×1`, `×2` y `×3`, más una caja de entrada numérica y botón "Clonar" para cantidades arbitrarias.
+2. **Propiedades de las Copias Creadas:**
+   - Cada copia SHALL instanciarse con un nuevo `instanceId` único, la misma `definition` y `activeFaceIndex` que la fuente, `isToken: true`, `isTapped: false`, `counters: {}` vacíos y `keywords: []` vacíos.
+   - El P/T base de cada copia SHALL heredarse del P/T base impreso de la original.
+   - Cada copia SHALL colocarse escalonada en cascada junto a la posición de la carta fuente.
+   - La acción SHALL quedar asentada en la bitácora pública de la partida.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -982,5 +994,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-47        | COMP-1, COMP-7                         |
 | REQ-48        | COMP-1, COMP-7                         |
 | REQ-49        | COMP-1, COMP-7                         |
+| REQ-50        | COMP-1, COMP-2, COMP-7                 |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

@@ -74,11 +74,13 @@ export const TapCardSchema = z.object({
 
 export const FlipCardSchema = z.object({
   cardInstanceId: z.string().min(1),
-  isFaceDown: z.boolean(),
+  isFaceDown: z.boolean().optional(),
+  transformFace: z.boolean().optional(), // Si true, alterna la cara activa (Punto 15)
 });
 
 export const CloneTokenSchema = z.object({
   cardInstanceId: z.string().min(1),
+  count: z.number().int().positive().default(1),
 });
 
 export const CreateTokenSchema = z.object({
