@@ -742,6 +742,16 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 3. **Exclusión de Rutas WebSocket en Rate Limiter:**
    - THE configuración de `rateLimit` en el servidor HTTP Fastify SHALL excluir las rutas `/ws/*` mediante `allowList`, previniendo que los reintentos legítimos de clientes desconectados agoten la cuota de peticiones HTTP con errores 429.
 
+### REQ-53 Supresión de Peticiones no Autenticadas a Mazos Guardados y Silenciado de 401 (Punto 17 de Correcciones del Cliente - D.17)
+
+**Historia:** Como usuario invitado o no autenticado, quiero ingresar a la sala de espera (Lobby) sin que se generen llamadas innecesarias ni errores HTTP 401 no controlados en la consola del navegador al consultar mazos guardados.
+
+1. **Verificación Previa de Sesión:**
+   - En `LobbyWaitingRoom.tsx`, THE cliente SHALL comprobar si existe una sesión o token de autenticación registrado antes de disparar la petición a `GET /api/decks`.
+   - IF el usuario se encuentra en modo invitado sin sesión registrada (`!token && isGuest`), THEN THE cliente SHALL omitir la petición HTTP a `GET /api/decks`, establecer la lista de mazos guardados como vacía (`[]`) y finalizar de inmediato el estado de carga (`isLoadingDecks = false`).
+2. **Silenciado Silencioso de Errores HTTP 401:**
+   - IF se realiza la petición y la respuesta retorna un código HTTP 401 (No autorizado), THEN THE cliente SHALL gestionar la respuesta en silencio, asignando un arreglo vacío a los mazos guardados y sin invocar `console.error` ni registrar errores de red ruidosos en la consola.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -1018,5 +1028,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-50        | COMP-1, COMP-2, COMP-7                 |
 | REQ-51        | COMP-1, COMP-2, COMP-7                 |
 | REQ-52        | COMP-1, COMP-2, COMP-3                 |
+| REQ-53        | COMP-1, COMP-6                         |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

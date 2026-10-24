@@ -1016,6 +1016,10 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
        - `audit-preview-keywords-counters.png` (1,788,671 bytes)
        - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
 
+- **Supresión de Peticiones no Autenticadas a Mazos Guardados y Silenciado de 401 (Punto 17 - D.17):**
+  - **Detección condicional previa:** `LobbyWaitingRoom.tsx` evalúa si el cliente cuenta con un token de autenticación registrado (`localStorage.getItem('token')` o `mtgc_access_token`) antes de emitir la llamada a `GET /api/decks`. Para sesiones de invitados anónimos (`isGuest`), se omite la llamada inmediatamente sin generar tráfico de red innecesario ni peticiones fallidas.
+  - **Manejo silencioso:** Si se dispara la petición y retorna un código HTTP 401, se gestiona de forma transparente inicializando la lista de mazos en vacía (`[]`) y finalizando el estado de carga sin escribir errores en la consola del navegador (`console.error`).
+
 - **Reconexión Resiliente WebSocket con Jitter y Bypass de Rate Limit (Punto 16 - D.16):**
   - **Algoritmo de reconexión:** Escalado exponencial con atenuación y dispersión aleatoria ($\pm 25\%$) para disipar avalanchas sincronizadas de reconexión, acompañado de aviso flotante reactivo (`ws-reconnecting-banner`).
   - **Exclusión de handshake en servidor:** `allowList` en `@fastify/rate-limit` para prefijos `/ws/`, evitando falsos positivos de bloqueo 429 durante reconexiones concurrentes.

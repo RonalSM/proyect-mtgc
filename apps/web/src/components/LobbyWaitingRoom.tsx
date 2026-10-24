@@ -85,18 +85,34 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
     fetchPresets();
   }, []);
 
-  // Load user saved decks from /api/decks
+  // Load user saved decks from /api/decks (silent for guests/unauthenticated, Punto 17)
   useEffect(() => {
     const fetchDecks = async () => {
+      // Si no hay token de autenticación ni sesión activa, no realizar la llamada para evitar 401 en consola
+      const token = localStorage.getItem('token') || localStorage.getItem('mtgc_access_token');
+      // También podemos comprobar si hay cookies accesibles o flag de invitado
+      const isGuest = localStorage.getItem('mtgc_is_guest') === 'true';
+      if (!token && isGuest) {
+        setSavedDecks([]);
+        setIsLoadingDecks(false);
+        return;
+      }
+
       setIsLoadingDecks(true);
       try {
         const res = await fetch('/api/decks', { credentials: 'include' });
+        if (res.status === 401) {
+          // Usuario no autenticado / invitado: silenciar sin registrar error en consola
+          setSavedDecks([]);
+          return;
+        }
         if (res.ok) {
           const data = await res.json();
           setSavedDecks(data.decks || []);
         }
       } catch {
-        // Guest or offline DB fallback
+        // Fallback silencioso ante errores de red
+        setSavedDecks([]);
       } finally {
         setIsLoadingDecks(false);
       }
