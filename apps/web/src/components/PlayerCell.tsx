@@ -745,20 +745,20 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               ref={lifeButtonRef}
               data-life-button={player.id}
               onClick={toggleLifeControls}
-              className={`flex items-center space-x-1.5 px-3 py-1 rounded-2xl backdrop-blur-md border shadow-2xl transition-all cursor-pointer ${
+              className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-2xl backdrop-blur-md border shadow-2xl transition-[border-color,background-color,box-shadow,transform] duration-200 cursor-pointer active:scale-95 ${
                 player.life <= 0
-                  ? 'bg-rose-950/90 border-rose-600 text-rose-300 ring-2 ring-rose-500/30'
+                  ? 'bg-rose-950/90 border-rose-600 text-rose-300 ring-2 ring-rose-500/30 shadow-rose-900/30'
                   : player.life <= 10
-                    ? 'bg-amber-950/90 border-amber-600 text-amber-200'
-                    : 'bg-slate-950/90 border-slate-700/80 text-white hover:border-amber-500/50'
+                    ? 'bg-amber-950/90 border-amber-600 text-amber-200 shadow-amber-900/20'
+                    : 'bg-slate-950/90 border-slate-700/80 text-white hover:border-amber-400/60 shadow-black/60'
               }`}
             >
               <Heart
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
-                  player.life <= 10 ? 'text-rose-500 fill-rose-500 animate-pulse' : 'text-rose-400'
+                className={`w-4 h-4 ${
+                  player.life <= 10 ? 'text-rose-500 fill-rose-500 animate-pulse' : 'text-rose-400 fill-rose-400/20'
                 }`}
               />
-              <span className="text-xl sm:text-2xl font-black font-mono tracking-tight leading-none">
+              <span className="text-xl sm:text-2xl font-black font-mono tracking-tight leading-none tabular-nums">
                 {player.life}
               </span>
             </button>

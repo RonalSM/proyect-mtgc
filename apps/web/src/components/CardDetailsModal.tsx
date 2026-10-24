@@ -16,7 +16,6 @@ import {
   BookOpen,
   AlertTriangle,
 } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext';
 import { MtgSymbolIcon, KeyruneSetIcon } from '../utils/mana-icons';
 import { diagnosticsService } from '../services/diagnosticsService';
 
@@ -82,8 +81,6 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
     (!card.scryfallId && !card.oracleId) ||
     card.typeLine === 'Unknown';
 
-  const { language } = useLanguage();
-
   // Enriquecer dinámicamente si falta set o artista y no está marcada como ausente en DB
   useEffect(() => {
     setEnrichedCard(card);
@@ -114,10 +111,10 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
         cardName: card.name,
         status: 404,
         reason: 'Carta no encontrada en la base de datos local',
-        lang: language,
+        lang: 'en',
       });
     }
-  }, [isNotInDb, card.name, card.scryfallId, card.oracleId, language]);
+  }, [isNotInDb, card.name, card.scryfallId, card.oracleId]);
 
   const currentCard = enrichedCard;
   const hasMultipleFaces = !!(currentCard.isTwoFaced || (currentCard.faces && currentCard.faces.length > 1));
@@ -343,7 +340,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
             <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 shadow-inner">
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center space-x-1">
                 <BookOpen className="w-3 h-3 text-amber-400" />
-                <span>{display.isSpanish ? 'Texto en Español (Impreso)' : 'Texto Oracle Oficial (English)'}</span>
+                <span>Texto Oracle Oficial</span>
               </div>
               <div data-testid="card-details-oracle">
                 <FormattedOracleText text={displayOracle} />

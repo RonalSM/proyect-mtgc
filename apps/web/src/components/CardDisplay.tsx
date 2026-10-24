@@ -205,7 +205,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
 
   return (
     <div
-      className={`w-full h-full rounded-[6px] overflow-hidden relative select-none shadow-md aspect-[5/7] bg-slate-900 ${className}`}
+      className={`w-full h-full rounded-[6px] overflow-hidden relative select-none shadow-md shadow-black/50 aspect-[5/7] bg-slate-900 border border-slate-800/80 hover:border-slate-700/80 transition-[border-color,box-shadow] duration-200 ${className}`}
     >
       {/* 1. Skeletons while pending/loading in queue (Punto 4) */}
       {isPendingOrLoading ? (

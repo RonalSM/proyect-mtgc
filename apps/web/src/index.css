@@ -4,6 +4,9 @@
 
 :root {
   color-scheme: dark;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 :fullscreen,
@@ -39,6 +42,20 @@ body {
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   user-select: none;
   overflow-x: hidden;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom selection matching dark craft palette */
+::selection {
+  background-color: rgba(245, 158, 11, 0.28);
+  color: #fef3c7;
+}
+
+/* Button & interactive press micro-interaction */
+button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 /* Scrollbars personalizadas con tema oscuro (REQ-22) */
