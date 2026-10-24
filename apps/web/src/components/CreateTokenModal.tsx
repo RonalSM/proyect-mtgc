@@ -25,17 +25,6 @@ export const COMMON_TOKENS_CLIENT: CardDefinition[] = [
     imageUrlSmall:
       'https://cards.scryfall.io/small/front/c/b/cb7b5024-3a0b-4f14-977e-ba6c4c2567c9.jpg?1783915244',
     artist: 'Alayna Danner',
-    locales: {
-      es: {
-        printedName: 'Tesoro',
-        printedTypeLine: 'Ficha de artefacto — Tesoro',
-        printedText: '{T}, sacrificar esta ficha: Agrega un maná de cualquier color.',
-        imageUrlNormal:
-          'https://cards.scryfall.io/normal/front/c/b/cb7b5024-3a0b-4f14-977e-ba6c4c2567c9.jpg?1783915244',
-        imageUrlSmall:
-          'https://cards.scryfall.io/small/front/c/b/cb7b5024-3a0b-4f14-977e-ba6c4c2567c9.jpg?1783915244',
-      },
-    },
   },
   {
     scryfallId: 'da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37',
@@ -50,17 +39,6 @@ export const COMMON_TOKENS_CLIENT: CardDefinition[] = [
     imageUrlSmall:
       'https://cards.scryfall.io/small/front/d/a/da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37.jpg?1783903567',
     artist: 'Titus Lunter',
-    locales: {
-      es: {
-        printedName: 'Comida',
-        printedTypeLine: 'Ficha de artefacto — Comida',
-        printedText: '{2}, {T}, sacrificar esta ficha: Ganas 3 vidas.',
-        imageUrlNormal:
-          'https://cards.scryfall.io/normal/front/d/a/da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37.jpg?1783903567',
-        imageUrlSmall:
-          'https://cards.scryfall.io/small/front/d/a/da1fca2e-4ea7-4c5f-bd58-f9529dfb6f37.jpg?1783903567',
-      },
-    },
   },
   {
     scryfallId: '1481e938-7763-4109-b313-2a21053a82df',
@@ -75,17 +53,6 @@ export const COMMON_TOKENS_CLIENT: CardDefinition[] = [
     imageUrlSmall:
       'https://cards.scryfall.io/small/front/1/4/1481e938-7763-4109-b313-2a21053a82df.jpg?1789754721',
     artist: 'Franz Vohwinkel',
-    locales: {
-      es: {
-        printedName: 'Pista',
-        printedTypeLine: 'Ficha de artefacto — Pista',
-        printedText: '{2}, sacrificar esta ficha: Roba una carta.',
-        imageUrlNormal:
-          'https://cards.scryfall.io/normal/front/1/4/1481e938-7763-4109-b313-2a21053a82df.jpg?1789754721',
-        imageUrlSmall:
-          'https://cards.scryfall.io/small/front/1/4/1481e938-7763-4109-b313-2a21053a82df.jpg?1789754721',
-      },
-    },
   },
   {
     scryfallId: '92a3afe7-bd9f-43f9-adc3-4819e60dc7a5',
@@ -100,17 +67,6 @@ export const COMMON_TOKENS_CLIENT: CardDefinition[] = [
     imageUrlSmall:
       'https://cards.scryfall.io/small/front/9/2/92a3afe7-bd9f-43f9-adc3-4819e60dc7a5.jpg?1783907965',
     artist: 'Brian Valeza',
-    locales: {
-      es: {
-        printedName: 'Sangre',
-        printedTypeLine: 'Ficha de artefacto — Sangre',
-        printedText: '{1}, {T}, descartar una carta, sacrificar esta ficha: Roba una carta.',
-        imageUrlNormal:
-          'https://cards.scryfall.io/normal/front/9/2/92a3afe7-bd9f-43f9-adc3-4819e60dc7a5.jpg?1783907965',
-        imageUrlSmall:
-          'https://cards.scryfall.io/small/front/9/2/92a3afe7-bd9f-43f9-adc3-4819e60dc7a5.jpg?1783907965',
-      },
-    },
   },
   {
     scryfallId: '91613970-c25c-4959-b5b0-b6e2a7657634',
@@ -126,18 +82,6 @@ export const COMMON_TOKENS_CLIENT: CardDefinition[] = [
     imageUrlSmall:
       'https://cards.scryfall.io/small/front/9/1/91613970-c25c-4959-b5b0-b6e2a7657634.jpg?1789737819',
     artist: 'Sam Burley',
-    locales: {
-      es: {
-        printedName: 'Mapa',
-        printedTypeLine: 'Ficha de artefacto — Mapa',
-        printedText:
-          '{1}, {T}, sacrificar este artefacto: La criatura objetivo que controlas explora. Activa esto solo como un conjuro.',
-        imageUrlNormal:
-          'https://cards.scryfall.io/normal/front/9/1/91613970-c25c-4959-b5b0-b6e2a7657634.jpg?1789737819',
-        imageUrlSmall:
-          'https://cards.scryfall.io/small/front/9/1/91613970-c25c-4959-b5b0-b6e2a7657634.jpg?1789737819',
-      },
-    },
   },
 ];
 
@@ -171,7 +115,7 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
   const [customName, setCustomName] = useState('');
   const [customPower, setCustomPower] = useState('1');
   const [customToughness, setCustomToughness] = useState('1');
-  const [customTypeLine, setCustomTypeLine] = useState('Criatura — Ficha');
+  const [customTypeLine, setCustomTypeLine] = useState('Token Creature');
   const [customColors, setCustomColors] = useState<CardColor[]>([]);
 
   // Cargar fichas del mazo del jugador cuando se abre el modal

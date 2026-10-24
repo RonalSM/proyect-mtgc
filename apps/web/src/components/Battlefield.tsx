@@ -504,7 +504,7 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
                             e.stopPropagation();
                             onAction('CLONE_TOKEN', { cardInstanceId: card.instanceId });
                           }}
-                          title="Clonar Token / Permanente (REQ-9.4)"
+                          title="Copiar Token / Permanente (REQ-9.4)"
                           className="p-1 hover:bg-slate-800 text-sky-400 rounded transition-colors"
                         >
                           <Copy className="w-3 h-3" />
@@ -554,7 +554,7 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
                           }}
                           className="w-full text-left px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 font-semibold"
                         >
-                          Clonar Token
+                          Copiar Token / Permanente
                         </button>
                         <button
                           onClick={() => {

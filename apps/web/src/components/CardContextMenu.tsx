@@ -864,7 +864,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             </div>
           )}
 
-          {/* (6) Clonar con opciones 1, 2, 3 y otra cantidad (Punto 12 y 14) */}
+          {/* (6) Copiar con opciones 1, 2, 3 y otra cantidad (Punto 12 y 14) */}
           {fromZone === 'battlefield' && (
             <div className="flex flex-col">
               <button
@@ -877,7 +877,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
               >
                 <div className="flex items-center space-x-2">
                   <Copy className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Clonar</span>
+                  <span>Copiar</span>
                 </div>
                 {activeSubmenu === 'clone' ? (
                   <ChevronDown className="w-3.5 h-3.5 text-blue-400" />
@@ -946,7 +946,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                       }}
                       className="flex-1 px-2 py-0.5 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded border border-blue-500/50 text-[12px] font-semibold"
                     >
-                      Clonar
+                      Copiar
                     </button>
                   </div>
                 </div>

@@ -114,14 +114,14 @@ export const TableGrid: React.FC<TableGridProps> = ({
       {/* Botón de Pantalla Completa del Navegador y Controles de Vista Ampliada (REQ-22, Punto 6) */}
       {/* Vista Ampliada Banner & Cerrar (Punto 1 / REQ-22) */}
       {expandedPlayerId && roomState.players[expandedPlayerId] && (
-        <div className="fixed top-2 right-4 z-40 flex items-center space-x-2 bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-xl shadow-xl backdrop-blur-md">
-          <span className="text-xs font-bold text-amber-300">
+        <div className="fixed top-2 right-4 z-40 flex items-center space-x-2.5 bg-obsidian-900/95 border border-amber-500/30 px-3.5 py-1.5 rounded-xl shadow-2xl backdrop-blur-md">
+          <span className="text-xs font-serif font-bold text-amber-300 tracking-wide">
             Vista Ampliada: {roomState.players[expandedPlayerId].name}
           </span>
           <button
             onClick={onCloseExpanded}
             data-testid="close-expanded-view"
-            className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold cursor-pointer flex items-center space-x-1"
+            className="px-2 py-0.5 rounded-lg bg-obsidian-800 hover:bg-obsidian-750 border border-white/5 text-zinc-300 hover:text-white text-xs font-medium cursor-pointer flex items-center space-x-1 transition-colors"
           >
             <span>Cerrar (Esc)</span>
           </button>
@@ -130,7 +130,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
 
       {/* Grid: 1 fila x 2 columnas en 1v1; 2 filas x hasta 3 cols para >= 3 jugadores (Punto 4, REQ-22.1, 22.2) o Vista Ampliada (Punto 3) */}
       {expandedPlayerId && roomState.players[expandedPlayerId] ? (
-        <div className="w-full h-full relative bg-slate-950">
+        <div className="w-full h-full relative bg-obsidian-950">
           {renderPlayerCell(
             roomState.players[expandedPlayerId],
             1,
@@ -141,7 +141,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
         </div>
       ) : (
         <div
-          className="w-full h-full grid gap-[1px] bg-black"
+          className="w-full h-full grid gap-[1px] bg-obsidian-950/80"
           style={{
             gridTemplateRows: isTwoPlayerMode ? '1fr' : '1fr 1fr',
             gridTemplateColumns: `repeat(${cols}, 1fr)`,
@@ -155,11 +155,13 @@ export const TableGrid: React.FC<TableGridProps> = ({
               return (
                 <div
                   key={`chat-slot-${index}`}
-                  className="bg-slate-950/90 border border-slate-900 h-full flex flex-col overflow-hidden relative"
+                  className="bg-obsidian-900/90 border border-obsidian-800/80 h-full flex flex-col overflow-hidden relative"
                 >
-                  <div className="bg-slate-900/90 px-3 py-1.5 border-b border-slate-800 text-[11px] font-bold text-slate-400 flex items-center justify-between">
-                    <span>Registro de Partida y Chat</span>
-                    <span className="text-[10px] text-amber-500 font-mono">EN VIVO</span>
+                  <div className="bg-obsidian-950/80 px-3.5 py-2 border-b border-obsidian-800/60 text-[11px] font-serif font-bold text-amber-200/90 flex items-center justify-between">
+                    <span className="tracking-wide">Registro de Partida y Chat</span>
+                    <span className="text-[10px] text-amber-400 font-mono font-bold bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
+                      EN VIVO
+                    </span>
                   </div>
                   <div className="flex-1 overflow-hidden p-2">
                     <GameLogAndChat logs={roomState.logs} onAction={onAction} />
@@ -170,7 +172,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
 
             if (slot.player) {
               return (
-                <div key={slot.player.id} className="h-full w-full relative bg-slate-950">
+                <div key={slot.player.id} className="h-full w-full relative bg-obsidian-950">
                   {renderPlayerCell(slot.player, slot.row, slot.col, isLocal, isTwoPlayerMode)}
                 </div>
               );
@@ -180,7 +182,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
             return (
               <div
                 key={`empty-${index}`}
-                className="bg-slate-950/40 border border-slate-900/80 flex items-center justify-center text-slate-700 text-xs font-mono"
+                className="bg-obsidian-950/50 border border-obsidian-850/60 flex items-center justify-center text-zinc-600 text-xs font-mono"
               >
                 Asiento Vacío
               </div>
@@ -191,12 +193,12 @@ export const TableGrid: React.FC<TableGridProps> = ({
 
       {/* Floating Chat & Logs Drawer (when clicked from FloatingToolbar or for 2, 4, 6 players) */}
       {isChatDrawerOpen && (
-        <div className="fixed top-14 right-4 z-50 w-80 max-w-[90vw] h-[75dvh] bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-          <div className="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
-            <span className="font-bold text-xs text-white">Registro y Chat</span>
+        <div className="fixed top-14 right-4 z-50 w-80 max-w-[90vw] h-[75dvh] bg-obsidian-900/95 backdrop-blur-xl border border-obsidian-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden ring-1 ring-white/5 animate-in fade-in zoom-in-95">
+          <div className="bg-obsidian-950/90 px-4 py-2.5 border-b border-obsidian-800/70 flex items-center justify-between">
+            <span className="font-serif font-bold text-xs text-amber-200 tracking-wide">Registro y Chat</span>
             <button
               onClick={() => setIsChatDrawerOpen(false)}
-              className="text-slate-400 hover:text-white font-bold text-sm"
+              className="text-zinc-400 hover:text-white font-bold text-sm cursor-pointer"
             >
               &times;
             </button>
@@ -212,8 +214,8 @@ export const TableGrid: React.FC<TableGridProps> = ({
       )}
 
       {/* Scryfall Attribution & Legal Notice in footer (REQ-18, REQ-22.3.3) */}
-      <div className="fixed bottom-0.5 right-2 z-30 pointer-events-none text-[9px] text-slate-600/70 select-none">
-        Imágenes y arte de cartas proporcionadas por Scryfall &bull; Fan Content no oficial WotC
+      <div className="fixed bottom-0.5 right-2 z-30 pointer-events-none text-[9px] text-zinc-600/80 font-mono select-none">
+        Imágenes y arte de cartas de Scryfall &bull; Fan Content no oficial WotC
       </div>
     </div>
   );
