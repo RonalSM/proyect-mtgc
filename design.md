@@ -1016,6 +1016,9 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
        - `audit-preview-keywords-counters.png` (1,788,671 bytes)
        - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
 
+- **Filas Compactas de Poder y Resistencia (Punto 13 - C.13):**
+  - **Valores efectivos en línea:** Cada fila combina en un renglón horizontal la etiqueta del atributo, el valor efectivo reactivo con colorimetría semántica (verde/rojo/neutro) y la caja de texto numérica del valor base.
+
 - **Orden Estandarizado de Acciones del Menú Contextual (Punto 12 - C.12):**
   - **Jerarquía y ergonomía funcional:** Organización estricta de las acciones en 10 niveles jerárquicos: (1) Girar/Enderezar, (2) Poder, (3) Resistencia, (4) Contadores, (5) Palabras clave, (6) Clonar, (7) Voltear, (8) Boca abajo, (9) Crear ficha / Mover a / Revelar, (10) Ver carta al final.
 

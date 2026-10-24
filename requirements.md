@@ -697,6 +697,18 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
      9. Resto de opciones: `Crear ficha`, `A Zona de Comando`, `Enviar a Mesa`, `Enviar a Mano`, `Enviar a Cementerio`, `Enviar a Exilio`, `Biblioteca` y `Revelar`
      10. `Ver carta` (al final del menú)
 
+### REQ-49 Filas Compactas de Poder y Resistencia con Efectivo Coloreado (Punto 13 de Correcciones del Cliente - C.13)
+
+**Historia:** Como jugador, quiero modificar el poder y la resistencia de una permanente mediante dos filas individuales directas ("Poder 3▲ [input]" y "Resistencia 2▼ [input]") sin títulos redundantes, viendo el valor efectivo inmediatamente al lado de la etiqueta con código de color dinámico (verde si supera el base, rojo si queda por debajo, neutro si es igual) seguido del campo numérico base.
+
+1. **Estructura Compacta sin Cabecera Separada:**
+   - La sección de estadísticas SHALL constar de dos filas independientes: `Poder` y `Resistencia`.
+   - Cada fila SHALL incluir: la etiqueta ("Poder" / "Resistencia"), la insignia del valor efectivo coloreado (`pt-effective-power` / `pt-effective-toughness`), y el campo de entrada numérico para modificar el valor base (`pt-input-base-power` / `pt-input-base-toughness`).
+2. **Códigos de Color Dinámicos:**
+   - Si el valor efectivo es mayor que el base: verde esmeralda (`text-emerald-400 bg-emerald-950/60`).
+   - Si el valor efectivo es menor que el base: rojo rosado (`text-rose-400 bg-rose-950/60`).
+   - Si el valor efectivo es igual al base: neutro (`text-slate-300`).
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -969,5 +981,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-46        | COMP-1, COMP-7                         |
 | REQ-47        | COMP-1, COMP-7                         |
 | REQ-48        | COMP-1, COMP-7                         |
+| REQ-49        | COMP-1, COMP-7                         |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).
