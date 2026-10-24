@@ -765,6 +765,14 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 4. **Actualización de Avisos de Terceros:**
    - `THIRD_PARTY_NOTICES.md` y `LegalModal.tsx` SHALL reflejar explícitamente que no se distribuye código GPL 3.0 de Keyrune y que se utilizan exclusivamente sus fuentes bajo SIL OFL 1.1.
 
+### REQ-55 Confirmación de Rama de Trabajo `main` (Punto 19 de Correcciones del Cliente - D.19)
+
+**Historia:** Como equipo técnico y auditor del proyecto, quiero dejar constancia explícita y documentada de que el trabajo y los commits de correcciones se desarrollan de manera deliberada sobre la rama `main` del repositorio.
+
+1. **Rama Canónica Activa:**
+   - Se confirma formalmente que la rama activa de desarrollo para la resolución integral de las correcciones del cliente (Puntos 1 al 20) es `main`.
+   - La rama previa `v2-mesa` queda registrada como referencia histórica de etapas anteriores, consolidándose toda la suite de correcciones y estabilizaciones directamente sobre `main`.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -1043,5 +1051,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-52        | COMP-1, COMP-2, COMP-3                 |
 | REQ-53        | COMP-1, COMP-6                         |
 | REQ-54        | COMP-1, COMP-5                         |
+| REQ-55        | COMP-1                                 |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

@@ -1016,6 +1016,9 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
        - `audit-preview-keywords-counters.png` (1,788,671 bytes)
        - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
 
+- **Confirmación Deliberada de Rama main (Punto 19 - D.19):**
+  - **Decisión de arquitectura y ramificación:** Se confirma y formaliza que el desarrollo de todas las correcciones solicitadas por el cliente (Puntos 1 al 20) se realiza deliberadamente sobre la rama troncal `main`. Los cambios precedentes en `v2-mesa` quedan superados y unificados en `main`, constituyendo la única fuente de verdad y versión operativa del proyecto.
+
 - **Exclusión de keyrune.css GPL y Uso Exclusivo de Fuentes SIL OFL 1.1 con CSS Propio (Punto 18 - D.18):**
   - **Aislamiento de licencias:** Se retira la importación directa de `keyrune/css/keyrune.css` (GPL 3.0). La aplicación utiliza exclusivamente los archivos binarios de fuentes preparadas (`keyrune.woff2`, `keyrune.woff`, `keyrune.ttf`) que están licenciados bajo SIL Open Font License 1.1.
   - **Hoja de estilos propia:** Se incorpora `apps/web/src/styles/keyrune-custom.css` con licencia MIT, declarando `@font-face` hacia los archivos de fuente y definiendo el mapa exhaustivo de clases `.ss-[set]` hacia caracteres Unicode, garantizando cero dependencias o contaminación de licencias copyleft en el frontend.
