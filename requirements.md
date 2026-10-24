@@ -642,6 +642,27 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - Pruebas unitarias en `packages/shared/test/card-pt.test.ts` (8/8 aprobadas).
    - Prueba E2E Playwright en `apps/web/e2e/card-pt-indicator.spec.ts` aprobada al 100% con captura de pantalla `audit-p7-card-pt-indicator.png`.
 
+### REQ-44 Ver Carta Completo con Datos Reales y Dictámenes Oficiales (Punto 8 de Correcciones del Cliente - B.8)
+
+**Historia:** Como jugador, quiero ver en el modal de detalle ("Ver carta") la información completa oficial (coste de maná, tipo, texto Oracle, P/T o lealtad, edición, rareza, artista, copyright, legalidad en Commander y dictámenes oficiales) para cualquier carta y no solo el comandante, disponiendo de textos en español si existen, y recibiendo un aviso explícito en el diagnóstico si una carta no está presente en la base de datos local en lugar de mostrar un modal vacío.
+
+1. **Campos Completos Oficiales:**
+   - THE modal `CardDetailsModal` SHALL presentar los 11 campos oficiales completos: coste de maná formateado con símbolos Mana font, tipo, texto de reglas Oracle o impreso en español (`locales.es.printedText`), P/T (para criaturas) o lealtad (para planeswalkers), código y nombre de set, rareza, artista, aviso de copyright de WotC, legalidad en Commander y dictámenes oficiales (`rulings`).
+2. **Aviso de Ausencia en Base de Datos:**
+   - Si una carta no existe en la base de datos local, THE sistema SHALL mostrar un aviso visual estructurado (`data-testid="card-not-in-db-warning"`) y registrar el suceso en el servicio de diagnóstico (`diagnosticsService.recordFailure`), en lugar de mostrar un panel vacío solo con el nombre.
+
+### REQ-45 Filtros Canónicos de Biblioteca en Inglés y Búsqueda Bilingüe (Punto 9 de Correcciones del Cliente - B.9)
+
+**Historia:** Como jugador, quiero que los filtros de tipo del inspector de biblioteca clasifiquen las cartas utilizando el `type_line` canónico en inglés de la base de datos para que funcionen con total precisión sin importar el idioma de la impresión, permitiendo que cartas con múltiples tipos (como Criaturas Artefacto) aparezcan en todas las categorías correspondientes, y que el buscador por texto encuentre cartas tanto por su nombre en español como en inglés mientras se visualizan los nombres en español en la cuadrícula.
+
+1. **Filtrado Canónico por Tipo en Inglés:**
+   - Los botones de filtro de tipo de la biblioteca (`Criaturas`, `Instantáneos`, `Conjuros`, `Artefactos`, `Encantamientos`, `Tierras`, `Planeswalkers`) SHALL evaluar exclusivamente el campo canónico `typeLine` en inglés (`creature`, `instant`, `sorcery`, `artifact`, `enchantment`, `land`, `planeswalker`).
+   - Las cartas multitipo (p. ej. *Artifact Creature*) SHALL mostrarse al seleccionar cualquiera de los tipos que le corresponden.
+2. **Búsqueda Bilingüe de Cartas:**
+   - La entrada de texto del buscador de biblioteca SHALL evaluar coincidencias simultáneamente sobre el nombre canónico en inglés (`definition.name`) y sobre el nombre impreso localizado en español (`locales.es.printedName`).
+3. **Presentación de Títulos en Español:**
+   - Las cartas mostradas en el inspector de biblioteca SHALL renderizar en su título inferior el nombre en español (`locales.es.printedName`) cuando esté disponible, con fallback al nombre en inglés.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -907,5 +928,9 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-39        | COMP-4, COMP-6, COMP-7                 |
 | REQ-40        | COMP-6, COMP-7, COMP-8                 |
 | REQ-41        | COMP-1, COMP-7, COMP-8                 |
+| REQ-42        | COMP-1, COMP-6, COMP-7, COMP-8         |
+| REQ-43        | COMP-1, COMP-7                         |
+| REQ-44        | COMP-1, COMP-4, COMP-7                 |
+| REQ-45        | COMP-1, COMP-7                         |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

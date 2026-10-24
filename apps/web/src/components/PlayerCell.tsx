@@ -217,8 +217,11 @@ const ModalCardItem: React.FC<{
       <div className="aspect-[146/204] rounded-lg overflow-hidden border border-slate-700 bg-slate-950 group-hover:border-amber-400/80 transition-colors">
         <CardDisplay card={card.definition} size={zone === 'library' ? 'small' : 'normal'} />
       </div>
-      <div className="text-[10px] font-bold text-slate-300 truncate" title={card.definition.name}>
-        {card.definition.name}
+      <div
+        className="text-[10px] font-bold text-slate-300 truncate"
+        title={card.definition.locales?.es?.printedName || card.definition.name}
+      >
+        {card.definition.locales?.es?.printedName || card.definition.name}
       </div>
 
       {contextMenuPos && (
@@ -337,38 +340,33 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
     if (activePileModal !== 'library') return list;
 
     return list.filter(card => {
-      // 1. Filtrar por nombre en ambos idiomas (Punto 5, C.5 - Español Prioritario)
+      // 1. Filtrar por nombre en inglés Y español (Punto 9 - búsqueda bilingüe)
       if (librarySearchQuery.trim()) {
         const q = librarySearchQuery.trim().toLowerCase();
         const enName = (card.definition?.name || '').toLowerCase();
         const esName = (card.definition?.locales?.es?.printedName || '').toLowerCase();
         if (!enName.includes(q) && !esName.includes(q)) return false;
       }
-      // 2. Filtrar por tipo en ambos idiomas (Punto 5 y 8)
+      // 2. Filtrar por type_line canónico en inglés (Punto 9 - REQ-B.9)
+      //    Una carta con varios tipos aparece en todos los que le correspondan.
+      //    Siempre comparar contra el typeLine inglés de la DB (campo canónico).
       if (libraryTypeFilter) {
         const typeLine = (card.definition?.typeLine || '').toLowerCase();
-        const esTypeLine = (card.definition?.locales?.es?.printedTypeLine || '').toLowerCase();
-        const combinedType = `${typeLine} ${esTypeLine}`;
         const filter = libraryTypeFilter.toLowerCase();
         if (filter === 'criaturas') {
-          if (!combinedType.includes('creature') && !combinedType.includes('criatura'))
-            return false;
+          if (!typeLine.includes('creature')) return false;
         } else if (filter === 'instantáneos' || filter === 'instantaneos') {
-          if (!combinedType.includes('instant') && !combinedType.includes('instantáneo'))
-            return false;
+          if (!typeLine.includes('instant')) return false;
         } else if (filter === 'conjuros') {
-          if (!combinedType.includes('sorcery') && !combinedType.includes('conjuro')) return false;
+          if (!typeLine.includes('sorcery')) return false;
         } else if (filter === 'artefactos') {
-          if (!combinedType.includes('artifact') && !combinedType.includes('artefacto'))
-            return false;
+          if (!typeLine.includes('artifact')) return false;
         } else if (filter === 'encantamientos') {
-          if (!combinedType.includes('enchantment') && !combinedType.includes('encantamiento'))
-            return false;
+          if (!typeLine.includes('enchantment')) return false;
         } else if (filter === 'tierras') {
-          if (!combinedType.includes('land') && !combinedType.includes('tierra')) return false;
+          if (!typeLine.includes('land')) return false;
         } else if (filter === 'planeswalkers') {
-          if (!combinedType.includes('planeswalker') && !combinedType.includes('caminante'))
-            return false;
+          if (!typeLine.includes('planeswalker')) return false;
         }
       }
       return true;
