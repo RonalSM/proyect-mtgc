@@ -113,19 +113,25 @@ export class CardSearchService {
     }
 
     if (!dbCard) {
-      // 1. Coincidencia exacta por nombre en inglés
+      // 1. Coincidencia exacta por nombre en inglés (excluyendo art_series no jugables)
       try {
         dbCard = await prisma.card.findFirst({
-          where: { name: { equals: cleanName, mode: 'insensitive' } },
+          where: {
+            name: { equals: cleanName, mode: 'insensitive' },
+            layout: { not: 'art_series' },
+          },
         });
       } catch { dbCard = null; }
     }
 
-    // 2. Coincidencia de cara frontal para cartas dobles (DFC / Aventuras / Split)
+    // 2. Coincidencia de cara frontal para cartas dobles (DFC / Aventuras / Split) (excluyendo art_series)
     if (!dbCard) {
       try {
         dbCard = await prisma.card.findFirst({
-          where: { name: { startsWith: `${cleanName} //`, mode: 'insensitive' } },
+          where: {
+            name: { startsWith: `${cleanName} //`, mode: 'insensitive' },
+            layout: { not: 'art_series' },
+          },
         });
       } catch { dbCard = null; }
     }
@@ -138,17 +144,23 @@ export class CardSearchService {
         });
         if (loc?.oracleId) {
           dbCard = await prisma.card.findFirst({
-            where: { oracleId: loc.oracleId },
+            where: {
+              oracleId: loc.oracleId,
+              layout: { not: 'art_series' },
+            },
           });
         }
       } catch { dbCard = null; }
     }
 
-    // 4. Coincidencia por contención como respaldo
+    // 4. Coincidencia por contención como respaldo (excluyendo art_series)
     if (!dbCard) {
       try {
         dbCard = await prisma.card.findFirst({
-          where: { name: { contains: cleanName, mode: 'insensitive' } },
+          where: {
+            name: { contains: cleanName, mode: 'insensitive' },
+            layout: { not: 'art_series' },
+          },
         });
       } catch { dbCard = null; }
     }
