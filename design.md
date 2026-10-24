@@ -1016,6 +1016,9 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
        - `audit-preview-keywords-counters.png` (1,788,671 bytes)
        - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
 
+- **Menú Contextual sin Encabezado de Nombre de Carta (Punto 10 - C.10):**
+  - **Eliminación de encabezado:** Se suprime el contenedor de cabecera con `cardDisplayName`, eliminando elementos de sólo lectura y permitiendo que el primer elemento enfocable y visible sea la acción inmediata de interacción.
+
 - **Filtrado Canónico de Biblioteca por type_line y Búsqueda Bilingüe (Punto 9 - B.9):**
   - **Filtro canónico en inglés:** Los botones de filtro de tipos del inspector de biblioteca evalúan exclusivamente el campo canónico `typeLine` en inglés procedente de la base de datos local (`creature`, `instant`, `sorcery`, `artifact`, `enchantment`, `land`, `planeswalker`). Las cartas que combinan múltiples tipos (p. ej. *Artifact Creature*) son retenidas de forma no excluyente al seleccionar cualquiera de los filtros aplicables.
   - **Búsqueda bilingüe:** El buscador por nombre compara el término ingresado contra el nombre en inglés (`definition.name`) y simultáneamente contra el nombre localizado impreso en español (`locales.es.printedName`).

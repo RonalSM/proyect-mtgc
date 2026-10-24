@@ -219,12 +219,6 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
   const canMutate = card.ownerId === targetPlayerId || card.holderId === targetPlayerId;
   const isPrivateHand = fromZone === 'hand' && card.ownerId !== targetPlayerId && !card.revealedTo;
 
-  const cardDisplayName = card.isFaceDown
-    ? 'Carta boca abajo'
-    : isPrivateHand
-      ? 'Carta oculta'
-      : card.definition.name;
-
   const isVisible =
     !card.isFaceDown &&
     !isPrivateHand &&
@@ -494,11 +488,6 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
           onContextMenu={e => e.stopPropagation()}
           className="fixed bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 w-max max-w-[240px] overflow-y-auto z-[110] backdrop-blur-md text-[14px] text-slate-200 select-none"
         >
-          {/* Header con nombre de carta (o Carta oculta / Carta boca abajo) */}
-          <div className="px-2 py-1 text-[14px] font-bold text-amber-400 border-b border-slate-800 truncate max-w-[220px]">
-            {cardDisplayName}
-          </div>
-
           {/* Opción 'Ver carta' (Punto 4, REQ-7.27): disponible para cartas visibles para el jugador */}
           {isVisible && (
             <button

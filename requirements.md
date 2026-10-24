@@ -663,6 +663,14 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 3. **Presentación de Títulos en Español:**
    - Las cartas mostradas en el inspector de biblioteca SHALL renderizar en su título inferior el nombre en español (`locales.es.printedName`) cuando esté disponible, con fallback al nombre en inglés.
 
+### REQ-46 Menú Contextual sin Encabezado Redundante de Nombre (Punto 10 de Correcciones del Cliente - C.10)
+
+**Historia:** Como jugador, quiero que el menú contextual de clic derecho sobre una carta empiece inmediatamente con sus acciones interactivas sin mostrar el encabezado superior con el nombre de la carta, aprovechando el espacio vertical disponible y eliminando redundancia visual.
+
+1. **Eliminación del Encabezado de Nombre:**
+   - THE menú `CardContextMenu` SHALL NOT renderizar un encabezado o barra de título con el nombre de la carta en la parte superior.
+   - El contenedor del menú SHALL desplegar directamente las opciones de acción de forma ergonómica y compacta.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -932,5 +940,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-43        | COMP-1, COMP-7                         |
 | REQ-44        | COMP-1, COMP-4, COMP-7                 |
 | REQ-45        | COMP-1, COMP-7                         |
+| REQ-46        | COMP-1, COMP-7                         |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).
