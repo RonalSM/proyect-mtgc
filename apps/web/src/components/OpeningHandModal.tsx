@@ -3,6 +3,7 @@ import { getCardImageUrl, type RoomState, type GameActionType } from '@mtgc/shar
 import { CardDisplay } from './CardDisplay';
 import { RotateCcw, Check, UserX, Crown, ShieldAlert, Sparkles, Layers } from 'lucide-react';
 import { imageLoaderQueue } from '../services/imageLoaderQueue';
+import { useLanguage } from '../context/LanguageContext';
 
 interface OpeningHandModalProps {
   roomState: RoomState;
@@ -15,6 +16,7 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
   localPlayerId,
   onAction,
 }) => {
+  const { language } = useLanguage();
   const mulligan = roomState.mulligan;
   const localPlayer = roomState.players[localPlayerId];
   const isSpectator = localPlayer?.isSpectator ?? false;
@@ -35,22 +37,22 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
   // (2) Rest of library in small version (priority 1)
   useEffect(() => {
     for (const card of localHand) {
-      const url = card.definition?.imageUrlNormal || card.definition?.imageUrlSmall;
+      const url = getCardImageUrl(card.definition, { size: 'normal', lang: language });
       if (url) imageLoaderQueue.enqueue(url, 10);
     }
 
     const cmdrList = roomState.playerZones[localPlayerId]?.command || [];
     for (const cmdr of cmdrList) {
-      const url = getCardImageUrl(cmdr.definition, { size: 'normal' });
+      const url = getCardImageUrl(cmdr.definition, { size: 'normal', lang: language });
       if (url) imageLoaderQueue.enqueue(url, 10);
     }
 
     const libraryCards = roomState.playerZones[localPlayerId]?.library || [];
     for (const card of libraryCards) {
-      const smallUrl = getCardImageUrl(card.definition, { size: 'small' });
+      const smallUrl = getCardImageUrl(card.definition, { size: 'small', lang: language });
       if (smallUrl) imageLoaderQueue.enqueue(smallUrl, 1);
     }
-  }, [localHand, roomState.playerZones, localPlayerId]);
+  }, [localHand, roomState.playerZones, localPlayerId, language]);
 
   const [selectedBottomCardIds, setSelectedBottomCardIds] = useState<string[]>([]);
 

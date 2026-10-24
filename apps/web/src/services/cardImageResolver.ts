@@ -135,15 +135,31 @@ class CardImageResolver {
 
       let targetUrl: string | null = null;
       if (cardDef) {
+        // Soporte para cartas DFC con caras si la raíz no tiene URLs de imagen
+        const faceFront = cardDef.faces?.[0];
         targetUrl =
           item.size === 'small'
-            ? cardDef.imageUrlSmall || cardDef.imageUrlNormal || null
-            : cardDef.imageUrlNormal || cardDef.imageUrlSmall || null;
+            ? cardDef.imageUrlSmall || cardDef.imageUrlNormal || faceFront?.imageUrlSmall || faceFront?.imageUrlNormal || null
+            : cardDef.imageUrlNormal || cardDef.imageUrlSmall || faceFront?.imageUrlNormal || faceFront?.imageUrlSmall || null;
       }
 
       const key = `${lower}_${item.size}_${lang}`;
       this.cache.set(key, targetUrl);
       item.resolve(targetUrl);
+    }
+  }
+
+  public invalidate(cardName: string, size?: 'small' | 'normal', lang?: 'es' | 'en'): void {
+    if (!cardName) return;
+    const lower = cardName.trim().toLowerCase();
+    if (size && lang) {
+      this.cache.delete(`${lower}_${size}_${lang}`);
+    } else {
+      for (const k of Array.from(this.cache.keys())) {
+        if (k.startsWith(`${lower}_`)) {
+          this.cache.delete(k);
+        }
+      }
     }
   }
 

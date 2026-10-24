@@ -132,7 +132,8 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
           lang: 'es',
         });
       }
-      // Reintentar de inmediato con inglés
+      // Invalidar en el resolvedor si correspondía a español y reintentar de inmediato con inglés
+      cardImageResolver.invalidate(cardName, size, 'es');
       setFallbackStage('english');
     } else {
       if (failedUrl) {
@@ -144,6 +145,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
           lang: language,
         });
       }
+      cardImageResolver.invalidate(cardName, size, language);
       // Cae a marco de texto estilizado (cero iconos de imagen rota)
       setFallbackStage('frame');
     }

@@ -27,6 +27,7 @@ import { CreateTokenModal } from './CreateTokenModal';
 import { Portal } from './Portal';
 import { VirtualizedCardGrid } from './VirtualizedCardGrid';
 import { useCardPreview } from '../context/CardPreviewContext';
+import { useLanguage } from '../context/LanguageContext';
 import { scryfallQueue } from '../services/scryfallQueue';
 import { imageLoaderQueue, type ImageQueueStats } from '../services/imageLoaderQueue';
 
@@ -47,9 +48,34 @@ const DraggableCommanderCard: React.FC<{
   onClick: () => void;
 }> = ({ card, isLocalPlayer, onClick }) => {
   const { showPreview, hidePreview, openCardDetails } = useCardPreview();
+  const { language } = useLanguage();
+  const [enrichedDefinition, setEnrichedDefinition] = useState<CardDefinition>(card.definition);
+
+  // Enriquecer dinámicamente con /api/cards/resolve si falta locale español
+  useEffect(() => {
+    setEnrichedDefinition(card.definition);
+    if (language === 'es' && !card.definition.locales?.es && card.definition.name) {
+      fetch('/api/cards/resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ names: [card.definition.name], lang: 'es' }),
+      })
+        .then(res => (res.ok ? res.json() : null))
+        .then(data => {
+          if (data?.cards?.[0]) {
+            setEnrichedDefinition(prev => ({
+              ...prev,
+              ...data.cards[0],
+            }));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [card.definition, language]);
+
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.instanceId,
-    data: { card, fromZone: 'command' },
+    data: { card: { ...card, definition: enrichedDefinition }, fromZone: 'command' },
     disabled: !isLocalPlayer,
   });
 
@@ -64,15 +90,15 @@ const DraggableCommanderCard: React.FC<{
       onContextMenu={e => {
         e.preventDefault();
         e.stopPropagation();
-        openCardDetails(card.definition);
+        openCardDetails(enrichedDefinition);
       }}
-      onMouseEnter={e => !card.isFaceDown && !isDragging && showPreview(card.definition, e)}
+      onMouseEnter={e => !card.isFaceDown && !isDragging && showPreview(enrichedDefinition, e)}
       onMouseLeave={hidePreview}
       className={`w-full h-full relative cursor-grab active:cursor-grabbing select-none ${
         isDragging ? 'opacity-0' : ''
       }`}
     >
-      <CardDisplay card={card.definition} allowFaceToggle={false} />
+      <CardDisplay card={enrichedDefinition} allowFaceToggle={false} />
       <div className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[8px] font-black text-amber-300 text-center py-0.5 tracking-wider uppercase backdrop-blur-xs pointer-events-none">
         COMANDANTE
       </div>
