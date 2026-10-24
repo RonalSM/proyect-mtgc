@@ -81,10 +81,17 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
     (!card.scryfallId && !card.oracleId) ||
     card.typeLine === 'Unknown';
 
-  // Enriquecer dinámicamente si falta set o artista y no está marcada como ausente en DB
+  const isObsoleteOrArtSeries =
+    (card as any).layout === 'art_series' ||
+    card.typeLine === 'Card // Card' ||
+    card.scryfallId === '6894b688-4966-4277-8e11-d3c91042180c' ||
+    (card.imageUrlNormal && card.imageUrlNormal.includes('/art_crop/')) ||
+    (!card.oracleText && !card.typeLine?.includes('Land') && !card.typeLine?.includes('Card'));
+
+  // Enriquecer dinámicamente si falta set o artista, o si la definición es obsoleta/art_series
   useEffect(() => {
     setEnrichedCard(card);
-    if (!card.set && !card.artist && card.name && !isNotInDb) {
+    if ((!card.set && !card.artist && card.name && !isNotInDb) || (isObsoleteOrArtSeries && card.name)) {
       fetch('/api/cards/resolve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -101,7 +108,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
         })
         .catch(() => {});
     }
-  }, [card, isNotInDb]);
+  }, [card, isNotInDb, isObsoleteOrArtSeries]);
 
   // Si no está en la base, registrar en el servicio de diagnóstico (Punto 8)
   useEffect(() => {

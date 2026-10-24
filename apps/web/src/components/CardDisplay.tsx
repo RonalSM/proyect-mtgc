@@ -55,8 +55,11 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   const cardOracle = display.oracleText;
 
   // URL canónica en inglés
-  const englishCandidate =
+  const rawEnglishCandidate =
     getCardImageUrl(card, { size, lang: 'en', faceIndex: currentFaceIndex }) || '';
+  // Evitar usar URLs de art_crop cuando se requiere marco normal o cuando es una carta art_series obsoleta
+  const isArtCropCandidate = rawEnglishCandidate.includes('/art_crop/');
+  const englishCandidate = isArtCropCandidate ? '' : rawEnglishCandidate;
 
   // Etapa de fallback: 'english' -> 'frame'
   const [fallbackStage, setFallbackStage] = useState<'english' | 'frame'>('english');

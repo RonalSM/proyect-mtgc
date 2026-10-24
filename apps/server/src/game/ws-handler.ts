@@ -1,3 +1,4 @@
+import { cardSearchService } from '../services/card-search.service.js';
 import { WebSocket } from 'ws';
 import {
   ActionEnvelopeSchema,
@@ -140,7 +141,7 @@ export class WebSocketHandler {
   /**
    * Handles incoming player game actions
    */
-  private handleClientAction(client: ClientConnection, rawMessage: string): void {
+  private async handleClientAction(client: ClientConnection, rawMessage: string): Promise<void> {
     const session = roomManager.getSession(client.roomCode);
     if (!session) return;
 
@@ -482,6 +483,29 @@ export class WebSocketHandler {
 
         case 'SELECT_DECK': {
           const valid = SelectDeckSchema.parse(payload);
+          // Invalidate/sanitize any stale art_series or broken card definitions before assigning to player library
+          if (Array.isArray(valid.maindeckCards)) {
+            for (let i = 0; i < valid.maindeckCards.length; i++) {
+              const card = valid.maindeckCards[i];
+              if (
+                card &&
+                (card.layout === 'art_series' ||
+                  card.typeLine === 'Card // Card' ||
+                  card.scryfallId === '6894b688-4966-4277-8e11-d3c91042180c' ||
+                  (card.imageUrlNormal && card.imageUrlNormal.includes('/art_crop/')) ||
+                  (!card.oracleText && !card.typeLine?.includes('Land') && !card.typeLine?.includes('Card')))
+              ) {
+                try {
+                  const resolved = await cardSearchService.resolveSingleCard(card.name, 'en');
+                  if (resolved) {
+                    valid.maindeckCards[i] = resolved;
+                  }
+                } catch {
+                  // Fall back to original if resolution fails
+                }
+              }
+            }
+          }
           session.selectDeck(client.playerId, valid as any);
           break;
         }

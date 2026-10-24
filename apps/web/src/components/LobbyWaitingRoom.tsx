@@ -133,6 +133,47 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         if (cached) {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.name && parsed.commanderName) {
+            // Sanitize / upgrade any obsolete or art_series cards stored in previous sessions
+            const hasObsoleteCard = (parsed.maindeckCards || []).some(
+              (c: any) =>
+                c.layout === 'art_series' ||
+                c.typeLine === 'Card // Card' ||
+                c.scryfallId === '6894b688-4966-4277-8e11-d3c91042180c' ||
+                (c.imageUrlNormal && c.imageUrlNormal.includes('/art_crop/')) ||
+                (!c.oracleText && !c.typeLine?.includes('Land') && !c.typeLine?.includes('Card')),
+            );
+
+            if (hasObsoleteCard) {
+              // Re-resolve deck cards from server
+              const names = (parsed.maindeckCards || []).map((c: any) => c.name);
+              fetch('/api/cards/resolve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ names, lang: 'en' }),
+              })
+                .then(r => (r.ok ? r.json() : null))
+                .then(resolvedData => {
+                  if (resolvedData?.cards) {
+                    const upgradedDeck = {
+                      ...parsed,
+                      maindeckCards: resolvedData.cards,
+                    };
+                    localStorage.setItem('mtgc_last_selected_deck', JSON.stringify(upgradedDeck));
+                    onAction('SELECT_DECK', {
+                      deckId: upgradedDeck.id,
+                      deckName: upgradedDeck.name,
+                      commanderName: upgradedDeck.commanderName,
+                      commanderImageUrl: upgradedDeck.commanderImageUrl,
+                      commanderCards: upgradedDeck.commanderCards,
+                      maindeckCards: upgradedDeck.maindeckCards,
+                      warnings: upgradedDeck.warnings,
+                    });
+                  }
+                })
+                .catch(() => {});
+              return;
+            }
+
             onAction('SELECT_DECK', {
               deckId: parsed.id,
               deckName: parsed.name,

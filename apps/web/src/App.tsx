@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useGameSocket } from './hooks/useGameSocket';
 import { LobbyView } from './components/LobbyView';
 import { TableBoard } from './components/TableBoard';
+import { CardPreviewProvider } from './context/CardPreviewContext';
 import { LobbyWaitingRoom } from './components/LobbyWaitingRoom';
 import { InitiativeOverlay } from './components/InitiativeOverlay';
 import { OpeningHandModal } from './components/OpeningHandModal';
@@ -279,24 +280,26 @@ export default function App() {
 
       {/* Main Container */}
       <main className="flex-1 p-4 max-w-7xl w-full mx-auto overflow-hidden">
-        {roomCode && roomState ? (
-          <LobbyWaitingRoom
-            roomState={roomState}
-            localPlayerId={playerId}
-            onAction={sendAction}
-            onLeaveRoom={handleLeaveRoom}
-          />
-        ) : activeMainTab === 'importer' ? (
-          <div className="py-4">
-            <DeckImporter />
-          </div>
-        ) : (
-          <LobbyView
-            onCreateRoom={handleCreateRoom}
-            onJoinRoom={handleJoinRoom}
-            isCreating={isCreatingRoom}
-          />
-        )}
+        <CardPreviewProvider>
+          {roomCode && roomState ? (
+            <LobbyWaitingRoom
+              roomState={roomState}
+              localPlayerId={playerId}
+              onAction={sendAction}
+              onLeaveRoom={handleLeaveRoom}
+            />
+          ) : activeMainTab === 'importer' ? (
+            <div className="py-4">
+              <DeckImporter />
+            </div>
+          ) : (
+            <LobbyView
+              onCreateRoom={handleCreateRoom}
+              onJoinRoom={handleJoinRoom}
+              isCreating={isCreatingRoom}
+            />
+          )}
+        </CardPreviewProvider>
       </main>
 
       {/* Footer */}
