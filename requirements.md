@@ -752,6 +752,19 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 2. **Silenciado Silencioso de Errores HTTP 401:**
    - IF se realiza la petición y la respuesta retorna un código HTTP 401 (No autorizado), THEN THE cliente SHALL gestionar la respuesta en silencio, asignando un arreglo vacío a los mazos guardados y sin invocar `console.error` ni registrar errores de red ruidosos en la consola.
 
+### REQ-54 Exclusión de keyrune.css GPL y Uso Exclusivo de Fuentes SIL OFL 1.1 con CSS Propio (Punto 18 de Correcciones del Cliente - D.18)
+
+**Historia:** Como desarrollador y mantenedor legal del proyecto, quiero que la aplicación no incorpore código ni hojas de estilo bajo licencia copyleft GPL 3.0 (`keyrune.css`), utilizando exclusivamente los archivos de fuentes compiladas de Keyrune bajo licencia permisiva SIL OFL 1.1 con una hoja de estilos propia, manteniendo documentada la conformidad de licencias en `THIRD_PARTY_NOTICES.md`.
+
+1. **Eliminación de Dependencia de `keyrune.css` GPL 3.0:**
+   - THE aplicación web SHALL NOT importar ni distribuir el archivo `keyrune.css` ni `keyrune.min.css` (licenciados bajo GPL 3.0 upstream).
+2. **Uso de Archivos de Fuente bajo SIL OFL 1.1:**
+   - THE sistema SHALL consumir únicamente los binarios de fuentes preparadas (`keyrune.woff2`, `keyrune.woff`, `keyrune.ttf`) provistos bajo la licencia SIL Open Font License 1.1.
+3. **Hoja de Estilos Propia con Mapeo de Glifos:**
+   - THE cliente SHALL definir una hoja de estilos propia (`apps/web/src/styles/keyrune-custom.css`) con licencia permisiva (MIT), declarando la regla `@font-face` hacia los archivos de fuente y el mapa completo de clases `.ss-[set]` mapeadas a sus glifos Unicode correspondientes.
+4. **Actualización de Avisos de Terceros:**
+   - `THIRD_PARTY_NOTICES.md` y `LegalModal.tsx` SHALL reflejar explícitamente que no se distribuye código GPL 3.0 de Keyrune y que se utilizan exclusivamente sus fuentes bajo SIL OFL 1.1.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
@@ -1029,5 +1042,6 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 | REQ-51        | COMP-1, COMP-2, COMP-7                 |
 | REQ-52        | COMP-1, COMP-2, COMP-3                 |
 | REQ-53        | COMP-1, COMP-6                         |
+| REQ-54        | COMP-1, COMP-5                         |
 
 **Dependencias con requisitos previos:** REQ-20 requiere REQ-7.5 (guardar mazos en la cuenta) y REQ-13 (expulsar, transferir anfitrión).

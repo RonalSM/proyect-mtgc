@@ -140,9 +140,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 - **Autor:** Andrew Gioia (<andrew@gioia.email>)
 - **Repositorio:** [https://github.com/andrewgioia/keyrune](https://github.com/andrewgioia/keyrune)
 - **Licencia de Fuentes:** SIL Open Font License, Version 1.1 (SIL OFL 1.1)
-- **Licencia de Glifos SVG y Código:** GNU General Public License v3.0 (GPL 3.0)
+- **Uso en MTGC:** Para evitar arrastrar obligaciones copyleft de la GPL 3.0 asociadas al código y hojas de estilo de Keyrune (`keyrune.css`), **este proyecto utiliza exclusivamente los archivos de fuente compilados de Keyrune (`.woff2`, `.woff`, `.ttf`) bajo la licencia permisiva SIL OFL 1.1**. La aplicación utiliza una hoja de estilos propia (`apps/web/src/styles/keyrune-custom.css`) con licencia MIT que mapea los códigos de set a sus glifos Unicode correspondientes. **No se distribuye, enlaza ni incluye ningún archivo de código ni CSS bajo GPL 3.0.**
+- **Licencia Original de Glifos SVG y Código upstream:** GNU General Public License v3.0 (GPL 3.0) — *No utilizada en este proyecto*.
 
-Keyrune es distribuido bajo licencia SIL OFL 1.1 para sus archivos de fuentes compiladas y bajo licencia GPL 3.0 para su código e iconos vectoriales SVG. Los símbolos que representan estas fuentes identifican productos y colecciones de Wizards of the Coast conforme a la política de materiales del Wizards Play Network.
+Los símbolos que representan estas fuentes identifican productos y colecciones de Wizards of the Coast conforme a la política de materiales del Wizards Play Network.
 
 ---
 

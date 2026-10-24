@@ -1016,6 +1016,11 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
        - `audit-preview-keywords-counters.png` (1,788,671 bytes)
        - `audit-pt-indicator-tapped-untapped.png` (1,537,560 bytes)
 
+- **Exclusión de keyrune.css GPL y Uso Exclusivo de Fuentes SIL OFL 1.1 con CSS Propio (Punto 18 - D.18):**
+  - **Aislamiento de licencias:** Se retira la importación directa de `keyrune/css/keyrune.css` (GPL 3.0). La aplicación utiliza exclusivamente los archivos binarios de fuentes preparadas (`keyrune.woff2`, `keyrune.woff`, `keyrune.ttf`) que están licenciados bajo SIL Open Font License 1.1.
+  - **Hoja de estilos propia:** Se incorpora `apps/web/src/styles/keyrune-custom.css` con licencia MIT, declarando `@font-face` hacia los archivos de fuente y definiendo el mapa exhaustivo de clases `.ss-[set]` hacia caracteres Unicode, garantizando cero dependencias o contaminación de licencias copyleft en el frontend.
+  - **Documentación de cumplimiento:** Actualización íntegra de `THIRD_PARTY_NOTICES.md` y `LegalModal.tsx` explicitando la separación de licencias.
+
 - **Supresión de Peticiones no Autenticadas a Mazos Guardados y Silenciado de 401 (Punto 17 - D.17):**
   - **Detección condicional previa:** `LobbyWaitingRoom.tsx` evalúa si el cliente cuenta con un token de autenticación registrado (`localStorage.getItem('token')` o `mtgc_access_token`) antes de emitir la llamada a `GET /api/decks`. Para sesiones de invitados anónimos (`isGuest`), se omite la llamada inmediatamente sin generar tráfico de red innecesario ni peticiones fallidas.
   - **Manejo silencioso:** Si se dispara la petición y retorna un código HTTP 401, se gestiona de forma transparente inicializando la lista de mazos en vacía (`[]`) y finalizando el estado de carga sin escribir errores en la consola del navegador (`console.error`).

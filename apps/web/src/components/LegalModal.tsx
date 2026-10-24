@@ -84,8 +84,9 @@ export const LegalModal: React.FC<LegalModalProps> = ({
           <p className="text-xs text-slate-400 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800">
             Los iconos de símbolos de maná, acciones de girar/desgirar, palabras clave y contadores
             emplean la fuente <strong>Mana</strong> (creada por Andrew Gioia; fuentes bajo SIL OFL 1.1,
-            código CSS bajo licencia MIT). Los símbolos de expansiones emplean la fuente <strong>Keyrune</strong>
-            (creada por Andrew Gioia; fuentes bajo SIL OFL 1.1, glifos GPL 3.0). Ambas fuentes están auto-alojadas
+            código CSS bajo licencia MIT). Los símbolos de expansiones emplean exclusivamente los archivos de fuente
+            compilados de <strong>Keyrune</strong> (creada por Andrew Gioia; fuentes bajo SIL OFL 1.1) junto con una hoja
+            de estilos propia sin inclusión de código bajo GPL 3.0. Ambas fuentes están auto-alojadas
             localmente en el servidor para cumplir con las directivas de seguridad CSP. Respaldos vectoriales bajo MPL-2.0.
             Consulta el archivo <code>THIRD_PARTY_NOTICES.md</code> en el repositorio para los textos íntegros de las licencias.
           </p>
