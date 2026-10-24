@@ -167,35 +167,6 @@ export class CardSearchService {
       return null;
     }
 
-    // Buscar si existe traducción e impresión en español en la tabla card_locales
-    let locales: CardDefinition['locales'] = undefined;
-    let spanishLocale: any = null;
-
-    if (dbCard.oracleId) {
-      spanishLocale = await (prisma as any).cardLocale?.findUnique({
-        where: {
-          oracleId_lang: {
-            oracleId: dbCard.oracleId,
-            lang: 'es',
-          },
-        },
-      });
-
-      if (spanishLocale) {
-        locales = {
-          es: {
-            printedName: spanishLocale.printedName,
-            printedTypeLine: spanishLocale.printedTypeLine || undefined,
-            printedText: spanishLocale.printedText || undefined,
-            imageUrlSmall: spanishLocale.imageUrlSmall || undefined,
-            imageUrlNormal: spanishLocale.imageUrlNormal || undefined,
-            imageUrlLarge: spanishLocale.imageUrlLarge || undefined,
-            imageUrlArtCrop: spanishLocale.imageUrlArtCrop || undefined,
-          },
-        };
-      }
-    }
-
     // Buscar rulings oficiales si tiene oracleId
     let rulings: any[] = [];
     if (dbCard.oracleId) {
@@ -210,27 +181,13 @@ export class CardSearchService {
       }
     }
 
-    // Decisión de URLs por el servidor: si lang === 'es' y existe en español con imagen real, usarla; si no, inglés.
-    const useSpanish =
-      lang === 'es' &&
-      spanishLocale &&
-      (spanishLocale.imageUrlNormal || spanishLocale.imageUrlSmall);
-
-    const imageUrlSmall = useSpanish
-      ? spanishLocale.imageUrlSmall || dbCard.imageUrlSmall
-      : dbCard.imageUrlSmall;
-    const imageUrlNormal = useSpanish
-      ? spanishLocale.imageUrlNormal || dbCard.imageUrlNormal
-      : dbCard.imageUrlNormal;
-    const imageUrlLarge = useSpanish
-      ? spanishLocale.imageUrlLarge ||
-        (dbCard.imageUrlNormal ? dbCard.imageUrlNormal.replace('/normal/', '/large/') : undefined)
-      : dbCard.imageUrlNormal
-        ? dbCard.imageUrlNormal.replace('/normal/', '/large/')
-        : undefined;
-    const imageUrlArtCrop = useSpanish
-      ? spanishLocale.imageUrlArtCrop || dbCard.imageUrlArtCrop
-      : dbCard.imageUrlArtCrop;
+    // Servidor devuelve exclusivamente URLs e información canónica en inglés
+    const imageUrlSmall = dbCard.imageUrlSmall;
+    const imageUrlNormal = dbCard.imageUrlNormal;
+    const imageUrlLarge = dbCard.imageUrlNormal
+      ? dbCard.imageUrlNormal.replace('/normal/', '/large/')
+      : undefined;
+    const imageUrlArtCrop = dbCard.imageUrlArtCrop;
 
     // Manejo de caras (faces) si es carta DFC, transform, modal_dfc, adventure, split
     const isTwoFaced =
@@ -346,7 +303,6 @@ export class CardSearchService {
       imageUrlArtCrop: imageUrlArtCrop || undefined,
       isTwoFaced,
       faces,
-      locales,
       rulings: rulings.map((r: any) => ({
         oracleId: r.oracleId,
         source: r.source,
@@ -369,7 +325,7 @@ export class CardSearchService {
     byQuery: Record<string, CardDefinition | null>;
     count: number;
   }> {
-    const lang = (params.lang || 'es').toLowerCase();
+    const lang = 'en';
     const queryItems: Array<string | { name?: string; id?: string; oracleId?: string }> = [];
 
     if (params.names) {

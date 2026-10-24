@@ -119,7 +119,7 @@ export class DeckService {
    * NUNCA inventa IDs ni URLs.
    */
   public async resolveCardFromDb(cardName: string): Promise<CardDefinition | null> {
-    return await cardSearchService.resolveSingleCard(cardName, 'es');
+    return await cardSearchService.resolveSingleCard(cardName, 'en');
   }
 
   /**

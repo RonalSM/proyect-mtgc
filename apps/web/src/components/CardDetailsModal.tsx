@@ -91,7 +91,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
       fetch('/api/cards/resolve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ names: [card.name], lang: language }),
+        body: JSON.stringify({ names: [card.name], lang: 'en' }),
       })
         .then(res => (res.ok ? res.json() : null))
         .then(data => {
@@ -104,7 +104,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
         })
         .catch(() => {});
     }
-  }, [card, language, isNotInDb]);
+  }, [card, isNotInDb]);
 
   // Si no está en la base, registrar en el servicio de diagnóstico (Punto 8)
   useEffect(() => {
@@ -167,7 +167,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
   }, [currentCard.oracleId, currentCard.rulings]);
 
   // Valores de la cara activa con localización en español y fallback en inglés (Punto 5 y 8)
-  const display = getCardDisplayData(currentCard, language, activeFaceIndex);
+  const display = getCardDisplayData(currentCard, 'en', activeFaceIndex);
   const displayName = display.name;
   const displayMana = activeFace?.manaCost || currentCard.manaCost;
   const displayType = display.typeLine;
@@ -178,11 +178,6 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
   const displayLoyalty = activeFace?.loyalty !== undefined ? activeFace.loyalty : currentCard.loyalty;
   const displayArtist = activeFace?.artist || currentCard.artist || 'Unknown Artist';
   const displayImage =
-    getCardImageUrl(currentCard, { size: 'large', lang: language, faceIndex: activeFaceIndex }) ||
-    getCardImageUrl(currentCard, { size: 'normal', lang: language, faceIndex: activeFaceIndex }) ||
-    'https://cards.scryfall.io/back.png';
-
-  const englishFallbackImage =
     getCardImageUrl(currentCard, { size: 'large', lang: 'en', faceIndex: activeFaceIndex }) ||
     getCardImageUrl(currentCard, { size: 'normal', lang: 'en', faceIndex: activeFaceIndex }) ||
     'https://cards.scryfall.io/back.png';
@@ -194,11 +189,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
   }, [displayImage]);
 
   const handleDetailImageError = () => {
-    if (currentImageSrc !== englishFallbackImage && englishFallbackImage) {
-      setCurrentImageSrc(englishFallbackImage);
-    } else {
-      setCurrentImageSrc('https://cards.scryfall.io/back.png');
-    }
+    setCurrentImageSrc('https://cards.scryfall.io/back.png');
   };
 
   const commanderLegality = card.legalities?.commander || 'legal';

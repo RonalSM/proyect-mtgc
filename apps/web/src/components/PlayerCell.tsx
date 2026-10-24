@@ -27,7 +27,6 @@ import { CreateTokenModal } from './CreateTokenModal';
 import { Portal } from './Portal';
 import { VirtualizedCardGrid } from './VirtualizedCardGrid';
 import { useCardPreview } from '../context/CardPreviewContext';
-import { useLanguage } from '../context/LanguageContext';
 import { scryfallQueue } from '../services/scryfallQueue';
 import { imageLoaderQueue, type ImageQueueStats } from '../services/imageLoaderQueue';
 
@@ -48,30 +47,11 @@ const DraggableCommanderCard: React.FC<{
   onClick: () => void;
 }> = ({ card, isLocalPlayer, onClick }) => {
   const { showPreview, hidePreview, openCardDetails } = useCardPreview();
-  const { language } = useLanguage();
   const [enrichedDefinition, setEnrichedDefinition] = useState<CardDefinition>(card.definition);
 
-  // Enriquecer dinámicamente con /api/cards/resolve si falta locale español
   useEffect(() => {
     setEnrichedDefinition(card.definition);
-    if (language === 'es' && !card.definition.locales?.es && card.definition.name) {
-      fetch('/api/cards/resolve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ names: [card.definition.name], lang: 'es' }),
-      })
-        .then(res => (res.ok ? res.json() : null))
-        .then(data => {
-          if (data?.cards?.[0]) {
-            setEnrichedDefinition(prev => ({
-              ...prev,
-              ...data.cards[0],
-            }));
-          }
-        })
-        .catch(() => {});
-    }
-  }, [card.definition, language]);
+  }, [card.definition]);
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: card.instanceId,
@@ -245,9 +225,9 @@ const ModalCardItem: React.FC<{
       </div>
       <div
         className="text-[10px] font-bold text-slate-300 truncate"
-        title={card.definition.locales?.es?.printedName || card.definition.name}
+        title={card.definition.name}
       >
-        {card.definition.locales?.es?.printedName || card.definition.name}
+        {card.definition.name}
       </div>
 
       {contextMenuPos && (
@@ -366,12 +346,11 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
     if (activePileModal !== 'library') return list;
 
     return list.filter(card => {
-      // 1. Filtrar por nombre en inglés Y español (Punto 9 - búsqueda bilingüe)
+      // 1. Filtrar por nombre en inglés canónico
       if (librarySearchQuery.trim()) {
         const q = librarySearchQuery.trim().toLowerCase();
         const enName = (card.definition?.name || '').toLowerCase();
-        const esName = (card.definition?.locales?.es?.printedName || '').toLowerCase();
-        if (!enName.includes(q) && !esName.includes(q)) return false;
+        if (!enName.includes(q)) return false;
       }
       // 2. Filtrar por type_line canónico en inglés (Punto 9 - REQ-B.9)
       //    Una carta con varios tipos aparece en todos los que le correspondan.

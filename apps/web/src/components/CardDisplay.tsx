@@ -10,7 +10,6 @@ import { cardImageResolver } from '../services/cardImageResolver';
 import { imageLoaderQueue, type ImageLoadStatus } from '../services/imageLoaderQueue';
 import { persistentImageCache } from '../services/persistentImageCache';
 import { diagnosticsService } from '../services/diagnosticsService';
-import { useLanguage } from '../context/LanguageContext';
 
 interface CardDisplayProps {
   card: CardDefinition;
@@ -33,7 +32,6 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   size = 'normal',
   activeFaceIndex: propActiveFaceIndex,
 }) => {
-  const { language } = useLanguage();
   const [currentFaceIndex, setCurrentFaceIndex] = useState(propActiveFaceIndex ?? 0);
 
   useEffect(() => {
@@ -46,8 +44,8 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   const hasMultipleFaces = !!(card.faces && card.faces.length > 1);
   const activeFace = hasMultipleFaces ? card.faces![currentFaceIndex] : null;
 
-  // Localized card display fields with English fallback (Punto 5, C.5 - Español Prioritario)
-  const display = getCardDisplayData(card, language, currentFaceIndex);
+  // Localized card display fields strictly in canonical English
+  const display = getCardDisplayData(card, 'en', currentFaceIndex);
 
   const cardName = display.name || 'Carta Desconocida';
   const cardType = inferCardTypeLine(cardName, display.typeLine);
@@ -56,42 +54,26 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   const cardToughness = activeFace?.toughness ?? card.toughness;
   const cardOracle = display.oracleText;
 
-  // Candidatas de URL para la cadena de respaldo mediante resolvedor unificado (Punto 5 - A.5)
-  const spanishCandidate =
-    language === 'es' && card.locales?.es
-      ? getCardImageUrl(card, { size, lang: 'es', faceIndex: currentFaceIndex }) || ''
-      : '';
-
+  // URL canónica en inglés
   const englishCandidate =
     getCardImageUrl(card, { size, lang: 'en', faceIndex: currentFaceIndex }) || '';
 
-  // Etapa de fallback progresivo: 'spanish' -> 'english' -> 'frame' (Punto 6)
-  const [fallbackStage, setFallbackStage] = useState<'spanish' | 'english' | 'frame'>(() => {
-    if (language === 'es' && spanishCandidate) return 'spanish';
-    if (englishCandidate) return 'english';
-    return 'english';
-  });
+  // Etapa de fallback: 'english' -> 'frame'
+  const [fallbackStage, setFallbackStage] = useState<'english' | 'frame'>('english');
 
-  // Reiniciar etapa al cambiar de carta, idioma o cara
+  // Reiniciar etapa al cambiar de carta o cara
   useEffect(() => {
-    if (language === 'es' && spanishCandidate) {
-      setFallbackStage('spanish');
-    } else if (englishCandidate) {
-      setFallbackStage('english');
-    } else {
-      setFallbackStage('english');
-    }
-  }, [card.scryfallId, card.name, currentFaceIndex, language, spanishCandidate, englishCandidate]);
+    setFallbackStage('english');
+  }, [card.scryfallId, card.name, currentFaceIndex]);
 
   const [asyncResolvedUrl, setAsyncResolvedUrl] = useState<string | null>(() => {
-    const direct = fallbackStage === 'spanish' ? spanishCandidate : englishCandidate;
-    return direct || cardImageResolver.getCached(cardName, size, language);
+    return englishCandidate || cardImageResolver.getCached(cardName, size, 'en');
   });
 
   useEffect(() => {
-    const direct = fallbackStage === 'spanish' ? spanishCandidate : englishCandidate;
-    if (direct) {
-      setAsyncResolvedUrl(direct);
+    if (fallbackStage === 'frame') return;
+    if (englishCandidate) {
+      setAsyncResolvedUrl(englishCandidate);
       return;
     }
     if (
@@ -102,14 +84,13 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
       cardName !== 'Carta Desconocida' &&
       cardName !== 'Carta Oculta'
     ) {
-      cardImageResolver.resolve(cardName, size, language).then(url => {
+      cardImageResolver.resolve(cardName, size, 'en').then(url => {
         if (url) setAsyncResolvedUrl(url);
       });
     }
-  }, [fallbackStage, spanishCandidate, englishCandidate, cardName, isFaceDown, size, language]);
+  }, [fallbackStage, englishCandidate, cardName, isFaceDown, size]);
 
   const resolvedImageUrl = (() => {
-    if (fallbackStage === 'spanish') return spanishCandidate;
     if (fallbackStage === 'english') return englishCandidate || asyncResolvedUrl || '';
     return '';
   })();
@@ -122,33 +103,18 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   // Manejador centralizado de errores de imagen (Punto 6, Punto 7)
   const handleImageError = () => {
     const failedUrl = activeDisplayUrl || resolvedImageUrl;
-    if (fallbackStage === 'spanish' && englishCandidate && englishCandidate !== spanishCandidate) {
-      if (failedUrl) {
-        diagnosticsService.recordFailure({
-          url: failedUrl,
-          cardName,
-          status: 404,
-          reason: 'Impresión en español inexistente en CDN (fallback a inglés)',
-          lang: 'es',
-        });
-      }
-      // Invalidar en el resolvedor si correspondía a español y reintentar de inmediato con inglés
-      cardImageResolver.invalidate(cardName, size, 'es');
-      setFallbackStage('english');
-    } else {
-      if (failedUrl) {
-        diagnosticsService.recordFailure({
-          url: failedUrl,
-          cardName,
-          status: 404,
-          reason: 'Fallo de imagen en Scryfall (fallback a marco de texto)',
-          lang: language,
-        });
-      }
-      cardImageResolver.invalidate(cardName, size, language);
-      // Cae a marco de texto estilizado (cero iconos de imagen rota)
-      setFallbackStage('frame');
+    if (failedUrl) {
+      diagnosticsService.recordFailure({
+        url: failedUrl,
+        cardName,
+        status: 404,
+        reason: 'Fallo de imagen en Scryfall (fallback a marco de texto)',
+        lang: 'en',
+      });
     }
+    cardImageResolver.invalidate(cardName, size, 'en');
+    // Cae a marco de texto estilizado (cero iconos de imagen rota)
+    setFallbackStage('frame');
   };
 
   useEffect(() => {
@@ -177,7 +143,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
     if (imageStatus === 'failed') {
       handleImageError();
     }
-  }, [imageStatus, fallbackStage, englishCandidate, spanishCandidate]);
+  }, [imageStatus, fallbackStage, englishCandidate]);
 
   const [cachedBlobUrl, setCachedBlobUrl] = useState<string | null>(null);
 
@@ -305,10 +271,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
               data-testid="card-retry-image-btn"
               onClick={e => {
                 e.stopPropagation();
-                if (language === 'es' && spanishCandidate) {
-                  setFallbackStage('spanish');
-                  imageLoaderQueue.retryUrl(spanishCandidate);
-                } else if (englishCandidate) {
+                if (englishCandidate) {
                   setFallbackStage('english');
                   imageLoaderQueue.retryUrl(englishCandidate);
                 }

@@ -63,15 +63,14 @@ describe('Punto 4 (A.4) - Resolvedor por Lotes POST /api/cards/resolve', () => {
     assert.equal(dagger.faces[1].name, 'Lost Vale');
   });
 
-  it('3. Servidor decide cadena de respaldo: español si existe con imagen real, si no inglés', async () => {
+  it('3. Servidor resuelve datos canónicos oficiales en inglés y cartas inexistentes dan null', async () => {
     const res = await cardSearchService.resolveCards({
       names: ['Sol Ring', 'UniqueCardWithNoSpanishPrintingEver12345'],
-      lang: 'es',
+      lang: 'en',
     });
 
     const solRing = res.byQuery['Sol Ring']!;
-    assert.ok(solRing.locales?.es, 'Sol Ring tiene impresión real en español');
-    assert.equal(solRing.locales?.es?.printedName, 'Anillo solar');
+    assert.equal(solRing.name, 'Sol Ring');
     assert.ok(solRing.imageUrlNormal?.includes('cards.scryfall.io'), 'URL de imagen de Scryfall real');
 
     assert.equal(

@@ -15,7 +15,6 @@ import {
   Coins,
   LogOut,
 } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext';
 
 interface FloatingToolbarProps {
   roomState: RoomState;
@@ -43,7 +42,6 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
-  const { language, setLanguage } = useLanguage();
 
   const activePlayer = roomState.activePlayerId
     ? roomState.players[roomState.activePlayerId]
@@ -390,25 +388,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             </div>
 
             <div className="space-y-4">
-              {/* Language Preference (Punto 5, C.5 - Español Prioritario) */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-slate-200">Idioma de cartas</div>
-                  <div className="text-[11px] text-slate-400">
-                    Prioridad español con fallback inglés.
-                  </div>
-                </div>
-                <select
-                  data-testid="language-select"
-                  value={language}
-                  onChange={e => setLanguage(e.target.value as 'es' | 'en')}
-                  className="bg-slate-950 border border-slate-700 text-xs text-amber-300 font-semibold rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-amber-500 outline-none cursor-pointer"
-                >
-                  <option value="es">Español (es)</option>
-                  <option value="en">English (en)</option>
-                </select>
-              </div>
-
+              {/* Visuals / Playmats */}
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
                   <div className="text-xs font-bold text-slate-200">Reducir fondos (Playmats)</div>

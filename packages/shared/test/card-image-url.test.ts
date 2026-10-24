@@ -64,12 +64,12 @@ describe('Punto 5 (A.5) - getCardImageUrl unificado sin derivación por reemplaz
     assert.equal(artCrop, 'https://cards.scryfall.io/art_crop/front/1/2/test-artcrop-uuid.jpg?101');
   });
 
-  it('2. Retorna URLs en español si existen cuando lang === "es"', () => {
+  it('2. Retorna URLs canónicas en inglés incluso si se pasa parámetro de idioma', () => {
     const smallEs = getCardImageUrl(cardWithBothImages, { size: 'small', lang: 'es' });
-    assert.equal(smallEs, 'https://cards.scryfall.io/small/front/e/s/es-small.jpg?111');
+    assert.equal(smallEs, 'https://cards.scryfall.io/small/front/1/2/test-small-uuid.jpg?123');
 
     const normalEs = getCardImageUrl(cardWithBothImages, { size: 'normal', lang: 'es' });
-    assert.equal(normalEs, 'https://cards.scryfall.io/normal/front/e/s/es-normal.jpg?222');
+    assert.equal(normalEs, 'https://cards.scryfall.io/normal/front/1/2/test-normal-uuid.jpg?456');
   });
 
   it('3. Soporta cartas de dos caras devolviendo la cara solicitada (faceIndex)', () => {
