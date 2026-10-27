@@ -180,46 +180,44 @@ export default function App() {
       <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] z-0" />
 
       {/* Top Header */}
-      <header className="relative z-10 border-b border-zinc-800/80 bg-[#0b0f17]/80 backdrop-blur-xl px-6 py-3.5 flex items-center justify-between">
+      <header className="relative z-10 border-b border-[#232836] bg-[#0d1017] px-6 py-3.5 flex items-center justify-between">
         <div className="flex items-center space-x-8">
-          <div className="flex items-center space-x-3.5 group cursor-default">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 p-[1px] shadow-lg shadow-amber-500/15">
-              <div className="w-full h-full bg-[#0b0f17] rounded-[11px] flex items-center justify-center">
-                <i className="ms ms-planeswalker text-amber-400 text-lg group-hover:scale-110 transition-transform duration-200" aria-hidden="true" />
-              </div>
+          <div className="flex items-center space-x-3 group cursor-default">
+            <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-zinc-950 shadow-md">
+              <i className="ms ms-planeswalker text-lg font-black" aria-hidden="true" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="font-cinzel font-bold text-sm tracking-widest text-zinc-100 uppercase">
-                  Mesa Virtual MTG
+                <h1 className="font-sans font-extrabold text-sm tracking-tight text-white uppercase">
+                  MTG Commander Sandbox
                 </h1>
-                <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-300 tracking-wider">
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-amber-500/30 bg-[#1a202c] text-amber-300 tracking-wider">
                   EDH
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-400 font-medium">Commander Sandbox Multijugador</p>
+              <p className="text-[11px] text-zinc-400 font-medium">Mesa Multijugador Sincronizada</p>
             </div>
           </div>
 
           {!roomCode && (
-            <nav className="flex space-x-1 bg-zinc-900/90 p-1 rounded-xl border border-zinc-800/80 shadow-inner">
+            <nav className="flex space-x-1 bg-[#141822] p-1 rounded-xl border border-[#232836]">
               <button
                 onClick={() => setActiveMainTab('lobby')}
-                className={`flex items-center space-x-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   activeMainTab === 'lobby'
-                    ? 'bg-amber-500 text-zinc-950 font-bold shadow-md shadow-amber-500/20'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
+                    ? 'bg-amber-500 text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1c2230]'
                 }`}
               >
                 <Users className="w-3.5 h-3.5" />
-                <span>Salas y Mesas</span>
+                <span>Centro de Mesas</span>
               </button>
               <button
                 onClick={() => setActiveMainTab('importer')}
-                className={`flex items-center space-x-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   activeMainTab === 'importer'
-                    ? 'bg-amber-500 text-zinc-950 font-bold shadow-md shadow-amber-500/20'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
+                    ? 'bg-amber-500 text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1c2230]'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -231,7 +229,7 @@ export default function App() {
 
         <div className="flex items-center space-x-4">
           {/* Mana Colors Bar */}
-          <div className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-zinc-900/70 border border-zinc-800/80 text-xs text-zinc-400">
+          <div className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#141822] border border-[#232836] text-xs text-zinc-400">
             <i className="ms ms-w ms-cost text-[13px]" title="White" />
             <i className="ms ms-u ms-cost text-[13px]" title="Blue" />
             <i className="ms ms-b ms-cost text-[13px]" title="Black" />
@@ -239,11 +237,11 @@ export default function App() {
             <i className="ms ms-g ms-cost text-[13px]" title="Green" />
           </div>
 
-          <div className="flex items-center space-x-2 text-xs px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800/90 shadow-sm">
+          <div className="flex items-center space-x-2 text-xs px-3 py-1.5 rounded-lg bg-[#141822] border border-[#232836]">
             <span
               className={`w-2 h-2 rounded-full ${
                 serverStatus === 'online'
-                  ? 'bg-emerald-400 ring-2 ring-emerald-500/20 animate-pulse'
+                  ? 'bg-emerald-400 ring-2 ring-emerald-500/20'
                   : serverStatus === 'offline'
                     ? 'bg-rose-500'
                     : 'bg-amber-400'
@@ -251,7 +249,7 @@ export default function App() {
             />
             <span className="text-[11px] font-medium text-zinc-300">
               {serverStatus === 'online'
-                ? 'En línea'
+                ? 'Servidor en línea'
                 : serverStatus === 'offline'
                   ? 'Desconectado'
                   : 'Comprobando...'}
@@ -297,13 +295,14 @@ export default function App() {
               onCreateRoom={handleCreateRoom}
               onJoinRoom={handleJoinRoom}
               isCreating={isCreatingRoom}
+              onNavigateToImporter={() => setActiveMainTab('importer')}
             />
           )}
         </CardPreviewProvider>
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-zinc-800/80 bg-[#07090e]/90 backdrop-blur px-6 py-3 flex items-center justify-between text-[11px] text-zinc-500">
+      <footer className="relative z-10 border-t border-[#232836] bg-[#0d1017] px-6 py-3.5 flex items-center justify-between text-[11px] text-zinc-500">
         <div className="flex items-center space-x-2">
           <span>MTG Commander Tabletop</span>
           <span>&bull;</span>

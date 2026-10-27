@@ -402,15 +402,15 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
   return (
     <div className="flex flex-col h-[calc(100vh-100px)] max-w-6xl mx-auto space-y-5">
       {/* Top Header */}
-      <div className="bg-[#0c101a]/90 border border-zinc-800/90 rounded-2xl px-6 py-4.5 shadow-2xl backdrop-blur-xl flex items-center justify-between ring-1 ring-white/5">
+      <div className="bg-[#11141c] border border-[#232836] rounded-2xl px-6 py-4.5 shadow-xl flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-400 shadow-inner">
+          <div className="p-3 bg-[#1a202c] border border-[#2d3748] rounded-xl text-amber-400">
             <Users className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center space-x-2.5">
-              <h2 className="text-lg font-cinzel font-bold text-zinc-100 tracking-wide">{roomState.name}</h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 uppercase tracking-wider">
+              <h2 className="text-lg font-bold text-white tracking-wide">{roomState.name}</h2>
+              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[#1a202c] text-amber-300 border border-[#2d3748] uppercase tracking-wider">
                 Sala de Espera
               </span>
             </div>
@@ -424,7 +424,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         <div className="flex items-center space-x-3">
           <button
             onClick={copyCode}
-            className="flex items-center space-x-2.5 bg-[#07090e] hover:bg-zinc-800/80 border border-zinc-700/80 px-3.5 py-2 rounded-xl text-xs font-mono font-bold text-amber-300 transition-all shadow-inner cursor-pointer"
+            className="flex items-center space-x-2.5 bg-[#090b10] hover:bg-[#161a24] border border-[#232836] px-3.5 py-2 rounded-xl text-xs font-mono font-bold text-amber-300 transition-all cursor-pointer"
             title="Copiar código de la sala"
           >
             <span>Código: {roomState.code}</span>
@@ -437,7 +437,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
 
           <button
             onClick={onLeaveRoom}
-            className="flex items-center space-x-1.5 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 px-3.5 py-2 rounded-xl text-xs font-bold text-rose-300 transition-all cursor-pointer"
+            className="flex items-center space-x-1.5 bg-[#2a1315] hover:bg-[#38181b] border border-[#521c21] px-3.5 py-2 rounded-xl text-xs font-bold text-rose-300 transition-all cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Salir</span>
@@ -452,13 +452,13 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
             return (
               <div
                 key={idx}
-                className="bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-2"
+                className="bg-[#0e1118] border border-dashed border-[#232836] rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-2"
               >
-                <div className="w-12 h-12 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-600 font-mono font-bold text-sm">
+                <div className="w-12 h-12 rounded-full bg-[#141924] border border-[#232836] flex items-center justify-center text-zinc-500 font-mono font-bold text-sm">
                   #{idx + 1}
                 </div>
-                <h3 className="text-sm font-semibold text-slate-500">Asiento {idx + 1} Libre</h3>
-                <p className="text-[11px] text-slate-600">Esperando a que se una otro jugador...</p>
+                <h3 className="text-sm font-semibold text-zinc-400">Asiento {idx + 1} Libre</h3>
+                <p className="text-[11px] text-zinc-500">Esperando a que se una otro jugador...</p>
               </div>
             );
           }
@@ -469,9 +469,9 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
           return (
             <div
               key={player.id}
-              className={`bg-slate-900 border rounded-2xl p-5 flex flex-col justify-between shadow-lg relative overflow-hidden transition-all ${
-                player.isReady ? 'border-emerald-500/40 shadow-emerald-500/5' : 'border-slate-800'
-              } ${isLocal ? 'ring-1 ring-amber-500/30' : ''}`}
+              className={`bg-[#11141c] border rounded-2xl p-5 flex flex-col justify-between shadow-lg relative overflow-hidden transition-all ${
+                player.isReady ? 'border-emerald-500/50' : 'border-[#232836]'
+              } ${isLocal ? 'ring-1 ring-amber-500/40' : ''}`}
             >
               {/* Playmat subtle preview if available */}
               {deck?.commanderImageUrl && (
@@ -484,7 +484,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs font-mono font-bold text-slate-500">#{idx + 1}</span>
+                    <span className="text-xs font-mono font-bold text-zinc-500">#{idx + 1}</span>
                     <h3 className="font-bold text-sm text-white flex items-center space-x-1.5">
                       <span>{player.name}</span>
                       {player.isHost && (
@@ -503,8 +503,8 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                   <span
                     className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold ${
                       player.isReady
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                        : 'bg-slate-800 text-slate-400 border border-slate-700'
+                        ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-600/40'
+                        : 'bg-[#181d29] text-zinc-400 border border-[#2b3345]'
                     }`}
                   >
                     {player.isReady ? (
@@ -514,7 +514,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                       </>
                     ) : (
                       <>
-                        <XCircle className="w-3.5 h-3.5 text-slate-500" />
+                        <XCircle className="w-3.5 h-3.5 text-zinc-500" />
                         <span>No listo</span>
                       </>
                     )}
@@ -522,11 +522,11 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                 </div>
 
                 {/* Deck Card */}
-                <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-3 space-y-1.5">
+                <div className="bg-[#090b10] border border-[#1f2432] rounded-xl p-3 space-y-1.5">
                   {deck ? (
                     <div>
                       <div className="text-xs font-bold text-amber-300 truncate">{deck.name}</div>
-                      <div className="text-[11px] text-slate-400 truncate flex items-center space-x-1">
+                      <div className="text-[11px] text-zinc-400 truncate flex items-center space-x-1">
                         <Sparkles className="w-3 h-3 text-amber-400" />
                         <span>{deck.commanderName}</span>
                       </div>
@@ -538,7 +538,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                       )}
                     </div>
                   ) : (
-                    <div className="text-center py-2 text-slate-500 text-xs italic">
+                    <div className="text-center py-2 text-zinc-500 text-xs italic">
                       Sin mazo seleccionado
                     </div>
                   )}
@@ -547,17 +547,17 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
 
               {/* Host actions on opponents */}
               {isHost && !isLocal && (
-                <div className="relative z-10 pt-3 border-t border-slate-800/60 flex items-center justify-end space-x-2">
+                <div className="relative z-10 pt-3 border-t border-[#1f2432] flex items-center justify-end space-x-2">
                   <button
                     onClick={() => handleTransferHost(player.id, player.name)}
-                    className="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-lg text-xs transition-colors"
+                    className="p-1.5 text-zinc-400 hover:text-amber-400 hover:bg-[#1a202c] rounded-lg text-xs transition-colors"
                     title="Transferir anfitrión"
                   >
                     <Shield className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleKick(player.id, player.name)}
-                    className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 rounded-lg text-xs transition-colors"
+                    className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-rose-950/30 rounded-lg text-xs transition-colors"
                     title="Expulsar jugador"
                   >
                     <UserX className="w-3.5 h-3.5" />
@@ -570,11 +570,11 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl px-6 py-4 shadow-2xl flex items-center justify-between">
+      <div className="bg-[#11141c] border border-[#232836] rounded-2xl px-6 py-4 shadow-xl flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setIsDeckModalOpen(true)}
-            className="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-all shadow"
+            className="flex items-center space-x-2 bg-[#1a202c] hover:bg-[#232a3b] border border-[#2f384a] px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-all cursor-pointer"
           >
             <Layers className="w-4 h-4 text-amber-400" />
             <span>
@@ -585,17 +585,17 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
           <button
             onClick={handleToggleReady}
             disabled={!localPlayer?.selectedDeck}
-            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow ${
+            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer ${
               !localPlayer?.selectedDeck
-                ? 'bg-slate-800/50 text-slate-500 cursor-not-allowed border border-slate-800'
+                ? 'bg-[#181d29]/50 text-zinc-600 cursor-not-allowed border border-[#232836]'
                 : localPlayer?.isReady
-                  ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
-                  : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30'
+                  ? 'bg-[#181d29] text-zinc-300 hover:bg-[#232a3b] border border-[#2b3345]'
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md'
             }`}
           >
             {localPlayer?.isReady ? (
               <>
-                <XCircle className="w-4 h-4 text-slate-400" />
+                <XCircle className="w-4 h-4 text-zinc-400" />
                 <span>Cancelar "Listo"</span>
               </>
             ) : (
@@ -624,10 +624,10 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
             <button
               onClick={handleStartGame}
               disabled={!canStart}
-              className={`flex items-center space-x-2 px-6 py-2.5 rounded-xl font-extrabold text-sm transition-all shadow-lg ${
+              className={`flex items-center space-x-2 px-6 py-2.5 rounded-xl font-extrabold text-sm transition-all shadow-md ${
                 canStart
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-amber-500/25 cursor-pointer scale-105'
-                  : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-800'
+                  ? 'bg-amber-500 hover:bg-amber-400 text-zinc-950 cursor-pointer scale-105'
+                  : 'bg-[#181d29] text-zinc-600 cursor-not-allowed border border-[#232836]'
               }`}
             >
               <Play className="w-4 h-4 fill-current" />
@@ -640,7 +640,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
       {/* Deck Selector & Importer Modal */}
       {isDeckModalOpen && (
         <div
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-150"
           onClick={() => setIsDeckModalOpen(false)}
           onDoubleClick={e => {
             e.stopPropagation();
