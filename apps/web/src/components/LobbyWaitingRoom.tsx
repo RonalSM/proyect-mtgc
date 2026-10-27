@@ -26,6 +26,8 @@ import {
   ChevronUp,
   BookOpen,
 } from 'lucide-react';
+import { MtgSymbolIcon } from '../utils/mana-icons';
+import { DeckInspectorModal } from './DeckInspectorModal';
 
 interface LobbyWaitingRoomProps {
   roomState: RoomState;
@@ -45,6 +47,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
   const [presetDecks, setPresetDecks] = useState<any[]>([]);
   const [isLoadingPresets, setIsLoadingPresets] = useState(false);
   const [expandedPresetId, setExpandedPresetId] = useState<string | null>(null);
+  const [inspectedPreset, setInspectedPreset] = useState<any | null>(null);
   const [savedDecks, setSavedDecks] = useState<any[]>([]);
   const [isLoadingDecks, setIsLoadingDecks] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
@@ -755,32 +758,13 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                                   <span className="truncate">{preset.commanderName}</span>
                                 </p>
                               </div>
-                              <div className="flex-shrink-0 flex items-center space-x-1 bg-slate-950/80 backdrop-blur-sm px-2 py-0.5 rounded-md border border-slate-800">
+                              <div className="flex-shrink-0 flex items-center space-x-1">
                                 {preset.colorIdentity && preset.colorIdentity.length > 0 ? (
                                   preset.colorIdentity.map((c: string) => (
-                                    <span
-                                      key={c}
-                                      className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black border ${
-                                        c === 'W'
-                                          ? 'bg-amber-100/20 border-amber-200/40 text-amber-100'
-                                          : c === 'U'
-                                            ? 'bg-blue-900/40 border-blue-500/40 text-blue-300'
-                                            : c === 'B'
-                                              ? 'bg-purple-950/40 border-purple-500/40 text-purple-300'
-                                              : c === 'R'
-                                                ? 'bg-rose-950/40 border-rose-500/40 text-rose-300'
-                                                : c === 'G'
-                                                  ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
-                                                  : 'bg-slate-800 border-slate-700 text-slate-300'
-                                      }`}
-                                    >
-                                      {c}
-                                    </span>
+                                    <MtgSymbolIcon key={c} symbol={c} size="sm" />
                                   ))
                                 ) : (
-                                  <span className="text-[10px] font-bold text-slate-400">
-                                    Incoloro
-                                  </span>
+                                  <MtgSymbolIcon symbol="c" size="sm" />
                                 )}
                               </div>
                             </div>
@@ -789,21 +773,34 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                           {/* Deck Info & Actions */}
                           <div className="p-3 flex-1 flex flex-col justify-between space-y-3">
                             <div className="flex items-center justify-between text-xs text-slate-400">
-                              <span>100 cartas (Commander)</span>
-                              <button
-                                type="button"
-                                data-testid={`toggle-cardlist-${preset.id}`}
-                                onClick={() => setExpandedPresetId(isExpanded ? null : preset.id)}
-                                className="text-amber-400 hover:text-amber-300 font-semibold flex items-center space-x-1"
-                              >
-                                <BookOpen className="w-3.5 h-3.5" />
-                                <span>{isExpanded ? 'Ocultar cartas' : 'Ver cartas (100)'}</span>
-                                {isExpanded ? (
-                                  <ChevronUp className="w-3 h-3" />
-                                ) : (
-                                  <ChevronDown className="w-3 h-3" />
-                                )}
-                              </button>
+                              <span className="font-mono text-[#8BBB92]">100 cartas &bull; EDH</span>
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  type="button"
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    setInspectedPreset(preset);
+                                  }}
+                                  className="text-[#8BBB92] hover:text-white font-semibold flex items-center space-x-1 px-2 py-0.5 rounded bg-[#12544F]/60 border border-[#12544F] text-[11px] transition-colors cursor-pointer"
+                                  title="Ver desglose completo de 100 cartas"
+                                >
+                                  <BookOpen className="w-3 h-3 text-[#8BBB92]" />
+                                  <span>Ver Mazo</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  data-testid={`toggle-cardlist-${preset.id}`}
+                                  onClick={() => setExpandedPresetId(isExpanded ? null : preset.id)}
+                                  className="text-zinc-400 hover:text-zinc-200 font-semibold flex items-center space-x-1 text-[11px]"
+                                >
+                                  <span>{isExpanded ? 'Ocultar' : 'Lista'}</span>
+                                  {isExpanded ? (
+                                    <ChevronUp className="w-3 h-3" />
+                                  ) : (
+                                    <ChevronDown className="w-3 h-3" />
+                                  )}
+                                </button>
+                              </div>
                             </div>
 
                             {/* Foldable Card List */}
@@ -1056,6 +1053,18 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
           </div>
         </div>
       )}
+
+      {/* MODAL: INSPECTOR DETALLADO DE MAZO */}
+      <DeckInspectorModal
+        deck={inspectedPreset}
+        isOpen={!!inspectedPreset}
+        onClose={() => setInspectedPreset(null)}
+        onSelectDeck={deck => {
+          handleApplySelectedDeck(deck);
+          setIsDeckModalOpen(false);
+        }}
+        selectButtonLabel="Elegir este Mazo"
+      />
     </div>
   );
 };

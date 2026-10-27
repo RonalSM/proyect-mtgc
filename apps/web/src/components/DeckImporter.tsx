@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { parseDecklist, validateCommanderDeck, type CardDefinition } from '@mtgc/shared';
 import { Layers, AlertTriangle, CheckCircle2, XCircle, Search, UploadCloud, X } from 'lucide-react';
+import { MtgSymbolIcon } from '../utils/mana-icons';
 
 interface DeckImporterProps {
   onDeckLoaded?: (commander: CardDefinition, cardsCount: number) => void;
@@ -326,17 +327,10 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
                     </span>
                     <div className="flex items-center space-x-1.5">
                       {validationResult.commanderColorIdentity.length === 0 ? (
-                        <span className="text-xs text-zinc-400 px-2 py-0.5 bg-[#040d0f] border border-[#12544F] rounded font-mono">
-                          Incoloro
-                        </span>
+                        <MtgSymbolIcon symbol="c" size="md" />
                       ) : (
                         validationResult.commanderColorIdentity.map((c: string) => (
-                          <span
-                            key={c}
-                            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-bold bg-[#12544F] border border-[#2A835F]/40 text-[#8BBB92] shadow"
-                          >
-                            {c}
-                          </span>
+                          <MtgSymbolIcon key={c} symbol={c} size="md" />
                         ))
                       )}
                     </div>

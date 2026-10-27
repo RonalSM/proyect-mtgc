@@ -9,8 +9,11 @@ import {
   Play,
   ChevronRight,
   Zap,
+  Eye,
 } from 'lucide-react';
 import { useCardPreview } from '../context/CardPreviewContext';
+import { MtgSymbolIcon } from '../utils/mana-icons';
+import { DeckInspectorModal, ManaCostRenderer } from './DeckInspectorModal';
 
 interface LobbyViewProps {
   onJoinRoom: (roomCode: string, playerName: string, isSpectator: boolean) => void;
@@ -34,6 +37,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   const [presets, setPresets] = useState<any[]>([]);
   const [_isLoadingPresets, setIsLoadingPresets] = useState(false);
   const [selectedPresetForView, setSelectedPresetForView] = useState<any | null>(null);
+  const [inspectedDeck, setInspectedDeck] = useState<any | null>(null);
 
   // Form states
   const [roomName, setRoomName] = useState('Pod de Commander');
@@ -89,14 +93,6 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
     localStorage.setItem('mtgc_player_name', joinPlayerName.trim());
     onJoinRoom(joinCode.trim().toUpperCase(), joinPlayerName.trim(), isSpectator);
     setModalMode('none');
-  };
-
-  const manaColorsMap: Record<string, { bg: string; text: string; border: string }> = {
-    W: { bg: 'bg-[#f8f6d8]/10', text: 'text-[#fbf9e3]', border: 'border-[#e6e2b8]/30' },
-    U: { bg: 'bg-[#0e68ab]/15', text: 'text-[#60b6f5]', border: 'border-[#1b82cc]/30' },
-    B: { bg: 'bg-[#15121b]/40', text: 'text-[#b8a9c9]', border: 'border-[#433b52]/40' },
-    R: { bg: 'bg-[#d32a1d]/15', text: 'text-[#f87171]', border: 'border-[#e04538]/30' },
-    G: { bg: 'bg-[#00733e]/15', text: 'text-[#4ade80]', border: 'border-[#169958]/30' },
   };
 
   return (
@@ -187,25 +183,11 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                       </span>
                       <div className="flex items-center space-x-1">
                         {colors.length > 0 ? (
-                          colors.map(c => {
-                            const conf = manaColorsMap[c] || {
-                              bg: 'bg-zinc-800',
-                              text: 'text-zinc-300',
-                              border: 'border-zinc-700',
-                            };
-                            return (
-                              <span
-                                key={c}
-                                className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] font-mono border ${conf.bg} ${conf.text} ${conf.border}`}
-                              >
-                                {c}
-                              </span>
-                            );
-                          })
+                          colors.map(c => (
+                            <MtgSymbolIcon key={c} symbol={c} size="sm" />
+                          ))
                         ) : (
-                          <span className="text-[10px] font-mono text-zinc-400 bg-zinc-800/80 px-1.5 py-0.5 rounded border border-zinc-700">
-                            C
-                          </span>
+                          <MtgSymbolIcon symbol="c" size="sm" />
                         )}
                       </div>
                     </div>
@@ -225,14 +207,12 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                       type="button"
                       onClick={e => {
                         e.stopPropagation();
-                        // Open commander card detail modal
-                        if (deck.commanderCards?.[0]) {
-                          openCardDetails(deck.commanderCards[0]);
-                        }
+                        setInspectedDeck(deck);
                       }}
-                      className="text-zinc-300 hover:text-white px-2 py-1 rounded bg-[#12544F]/70 border border-[#12544F] text-[11px] font-semibold transition-colors"
+                      className="inline-flex items-center space-x-1.5 text-zinc-200 hover:text-white px-2.5 py-1 rounded-lg bg-[#12544F] hover:bg-[#18645e] border border-[#2A835F]/40 text-[11px] font-semibold transition-all shadow-sm cursor-pointer"
                     >
-                      Ver Comandante
+                      <BookOpen className="w-3 h-3 text-[#8BBB92]" />
+                      <span>Ver Mazo</span>
                     </button>
                   </div>
                 </div>
@@ -254,27 +234,100 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
             </div>
 
             {selectedPresetForView ? (
-              <div className="space-y-4">
-                {selectedPresetForView.commanderImageUrl && (
-                  <div className="relative rounded-xl overflow-hidden aspect-[16/9] border border-[#12544F] bg-[#040d0f] shadow-inner">
-                    <img
-                      src={selectedPresetForView.commanderImageUrl}
-                      alt={selectedPresetForView.commanderName}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#092328] via-transparent to-transparent" />
-                    <div className="absolute bottom-2 left-3 right-3 text-white font-bold text-sm truncate">
-                      {selectedPresetForView.commanderName}
-                    </div>
-                  </div>
-                )}
+              <div className="space-y-3.5">
+                {/* Full MTG Card Display (Aspect 63/88) */}
+                {(() => {
+                  const cmdrCard = selectedPresetForView.commanderCards?.[0];
+                  const fullCardImage =
+                    cmdrCard?.imageUrlNormal ||
+                    cmdrCard?.imageUrlLarge ||
+                    selectedPresetForView.commanderImageUrl;
 
-                <div className="space-y-1">
-                  <div className="text-xs text-zinc-400">Estrategia del mazo:</div>
-                  <div className="text-sm font-semibold text-zinc-200">
-                    {selectedPresetForView.name}
-                  </div>
-                </div>
+                  return (
+                    <div className="space-y-3">
+                      <div
+                        onClick={() => {
+                          if (cmdrCard) openCardDetails(cmdrCard);
+                        }}
+                        className="group relative cursor-pointer mx-auto w-full max-w-[260px] aspect-[63/88] rounded-2xl overflow-hidden shadow-2xl border-2 border-[#12544F] hover:border-[#8BBB92] transition-all bg-[#040d0f]"
+                        title="Haz clic para inspeccionar el comandante en grande con reglas y detalles"
+                      >
+                        {fullCardImage ? (
+                          <img
+                            src={fullCardImage}
+                            alt={selectedPresetForView.commanderName || 'Comandante'}
+                            className="w-full h-full object-contain select-none transition-transform duration-300 group-hover:scale-[1.02]"
+                            loading="eager"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-zinc-500">
+                            <Crown className="w-10 h-10 text-[#12544F] mb-2" />
+                            <span className="font-bold text-xs text-zinc-300">
+                              {selectedPresetForView.commanderName}
+                            </span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-3">
+                          <span className="px-3 py-1.5 rounded-lg bg-[#092328]/95 border border-[#8BBB92] text-xs font-bold text-white shadow-xl flex items-center space-x-1.5">
+                            <Eye className="w-3.5 h-3.5 text-[#8BBB92]" />
+                            <span>Ampliar Detalles</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Commander Name, Cost & Stats */}
+                      <div className="space-y-2 pt-1">
+                        <div className="flex items-start justify-between gap-2 border-b border-[#12544F] pb-2">
+                          <div className="min-w-0">
+                            <h4 className="font-extrabold text-sm text-white truncate">
+                              {selectedPresetForView.commanderName}
+                            </h4>
+                            <p className="text-[11px] text-zinc-400 truncate">
+                              {cmdrCard?.typeLine || 'Criatura Legendaria'}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-1 shrink-0">
+                            <ManaCostRenderer cost={cmdrCard?.manaCost} size="sm" />
+                            {cmdrCard?.power !== undefined && cmdrCard?.toughness !== undefined && (
+                              <span className="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-[#12544F] text-[#8BBB92] border border-[#2A835F]/40 ml-1">
+                                {cmdrCard.power}/{cmdrCard.toughness}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Color Identity */}
+                        <div className="flex items-center justify-between text-xs py-0.5">
+                          <span className="text-[11px] text-zinc-400">Identidad de Color:</span>
+                          <div className="flex items-center space-x-1">
+                            {selectedPresetForView.colorIdentity &&
+                            selectedPresetForView.colorIdentity.length > 0 ? (
+                              selectedPresetForView.colorIdentity.map((c: string) => (
+                                <MtgSymbolIcon key={c} symbol={c} size="sm" />
+                              ))
+                            ) : (
+                              <MtgSymbolIcon symbol="c" size="sm" />
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Oracle Rules Text */}
+                        {cmdrCard?.oracleText && (
+                          <div className="rounded-xl bg-[#0c2d32] border border-[#12544F] p-3 text-xs text-zinc-200 leading-relaxed font-sans max-h-36 overflow-y-auto pr-1">
+                            {cmdrCard.oracleText}
+                          </div>
+                        )}
+
+                        <div className="text-xs text-zinc-400 pt-0.5">
+                          Estrategia:{' '}
+                          <span className="font-semibold text-zinc-200">
+                            {selectedPresetForView.name}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <div className="pt-2 flex flex-col gap-2">
                   <button
@@ -287,6 +340,15 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
                     <span>Jugar con este Mazo</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setInspectedDeck(selectedPresetForView)}
+                    className="w-full py-2 px-4 rounded-xl bg-[#12544F] hover:bg-[#18645e] border border-[#2A835F]/40 text-white font-bold text-xs tracking-wide transition-all cursor-pointer flex items-center justify-center space-x-2"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-[#8BBB92]" />
+                    <span>Ver Mazo Completo (100 Cartas)</span>
                   </button>
                 </div>
               </div>
@@ -535,6 +597,19 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* 5. MODAL: INSPECTOR DE MAZO COMPLETO */}
+      <DeckInspectorModal
+        deck={inspectedDeck}
+        isOpen={!!inspectedDeck}
+        onClose={() => setInspectedDeck(null)}
+        onSelectDeck={deck => {
+          setSelectedPresetForView(deck);
+          setRoomName(`Mesa ${deck.name}`);
+          setModalMode('create');
+        }}
+        selectButtonLabel="Crear Mesa con este Mazo"
+      />
     </div>
   );
 };

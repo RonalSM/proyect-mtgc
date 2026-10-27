@@ -167,14 +167,14 @@ export const MtgSymbolIcon: React.FC<{
 }> = ({ symbol, size = 'md', className = '' }) => {
   const iconClass = getManaSymbolClass(symbol);
   const sizeClass =
-    size === 'sm' ? 'text-[11px] mx-0.5' : size === 'lg' ? 'text-lg mx-1' : 'text-sm mx-0.5';
+    size === 'sm' ? 'text-[13px] mx-0.5' : size === 'lg' ? 'text-xl mx-1' : 'text-[16px] mx-0.5';
 
   return (
     <span
       className={`inline-flex items-center justify-center select-none align-middle ${sizeClass} ${className}`}
       title={symbol.startsWith('{') ? symbol : `{${symbol.toUpperCase()}}`}
     >
-      <i className={iconClass} aria-hidden="true" />
+      <i className={`${iconClass} ms-shadow`} aria-hidden="true" />
     </span>
   );
 };
