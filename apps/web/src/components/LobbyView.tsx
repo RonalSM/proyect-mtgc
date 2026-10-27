@@ -102,11 +102,11 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   return (
     <div className="w-full max-w-7xl mx-auto space-y-10 py-6 px-4 sm:px-6">
       {/* 1. HERO / LAUNCHER BANNER */}
-      <section className="relative rounded-2xl bg-[#11141c] border border-[#232836] p-7 sm:p-10 overflow-hidden shadow-xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+      <section className="relative rounded-2xl bg-[#092328] border border-[#12544F] p-7 sm:p-10 overflow-hidden shadow-2xl">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#2A835F]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-md bg-[#1a202c] border border-[#2d3748] text-amber-400 text-xs font-semibold">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-md bg-[#0c2d32] border border-[#12544F] text-[#8BBB92] text-xs font-semibold">
               <Zap className="w-3.5 h-3.5 fill-current" />
               <span>Simulador Multijugador MTG Commander (EDH)</span>
             </div>
@@ -122,7 +122,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
             <button
               type="button"
               onClick={() => setModalMode('create')}
-              className="inline-flex items-center justify-center space-x-2.5 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 font-bold text-sm tracking-wide transition-all shadow-md cursor-pointer"
+              className="inline-flex items-center justify-center space-x-2.5 px-6 py-3.5 rounded-xl bg-[#2A835F] hover:bg-[#349e73] active:bg-[#237050] text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-[#2A835F]/25 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Crear Nueva Mesa</span>
@@ -130,7 +130,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
             <button
               type="button"
               onClick={() => setModalMode('join')}
-              className="inline-flex items-center justify-center space-x-2.5 px-6 py-3.5 rounded-xl bg-[#1a202c] hover:bg-[#232a3b] border border-[#2f384a] text-zinc-100 font-bold text-sm transition-all cursor-pointer"
+              className="inline-flex items-center justify-center space-x-2.5 px-6 py-3.5 rounded-xl bg-[#12544F] hover:bg-[#18645e] border border-[#2A835F]/40 text-white font-bold text-sm transition-all cursor-pointer shadow-md"
             >
               <ArrowRight className="w-4 h-4" />
               <span>Unirse con Código</span>
@@ -143,14 +143,14 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Preset Decks Showcase */}
         <section className="lg:col-span-8 space-y-4">
-          <div className="flex items-center justify-between border-b border-[#232836] pb-3">
+          <div className="flex items-center justify-between border-b border-[#12544F] pb-3">
             <div className="flex items-center space-x-2.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+              <div className="w-2.5 h-2.5 rounded-full bg-[#8BBB92]" />
               <h2 className="text-lg font-bold text-white tracking-wide">
                 Mazos de Commander Listos para la Mesa
               </h2>
             </div>
-            <span className="text-xs text-zinc-400 font-mono">
+            <span className="text-xs text-[#8BBB92] font-mono">
               {presets.length} Mazos Oficiales
             </span>
           </div>
@@ -164,10 +164,10 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                 <div
                   key={deck.id}
                   onClick={() => setSelectedPresetForView(deck)}
-                  className={`group relative rounded-xl bg-[#11141c] border transition-all cursor-pointer overflow-hidden p-4 flex flex-col justify-between space-y-3.5 ${
+                  className={`group relative rounded-xl bg-[#092328] border transition-all cursor-pointer overflow-hidden p-4 flex flex-col justify-between space-y-3.5 ${
                     isSelected
-                      ? 'border-amber-400/80 ring-1 ring-amber-400/40 bg-[#141924]'
-                      : 'border-[#232836] hover:border-[#384156] hover:bg-[#131722]'
+                      ? 'border-[#8BBB92] ring-1 ring-[#8BBB92]/50 bg-[#0c2d32]'
+                      : 'border-[#12544F] hover:border-[#2A835F]/60 hover:bg-[#0c2d32]/70'
                   }`}
                 >
                   {/* Subtle Art Background Header */}
@@ -177,12 +177,12 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                       style={{ backgroundImage: `url(${deck.commanderImageUrl})` }}
                     />
                   )}
-                  <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-transparent to-[#11141c]" />
+                  <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-transparent to-[#092328]" />
 
                   {/* Header Details */}
                   <div className="relative z-10 space-y-1 pt-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
+                      <span className="text-xs font-mono font-bold text-[#8BBB92] uppercase tracking-wider">
                         100 Cartas &bull; EDH
                       </span>
                       <div className="flex items-center space-x-1">
@@ -209,15 +209,15 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                         )}
                       </div>
                     </div>
-                    <h3 className="text-base font-bold text-white group-hover:text-amber-300 transition-colors">
+                    <h3 className="text-base font-bold text-white group-hover:text-[#8BBB92] transition-colors">
                       {deck.name}
                     </h3>
                   </div>
 
                   {/* Commander & Action */}
-                  <div className="relative z-10 pt-2 border-t border-[#1f2430] flex items-center justify-between text-xs">
+                  <div className="relative z-10 pt-2 border-t border-[#12544F] flex items-center justify-between text-xs">
                     <div className="flex items-center space-x-2 min-w-0">
-                      <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <Crown className="w-3.5 h-3.5 text-[#8BBB92] shrink-0" />
                       <span className="text-zinc-300 font-medium truncate">{deck.commanderName}</span>
                     </div>
 
@@ -230,7 +230,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                           openCardDetails(deck.commanderCards[0]);
                         }
                       }}
-                      className="text-zinc-400 hover:text-white px-2 py-1 rounded bg-[#1c2230] border border-[#2b3548] text-[11px] font-semibold transition-colors"
+                      className="text-zinc-300 hover:text-white px-2 py-1 rounded bg-[#12544F]/70 border border-[#12544F] text-[11px] font-semibold transition-colors"
                     >
                       Ver Comandante
                     </button>
@@ -244,25 +244,25 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
         {/* Right Column: Deck Details & Quick Access Tools */}
         <section className="lg:col-span-4 space-y-6">
           {/* Selected Deck Card Preview */}
-          <div className="rounded-2xl bg-[#11141c] border border-[#232836] p-5 space-y-4 shadow-lg">
-            <div className="flex items-center justify-between border-b border-[#232836] pb-3">
+          <div className="rounded-2xl bg-[#092328] border border-[#12544F] p-5 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#12544F] pb-3">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center space-x-2">
-                <BookOpen className="w-4 h-4 text-amber-400" />
+                <BookOpen className="w-4 h-4 text-[#8BBB92]" />
                 <span>Mazo Seleccionado</span>
               </h3>
-              <span className="text-xs text-zinc-400 font-mono">Vista Rápida</span>
+              <span className="text-xs text-[#8BBB92] font-mono">Vista Rápida</span>
             </div>
 
             {selectedPresetForView ? (
               <div className="space-y-4">
                 {selectedPresetForView.commanderImageUrl && (
-                  <div className="relative rounded-xl overflow-hidden aspect-[16/9] border border-[#2b3345] bg-[#090b10] shadow-inner">
+                  <div className="relative rounded-xl overflow-hidden aspect-[16/9] border border-[#12544F] bg-[#040d0f] shadow-inner">
                     <img
                       src={selectedPresetForView.commanderImageUrl}
                       alt={selectedPresetForView.commanderName}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#11141c] via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#092328] via-transparent to-transparent" />
                     <div className="absolute bottom-2 left-3 right-3 text-white font-bold text-sm truncate">
                       {selectedPresetForView.commanderName}
                     </div>
@@ -283,7 +283,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                       setRoomName(`Mesa ${selectedPresetForView.name}`);
                       setModalMode('create');
                     }}
-                    className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs tracking-wide uppercase transition-all shadow-md cursor-pointer flex items-center justify-center space-x-2"
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#2A835F] hover:bg-[#349e73] active:bg-[#237050] text-white font-bold text-xs tracking-wide uppercase transition-all shadow-md shadow-[#2A835F]/20 cursor-pointer flex items-center justify-center space-x-2"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
                     <span>Jugar con este Mazo</span>
@@ -298,7 +298,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           </div>
 
           {/* Quick Hub Tools */}
-          <div className="rounded-2xl bg-[#11141c] border border-[#232836] p-5 space-y-3">
+          <div className="rounded-2xl bg-[#092328] border border-[#12544F] p-5 space-y-3 shadow-xl">
             <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">
               Herramientas de Juego
             </h3>
@@ -307,14 +307,14 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               <button
                 type="button"
                 onClick={onNavigateToImporter}
-                className="w-full text-left p-3 rounded-xl bg-[#161a24] hover:bg-[#1d2331] border border-[#252c3c] transition-all flex items-center justify-between group cursor-pointer"
+                className="w-full text-left p-3 rounded-xl bg-[#0c2d32] hover:bg-[#12544F]/70 border border-[#12544F] transition-all flex items-center justify-between group cursor-pointer"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 rounded-lg bg-[#202738] text-amber-400">
+                  <div className="p-2 rounded-lg bg-[#12544F] text-[#8BBB92]">
                     <Layers className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                    <div className="text-xs font-bold text-white group-hover:text-[#8BBB92] transition-colors">
                       Validador e Importador
                     </div>
                     <div className="text-[11px] text-zinc-400">
@@ -326,16 +326,16 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               </button>
             )}
 
-            <div className="p-3.5 rounded-xl bg-[#141822] border border-[#202636] space-y-2">
+            <div className="p-3.5 rounded-xl bg-[#0c2d32] border border-[#12544F] space-y-2">
               <div className="flex items-center space-x-2 text-xs font-bold text-zinc-200">
-                <Keyboard className="w-4 h-4 text-amber-400" />
+                <Keyboard className="w-4 h-4 text-[#8BBB92]" />
                 <span>Atajos Esenciales de la Mesa</span>
               </div>
               <ul className="text-[11px] text-zinc-400 space-y-1 font-mono">
-                <li><strong className="text-zinc-300">Doble clic</strong>: Girar / Enderezar carta</li>
-                <li><strong className="text-zinc-300">Clic derecho</strong>: Menú contextual completo</li>
-                <li><strong className="text-zinc-300">Espacio</strong>: Pasar el turno activo</li>
-                <li><strong className="text-zinc-300">D</strong>: Robar una carta de biblioteca</li>
+                <li><strong className="text-zinc-200">Doble clic</strong>: Girar / Enderezar carta</li>
+                <li><strong className="text-zinc-200">Clic derecho</strong>: Menú contextual completo</li>
+                <li><strong className="text-zinc-200">Espacio</strong>: Pasar el turno activo</li>
+                <li><strong className="text-zinc-200">D</strong>: Robar una carta de biblioteca</li>
               </ul>
             </div>
           </div>
@@ -349,10 +349,10 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           onClick={() => setModalMode('none')}
         >
           <div
-            className="w-full max-w-lg bg-[#11141c] border border-[#2b3345] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-6 text-white"
+            className="w-full max-w-lg bg-[#092328] border border-[#12544F] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-6 text-white"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-[#232836] pb-3">
+            <div className="flex items-center justify-between border-b border-[#12544F] pb-3">
               <div>
                 <h3 className="text-lg font-bold text-white">Crear Mesa de Commander</h3>
                 <p className="text-xs text-zinc-400">Configura la partida para ti y tus compañeros</p>
@@ -360,7 +360,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               <button
                 type="button"
                 onClick={() => setModalMode('none')}
-                className="text-zinc-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-[#1c2230]"
+                className="text-zinc-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-[#12544F]/60"
               >
                 Cerrar
               </button>
@@ -377,7 +377,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   onChange={e => setRoomName(e.target.value)}
                   required
                   placeholder="Ej. Pod de Viernes por la Noche"
-                  className="w-full bg-[#0a0d14] border border-[#2a3244] focus:border-amber-400 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                  className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
                 />
               </div>
 
@@ -391,7 +391,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   onChange={e => setHostName(e.target.value)}
                   required
                   placeholder="Ej. Planeswalker 1"
-                  className="w-full bg-[#0a0d14] border border-[#2a3244] focus:border-amber-400 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                  className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
                 />
               </div>
 
@@ -403,7 +403,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   <select
                     value={maxPlayers}
                     onChange={e => setMaxPlayers(Number(e.target.value))}
-                    className="w-full bg-[#0a0d14] border border-[#2a3244] focus:border-amber-400 rounded-xl px-3 py-2.5 text-sm text-zinc-200 focus:outline-none"
+                    className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-3 py-2.5 text-sm text-zinc-200 focus:outline-none"
                   >
                     <option value={2}>2 Jugadores (1v1)</option>
                     <option value={3}>3 Jugadores</option>
@@ -423,7 +423,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                     max={100}
                     value={startingLife}
                     onChange={e => setStartingLife(Number(e.target.value))}
-                    className="w-full bg-[#0a0d14] border border-[#2a3244] focus:border-amber-400 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none"
+                    className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none"
                   />
                 </div>
               </div>
@@ -432,14 +432,14 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setModalMode('none')}
-                  className="px-4 py-2.5 rounded-xl bg-[#1c2230] hover:bg-[#252d3f] text-zinc-300 text-xs font-bold"
+                  className="px-4 py-2.5 rounded-xl bg-[#0c2d32] hover:bg-[#12544F] text-zinc-300 text-xs font-bold"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 text-xs font-bold tracking-wide uppercase transition-all shadow-md cursor-pointer disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-xl bg-[#2A835F] hover:bg-[#349e73] active:bg-[#237050] text-white text-xs font-bold tracking-wide uppercase transition-all shadow-md shadow-[#2A835F]/20 cursor-pointer disabled:opacity-50"
                 >
                   {isCreating ? 'Creando Mesa...' : 'Crear y Abrir Sala'}
                 </button>
@@ -456,10 +456,10 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           onClick={() => setModalMode('none')}
         >
           <div
-            className="w-full max-w-md bg-[#11141c] border border-[#2b3345] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-6 text-white"
+            className="w-full max-w-md bg-[#092328] border border-[#12544F] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-6 text-white"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-[#232836] pb-3">
+            <div className="flex items-center justify-between border-b border-[#12544F] pb-3">
               <div>
                 <h3 className="text-lg font-bold text-white">Unirse a una Mesa</h3>
                 <p className="text-xs text-zinc-400">Ingresa el código de 6 caracteres</p>
@@ -467,7 +467,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               <button
                 type="button"
                 onClick={() => setModalMode('none')}
-                className="text-zinc-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-[#1c2230]"
+                className="text-zinc-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-[#12544F]/60"
               >
                 Cerrar
               </button>
@@ -485,7 +485,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   onChange={e => setJoinCode(e.target.value.toUpperCase())}
                   required
                   placeholder="ABCDEF"
-                  className="w-full bg-[#0a0d14] border border-[#2a3244] focus:border-amber-400 rounded-xl px-4 py-3 text-center text-2xl font-mono font-bold tracking-[0.25em] text-amber-300 focus:outline-none"
+                  className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-4 py-3 text-center text-2xl font-mono font-bold tracking-[0.25em] text-[#8BBB92] focus:outline-none"
                 />
               </div>
 
@@ -499,7 +499,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   onChange={e => setJoinPlayerName(e.target.value)}
                   required
                   placeholder="Ej. Planeswalker 2"
-                  className="w-full bg-[#0a0d14] border border-[#2a3244] focus:border-amber-400 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                  className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
                 />
               </div>
 
@@ -509,7 +509,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   id="spectatorCheck"
                   checked={isSpectator}
                   onChange={e => setIsSpectator(e.target.checked)}
-                  className="w-4 h-4 rounded bg-[#0a0d14] border-[#2a3244] text-amber-500 focus:ring-0 cursor-pointer"
+                  className="w-4 h-4 rounded bg-[#040d0f] border-[#12544F] text-[#2A835F] focus:ring-0 cursor-pointer"
                 />
                 <label htmlFor="spectatorCheck" className="text-xs text-zinc-300 cursor-pointer">
                   Entrar como Espectador (solo ver y chatear)
@@ -520,13 +520,13 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setModalMode('none')}
-                  className="px-4 py-2.5 rounded-xl bg-[#1c2230] hover:bg-[#252d3f] text-zinc-300 text-xs font-bold"
+                  className="px-4 py-2.5 rounded-xl bg-[#0c2d32] hover:bg-[#12544F] text-zinc-300 text-xs font-bold"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 text-xs font-bold tracking-wide uppercase transition-all shadow-md cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl bg-[#2A835F] hover:bg-[#349e73] active:bg-[#237050] text-white text-xs font-bold tracking-wide uppercase transition-all shadow-md shadow-[#2A835F]/20 cursor-pointer"
                 >
                   Entrar a la Sala
                 </button>

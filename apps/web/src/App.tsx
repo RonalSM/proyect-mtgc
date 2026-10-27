@@ -189,16 +189,16 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-zinc-100 flex flex-col font-sans select-none relative overflow-x-hidden selection:bg-amber-500/20 selection:text-amber-200">
+    <div className="min-h-screen bg-[#051316] text-zinc-100 flex flex-col font-sans select-none relative overflow-x-hidden selection:bg-[#2A835F]/40 selection:text-white">
       {/* Background ambient lighting */}
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(226,179,74,0.12),transparent)] z-0" />
-      <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] z-0" />
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(42,131,95,0.18),transparent)] z-0" />
+      <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,rgba(139,187,146,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(139,187,146,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] z-0" />
 
       {/* Top Header */}
-      <header className="relative z-10 border-b border-[#232836] bg-[#0d1017] px-6 py-3.5 flex items-center justify-between">
+      <header className="relative z-10 border-b border-[#12544F] bg-[#092328] px-6 py-3.5 flex items-center justify-between shadow-md">
         <div className="flex items-center space-x-8">
           <div className="flex items-center space-x-3 group cursor-default">
-            <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-zinc-950 shadow-md">
+            <div className="w-8 h-8 rounded-lg bg-[#2A835F] flex items-center justify-center text-white shadow-md shadow-[#2A835F]/20">
               <i className="ms ms-planeswalker text-lg font-black" aria-hidden="true" />
             </div>
             <div>
@@ -206,11 +206,11 @@ export default function App() {
                 <h1 className="font-sans font-extrabold text-sm tracking-tight text-white uppercase">
                   MTG Commander Sandbox
                 </h1>
-                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-amber-500/30 bg-[#1a202c] text-amber-300 tracking-wider">
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-[#2A835F]/40 bg-[#12544F] text-[#8BBB92] tracking-wider">
                   EDH
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-400 font-medium">Mesa Multijugador Sincronizada</p>
+              <p className="text-[11px] text-[#8BBB92]/80 font-medium">Mesa Multijugador Sincronizada</p>
             </div>
           </div>
 
@@ -218,9 +218,9 @@ export default function App() {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setIsImporterOpen(true)}
-                className="flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#141822] hover:bg-[#1d2331] text-zinc-300 hover:text-white border border-[#232836] transition-all cursor-pointer shadow-sm"
+                className="flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#12544F] hover:bg-[#18645e] text-zinc-100 hover:text-white border border-[#12544F] transition-all cursor-pointer shadow-sm"
               >
-                <Layers className="w-3.5 h-3.5 text-amber-400" />
+                <Layers className="w-3.5 h-3.5 text-[#8BBB92]" />
                 <span>Validador de Mazos</span>
               </button>
             </div>
@@ -229,7 +229,7 @@ export default function App() {
 
         <div className="flex items-center space-x-4">
           {/* Mana Colors Bar */}
-          <div className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#141822] border border-[#232836] text-xs text-zinc-400">
+          <div className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#0c2d32] border border-[#12544F] text-xs text-zinc-300">
             <i className="ms ms-w ms-cost text-[13px]" title="White" />
             <i className="ms ms-u ms-cost text-[13px]" title="Blue" />
             <i className="ms ms-b ms-cost text-[13px]" title="Black" />
@@ -237,7 +237,7 @@ export default function App() {
             <i className="ms ms-g ms-cost text-[13px]" title="Green" />
           </div>
 
-          <div className="flex items-center space-x-2 text-xs px-3 py-1.5 rounded-lg bg-[#141822] border border-[#232836]">
+          <div className="flex items-center space-x-2 text-xs px-3 py-1.5 rounded-lg bg-[#0c2d32] border border-[#12544F]">
             <span
               className={`w-2 h-2 rounded-full ${
                 serverStatus === 'online'
@@ -298,7 +298,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-[#232836] bg-[#0d1017] px-6 py-3.5 flex items-center justify-between text-[11px] text-zinc-500">
+      <footer className="relative z-10 border-t border-[#12544F] bg-[#092328] px-6 py-3.5 flex items-center justify-between text-[11px] text-zinc-400">
         <div className="flex items-center space-x-2">
           <span>MTG Commander Tabletop</span>
           <span>&bull;</span>
@@ -313,14 +313,14 @@ export default function App() {
             type="button"
             data-testid="open-font-glyphs-audit-btn"
             onClick={() => setIsFontAuditOpen(true)}
-            className="text-zinc-400 hover:text-amber-300 transition-colors cursor-pointer"
+            className="text-zinc-400 hover:text-[#8BBB92] transition-colors cursor-pointer"
           >
             Glifos Mana &amp; Keyrune
           </button>
           <button
             type="button"
             onClick={() => setIsLegalOpen(true)}
-            className="text-zinc-400 hover:text-amber-300 transition-colors cursor-pointer"
+            className="text-zinc-400 hover:text-[#8BBB92] transition-colors cursor-pointer"
           >
             Avisos Legales
           </button>

@@ -114,8 +114,8 @@ export const TableGrid: React.FC<TableGridProps> = ({
       {/* Botón de Pantalla Completa del Navegador y Controles de Vista Ampliada (REQ-22, Punto 6) */}
       {/* Vista Ampliada Banner & Cerrar (Punto 1 / REQ-22) */}
       {expandedPlayerId && roomState.players[expandedPlayerId] && (
-        <div className="fixed top-2 right-4 z-40 flex items-center space-x-2.5 bg-obsidian-900/95 border border-amber-500/30 px-3.5 py-1.5 rounded-xl shadow-2xl backdrop-blur-md">
-          <span className="text-xs font-serif font-bold text-amber-300 tracking-wide">
+        <div className="fixed top-2 right-4 z-40 flex items-center space-x-2.5 bg-obsidian-900/95 border border-[#12544F] px-3.5 py-1.5 rounded-xl shadow-2xl backdrop-blur-md">
+          <span className="text-xs font-sans font-bold text-[#8BBB92] tracking-wide">
             Vista Ampliada: {roomState.players[expandedPlayerId].name}
           </span>
           <button
@@ -157,9 +157,9 @@ export const TableGrid: React.FC<TableGridProps> = ({
                   key={`chat-slot-${index}`}
                   className="bg-obsidian-900/90 border border-obsidian-800/80 h-full flex flex-col overflow-hidden relative"
                 >
-                  <div className="bg-obsidian-950/80 px-3.5 py-2 border-b border-obsidian-800/60 text-[11px] font-serif font-bold text-amber-200/90 flex items-center justify-between">
+                  <div className="bg-obsidian-950/80 px-3.5 py-2 border-b border-obsidian-800/60 text-[11px] font-sans font-bold text-[#8BBB92] flex items-center justify-between">
                     <span className="tracking-wide">Registro de Partida y Chat</span>
-                    <span className="text-[10px] text-amber-400 font-mono font-bold bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] text-[#8BBB92] font-mono font-bold bg-[#2A835F]/20 border border-[#2A835F]/40 px-1.5 py-0.5 rounded">
                       EN VIVO
                     </span>
                   </div>
@@ -195,7 +195,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
       {isChatDrawerOpen && (
         <div className="fixed top-14 right-4 z-50 w-80 max-w-[90vw] h-[75dvh] bg-obsidian-900/95 backdrop-blur-xl border border-obsidian-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden ring-1 ring-white/5 animate-in fade-in zoom-in-95">
           <div className="bg-obsidian-950/90 px-4 py-2.5 border-b border-obsidian-800/70 flex items-center justify-between">
-            <span className="font-serif font-bold text-xs text-amber-200 tracking-wide">Registro y Chat</span>
+            <span className="font-sans font-bold text-xs text-[#8BBB92] tracking-wide">Registro y Chat</span>
             <button
               onClick={() => setIsChatDrawerOpen(false)}
               className="text-zinc-400 hover:text-white font-bold text-sm cursor-pointer"

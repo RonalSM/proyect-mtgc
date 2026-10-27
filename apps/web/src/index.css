@@ -21,7 +21,7 @@
 html,
 body,
 #root {
-  background-color: #07090e;
+  background-color: #051316;
   width: 100%;
   min-height: 100%;
   margin: 0;
@@ -35,7 +35,7 @@ body.in-game #root {
 }
 
 #mesa-total {
-  background-color: #000000;
+  background-color: #040d0f;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -51,10 +51,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom selection matching dark craft palette */
+/* Custom selection matching user teal & sage palette */
 ::selection {
-  background-color: rgba(245, 158, 11, 0.28);
-  color: #fef3c7;
+  background-color: rgba(42, 131, 95, 0.45);
+  color: #e6f7ec;
 }
 
 /* Button & interactive press micro-interaction */
@@ -69,28 +69,28 @@ button:active:not(:disabled) {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(9, 35, 40, 0.85);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(71, 85, 105, 0.7);
+  background: rgba(18, 84, 79, 0.9);
   border-radius: 9999px;
-  border: 1px solid rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(42, 131, 95, 0.35);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(245, 158, 11, 0.7);
+  background: rgba(42, 131, 95, 0.95);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(71, 85, 105, 0.7) rgba(15, 23, 42, 0.6);
+  scrollbar-color: rgba(18, 84, 79, 0.9) rgba(9, 35, 40, 0.85);
 }
 
 .dark-custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #475569 #090d16;
+  scrollbar-color: #12544F #092328;
 }
 
 .dark-custom-scrollbar::-webkit-scrollbar {
@@ -99,17 +99,17 @@ button:active:not(:disabled) {
 }
 
 .dark-custom-scrollbar::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #092328;
   border-radius: 6px;
 }
 
 .dark-custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #12544F;
   border-radius: 6px;
 }
 
 .dark-custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #f59e0b;
+  background: #2A835F;
 }
 
 /* Animación de girar y enderezar sobre el centro invariante (Punto 7 / Corrección Punto 1) */

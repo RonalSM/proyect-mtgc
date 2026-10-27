@@ -186,11 +186,11 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
   };
 
   return (
-    <div className="w-full bg-[#11141c] border border-[#232836] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-6 text-white max-h-[90vh] overflow-y-auto">
+    <div className="w-full bg-[#092328] border border-[#12544F] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-6 text-white max-h-[90vh] overflow-y-auto">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#232836] pb-4">
+      <div className="flex items-center justify-between border-b border-[#12544F] pb-4">
         <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+          <div className="p-2 rounded-xl bg-[#0c2d32] border border-[#12544F] text-[#8BBB92]">
             <Layers className="w-5 h-5" />
           </div>
           <div>
@@ -207,7 +207,7 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1a202c] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#0c2d32] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -224,26 +224,26 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
               value={searchQuery}
               onChange={e => handleAutocomplete(e.target.value)}
               placeholder="Buscar carta en Scryfall para añadir (ej. Sol Ring, Rhystic Study)..."
-              className="w-full bg-[#090b10] border border-[#262e3e] focus:border-amber-400 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none"
+              className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none"
             />
             <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3" />
             {isSearching && (
-              <span className="absolute right-3.5 top-2.5 text-[11px] text-amber-400 animate-pulse font-mono">
+              <span className="absolute right-3.5 top-2.5 text-[11px] text-[#8BBB92] animate-pulse font-mono">
                 Buscando...
               </span>
             )}
 
             {searchResults.length > 0 && (
-              <div className="absolute z-30 left-0 right-0 mt-1.5 bg-[#141822] border border-[#2b3548] rounded-xl shadow-2xl overflow-hidden max-h-52 overflow-y-auto">
+              <div className="absolute z-30 left-0 right-0 mt-1.5 bg-[#0c2d32] border border-[#12544F] rounded-xl shadow-2xl overflow-hidden max-h-52 overflow-y-auto">
                 {searchResults.map(cardName => (
                   <button
                     key={cardName}
                     type="button"
                     onClick={() => addCardToDeck(cardName)}
-                    className="w-full text-left px-4 py-2 text-xs text-zinc-200 hover:bg-amber-500/15 hover:text-amber-300 transition-colors border-b border-[#232836] last:border-0 flex items-center justify-between cursor-pointer"
+                    className="w-full text-left px-4 py-2 text-xs text-zinc-200 hover:bg-[#2A835F]/20 hover:text-[#8BBB92] transition-colors border-b border-[#12544F] last:border-0 flex items-center justify-between cursor-pointer"
                   >
                     <span>{cardName}</span>
-                    <span className="text-[10px] text-zinc-500 font-mono">+ Añadir</span>
+                    <span className="text-[10px] text-zinc-400 font-mono">+ Añadir</span>
                   </button>
                 ))}
               </div>
@@ -255,7 +255,7 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
             value={deckText}
             onChange={e => setDeckText(e.target.value)}
             rows={13}
-            className="w-full font-mono text-xs bg-[#090b10] border border-[#262e3e] focus:border-amber-400 rounded-xl p-4 text-zinc-200 focus:outline-none leading-relaxed resize-y"
+            className="w-full font-mono text-xs bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl p-4 text-zinc-200 focus:outline-none leading-relaxed resize-y"
             placeholder="1 Atraxa, Praetors' Voice *CMDR*&#10;1 Sol Ring..."
           />
 
@@ -271,7 +271,7 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
               type="button"
               onClick={handleValidateAndImport}
               disabled={isValidating}
-              className="bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 font-bold px-5 py-2.5 rounded-xl text-xs tracking-wide uppercase transition-all shadow-md flex items-center space-x-2 disabled:opacity-50 cursor-pointer"
+              className="bg-[#2A835F] hover:bg-[#349e73] active:bg-[#237050] text-white font-bold px-5 py-2.5 rounded-xl text-xs tracking-wide uppercase transition-all shadow-md shadow-[#2A835F]/20 flex items-center space-x-2 disabled:opacity-50 cursor-pointer"
             >
               <UploadCloud className="w-4 h-4" />
               <span>{isValidating ? 'Validando con Scryfall...' : 'Validar y Cargar Mazo'}</span>
@@ -281,7 +281,7 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
 
         {/* Right Column: Validation Report */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="bg-[#141822] border border-[#232836] rounded-xl p-5 space-y-4">
+          <div className="bg-[#0c2d32] border border-[#12544F] rounded-xl p-5 space-y-4">
             <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
               Diagnóstico de Reglas Commander
             </h3>
@@ -326,14 +326,14 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
                     </span>
                     <div className="flex items-center space-x-1.5">
                       {validationResult.commanderColorIdentity.length === 0 ? (
-                        <span className="text-xs text-zinc-400 px-2 py-0.5 bg-[#090b10] border border-[#232836] rounded font-mono">
+                        <span className="text-xs text-zinc-400 px-2 py-0.5 bg-[#040d0f] border border-[#12544F] rounded font-mono">
                           Incoloro
                         </span>
                       ) : (
                         validationResult.commanderColorIdentity.map((c: string) => (
                           <span
                             key={c}
-                            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-bold bg-[#1a202c] border border-amber-400/40 text-amber-300 shadow"
+                            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-bold bg-[#12544F] border border-[#2A835F]/40 text-[#8BBB92] shadow"
                           >
                             {c}
                           </span>

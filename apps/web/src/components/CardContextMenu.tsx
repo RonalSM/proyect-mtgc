@@ -486,7 +486,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
           onPointerDown={e => e.stopPropagation()}
           onMouseDown={e => e.stopPropagation()}
           onContextMenu={e => e.stopPropagation()}
-          className="fixed bg-[#11141c] border border-[#2b3548] rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 w-max max-w-[240px] overflow-y-auto z-[110] text-[13px] text-zinc-200 select-none"
+          className="fixed bg-[#092328] border border-[#12544F] rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 w-max max-w-[240px] overflow-y-auto z-[110] text-[13px] text-zinc-200 select-none backdrop-blur-xl"
         >
           {/* (1) Girar / Enderezar (Punto 12) */}
           {fromZone === 'battlefield' && onTap && (

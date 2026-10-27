@@ -402,15 +402,15 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
   return (
     <div className="flex flex-col h-[calc(100vh-100px)] max-w-6xl mx-auto space-y-5">
       {/* Top Header */}
-      <div className="bg-[#11141c] border border-[#232836] rounded-2xl px-6 py-4.5 shadow-xl flex items-center justify-between">
+      <div className="bg-[#092328] border border-[#12544F] rounded-2xl px-6 py-4.5 shadow-xl flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <div className="p-3 bg-[#1a202c] border border-[#2d3748] rounded-xl text-amber-400">
+          <div className="p-3 bg-[#0c2d32] border border-[#12544F] rounded-xl text-[#8BBB92]">
             <Users className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center space-x-2.5">
               <h2 className="text-lg font-bold text-white tracking-wide">{roomState.name}</h2>
-              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[#1a202c] text-amber-300 border border-[#2d3748] uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-[#0c2d32] text-[#8BBB92] border border-[#12544F] uppercase tracking-wider">
                 Sala de Espera
               </span>
             </div>
@@ -424,12 +424,12 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         <div className="flex items-center space-x-3">
           <button
             onClick={copyCode}
-            className="flex items-center space-x-2.5 bg-[#090b10] hover:bg-[#161a24] border border-[#232836] px-3.5 py-2 rounded-xl text-xs font-mono font-bold text-amber-300 transition-all cursor-pointer"
+            className="flex items-center space-x-2.5 bg-[#040d0f] hover:bg-[#0c2d32] border border-[#12544F] px-3.5 py-2 rounded-xl text-xs font-mono font-bold text-[#8BBB92] transition-all cursor-pointer"
             title="Copiar código de la sala"
           >
             <span>Código: {roomState.code}</span>
             {isCopied ? (
-              <Check className="w-3.5 h-3.5 text-emerald-400" />
+              <Check className="w-3.5 h-3.5 text-[#8BBB92]" />
             ) : (
               <Copy className="w-3.5 h-3.5 text-zinc-400" />
             )}
@@ -452,9 +452,9 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
             return (
               <div
                 key={idx}
-                className="bg-[#0e1118] border border-dashed border-[#232836] rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-2"
+                className="bg-[#092328]/50 border border-dashed border-[#12544F] rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-2"
               >
-                <div className="w-12 h-12 rounded-full bg-[#141924] border border-[#232836] flex items-center justify-center text-zinc-500 font-mono font-bold text-sm">
+                <div className="w-12 h-12 rounded-full bg-[#0c2d32] border border-[#12544F] flex items-center justify-center text-zinc-400 font-mono font-bold text-sm">
                   #{idx + 1}
                 </div>
                 <h3 className="text-sm font-semibold text-zinc-400">Asiento {idx + 1} Libre</h3>
@@ -469,9 +469,9 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
           return (
             <div
               key={player.id}
-              className={`bg-[#11141c] border rounded-2xl p-5 flex flex-col justify-between shadow-lg relative overflow-hidden transition-all ${
-                player.isReady ? 'border-emerald-500/50' : 'border-[#232836]'
-              } ${isLocal ? 'ring-1 ring-amber-500/40' : ''}`}
+              className={`bg-[#092328] border rounded-2xl p-5 flex flex-col justify-between shadow-xl relative overflow-hidden transition-all ${
+                player.isReady ? 'border-[#2A835F]' : 'border-[#12544F]'
+              } ${isLocal ? 'ring-1 ring-[#8BBB92]/50' : ''}`}
             >
               {/* Playmat subtle preview if available */}
               {deck?.commanderImageUrl && (
@@ -484,16 +484,16 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs font-mono font-bold text-zinc-500">#{idx + 1}</span>
+                    <span className="text-xs font-mono font-bold text-[#8BBB92]">#{idx + 1}</span>
                     <h3 className="font-bold text-sm text-white flex items-center space-x-1.5">
                       <span>{player.name}</span>
                       {player.isHost && (
                         <span title="Anfitrión">
-                          <Crown className="w-3.5 h-3.5 text-amber-400 inline" />
+                          <Crown className="w-3.5 h-3.5 text-[#8BBB92] inline" />
                         </span>
                       )}
                       {isLocal && (
-                        <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-semibold">
+                        <span className="text-[10px] bg-[#2A835F]/30 text-[#8BBB92] px-1.5 py-0.5 rounded font-semibold border border-[#2A835F]/40">
                           Tú
                         </span>
                       )}
@@ -503,13 +503,13 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                   <span
                     className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold ${
                       player.isReady
-                        ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-600/40'
-                        : 'bg-[#181d29] text-zinc-400 border border-[#2b3345]'
+                        ? 'bg-[#2A835F]/20 text-[#8BBB92] border border-[#2A835F]/50'
+                        : 'bg-[#0c2d32] text-zinc-400 border border-[#12544F]'
                     }`}
                   >
                     {player.isReady ? (
                       <>
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#8BBB92]" />
                         <span>Listo</span>
                       </>
                     ) : (
@@ -522,16 +522,16 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                 </div>
 
                 {/* Deck Card */}
-                <div className="bg-[#090b10] border border-[#1f2432] rounded-xl p-3 space-y-1.5">
+                <div className="bg-[#040d0f] border border-[#12544F] rounded-xl p-3 space-y-1.5">
                   {deck ? (
                     <div>
-                      <div className="text-xs font-bold text-amber-300 truncate">{deck.name}</div>
-                      <div className="text-[11px] text-zinc-400 truncate flex items-center space-x-1">
-                        <Sparkles className="w-3 h-3 text-amber-400" />
+                      <div className="text-xs font-bold text-[#8BBB92] truncate">{deck.name}</div>
+                      <div className="text-[11px] text-zinc-300 truncate flex items-center space-x-1">
+                        <Sparkles className="w-3 h-3 text-[#8BBB92]" />
                         <span>{deck.commanderName}</span>
                       </div>
                       {deck.warnings && deck.warnings.length > 0 && (
-                        <div className="text-[10px] text-amber-400/90 flex items-center space-x-1 mt-1">
+                        <div className="text-[10px] text-amber-300/90 flex items-center space-x-1 mt-1">
                           <AlertTriangle className="w-3 h-3 flex-shrink-0" />
                           <span className="truncate">{deck.warnings.length} advertencia(s)</span>
                         </div>
@@ -547,10 +547,10 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
 
               {/* Host actions on opponents */}
               {isHost && !isLocal && (
-                <div className="relative z-10 pt-3 border-t border-[#1f2432] flex items-center justify-end space-x-2">
+                <div className="relative z-10 pt-3 border-t border-[#12544F] flex items-center justify-end space-x-2">
                   <button
                     onClick={() => handleTransferHost(player.id, player.name)}
-                    className="p-1.5 text-zinc-400 hover:text-amber-400 hover:bg-[#1a202c] rounded-lg text-xs transition-colors"
+                    className="p-1.5 text-zinc-400 hover:text-[#8BBB92] hover:bg-[#0c2d32] rounded-lg text-xs transition-colors"
                     title="Transferir anfitrión"
                   >
                     <Shield className="w-3.5 h-3.5" />
@@ -570,13 +570,13 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="bg-[#11141c] border border-[#232836] rounded-2xl px-6 py-4 shadow-xl flex items-center justify-between">
+      <div className="bg-[#092328] border border-[#12544F] rounded-2xl px-6 py-4 shadow-xl flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setIsDeckModalOpen(true)}
-            className="flex items-center space-x-2 bg-[#1a202c] hover:bg-[#232a3b] border border-[#2f384a] px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-all cursor-pointer"
+            className="flex items-center space-x-2 bg-[#0c2d32] hover:bg-[#12544F] border border-[#12544F] px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-all cursor-pointer shadow-sm"
           >
-            <Layers className="w-4 h-4 text-amber-400" />
+            <Layers className="w-4 h-4 text-[#8BBB92]" />
             <span>
               {localPlayer?.selectedDeck ? 'Cambiar Mazo' : 'Seleccionar / Importar Mazo'}
             </span>
@@ -587,10 +587,10 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
             disabled={!localPlayer?.selectedDeck}
             className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer ${
               !localPlayer?.selectedDeck
-                ? 'bg-[#181d29]/50 text-zinc-600 cursor-not-allowed border border-[#232836]'
+                ? 'bg-[#0c2d32]/50 text-zinc-600 cursor-not-allowed border border-[#12544F]'
                 : localPlayer?.isReady
-                  ? 'bg-[#181d29] text-zinc-300 hover:bg-[#232a3b] border border-[#2b3345]'
-                  : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md'
+                  ? 'bg-[#0c2d32] text-zinc-200 hover:bg-[#12544F] border border-[#12544F]'
+                  : 'bg-[#2A835F] hover:bg-[#349e73] text-white shadow-md shadow-[#2A835F]/25'
             }`}
           >
             {localPlayer?.isReady ? (
@@ -610,7 +610,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         {isHost && (
           <div className="flex items-center space-x-3">
             {!canStart && (
-              <span className="text-xs text-amber-400 font-semibold flex items-center space-x-1">
+              <span className="text-xs text-[#8BBB92] font-semibold flex items-center space-x-1">
                 <AlertTriangle className="w-3.5 h-3.5" />
                 <span>
                   {seatedPlayers.length < 2
@@ -626,8 +626,8 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
               disabled={!canStart}
               className={`flex items-center space-x-2 px-6 py-2.5 rounded-xl font-extrabold text-sm transition-all shadow-md ${
                 canStart
-                  ? 'bg-amber-500 hover:bg-amber-400 text-zinc-950 cursor-pointer scale-105'
-                  : 'bg-[#181d29] text-zinc-600 cursor-not-allowed border border-[#232836]'
+                  ? 'bg-[#2A835F] hover:bg-[#349e73] text-white cursor-pointer scale-105 shadow-[#2A835F]/40'
+                  : 'bg-[#0c2d32]/50 text-zinc-600 cursor-not-allowed border border-[#12544F]'
               }`}
             >
               <Play className="w-4 h-4 fill-current" />
@@ -656,31 +656,31 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
             onPointerDown={e => e.stopPropagation()}
             onMouseDown={e => e.stopPropagation()}
             onContextMenu={e => e.stopPropagation()}
-            className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+            className="bg-[#092328] border border-[#12544F] rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
           >
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-[#12544F] flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <Layers className="w-5 h-5 text-amber-400" />
+                <Layers className="w-5 h-5 text-[#8BBB92]" />
                 <h3 className="font-extrabold text-base text-white">Seleccionar Mazo</h3>
               </div>
               <button
                 onClick={() => setIsDeckModalOpen(false)}
-                className="text-slate-400 hover:text-white font-bold text-lg"
+                className="text-zinc-400 hover:text-white font-bold text-lg"
               >
                 &times;
               </button>
             </div>
 
             {/* Modal Tabs - Mazos Listos first (Punto 8) */}
-            <div className="flex border-b border-slate-800 bg-slate-950/50 px-6 pt-2 space-x-2">
+            <div className="flex border-b border-[#12544F] bg-[#040d0f]/50 px-6 pt-2 space-x-2">
               <button
                 data-testid="tab-preset-decks"
                 onClick={() => setImportTab('presets')}
                 className={`px-4 py-2 text-xs font-bold border-b-2 transition-all flex items-center space-x-1.5 ${
                   importTab === 'presets'
-                    ? 'border-amber-500 text-amber-400'
-                    : 'border-transparent text-slate-400 hover:text-white'
+                    ? 'border-[#2A835F] text-[#8BBB92]'
+                    : 'border-transparent text-zinc-400 hover:text-white'
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -691,8 +691,8 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                 onClick={() => setImportTab('saved')}
                 className={`px-4 py-2 text-xs font-bold border-b-2 transition-all ${
                   importTab === 'saved'
-                    ? 'border-amber-500 text-amber-400'
-                    : 'border-transparent text-slate-400 hover:text-white'
+                    ? 'border-[#2A835F] text-[#8BBB92]'
+                    : 'border-transparent text-zinc-400 hover:text-white'
                 }`}
               >
                 Mis Mazos Guardados ({savedDecks.length})
@@ -702,8 +702,8 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                 onClick={() => setImportTab('import')}
                 className={`px-4 py-2 text-xs font-bold border-b-2 transition-all ${
                   importTab === 'import'
-                    ? 'border-amber-500 text-amber-400'
-                    : 'border-transparent text-slate-400 hover:text-white'
+                    ? 'border-[#2A835F] text-[#8BBB92]'
+                    : 'border-transparent text-zinc-400 hover:text-white'
                 }`}
               >
                 Importar Lista de Texto
@@ -714,7 +714,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {importTab === 'presets' ? (
                 isLoadingPresets ? (
-                  <div className="text-center py-12 text-slate-400 text-xs">
+                  <div className="text-center py-12 text-zinc-400 text-xs">
                     Cargando mazos de Commander listos...
                   </div>
                 ) : presetDecks.length > 0 ? (
@@ -725,14 +725,14 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                       return (
                         <div
                           key={preset.id}
-                          className={`bg-slate-950 border rounded-xl overflow-hidden flex flex-col transition-all ${
+                          className={`bg-[#040d0f] border rounded-xl overflow-hidden flex flex-col transition-all ${
                             isSelected
-                              ? 'border-amber-500 shadow-md shadow-amber-500/10 ring-1 ring-amber-500/50'
-                              : 'border-slate-800 hover:border-slate-700'
+                              ? 'border-[#2A835F] shadow-md shadow-[#2A835F]/20 ring-1 ring-[#8BBB92]/50'
+                              : 'border-[#12544F] hover:border-[#2A835F]/50'
                           }`}
                         >
                           {/* Commander Banner Art */}
-                          <div className="relative h-28 bg-slate-900 overflow-hidden">
+                          <div className="relative h-28 bg-[#092328] overflow-hidden">
                             {preset.commanderImageUrl ? (
                               <img
                                 src={preset.commanderImageUrl}
@@ -837,8 +837,8 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                               onClick={() => handleApplySelectedDeck(preset)}
                               className={`w-full py-2 px-3 rounded-lg font-bold text-xs transition-all flex items-center justify-center space-x-1.5 ${
                                 isSelected
-                                  ? 'bg-emerald-600 text-white cursor-default'
-                                  : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/10'
+                                  ? 'bg-[#2A835F] text-white cursor-default'
+                                  : 'bg-[#2A835F] hover:bg-[#349e73] text-white shadow-md shadow-[#2A835F]/20'
                               }`}
                             >
                               {isSelected ? (
@@ -936,7 +936,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                             Comandante: {d.commanderName}
                           </div>
                         </div>
-                        <button className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg shadow">
+                        <button className="bg-[#2A835F] hover:bg-[#349e73] text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow">
                           Elegir
                         </button>
                       </div>
@@ -944,12 +944,12 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                   </div>
                 ) : (
                   <div className="text-center py-8 space-y-3">
-                    <p className="text-slate-400 text-sm">
+                    <p className="text-zinc-400 text-sm">
                       No tienes mazos guardados en tu cuenta.
                     </p>
                     <button
                       onClick={() => setImportTab('import')}
-                      className="bg-amber-500 text-slate-950 px-4 py-2 rounded-xl font-bold text-xs shadow"
+                      className="bg-[#2A835F] hover:bg-[#349e73] text-white px-4 py-2 rounded-xl font-bold text-xs shadow"
                     >
                       Importar mi primer mazo
                     </button>
@@ -1044,7 +1044,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                             warnings: validationResult.warnings,
                           })
                         }
-                        className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2.5 rounded-xl shadow-lg mt-2"
+                        className="w-full bg-[#2A835F] hover:bg-[#349e73] text-white font-bold text-xs py-2.5 rounded-xl shadow-lg mt-2 cursor-pointer shadow-[#2A835F]/20"
                       >
                         Usar este Mazo en la Mesa
                       </button>

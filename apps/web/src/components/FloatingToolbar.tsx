@@ -88,35 +88,35 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
         data-floating-toolbar="true"
         className="fixed top-2 left-1/2 -translate-x-1/2 z-40 transition-all duration-300"
       >
-        <div className="bg-obsidian-900/90 hover:bg-obsidian-900 backdrop-blur-xl border border-obsidian-800 rounded-2xl shadow-2xl px-4 py-1.5 flex items-center space-x-3 text-xs text-zinc-200 select-none ring-1 ring-white/5 transition-all">
+        <div className="bg-obsidian-900/95 hover:bg-obsidian-900 backdrop-blur-xl border border-obsidian-800 rounded-2xl shadow-2xl px-4 py-1.5 flex items-center space-x-3 text-xs text-zinc-200 select-none ring-1 ring-white/5 transition-all">
           {/* Round & Active Player */}
           <div className="flex items-center space-x-2 pr-2 border-r border-obsidian-800/80">
-            <span className="font-serif font-bold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/25 tracking-wide">
+            <span className="font-sans font-bold text-[#8BBB92] bg-[#12544F]/40 px-2.5 py-0.5 rounded-lg border border-[#2A835F]/40 tracking-wide">
               Ronda {roomState.turnNumber}
             </span>
             <div className="flex items-center space-x-1">
-              <span className="text-[11px] text-zinc-400">Turno:</span>
+              <span className="text-[11px] text-zinc-400 font-medium">Turno:</span>
               <div className="relative">
                 <button
                   data-active-turn-indicator="true"
                   onClick={() => setIsInitiativeDropdownOpen(!isInitiativeDropdownOpen)}
-                  className={`font-serif font-bold px-2 py-0.5 rounded-md text-[11px] flex items-center space-x-1.5 transition-colors cursor-pointer ${
+                  className={`font-sans font-bold px-2 py-0.5 rounded-md text-[11px] flex items-center space-x-1.5 transition-colors cursor-pointer ${
                     isMyTurn
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 animate-pulse'
-                      : 'text-zinc-100 bg-obsidian-800/80 hover:bg-obsidian-800 border border-obsidian-700/60'
+                      ? 'bg-[#2A835F]/30 text-[#8BBB92] border border-[#2A835F] shadow-sm shadow-[#2A835F]/30 animate-pulse'
+                      : 'text-zinc-100 bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-800'
                   }`}
                   title="Clic para ver el orden de iniciativa de todos los jugadores"
                 >
                   {activePlayer && (
                     <span
                       className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                        activePlayer.isConnected ? 'bg-emerald-400' : 'bg-zinc-600'
+                        activePlayer.isConnected ? 'bg-[#8BBB92]' : 'bg-zinc-600'
                       }`}
                       title={activePlayer.isConnected ? 'Conectado' : 'Desconectado'}
                     />
                   )}
                   {activePlayer?.initiativeOrder && (
-                    <span className="font-mono text-[10px] text-amber-400 font-black">
+                    <span className="font-mono text-[10px] text-[#8BBB92] font-black">
                       {activePlayer.initiativeOrder}.º
                     </span>
                   )}
@@ -128,12 +128,12 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                     {isMyTurn ? '¡Tu Turno!' : activePlayer?.name || '---'}
                   </span>
                   {isMyTurn && (
-                    <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded font-bold font-sans">
+                    <span className="text-[9px] bg-[#2A835F]/40 text-[#8BBB92] px-1 rounded font-bold font-sans">
                       Tú
                     </span>
                   )}
                   {activePlayer?.isHost && (
-                    <span className="text-[10px] text-amber-400" title="Anfitrión">
+                    <span className="text-[10px] text-[#8BBB92]" title="Anfitrión">
                       👑
                     </span>
                   )}
@@ -146,7 +146,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                     data-initiative-dropdown="true"
                     className="absolute top-full mt-2 left-0 bg-obsidian-900 border border-obsidian-800 rounded-xl shadow-2xl p-2 min-w-[220px] space-y-1 z-50 animate-in fade-in zoom-in-95 ring-1 ring-white/5"
                   >
-                    <div className="text-[10px] font-serif font-bold text-amber-300 uppercase px-2 py-1 tracking-wider border-b border-obsidian-800 flex items-center justify-between">
+                    <div className="text-[10px] font-sans font-bold text-[#8BBB92] uppercase px-2 py-1 tracking-wider border-b border-obsidian-800 flex items-center justify-between">
                       <span>Orden de Iniciativa</span>
                       <span className="font-mono text-zinc-400">Ronda {roomState.turnNumber}</span>
                     </div>
@@ -158,19 +158,19 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                           key={p.id}
                           className={`flex items-center justify-between px-2 py-1 rounded-lg text-xs ${
                             isCurrentActive
-                              ? 'bg-amber-500/15 text-amber-200 font-bold border border-amber-500/30'
+                              ? 'bg-[#2A835F]/20 text-[#8BBB92] font-bold border border-[#2A835F]/40'
                               : 'text-zinc-300 hover:bg-obsidian-800'
                           }`}
                         >
                           <div className="flex items-center space-x-2 min-w-0">
                             <span
                               className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                                p.isConnected ? 'bg-emerald-400' : 'bg-zinc-600'
+                                p.isConnected ? 'bg-[#8BBB92]' : 'bg-zinc-600'
                               }`}
                               title={p.isConnected ? 'Conectado' : 'Desconectado'}
                             />
                             {p.initiativeOrder && (
-                              <span className="font-mono text-[10px] text-amber-400 font-black flex-shrink-0">
+                              <span className="font-mono text-[10px] text-[#8BBB92] font-black flex-shrink-0">
                                 {p.initiativeOrder}.º
                               </span>
                             )}
@@ -183,17 +183,17 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                           </div>
                           <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
                             {isLocal && (
-                              <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded font-bold font-sans">
+                              <span className="text-[9px] bg-[#2A835F]/30 text-[#8BBB92] px-1 rounded font-bold font-sans">
                                 Tú
                               </span>
                             )}
                             {p.isHost && (
-                              <span className="text-[10px] text-amber-400" title="Anfitrión">
+                              <span className="text-[10px] text-[#8BBB92]" title="Anfitrión">
                                 👑
                               </span>
                             )}
                             {isCurrentActive && (
-                              <span className="text-[9px] bg-emerald-500/30 text-emerald-300 px-1 rounded font-bold font-sans">
+                              <span className="text-[9px] bg-[#2A835F]/40 text-[#8BBB92] px-1 rounded font-bold font-sans">
                                 Activo
                               </span>
                             )}
@@ -218,17 +218,29 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             )}
           </div>
 
+          {/* Pass Turn on Collapsed / Compact Mode (Punto solicitado por usuario) */}
+          {isCollapsed && isMyTurn && (
+            <button
+              onClick={() => onAction('PASS_TURN', {})}
+              className="flex items-center space-x-1 bg-gradient-to-r from-[#2A835F] to-[#21704e] hover:from-[#349e73] hover:to-[#2A835F] text-white font-sans font-bold px-2.5 py-1 rounded-xl shadow-md shadow-[#2A835F]/30 transition-all cursor-pointer text-xs ml-0.5 animate-pulse"
+              title="Pasar turno (Espacio o Enter)"
+            >
+              <SkipForward className="w-3.5 h-3.5" />
+              <span>Pasar</span>
+            </button>
+          )}
+
           {!isCollapsed && (
             <div className="flex items-center space-x-2">
               {/* Pass Turn */}
               {isMyTurn && (
                 <button
                   onClick={() => onAction('PASS_TURN', {})}
-                  className="flex items-center space-x-1 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-serif font-bold px-3 py-1 rounded-xl shadow-md shadow-emerald-600/30 transition-all cursor-pointer text-xs"
+                  className="flex items-center space-x-1 bg-gradient-to-r from-[#2A835F] to-[#21704e] hover:from-[#349e73] hover:to-[#2A835F] text-white font-sans font-bold px-3 py-1 rounded-xl shadow-md shadow-[#2A835F]/30 transition-all cursor-pointer text-xs"
                   title="Pasar turno al siguiente jugador (Espacio o Enter)"
                 >
                   <SkipForward className="w-3.5 h-3.5" />
-                  <span>Pasar Turno</span>
+                  <span>Pasar</span>
                 </button>
               )}
 
@@ -236,10 +248,10 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               <button
                 onClick={onToggleChat}
                 data-testid="toggle-chat-log"
-                className="flex items-center space-x-1 bg-obsidian-800 hover:bg-obsidian-750 border border-obsidian-700/80 px-2.5 py-1 rounded-xl text-zinc-200 transition-colors cursor-pointer"
+                className="flex items-center space-x-1 bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-800 px-2.5 py-1 rounded-xl text-zinc-200 transition-colors cursor-pointer"
                 title="Historial de acciones y chat"
               >
-                <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+                <MessageSquare className="w-3.5 h-3.5 text-[#8BBB92]" />
                 <span className="text-[11px] font-semibold">Chat/Log</span>
               </button>
 
@@ -247,10 +259,10 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               <div className="relative">
                 <button
                   onClick={() => setIsDiceOpen(!isDiceOpen)}
-                  className="flex items-center space-x-1 bg-obsidian-800 hover:bg-obsidian-750 border border-obsidian-700/80 px-2.5 py-1 rounded-xl text-zinc-200 transition-colors cursor-pointer"
+                  className="flex items-center space-x-1 bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-800 px-2.5 py-1 rounded-xl text-zinc-200 transition-colors cursor-pointer"
                   title="Tirar dados o moneda"
                 >
-                  <Dices className="w-3.5 h-3.5 text-amber-400" />
+                  <Dices className="w-3.5 h-3.5 text-[#8BBB92]" />
                   <span className="text-[11px] font-semibold">Dados</span>
                 </button>
 
@@ -260,7 +272,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                       onClick={() => rollDice(20)}
                       className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-obsidian-800 font-semibold text-xs flex items-center space-x-2 text-zinc-200 hover:text-white cursor-pointer"
                     >
-                      <Dices className="w-3.5 h-3.5 text-amber-400" />
+                      <Dices className="w-3.5 h-3.5 text-[#8BBB92]" />
                       <span>Dado D20</span>
                     </button>
                     <button
@@ -295,12 +307,12 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               {/* Share Code */}
               <button
                 onClick={copyRoomCode}
-                className="flex items-center space-x-1 bg-obsidian-950 hover:bg-obsidian-800 border border-amber-500/30 px-2 py-1 rounded-xl font-mono text-[11px] font-bold text-amber-300 transition-colors cursor-pointer"
+                className="flex items-center space-x-1 bg-obsidian-950 hover:bg-obsidian-800 border border-[#12544F] px-2 py-1 rounded-xl font-mono text-[11px] font-bold text-[#8BBB92] transition-colors cursor-pointer"
                 title="Copiar código de la mesa"
               >
                 <span>{roomState.code}</span>
                 {isCopied ? (
-                  <Check className="w-3 h-3 text-emerald-400" />
+                  <Check className="w-3 h-3 text-[#8BBB92]" />
                 ) : (
                   <Copy className="w-3 h-3 text-zinc-400" />
                 )}
@@ -375,8 +387,8 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             className="bg-obsidian-900 border border-obsidian-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl ring-1 ring-white/5"
           >
             <div className="flex items-center justify-between border-b border-obsidian-800/80 pb-3">
-              <h3 className="font-serif font-bold text-sm text-amber-200 flex items-center space-x-2 tracking-wide">
-                <Settings className="w-4 h-4 text-amber-400" />
+              <h3 className="font-sans font-bold text-sm text-[#8BBB92] flex items-center space-x-2 tracking-wide">
+                <Settings className="w-4 h-4 text-[#8BBB92]" />
                 <span>Ajustes de Mesa</span>
               </h3>
               <button
@@ -389,7 +401,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
 
             <div className="space-y-4">
               {/* Visuals / Playmats */}
-              <label className="flex items-center justify-between cursor-pointer p-2.5 rounded-xl bg-obsidian-950/60 border border-obsidian-800/60 hover:border-amber-500/30 transition-colors">
+              <label className="flex items-center justify-between cursor-pointer p-2.5 rounded-xl bg-obsidian-950/60 border border-obsidian-800/60 hover:border-[#2A835F]/40 transition-colors">
                 <div>
                   <div className="text-xs font-semibold text-zinc-200">Reducir fondos (Playmats)</div>
                   <div className="text-[11px] text-zinc-400">
@@ -400,14 +412,14 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                   type="checkbox"
                   checked={reduceBackgrounds}
                   onChange={e => onToggleReduceBackgrounds(e.target.checked)}
-                  className="rounded bg-obsidian-950 border-obsidian-700 text-amber-500 focus:ring-0 ml-3 cursor-pointer"
+                  className="rounded bg-obsidian-950 border-obsidian-700 text-[#2A835F] focus:ring-0 ml-3 cursor-pointer"
                 />
               </label>
             </div>
 
             <button
               onClick={() => setIsSettingsOpen(false)}
-              className="w-full bg-obsidian-800 hover:bg-obsidian-750 border border-white/5 text-zinc-200 hover:text-white font-semibold text-xs py-2 rounded-xl transition-colors cursor-pointer"
+              className="w-full bg-obsidian-800 hover:bg-obsidian-750 border border-[#12544F] text-zinc-200 hover:text-white font-semibold text-xs py-2 rounded-xl transition-colors cursor-pointer"
             >
               Cerrar
             </button>
@@ -437,8 +449,8 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             className="bg-obsidian-900 border border-obsidian-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl ring-1 ring-white/5"
           >
             <div className="flex items-center justify-between border-b border-obsidian-800/80 pb-3">
-              <h3 className="font-serif font-bold text-sm text-amber-200 flex items-center space-x-2 tracking-wide">
-                <HelpCircle className="w-4 h-4 text-amber-400" />
+              <h3 className="font-sans font-bold text-sm text-[#8BBB92] flex items-center space-x-2 tracking-wide">
+                <HelpCircle className="w-4 h-4 text-[#8BBB92]" />
                 <span>Cómo Jugar en la Mesa Virtual</span>
               </h3>
               <button
@@ -450,22 +462,22 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             </div>
 
             <div className="text-xs text-zinc-300 space-y-2.5">
-              <div className="p-2 rounded-xl bg-obsidian-950/50 border border-obsidian-800/50">
-                <strong className="text-amber-200 block mb-0.5 font-serif font-semibold">🎮 Arrastrar y Soltar (DND):</strong>
+              <div className="p-2.5 rounded-xl bg-obsidian-950/50 border border-obsidian-800/50">
+                <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">🎮 Arrastrar y Soltar (DND):</strong>
                 Arrastra cartas desde tu mano al campo de batalla. También puedes moverlas
                 libremente entre zonas (cementerio, exilio, comando).
               </div>
-              <div className="p-2 rounded-xl bg-obsidian-950/50 border border-obsidian-800/50">
-                <strong className="text-amber-200 block mb-0.5 font-serif font-semibold">💖 Vidas y Contadores:</strong>
+              <div className="p-2.5 rounded-xl bg-obsidian-950/50 border border-obsidian-800/50">
+                <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">💖 Vidas y Contadores:</strong>
                 Haz clic en la pastilla de vida de tu esquina interior para modificar vidas (+1, −1,
                 daño recibido, vida ganada) o gestionar daño de comandante y veneno.
               </div>
-              <div className="p-2 rounded-xl bg-obsidian-950/50 border border-obsidian-800/50">
-                <strong className="text-amber-200 block mb-0.5 font-serif font-semibold">🔍 Zoom de Cartas:</strong>
+              <div className="p-2.5 rounded-xl bg-obsidian-950/50 border border-obsidian-800/50">
+                <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">🔍 Zoom de Cartas:</strong>
                 Pasa el cursor sobre cualquier carta para ampliar su arte y texto Oracle.
               </div>
-              <div className="p-2 rounded-xl bg-obsidian-950/50 border border-obsidian-800/50">
-                <strong className="text-amber-200 block mb-0.5 font-serif font-semibold">🖼️ Ampliar Celda:</strong>
+              <div className="p-2.5 rounded-xl bg-obsidian-950/50 border border-obsidian-800/50">
+                <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">🖼️ Ampliar Celda:</strong>
                 Pulsa el botón de maximizar en la etiqueta de nombre de una celda para verla en
                 pantalla completa.
               </div>
@@ -473,7 +485,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
 
             <button
               onClick={() => setIsHelpOpen(false)}
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-obsidian-950 font-serif font-bold text-xs py-2.5 rounded-xl transition-all shadow-md shadow-amber-500/20 cursor-pointer"
+              className="w-full bg-gradient-to-r from-[#2A835F] to-[#12544F] hover:from-[#349e73] hover:to-[#18645e] text-white font-sans font-bold text-xs py-2.5 rounded-xl transition-all shadow-md shadow-[#2A835F]/20 cursor-pointer"
             >
               Entendido
             </button>

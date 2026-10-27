@@ -79,7 +79,7 @@ const DraggableCommanderCard: React.FC<{
       }`}
     >
       <CardDisplay card={enrichedDefinition} allowFaceToggle={false} />
-      <div className="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[8px] font-black text-amber-300 text-center py-0.5 tracking-wider uppercase backdrop-blur-xs pointer-events-none">
+      <div className="absolute bottom-0 inset-x-0 bg-obsidian-950/90 text-[8px] font-black text-[#8BBB92] text-center py-0.5 tracking-wider uppercase backdrop-blur-xs pointer-events-none">
         COMANDANTE
       </div>
     </div>
@@ -131,7 +131,7 @@ const DraggableLibraryCard: React.FC<{
         <span className="text-sm sm:text-base font-black font-mono text-white drop-shadow-md">
           {count}
         </span>
-        <span className="text-[8px] font-black tracking-wider text-amber-300 uppercase drop-shadow">
+        <span className="text-[8px] font-black tracking-wider text-[#8BBB92] uppercase drop-shadow">
           BIBLIOTECA
         </span>
       </div>
@@ -181,7 +181,7 @@ const DraggablePileCard: React.FC<{
           {isGraveyard ? 'CEMENTERIO' : 'EXILIO'}
         </span>
         <span
-          className={`text-[11px] font-mono font-black leading-none drop-shadow ${isGraveyard ? 'text-amber-300' : 'text-purple-200'}`}
+          className={`text-[11px] font-mono font-black leading-none drop-shadow ${isGraveyard ? 'text-[#8BBB92]' : 'text-purple-200'}`}
         >
           {count}
         </span>
@@ -648,13 +648,13 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       style={{ containerType: 'size' } as React.CSSProperties}
       className={`relative w-full h-full transition-all duration-200 select-none ${
         isActiveTurn
-          ? 'ring-2 ring-inset ring-amber-400/90 shadow-[inset_0_0_60px_rgba(226,179,74,0.22)]'
+          ? 'ring-2 ring-inset ring-[#8BBB92]/90 shadow-[inset_0_0_60px_rgba(42,131,95,0.25)]'
           : 'ring-1 ring-inset ring-obsidian-850/60'
       }`}
     >
       {/* Indicador de acento superior para el turno activo (alto contraste) */}
       {isActiveTurn && (
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 shadow-lg shadow-amber-400/60 z-30 pointer-events-none animate-pulse" />
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#2A835F] via-[#8BBB92] to-[#2A835F] shadow-lg shadow-[#8BBB92]/60 z-30 pointer-events-none animate-pulse" />
       )}
 
       {/* 1. PlaymatBackground (REQ-22.3) - Cubre el 100% de la división, incluida la zona bajo el dock */}
@@ -680,10 +680,12 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       <div
         data-player-header={player.id}
         data-name-tag={player.id}
-        className={`absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 px-3.5 py-1 rounded-xl backdrop-blur-xl border text-xs font-serif font-bold transition-all shadow-xl select-none pointer-events-auto ring-1 ring-white/5 ${
+        className={`absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 px-3.5 py-1 rounded-xl backdrop-blur-xl border text-xs font-sans font-bold transition-all shadow-xl select-none pointer-events-auto ring-1 ring-white/5 ${
           isActiveTurn
-            ? 'bg-amber-400 text-obsidian-950 border-amber-300 shadow-amber-500/25 ring-2 ring-amber-300/80 tracking-wide'
-            : 'bg-obsidian-900/90 text-zinc-200 border-obsidian-750/80 hover:border-obsidian-700'
+            ? 'bg-[#2A835F] text-white border-[#8BBB92] shadow-lg shadow-[#2A835F]/40 ring-2 ring-[#8BBB92]/50 tracking-wide'
+            : isLocalPlayer
+            ? 'bg-[#092328]/95 text-[#8BBB92] border-[#12544F] ring-1 ring-[#2A835F]/30'
+            : 'bg-[#092328]/95 text-zinc-200 border-[#12544F]/80 hover:border-[#12544F]'
         }`}
       >
         <span
@@ -701,7 +703,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             onClick={onExpandCell}
             className={`p-0.5 rounded transition-colors cursor-pointer ${
               isActiveTurn
-                ? 'text-obsidian-950 hover:bg-obsidian-950/20'
+                ? 'text-white hover:bg-white/20'
                 : 'text-zinc-400 hover:text-white hover:bg-obsidian-800'
             }`}
             title="Ampliar esta celda a pantalla completa"
@@ -919,10 +921,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           {/* Badge interactivo con impuesto de comandante +/-2 (Punto 6) */}
           <div
             data-testid="commander-tax-badge"
-            className="absolute top-1 inset-x-1 z-30 flex items-center justify-between bg-obsidian-900/95 border border-amber-500/50 rounded px-1.5 py-0.5 shadow backdrop-blur-md select-none pointer-events-auto"
+            className="absolute top-1 inset-x-1 z-30 flex items-center justify-between bg-obsidian-900/95 border border-[#12544F] rounded px-1.5 py-0.5 shadow backdrop-blur-md select-none pointer-events-auto"
             onClick={e => e.stopPropagation()}
           >
-            <span className="text-[9px] font-black text-amber-300 tracking-tight font-mono">
+            <span className="text-[9px] font-black text-[#8BBB92] tracking-tight font-mono">
               Tax: +{player.counters.commanderTax ?? 0}
             </span>
             {isLocalPlayer && (
@@ -934,7 +936,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     adjustCounter('commanderTax', -2);
                   }}
                   disabled={(player.counters.commanderTax ?? 0) <= 0}
-                  className="w-3.5 h-3.5 flex items-center justify-center bg-obsidian-800 hover:bg-obsidian-700 disabled:opacity-30 disabled:hover:bg-obsidian-800 text-amber-300 font-bold text-[9px] rounded transition-colors cursor-pointer"
+                  className="w-3.5 h-3.5 flex items-center justify-center bg-obsidian-800 hover:bg-obsidian-750 disabled:opacity-30 disabled:hover:bg-obsidian-800 text-[#8BBB92] font-bold text-[9px] rounded transition-colors cursor-pointer"
                   title="Restar 2 al impuesto de comandante"
                 >
                   -
@@ -945,7 +947,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     e.stopPropagation();
                     adjustCounter('commanderTax', 2);
                   }}
-                  className="w-3.5 h-3.5 flex items-center justify-center bg-obsidian-800 hover:bg-obsidian-700 text-amber-300 font-bold text-[9px] rounded transition-colors cursor-pointer"
+                  className="w-3.5 h-3.5 flex items-center justify-center bg-obsidian-800 hover:bg-obsidian-750 text-[#8BBB92] font-bold text-[9px] rounded transition-colors cursor-pointer"
                   title="Sumar 2 al impuesto de comandante"
                 >
                   +
@@ -961,14 +963,14 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               onClick={() => setActivePileModal('command')}
             />
           ) : (
-            <div className="w-full h-full border-2 border-dashed border-amber-600/30 rounded-lg flex flex-col items-center justify-center p-1 text-center bg-amber-950/10 relative">
+            <div className="w-full h-full border-2 border-dashed border-[#12544F] rounded-lg flex flex-col items-center justify-center p-1 text-center bg-[#092328]/30 relative">
               <div className="mt-5 flex flex-col items-center">
                 <span className="text-[8px] text-zinc-500 mb-0.5">(En campo)</span>
                 {isLocalPlayer && (
                   <button
                     data-testid="return-to-command-btn"
                     onClick={handleReturnCommanderToCommand}
-                    className="px-1.5 py-1 bg-amber-500 hover:bg-amber-400 text-obsidian-950 font-bold text-[9px] uppercase tracking-tight rounded shadow hover:shadow-md transition-all active:scale-95 cursor-pointer leading-tight text-center z-20"
+                    className="px-1.5 py-1 bg-[#2A835F] hover:bg-[#349e73] text-white font-bold text-[9px] uppercase tracking-tight rounded shadow hover:shadow-md transition-all active:scale-95 cursor-pointer leading-tight text-center z-20"
                     title="Devolver al comandante a la zona de comando (+2 Tax)"
                   >
                     Devolver al comando
@@ -1082,10 +1084,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                 onClick={() => setActivePileModal('graveyard')}
                 className="w-full h-full flex flex-col items-center justify-center p-0.5"
               >
-                <span className="text-[7px] font-serif font-bold text-zinc-400 uppercase tracking-wider">
+                <span className="text-[7px] font-sans font-bold text-zinc-400 uppercase tracking-wider">
                   CEMENTERIO
                 </span>
-                <span className="text-[11px] font-mono font-black text-amber-300 leading-tight">
+                <span className="text-[11px] font-mono font-black text-[#8BBB92] leading-tight">
                   0
                 </span>
               </div>
@@ -1118,7 +1120,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                 onClick={() => setActivePileModal('exile')}
                 className="w-full h-full flex flex-col items-center justify-center p-0.5"
               >
-                <span className="text-[7px] font-serif font-bold text-purple-300 uppercase tracking-wider">
+                <span className="text-[7px] font-sans font-bold text-purple-300 uppercase tracking-wider">
                   EXILIO
                 </span>
                 <span className="text-[11px] font-mono font-black text-purple-200 leading-tight">
@@ -1158,7 +1160,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             >
               <div className="px-5 py-3 border-b border-obsidian-800/80 flex items-center justify-between bg-obsidian-950/60">
                 <div className="flex items-center space-x-3">
-                  <h3 className="font-serif font-bold text-sm text-amber-200 capitalize tracking-wide">
+                  <h3 className="font-sans font-bold text-sm text-[#8BBB92] capitalize tracking-wide">
                     {activePileModal === 'command'
                       ? 'Zona de Comando'
                       : activePileModal === 'graveyard'
@@ -1178,9 +1180,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   {activePileModal === 'library' && syncQueueCount > 0 && (
                     <div
                       data-testid="scryfall-sync-indicator"
-                      className="flex items-center space-x-1.5 text-xs text-amber-300 bg-amber-950/70 border border-amber-800/80 px-2 py-0.5 rounded-full animate-pulse shadow-sm"
+                      className="flex items-center space-x-1.5 text-xs text-[#8BBB92] bg-[#12544F]/40 border border-[#2A835F]/40 px-2 py-0.5 rounded-full animate-pulse shadow-sm"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#8BBB92] animate-ping" />
                       <span>Sincronizando cartas... ({syncQueueCount} en cola)</span>
                     </div>
                   )}
@@ -1190,9 +1192,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                       {imageStats.inFlight + imageStats.pending > 0 ? (
                         <div
                           data-testid="image-queue-progress"
-                          className="flex items-center space-x-1.5 text-[11px] text-amber-300 bg-amber-950/70 border border-amber-800/80 px-2.5 py-0.5 rounded-full animate-pulse shadow-sm"
+                          className="flex items-center space-x-1.5 text-[11px] text-[#8BBB92] bg-[#12544F]/40 border border-[#2A835F]/40 px-2.5 py-0.5 rounded-full animate-pulse shadow-sm"
                         >
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#8BBB92] animate-ping" />
                           <span className="font-mono font-medium">
                             Cargando {imageStats.loaded} de{' '}
                             {imageStats.total || zones.library.length}
@@ -1249,7 +1251,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                       value={librarySearchQuery}
                       onChange={e => setLibrarySearchQuery(e.target.value)}
                       data-testid="library-search-input"
-                      className="w-full bg-obsidian-900 border border-obsidian-750 rounded-xl pl-9 pr-8 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 font-sans transition-colors"
+                      className="w-full bg-obsidian-900 border border-obsidian-750 rounded-xl pl-9 pr-8 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#2A835F] font-sans transition-colors"
                     />
                     {librarySearchQuery && (
                       <button
@@ -1267,7 +1269,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                       onClick={() => setLibraryTypeFilter(null)}
                       className={`px-2.5 py-1 rounded-lg border font-medium cursor-pointer transition-all ${
                         libraryTypeFilter === null
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                          ? 'bg-[#2A835F]/30 text-[#8BBB92] border-[#2A835F]/60 shadow-sm'
                           : 'bg-obsidian-900 text-zinc-400 border-obsidian-800 hover:text-zinc-200 hover:border-obsidian-700'
                       }`}
                     >
@@ -1287,7 +1289,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                           onClick={() => setLibraryTypeFilter(isSelected ? null : type)}
                           className={`px-2.5 py-1 rounded-lg border font-medium cursor-pointer transition-all ${
                             isSelected
-                              ? 'bg-amber-500 text-obsidian-950 font-bold border-amber-400 shadow-md shadow-amber-500/20'
+                              ? 'bg-[#2A835F] text-white font-bold border-[#8BBB92] shadow-md shadow-[#2A835F]/30'
                               : 'bg-obsidian-900 text-zinc-300 border-obsidian-800 hover:border-obsidian-700 hover:text-white'
                           }`}
                         >
@@ -1368,18 +1370,18 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               onPointerDown={e => e.stopPropagation()}
               onMouseDown={e => e.stopPropagation()}
               onContextMenu={e => e.stopPropagation()}
-              className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl"
+              className="bg-obsidian-900 border border-obsidian-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl"
             >
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                <h3 className="font-bold text-sm text-white flex items-center space-x-2">
-                  <ImageIcon className="w-4 h-4 text-amber-400" />
+              <div className="flex items-center justify-between border-b border-obsidian-800 pb-2">
+                <h3 className="font-bold text-sm text-[#8BBB92] flex items-center space-x-2">
+                  <ImageIcon className="w-4 h-4 text-[#8BBB92]" />
                   <span>Personalizar Playmat</span>
                 </h3>
                 <button
                   type="button"
                   data-testid="close-playmat-modal-btn"
                   onClick={() => setIsPlaymatModalOpen(false)}
-                  className="text-slate-400 hover:text-white font-bold p-1 rounded-lg hover:bg-slate-800 transition-colors"
+                  className="text-zinc-400 hover:text-white font-bold p-1 rounded-lg hover:bg-obsidian-800 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1387,10 +1389,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
 
               {/* Vista previa del playmat y Atribución (Punto 7) */}
               <div className="space-y-1.5">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   Fondo del Playmat
                 </span>
-                <div className="relative w-full h-36 rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shadow-inner group">
+                <div className="relative w-full h-36 rounded-xl overflow-hidden border border-obsidian-800 bg-obsidian-950 shadow-inner group">
                   {previewPlaymatUrl ? (
                     <>
                       <img
@@ -1398,10 +1400,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                         alt="Playmat actual"
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-obsidian-950/90 via-obsidian-950/30 to-transparent pointer-events-none" />
                     </>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xs text-slate-500">
+                    <div className="w-full h-full flex items-center justify-center text-xs text-zinc-500">
                       Sin imagen
                     </div>
                   )}
@@ -1410,20 +1412,20 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   {isUsingArtCrop && (
                     <div
                       data-testid="playmat-attribution-box"
-                      className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-auto bg-slate-950/90 backdrop-blur-md px-3 py-2 rounded-lg border border-slate-800/80 text-[11px] shadow-lg"
+                      className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-auto bg-obsidian-950/90 backdrop-blur-md px-3 py-2 rounded-lg border border-obsidian-800/80 text-[11px] shadow-lg"
                     >
                       <div className="min-w-0 pr-2">
                         <div
                           data-testid="playmat-artist"
-                          className="font-bold text-amber-300 truncate flex items-center space-x-1"
+                          className="font-bold text-[#8BBB92] truncate flex items-center space-x-1"
                           title={playmatArtist}
                         >
-                          <User className="w-3 h-3 text-amber-400 flex-shrink-0 inline mr-1" />
+                          <User className="w-3 h-3 text-[#8BBB92] flex-shrink-0 inline mr-1" />
                           <span>Ilustrado por {playmatArtist}</span>
                         </div>
                         <div
                           data-testid="playmat-copyright"
-                          className="text-[9px] text-slate-400 truncate mt-0.5"
+                          className="text-[9px] text-zinc-400 truncate mt-0.5"
                         >
                           {playmatCopyright}
                         </div>
@@ -1434,7 +1436,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                           type="button"
                           data-testid="playmat-view-card-btn"
                           onClick={() => openCardDetails(activePlaymatCard)}
-                          className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-amber-200 border border-amber-500/40 rounded-lg font-bold text-[10px] transition-all cursor-pointer flex-shrink-0 shadow"
+                          className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-[#2A835F]/20 hover:bg-[#2A835F]/30 text-[#8BBB92] hover:text-white border border-[#2A835F]/40 rounded-lg font-bold text-[10px] transition-all cursor-pointer flex-shrink-0 shadow"
                           title="Ver detalles de la carta (Oracle, Dictámenes, etc.)"
                         >
                           <BookOpen className="w-3.5 h-3.5" />
@@ -1447,7 +1449,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-zinc-300 mb-1">
                   URL de imagen / Art Crop (Scryfall o enlace directo)
                 </label>
                 <input
@@ -1456,7 +1458,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   value={customPlaymatInput}
                   onChange={e => setCustomPlaymatInput(e.target.value)}
                   placeholder="https://cards.scryfall.io/art_crop/..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
+                  className="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#2A835F]"
                   autoFocus
                 />
               </div>
@@ -1471,7 +1473,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     onAction('SET_PLAYMAT', { playmatUrl: cmdUrl });
                     setCustomPlaymatInput('');
                   }}
-                  className="text-[11px] text-amber-400 hover:text-amber-300 font-bold underline cursor-pointer inline-block"
+                  className="text-[11px] text-[#8BBB92] hover:text-white font-bold underline cursor-pointer inline-block"
                 >
                   Restablecer a arte del Comandante ({player.selectedDeck.commanderName})
                 </button>
@@ -1482,14 +1484,14 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   type="button"
                   data-testid="playmat-cancel-btn"
                   onClick={() => setIsPlaymatModalOpen(false)}
-                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-2 rounded-xl transition-colors cursor-pointer"
+                  className="flex-1 bg-obsidian-800 hover:bg-obsidian-750 text-white font-bold text-xs py-2 rounded-xl transition-colors cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   data-testid="playmat-save-btn"
-                  className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2 rounded-xl transition-colors cursor-pointer"
+                  className="flex-1 bg-[#2A835F] hover:bg-[#349e73] text-white font-bold text-xs py-2 rounded-xl transition-colors cursor-pointer shadow-md shadow-[#2A835F]/20"
                 >
                   Guardar Playmat
                 </button>
