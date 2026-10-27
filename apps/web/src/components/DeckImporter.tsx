@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { parseDecklist, validateCommanderDeck, type CardDefinition } from '@mtgc/shared';
-import { Layers, AlertTriangle, CheckCircle2, XCircle, Search, UploadCloud } from 'lucide-react';
+import { Layers, AlertTriangle, CheckCircle2, XCircle, Search, UploadCloud, X } from 'lucide-react';
 
 interface DeckImporterProps {
   onDeckLoaded?: (commander: CardDefinition, cardsCount: number) => void;
+  onClose?: () => void;
 }
 
-export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded }) => {
+export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClose }) => {
   const [deckText, setDeckText] = useState(`// Comandante
 1 Atraxa, Praetors' Voice *CMDR*
 
@@ -100,40 +101,42 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded }) => {
 2 Swamp
 2 Forest`);
 
+  const [validationResult, setValidationResult] = useState<any>(null);
+  const [isValidating, setIsValidating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [validationResult, setValidationResult] = useState<any>(null);
-  const [isValidating, setIsValidating] = useState(false);
 
-  const handleAutocomplete = async (val: string) => {
-    setSearchQuery(val);
-    if (val.trim().length < 2) {
+  const handleAutocomplete = async (q: string) => {
+    setSearchQuery(q);
+    if (!q || q.length < 2) {
       setSearchResults([]);
       return;
     }
 
-    setIsSearching(true);
     try {
-      const res = await fetch(`/api/cards/autocomplete?q=${encodeURIComponent(val)}`);
+      setIsSearching(true);
+      const res = await fetch(`/api/cards/autocomplete?q=${encodeURIComponent(q)}`);
       if (res.ok) {
         const data = await res.json();
-        setSearchResults(data.results || []);
+        setSearchResults(data.data || []);
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
+      // Ignorar fallos de red en autocompletado
     } finally {
       setIsSearching(false);
     }
   };
 
-  const handleValidateAndImport = async () => {
-    setIsValidating(true);
-    try {
-      // 1. First parse locally
-      const parsed = parseDecklist(deckText);
+  const addCardToDeck = (cardName: string) => {
+    setDeckText(prev => `${prev.trim()}\n1 ${cardName}`);
+    setSearchQuery('');
+    setSearchResults([]);
+  };
 
-      // 2. Validate on server with full Scryfall collections & color identities
+  const handleValidateAndImport = async () => {
+    try {
+      setIsValidating(true);
       const res = await fetch('/api/decks/parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -144,247 +147,238 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded }) => {
         const data = await res.json();
         setValidationResult(data.validation);
 
-        if (data.commanderCards?.[0]?.card && onDeckLoaded) {
-          onDeckLoaded(data.commanderCards[0].card, data.validation.totalCards);
+        if (data.commanderCards && data.commanderCards.length > 0) {
+          const mainCommander = data.commanderCards[0].card;
+          onDeckLoaded?.(mainCommander, data.validation.totalCards);
         }
       } else {
-        // Fallback local validation
-        const localCommander = parsed.commanderEntries.map(e => ({
-          card: {
-            scryfallId: 'cmd',
-            name: e.cardName,
-            cmc: 4,
-            typeLine: 'Legendary Creature',
-            colors: ['W', 'U', 'B', 'G'] as any,
-            colorIdentity: ['W', 'U', 'B', 'G'] as any,
-          },
-          quantity: e.quantity,
+        const parsed = parseDecklist(deckText);
+        const commanderCards: any[] = parsed.commanderEntries.map(c => ({
+          card: { scryfallId: `cmd_${c.cardName}`, name: c.cardName, typeLine: 'Legendary Creature' },
+          quantity: c.quantity,
           isCommander: true,
         }));
-        const localMain = parsed.maindeckEntries.map(e => ({
-          card: {
-            scryfallId: 'c',
-            name: e.cardName,
-            cmc: 2,
-            typeLine: 'Card',
-            colors: [],
-            colorIdentity: [],
-          },
-          quantity: e.quantity,
+        const maindeckCards: any[] = parsed.maindeckEntries.map(c => ({
+          card: { scryfallId: `card_${c.cardName}`, name: c.cardName, typeLine: 'Spell' },
+          quantity: c.quantity,
           isCommander: false,
         }));
-        const localVal = validateCommanderDeck(localCommander, localMain);
-        setValidationResult(localVal);
+        const val = validateCommanderDeck(commanderCards, maindeckCards);
+        setValidationResult(val);
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      const parsed = parseDecklist(deckText);
+      const commanderCards: any[] = parsed.commanderEntries.map(c => ({
+        card: { scryfallId: `cmd_${c.cardName}`, name: c.cardName, typeLine: 'Legendary Creature' },
+        quantity: c.quantity,
+        isCommander: true,
+      }));
+      const maindeckCards: any[] = parsed.maindeckEntries.map(c => ({
+        card: { scryfallId: `card_${c.cardName}`, name: c.cardName, typeLine: 'Spell' },
+        quantity: c.quantity,
+        isCommander: false,
+      }));
+      const val = validateCommanderDeck(commanderCards, maindeckCards);
+      setValidationResult(val);
     } finally {
       setIsValidating(false);
     }
   };
 
-  const addCardToDeck = (name: string) => {
-    setDeckText(prev => `${prev}\n1 ${name}`);
-    setSearchQuery('');
-    setSearchResults([]);
-  };
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-      {/* Left 2 Cols: Textarea & Search */}
-      <div className="lg:col-span-2 space-y-4">
-        <div className="bg-[#0c101a]/90 border border-zinc-800/90 rounded-2xl p-6 shadow-2xl backdrop-blur-xl ring-1 ring-white/5 space-y-4">
-          <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-            <h2 className="text-base font-cinzel font-bold flex items-center space-x-2.5 text-zinc-100">
-              <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                <Layers className="w-4 h-4" />
-              </span>
-              <span>Importar Lista de Mazos (Commander)</span>
-            </h2>
-            <span className="text-xs text-zinc-400 font-medium">
-              Formatos Moxfield, Archidekt y MTGA
-            </span>
+    <div className="w-full bg-[#11141c] border border-[#232836] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-6 text-white max-h-[90vh] overflow-y-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-[#232836] pb-4">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+            <Layers className="w-5 h-5" />
           </div>
+          <div>
+            <h2 className="text-lg font-bold text-white tracking-wide">
+              Validador e Importador de Mazos EDH
+            </h2>
+            <p className="text-xs text-zinc-400">
+              Compatible con formato texto plano, Moxfield, Archidekt y MTGA
+            </p>
+          </div>
+        </div>
 
-          {/* Scryfall Card Autocomplete Search Bar */}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#1a202c] transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Textarea & Search */}
+        <div className="lg:col-span-7 space-y-4">
+          {/* Autocomplete Search */}
           <div className="relative">
-            <div className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => handleAutocomplete(e.target.value)}
-                placeholder="Buscar carta en Scryfall para añadir (ej. Sol Ring, Rhystic Study)..."
-                className="w-full bg-[#080b11] border border-zinc-800 focus:border-amber-400/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none transition-all shadow-inner"
-              />
-              <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3" />
-              {isSearching && (
-                <span className="absolute right-3.5 top-2.5 text-[11px] text-amber-400 animate-pulse font-mono">
-                  Buscando...
-                </span>
-              )}
-            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => handleAutocomplete(e.target.value)}
+              placeholder="Buscar carta en Scryfall para añadir (ej. Sol Ring, Rhystic Study)..."
+              className="w-full bg-[#090b10] border border-[#262e3e] focus:border-amber-400 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none"
+            />
+            <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3" />
+            {isSearching && (
+              <span className="absolute right-3.5 top-2.5 text-[11px] text-amber-400 animate-pulse font-mono">
+                Buscando...
+              </span>
+            )}
 
-            {/* Dropdown Results */}
             {searchResults.length > 0 && (
-              <div className="absolute z-20 left-0 right-0 mt-1.5 bg-[#0b0f17] border border-zinc-700/80 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto backdrop-blur-md">
+              <div className="absolute z-30 left-0 right-0 mt-1.5 bg-[#141822] border border-[#2b3548] rounded-xl shadow-2xl overflow-hidden max-h-52 overflow-y-auto">
                 {searchResults.map(cardName => (
                   <button
                     key={cardName}
+                    type="button"
                     onClick={() => addCardToDeck(cardName)}
-                    className="w-full text-left px-4 py-2.5 text-sm text-zinc-200 hover:bg-amber-500/10 hover:text-amber-300 transition-colors border-b border-zinc-800/60 last:border-0 flex items-center justify-between cursor-pointer"
+                    className="w-full text-left px-4 py-2 text-xs text-zinc-200 hover:bg-amber-500/15 hover:text-amber-300 transition-colors border-b border-[#232836] last:border-0 flex items-center justify-between cursor-pointer"
                   >
-                    <span className="font-medium">{cardName}</span>
-                    <span className="text-[11px] font-mono text-zinc-500">+ Añadir</span>
+                    <span>{cardName}</span>
+                    <span className="text-[10px] text-zinc-500 font-mono">+ Añadir</span>
                   </button>
                 ))}
               </div>
             )}
           </div>
 
+          {/* Text Area */}
           <textarea
             value={deckText}
             onChange={e => setDeckText(e.target.value)}
-            rows={15}
-            className="w-full font-mono text-xs bg-[#080b11] border border-zinc-800 focus:border-amber-400/80 rounded-xl p-4 text-zinc-200 focus:outline-none leading-relaxed resize-y shadow-inner"
-            placeholder="1 Atraxa, Praetors' Voice *CMDR*&#10;1 Sol Ring&#10;1 Arcane Signet..."
+            rows={13}
+            className="w-full font-mono text-xs bg-[#090b10] border border-[#262e3e] focus:border-amber-400 rounded-xl p-4 text-zinc-200 focus:outline-none leading-relaxed resize-y"
+            placeholder="1 Atraxa, Praetors' Voice *CMDR*&#10;1 Sol Ring..."
           />
 
           <div className="flex items-center justify-between pt-1">
             <button
+              type="button"
               onClick={() => setDeckText('')}
-              className="text-xs text-slate-400 hover:text-rose-400 transition-colors"
+              className="text-xs text-zinc-400 hover:text-rose-400 transition-colors cursor-pointer"
             >
               Limpiar texto
             </button>
             <button
+              type="button"
               onClick={handleValidateAndImport}
               disabled={isValidating}
-              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-5 py-2.5 rounded-lg text-sm transition-all shadow-lg shadow-amber-500/20 active:scale-[0.98] flex items-center space-x-2 disabled:opacity-50"
+              className="bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 font-bold px-5 py-2.5 rounded-xl text-xs tracking-wide uppercase transition-all shadow-md flex items-center space-x-2 disabled:opacity-50 cursor-pointer"
             >
               <UploadCloud className="w-4 h-4" />
               <span>{isValidating ? 'Validando con Scryfall...' : 'Validar y Cargar Mazo'}</span>
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Right Col: Validation Report & Rules */}
-      <div className="space-y-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
-          <h3 className="text-sm font-semibold text-slate-200 flex items-center space-x-2">
-            <span>Diagnóstico de Reglas Commander</span>
-          </h3>
+        {/* Right Column: Validation Report */}
+        <div className="lg:col-span-5 space-y-4">
+          <div className="bg-[#141822] border border-[#232836] rounded-xl p-5 space-y-4">
+            <h3 className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
+              Diagnóstico de Reglas Commander
+            </h3>
 
-          {!validationResult ? (
-            <div className="text-xs text-slate-400 py-6 text-center space-y-2">
-              <Layers className="w-8 h-8 text-slate-600 mx-auto" />
-              <p>
-                Presiona "Validar y Cargar Mazo" para analizar el total de cartas, singleton y
-                colores.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Overall status banner */}
-              <div
-                className={`p-3 rounded-lg border flex items-start space-x-3 ${
-                  validationResult.isValid
-                    ? 'bg-emerald-950/30 border-emerald-800/60 text-emerald-300'
-                    : 'bg-rose-950/30 border-rose-800/60 text-rose-300'
-                }`}
-              >
-                {validationResult.isValid ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                ) : (
-                  <XCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-                )}
-                <div>
-                  <h4 className="font-semibold text-sm">
-                    {validationResult.isValid ? 'Mazo Legal en Commander' : 'Errores de Validación'}
-                  </h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Total: {validationResult.totalCards}/100 cartas &bull; Comandante:{' '}
-                    {validationResult.commanderCount}
-                  </p>
-                </div>
+            {!validationResult ? (
+              <div className="text-xs text-zinc-400 py-10 text-center space-y-2">
+                <Layers className="w-8 h-8 text-zinc-600 mx-auto" />
+                <p>
+                  Presiona "Validar y Cargar Mazo" para analizar total de cartas, singleton e identidad de color.
+                </p>
               </div>
+            ) : (
+              <div className="space-y-4">
+                <div
+                  className={`p-3 rounded-xl border flex items-start space-x-3 ${
+                    validationResult.isValid
+                      ? 'bg-emerald-950/40 border-emerald-600/50 text-emerald-300'
+                      : 'bg-rose-950/40 border-rose-600/50 text-rose-300'
+                  }`}
+                >
+                  {validationResult.isValid ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                  )}
+                  <div>
+                    <h4 className="font-bold text-xs uppercase tracking-wide">
+                      {validationResult.isValid ? 'Mazo Legal en Commander' : 'Errores de Validación'}
+                    </h4>
+                    <p className="text-[11px] text-zinc-300 mt-0.5">
+                      Total: {validationResult.totalCards}/100 cartas &bull; Comandante:{' '}
+                      {validationResult.commanderCount}
+                    </p>
+                  </div>
+                </div>
 
-              {/* Color Identity Badges */}
-              {validationResult.commanderColorIdentity && (
-                <div className="space-y-1.5">
-                  <span className="text-[11px] font-medium text-slate-400 block uppercase">
-                    Identidad de Color
-                  </span>
-                  <div className="flex items-center space-x-1.5">
-                    {validationResult.commanderColorIdentity.length === 0 ? (
-                      <span className="text-xs text-slate-400 px-2 py-0.5 bg-slate-800 rounded">
-                        Incoloro
-                      </span>
-                    ) : (
-                      validationResult.commanderColorIdentity.map((c: string) => {
-                        const bgMap: Record<string, string> = {
-                          W: 'bg-amber-100 text-slate-900',
-                          U: 'bg-sky-500 text-white',
-                          B: 'bg-slate-700 text-slate-100',
-                          R: 'bg-rose-600 text-white',
-                          G: 'bg-emerald-600 text-white',
-                        };
-                        return (
+                {/* Color Identity */}
+                {validationResult.commanderColorIdentity && (
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold text-zinc-400 block uppercase tracking-wider">
+                      Identidad de Color
+                    </span>
+                    <div className="flex items-center space-x-1.5">
+                      {validationResult.commanderColorIdentity.length === 0 ? (
+                        <span className="text-xs text-zinc-400 px-2 py-0.5 bg-[#090b10] border border-[#232836] rounded font-mono">
+                          Incoloro
+                        </span>
+                      ) : (
+                        validationResult.commanderColorIdentity.map((c: string) => (
                           <span
                             key={c}
-                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow ${
-                              bgMap[c] || 'bg-slate-700'
-                            }`}
+                            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-bold bg-[#1a202c] border border-amber-400/40 text-amber-300 shadow"
                           >
                             {c}
                           </span>
-                        );
-                      })
-                    )}
+                        ))
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Error list */}
-              {validationResult.errors?.length > 0 && (
-                <div className="space-y-2">
-                  <span className="text-[11px] font-medium text-rose-400 block uppercase flex items-center space-x-1">
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>Infracciones detectadas ({validationResult.errors.length})</span>
-                  </span>
-                  <ul className="text-xs space-y-1.5 text-rose-200">
-                    {validationResult.errors.map((err: string, i: number) => (
-                      <li key={i} className="bg-rose-950/20 p-2 rounded border border-rose-900/30">
-                        &bull; {err}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Warning list (Cartas prohibidas / advertencias informativas - REQ-8.3, REQ-8.4) */}
-              {validationResult.warnings?.length > 0 && (
-                <div className="space-y-2">
-                  <span className="text-[11px] font-medium text-amber-400 block uppercase flex items-center space-x-1">
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>
-                      Advertencias y cartas prohibidas ({validationResult.warnings.length})
+                {/* Error list */}
+                {validationResult.errors?.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider flex items-center space-x-1">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      <span>Infracciones detectadas ({validationResult.errors.length})</span>
                     </span>
-                  </span>
-                  <ul className="text-xs space-y-1.5 text-amber-200">
-                    {validationResult.warnings.map((warn: string, i: number) => (
-                      <li
-                        key={i}
-                        className="bg-amber-950/20 p-2 rounded border border-amber-900/30"
-                      >
-                        &bull; {warn}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
+                    <ul className="text-xs space-y-1 text-rose-300">
+                      {validationResult.errors.map((err: string, i: number) => (
+                        <li key={i} className="bg-rose-950/30 p-2 rounded-lg border border-rose-900/40 text-[11px]">
+                          &bull; {err}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Warnings list */}
+                {validationResult.warnings?.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center space-x-1">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      <span>Advertencias ({validationResult.warnings.length})</span>
+                    </span>
+                    <ul className="text-xs space-y-1 text-amber-200">
+                      {validationResult.warnings.map((warn: string, i: number) => (
+                        <li key={i} className="bg-amber-950/30 p-2 rounded-lg border border-amber-900/40 text-[11px]">
+                          &bull; {warn}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

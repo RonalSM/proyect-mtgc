@@ -11,7 +11,7 @@ import { DeckImporter } from './components/DeckImporter';
 import { LegalModal } from './components/LegalModal';
 import { FontGlyphsAudit } from './components/FontGlyphsAudit';
 import { DiagnosticPanel } from './components/DiagnosticPanel';
-import { RefreshCw, Layers, Users } from 'lucide-react';
+import { RefreshCw, Layers } from 'lucide-react';
 
 export default function App() {
   const [roomCode, setRoomCode] = useState<string | null>(() => {
@@ -23,7 +23,7 @@ export default function App() {
   const [playerId, setPlayerId] = useState<string>('');
   const [playerName, setPlayerName] = useState<string>('Planeswalker');
   const [isSpectator, setIsSpectator] = useState<boolean>(false);
-  const [activeMainTab, setActiveMainTab] = useState<'lobby' | 'importer'>('lobby');
+  const [isImporterOpen, setIsImporterOpen] = useState<boolean>(false);
   const [serverStatus, setServerStatus] = useState<'online' | 'offline' | 'checking'>('checking');
   const [isCreatingRoom, setIsCreatingRoom] = useState<boolean>(false);
   const [isLegalOpen, setIsLegalOpen] = useState<boolean>(false);
@@ -160,7 +160,22 @@ export default function App() {
         {roomState.status === 'mulligan' && (
           <OpeningHandModal roomState={roomState} localPlayerId={playerId} onAction={sendAction} />
         )}
-        {revealedCard && (
+        {/* Deck Importer Modal Popup */}
+      {isImporterOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setIsImporterOpen(false)}
+        >
+          <div
+            className="w-full max-w-5xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <DeckImporter onClose={() => setIsImporterOpen(false)} />
+          </div>
+        </div>
+      )}
+
+      {revealedCard && (
           <RevealedCardModal
             revealed={revealedCard}
             localPlayerId={playerId}
@@ -200,30 +215,15 @@ export default function App() {
           </div>
 
           {!roomCode && (
-            <nav className="flex space-x-1 bg-[#141822] p-1 rounded-xl border border-[#232836]">
+            <div className="flex items-center space-x-2">
               <button
-                onClick={() => setActiveMainTab('lobby')}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeMainTab === 'lobby'
-                    ? 'bg-amber-500 text-zinc-950 shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1c2230]'
-                }`}
+                onClick={() => setIsImporterOpen(true)}
+                className="flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#141822] hover:bg-[#1d2331] text-zinc-300 hover:text-white border border-[#232836] transition-all cursor-pointer shadow-sm"
               >
-                <Users className="w-3.5 h-3.5" />
-                <span>Centro de Mesas</span>
-              </button>
-              <button
-                onClick={() => setActiveMainTab('importer')}
-                className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeMainTab === 'importer'
-                    ? 'bg-amber-500 text-zinc-950 shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1c2230]'
-                }`}
-              >
-                <Layers className="w-3.5 h-3.5" />
+                <Layers className="w-3.5 h-3.5 text-amber-400" />
                 <span>Validador de Mazos</span>
               </button>
-            </nav>
+            </div>
           )}
         </div>
 
@@ -277,7 +277,7 @@ export default function App() {
       )}
 
       {/* Main Container */}
-      <main className="flex-1 p-4 max-w-7xl w-full mx-auto overflow-hidden">
+      <main className="flex-1 p-4 max-w-7xl w-full mx-auto">
         <CardPreviewProvider>
           {roomCode && roomState ? (
             <LobbyWaitingRoom
@@ -286,16 +286,12 @@ export default function App() {
               onAction={sendAction}
               onLeaveRoom={handleLeaveRoom}
             />
-          ) : activeMainTab === 'importer' ? (
-            <div className="py-4">
-              <DeckImporter />
-            </div>
           ) : (
             <LobbyView
               onCreateRoom={handleCreateRoom}
               onJoinRoom={handleJoinRoom}
               isCreating={isCreatingRoom}
-              onNavigateToImporter={() => setActiveMainTab('importer')}
+              onNavigateToImporter={() => setIsImporterOpen(true)}
             />
           )}
         </CardPreviewProvider>
@@ -330,6 +326,21 @@ export default function App() {
           </button>
         </div>
       </footer>
+
+      {/* Deck Importer Modal Popup */}
+      {isImporterOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setIsImporterOpen(false)}
+        >
+          <div
+            className="w-full max-w-5xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <DeckImporter onClose={() => setIsImporterOpen(false)} />
+          </div>
+        </div>
+      )}
 
       {revealedCard && (
         <RevealedCardModal

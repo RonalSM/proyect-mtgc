@@ -486,7 +486,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
           onPointerDown={e => e.stopPropagation()}
           onMouseDown={e => e.stopPropagation()}
           onContextMenu={e => e.stopPropagation()}
-          className="fixed bg-slate-900/95 border border-slate-700/80 rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 w-max max-w-[240px] overflow-y-auto z-[110] backdrop-blur-md text-[13px] text-slate-200 select-none ring-1 ring-white/5"
+          className="fixed bg-[#11141c] border border-[#2b3548] rounded-xl shadow-2xl p-1.5 flex flex-col space-y-0.5 w-max max-w-[240px] overflow-y-auto z-[110] text-[13px] text-zinc-200 select-none"
         >
           {/* (1) Girar / Enderezar (Punto 12) */}
           {fromZone === 'battlefield' && onTap && (
@@ -827,7 +827,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
               {isKeywordsExpanded && (
                 <div
                   data-testid="context-keywords-section"
-                  className="pl-2 pr-1.5 py-1.5 space-y-1 border-l-2 border-amber-500/50 bg-slate-950/40 rounded-r-lg my-0.5 max-h-56 overflow-y-auto text-[14px]"
+                  className="pl-2 pr-1.5 py-1.5 space-y-1 border-l-2 border-amber-500/60 bg-[#090b10] rounded-r-lg my-0.5 max-h-56 overflow-y-auto text-xs"
                 >
                   {MTG_KEYWORDS.map(kw => {
                     const isActive = (card.keywords || []).includes(kw.id);
@@ -835,14 +835,14 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                     return (
                       <div
                         key={kw.id}
-                        className="flex items-center justify-between py-1 border-b border-slate-800/80"
+                        className="flex items-center justify-between py-1 border-b border-[#1f2635] last:border-0"
                       >
-                        <div className="flex items-center space-x-1.5 text-[11px] flex-1 min-w-0 pr-2">
+                        <div className="flex items-center space-x-1.5 text-xs flex-1 min-w-0 pr-2">
                           <MtgKeywordIcon
                             keyword={kw.id}
-                            className="w-3.5 h-3.5 flex-shrink-0 text-amber-400 text-sm"
+                            className="w-3.5 h-3.5 flex-shrink-0 text-amber-400 text-xs"
                           />
-                          <span className="text-slate-200 truncate">{kw.label}</span>
+                          <span className="text-zinc-200 font-medium truncate">{kw.label}</span>
                         </div>
                         <button
                           type="button"
@@ -851,10 +851,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                           data-testid={`keyword-toggle-${kw.id}`}
                           onClick={() => handleToggleKeyword(kw.id)}
                           className={`w-7 h-4 flex items-center rounded-full p-0.5 transition-colors cursor-pointer ${
-                            isActive ? 'bg-amber-500 justify-end' : 'bg-slate-700 justify-start'
+                            isActive ? 'bg-amber-500 justify-end' : 'bg-zinc-700 justify-start'
                           }`}
                         >
-                          <div className="w-3 h-3 rounded-full bg-white shadow-md" />
+                          <div className="w-3 h-3 rounded-full bg-white shadow-sm" />
                         </button>
                       </div>
                     );
