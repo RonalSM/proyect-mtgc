@@ -503,9 +503,14 @@ test('GameStateSession - passTurn skips eliminated players and increments turnNu
     exileCount: 0,
   };
 
-  // Pass turn: should skip p2 and land on p3
+  // Pass turn: should skip p2 and land on p3. Turn stays 1 until full circle completes.
   session.passTurn('p1');
   assert.strictEqual(session.state.activePlayerId, 'p3');
+  assert.strictEqual(session.state.turnNumber, 1);
+
+  // Pass turn from p3: completes the circle back to p1 -> turnNumber increments to 2
+  session.passTurn('p3');
+  assert.strictEqual(session.state.activePlayerId, 'p1');
   assert.strictEqual(session.state.turnNumber, 2);
 });
 

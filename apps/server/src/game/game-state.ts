@@ -1497,7 +1497,8 @@ export class GameStateSession {
   }
 
   /**
-   * Advances turn to next non-eliminated player
+   * Advances turn to next non-eliminated player in the turn order circle.
+   * Turn number only increments when a full round/circle around the table is completed.
    */
   public passTurn(playerId: string): void {
     if (this.state.turnOrder.length === 0) return;
@@ -1521,12 +1522,24 @@ export class GameStateSession {
       attempts++;
     }
 
-    this.state.turnNumber++;
+    // Los turnos se cuentan en círculo: solo avanza al completar una ronda completa en la mesa
+    const completedCircle = currentIndex !== -1 && nextIndex <= currentIndex;
+    if (completedCircle) {
+      this.state.turnNumber++;
+    }
+
     const activePlayer = this.state.players[this.state.activePlayerId || ''];
-    this.addLog(
-      playerId,
-      `pasó el turno a ${activePlayer?.name || 'siguiente jugador'} (Turno #${this.state.turnNumber})`,
-    );
+    if (completedCircle) {
+      this.addLog(
+        playerId,
+        `pasó el turno a ${activePlayer?.name || 'siguiente jugador'} (Comienza el Turno #${this.state.turnNumber})`,
+      );
+    } else {
+      this.addLog(
+        playerId,
+        `pasó el turno a ${activePlayer?.name || 'siguiente jugador'}`,
+      );
+    }
 
     this.incrementVersion();
   }

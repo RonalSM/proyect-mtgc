@@ -92,10 +92,10 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
           {/* Round & Active Player */}
           <div className="flex items-center space-x-2 pr-2 border-r border-[#12544F]">
             <span className="font-sans font-bold text-[#8BBB92] bg-[#12544F]/40 px-2.5 py-0.5 rounded-lg border border-[#2A835F]/40 tracking-wide">
-              Ronda {roomState.turnNumber}
+              Turno {roomState.turnNumber}
             </span>
             <div className="flex items-center space-x-1">
-              <span className="text-[11px] text-zinc-400 font-medium">Turno:</span>
+              <span className="text-[11px] text-zinc-400 font-medium">Activo:</span>
               <div className="relative">
                 <button
                   data-active-turn-indicator="true"
@@ -148,7 +148,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                   >
                     <div className="text-[10px] font-sans font-bold text-[#8BBB92] uppercase px-2 py-1 tracking-wider border-b border-[#12544F] flex items-center justify-between">
                       <span>Orden de Iniciativa</span>
-                      <span className="font-mono text-zinc-400">Ronda {roomState.turnNumber}</span>
+                      <span className="font-mono text-zinc-400">Turno {roomState.turnNumber}</span>
                     </div>
                     {sortedPlayers.map(p => {
                       const isCurrentActive = p.id === activePlayer?.id;
