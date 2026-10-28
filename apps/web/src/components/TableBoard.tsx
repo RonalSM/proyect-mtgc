@@ -715,7 +715,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         {permissionWarning && (
           <div
             data-testid="permission-warning"
-            className="fixed top-14 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 bg-amber-950/95 border border-amber-500/90 text-amber-200 text-xs font-semibold rounded-xl shadow-2xl backdrop-blur-md flex items-center space-x-2 animate-bounce"
+            className="fixed top-14 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 bg-[#092328]/95 border border-[#12544F] text-[#8BBB92] text-xs font-semibold rounded-xl shadow-2xl backdrop-blur-md flex items-center space-x-2 animate-bounce"
           >
             <span>⚠️ {permissionWarning}</span>
           </div>

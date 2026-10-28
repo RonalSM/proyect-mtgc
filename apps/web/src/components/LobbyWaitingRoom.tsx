@@ -752,14 +752,14 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                                 Sin arte
                               </div>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#040d0f] via-[#040d0f]/40 to-transparent" />
                             <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
                               <div className="min-w-0 pr-2">
                                 <h4 className="font-extrabold text-sm text-white truncate drop-shadow">
                                   {preset.name}
                                 </h4>
-                                <p className="text-[11px] text-amber-300 truncate drop-shadow flex items-center space-x-1">
-                                  <Sparkles className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                                <p className="text-[11px] text-[#8BBB92] truncate drop-shadow flex items-center space-x-1">
+                                  <Sparkles className="w-3 h-3 text-[#8BBB92] flex-shrink-0" />
                                   <span className="truncate">{preset.commanderName}</span>
                                 </p>
                               </div>
@@ -812,13 +812,13 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                             {isExpanded && (
                               <div
                                 data-testid={`cardlist-content-${preset.id}`}
-                                className="bg-slate-900/90 border border-slate-800 rounded-lg p-2.5 max-h-44 overflow-y-auto text-[11px] font-mono text-slate-300 space-y-1"
+                                className="bg-[#040d0f]/90 border border-[#12544F] rounded-lg p-2.5 max-h-44 overflow-y-auto text-[11px] font-mono text-zinc-300 space-y-1"
                               >
-                                <div className="text-amber-400 font-bold border-b border-slate-800 pb-1 mb-1">
+                                <div className="text-[#8BBB92] font-bold border-b border-[#12544F] pb-1 mb-1">
                                   // Comandante
                                 </div>
                                 <div>1 {preset.commanderName}</div>
-                                <div className="text-amber-400 font-bold border-b border-slate-800 pb-1 mb-1 mt-2">
+                                <div className="text-[#8BBB92] font-bold border-b border-[#12544F] pb-1 mb-1 mt-2">
                                   // Mazo ({preset.maindeckCards?.length || 99})
                                 </div>
                                 {preset.maindeckCards?.map((card: any, idx: number) => (
@@ -930,7 +930,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                                 }),
                           })
                         }
-                        className="bg-slate-950 hover:bg-slate-800/80 border border-slate-800 hover:border-amber-500/50 rounded-xl p-3.5 flex items-center justify-between cursor-pointer transition-all"
+                        className="bg-[#040d0f] hover:bg-[#0c2d32] border border-[#12544F] hover:border-[#2A835F] rounded-xl p-3.5 flex items-center justify-between cursor-pointer transition-all"
                       >
                         <div>
                           <div className="font-bold text-sm text-white">{d.name}</div>

@@ -79,7 +79,7 @@ const DraggableCommanderCard: React.FC<{
       }`}
     >
       <CardDisplay card={enrichedDefinition} allowFaceToggle={false} />
-      <div className="absolute bottom-0 inset-x-0 bg-obsidian-950/90 text-[8px] font-black text-[#8BBB92] text-center py-0.5 tracking-wider uppercase backdrop-blur-xs pointer-events-none">
+      <div className="absolute bottom-0 inset-x-0 bg-[#040d0f]/90 text-[8px] font-black text-[#8BBB92] text-center py-0.5 tracking-wider uppercase backdrop-blur-xs pointer-events-none">
         COMANDANTE
       </div>
     </div>
@@ -647,7 +647,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       className={`relative w-full h-full transition-all duration-200 select-none ${
         isActiveTurn
           ? 'ring-2 ring-inset ring-[#8BBB92]/90 shadow-[inset_0_0_60px_rgba(42,131,95,0.25)]'
-          : 'ring-1 ring-inset ring-obsidian-850/60'
+          : 'ring-1 ring-inset ring-[#12544F]/60'
       }`}
     >
       {/* Indicador de acento superior para el turno activo (alto contraste) */}
@@ -656,7 +656,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       )}
 
       {/* 1. PlaymatBackground (REQ-22.3) - Cubre el 100% de la división, incluida la zona bajo el dock */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-obsidian-950">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-[#040d0f]">
         {!reduceBackgrounds && playmatImage && !playmatError ? (
           <>
             <img
@@ -667,10 +667,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               className="w-full h-full object-cover opacity-40 filter brightness-90"
             />
             {/* Dark gradient overlays ensuring >= 4.5:1 text contrast (REQ-22.15) */}
-            <div className="absolute inset-0 bg-gradient-to-b from-obsidian-950/85 via-obsidian-950/40 to-obsidian-950/90" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#040d0f]/85 via-[#040d0f]/40 to-[#040d0f]/90" />
           </>
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-obsidian-900 via-obsidian-950 to-obsidian-900" />
+          <div className="w-full h-full bg-gradient-to-br from-[#092328] via-[#040d0f] to-[#092328]" />
         )}
       </div>
 
@@ -702,7 +702,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             className={`p-0.5 rounded transition-colors cursor-pointer ${
               isActiveTurn
                 ? 'text-white hover:bg-white/20'
-                : 'text-zinc-400 hover:text-white hover:bg-obsidian-800'
+                : 'text-zinc-400 hover:text-white hover:bg-[#12544F]'
             }`}
             title="Ampliar esta celda a pantalla completa"
           >
@@ -919,7 +919,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           {/* Badge interactivo con impuesto de comandante +/-2 (Punto 6) */}
           <div
             data-testid="commander-tax-badge"
-            className="absolute top-1 inset-x-1 z-30 flex items-center justify-between bg-obsidian-900/95 border border-[#12544F] rounded px-1.5 py-0.5 shadow backdrop-blur-md select-none pointer-events-auto"
+            className="absolute top-1 inset-x-1 z-30 flex items-center justify-between bg-[#092328]/95 border border-[#12544F] rounded px-1.5 py-0.5 shadow backdrop-blur-md select-none pointer-events-auto"
             onClick={e => e.stopPropagation()}
           >
             <span className="text-[9px] font-black text-[#8BBB92] tracking-tight font-mono">
@@ -934,7 +934,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     adjustCounter('commanderTax', -2);
                   }}
                   disabled={(player.counters.commanderTax ?? 0) <= 0}
-                  className="w-3.5 h-3.5 flex items-center justify-center bg-obsidian-800 hover:bg-obsidian-750 disabled:opacity-30 disabled:hover:bg-obsidian-800 text-[#8BBB92] font-bold text-[9px] rounded transition-colors cursor-pointer"
+                  className="w-3.5 h-3.5 flex items-center justify-center bg-[#0c2d32] hover:bg-[#12544F] disabled:opacity-30 disabled:hover:bg-[#0c2d32] text-[#8BBB92] font-bold text-[9px] rounded transition-colors cursor-pointer"
                   title="Restar 2 al impuesto de comandante"
                 >
                   -
@@ -945,7 +945,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     e.stopPropagation();
                     adjustCounter('commanderTax', 2);
                   }}
-                  className="w-3.5 h-3.5 flex items-center justify-center bg-obsidian-800 hover:bg-obsidian-750 text-[#8BBB92] font-bold text-[9px] rounded transition-colors cursor-pointer"
+                  className="w-3.5 h-3.5 flex items-center justify-center bg-[#0c2d32] hover:bg-[#12544F] text-[#8BBB92] font-bold text-[9px] rounded transition-colors cursor-pointer"
                   title="Sumar 2 al impuesto de comandante"
                 >
                   +
@@ -986,7 +986,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           data-is-over={isHandOver ? 'true' : 'false'}
           className={`flex-1 flex justify-center items-end overflow-visible min-w-0 pointer-events-auto transition-all duration-200 rounded-xl z-10 ${
             isHandOver
-              ? 'ring-2 ring-amber-400/80 bg-amber-400/10 shadow-[0_0_30px_rgba(226,179,74,0.25)] border border-amber-400/50'
+              ? 'ring-2 ring-[#8BBB92] bg-[#2A835F]/20 shadow-[0_0_30px_rgba(42,131,95,0.35)] border border-[#8BBB92]'
               : 'border border-transparent'
           }`}
         >

@@ -173,7 +173,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
   if (isFaceDown) {
     return (
       <div
-        className={`w-full h-full rounded-[6px] overflow-hidden relative border border-slate-700 bg-slate-950 shadow-md aspect-[5/7] ${className}`}
+        className={`w-full h-full rounded-[6px] overflow-hidden relative border border-[#12544F] bg-[#092328] shadow-md aspect-[5/7] ${className}`}
       >
         <img
           src="https://cards.scryfall.io/back.png"
@@ -189,8 +189,8 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
           className={`w-full h-full object-fill pointer-events-none select-none rounded-[6px] aspect-[5/7] ${imageClassName}`}
         />
         <div className="absolute inset-0 flex items-center justify-center p-2 text-center pointer-events-none">
-          <div className="w-10 h-14 rounded-full border-2 border-amber-600/40 bg-amber-950/30 flex items-center justify-center shadow-inner">
-            <span className="text-[10px] font-bold text-amber-500/70 select-none">MTG</span>
+          <div className="w-10 h-14 rounded-full border-2 border-[#12544F] bg-[#092328] flex items-center justify-center shadow-inner">
+            <span className="text-[10px] font-bold text-[#8BBB92] select-none">MTG</span>
           </div>
         </div>
       </div>
@@ -208,24 +208,24 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
 
   return (
     <div
-      className={`w-full h-full rounded-[6px] overflow-hidden relative select-none shadow-md shadow-black/50 aspect-[5/7] bg-slate-900 border border-slate-800/80 hover:border-slate-700/80 transition-[border-color,box-shadow] duration-200 ${className}`}
+      className={`w-full h-full rounded-[6px] overflow-hidden relative select-none shadow-md shadow-black/50 aspect-[5/7] bg-[#092328] border border-[#12544F] hover:border-[#2A835F] transition-[border-color,box-shadow] duration-200 ${className}`}
     >
       {/* 1. Skeletons while pending/loading in queue (Punto 4) */}
       {isPendingOrLoading ? (
         <div
           data-testid="card-image-skeleton"
-          className="w-full h-full rounded-[6px] bg-slate-800/80 animate-pulse flex flex-col items-center justify-between p-2 select-none border border-slate-700/60"
+          className="w-full h-full rounded-[6px] bg-[#092328] animate-pulse flex flex-col items-center justify-between p-2 select-none border border-[#12544F]"
         >
           <div className="w-full flex items-center justify-between opacity-50">
-            <div className="h-2 w-14 bg-slate-700 rounded" />
-            <div className="h-2 w-5 bg-slate-700 rounded" />
+            <div className="h-2 w-14 bg-[#12544F] rounded" />
+            <div className="h-2 w-5 bg-[#12544F] rounded" />
           </div>
-          <div className="w-full flex-1 max-h-24 bg-slate-700/30 rounded flex items-center justify-center my-1">
-            <div className="w-5 h-5 border-2 border-amber-500/30 border-t-amber-400 rounded-full animate-spin" />
+          <div className="w-full flex-1 max-h-24 bg-[#040d0f]/40 rounded flex items-center justify-center my-1">
+            <div className="w-5 h-5 border-2 border-[#12544F] border-t-[#8BBB92] rounded-full animate-spin" />
           </div>
           <div className="w-full flex items-center justify-between opacity-50">
-            <div className="h-2 w-16 bg-slate-700 rounded" />
-            <div className="h-2 w-6 bg-slate-700 rounded" />
+            <div className="h-2 w-16 bg-[#12544F] rounded" />
+            <div className="h-2 w-6 bg-[#12544F] rounded" />
           </div>
         </div>
       ) : isImageReady ? (
@@ -246,10 +246,10 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
         /* 3. Fallback Card Frame: High-contrast legible MTG card frame with name, mana, type, P/T and retry button (Punto 4, Punto 6) */
         <div
           data-card-text-frame="true"
-          className="w-full h-full rounded-md border border-slate-700 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 flex flex-col p-1.5 justify-between text-left select-none overflow-hidden shadow-inner"
+          className="w-full h-full rounded-md border border-[#12544F] bg-[#092328] flex flex-col p-1.5 justify-between text-left select-none overflow-hidden shadow-inner"
         >
           {/* Header Bar */}
-          <div className="flex items-start justify-between gap-1 border-b border-slate-800 pb-1">
+          <div className="flex items-start justify-between gap-1 border-b border-[#12544F] pb-1">
             <span
               className="font-bold text-[10px] leading-tight text-white truncate max-w-[80%]"
               title={cardName}
@@ -257,16 +257,16 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
               {cardName}
             </span>
             {cardMana && (
-              <span className="text-[9px] font-mono font-bold text-amber-300 bg-slate-800/90 px-1 rounded flex-shrink-0 border border-slate-700/60">
+              <span className="text-[9px] font-mono font-bold text-[#8BBB92] bg-[#040d0f] px-1 rounded flex-shrink-0 border border-[#12544F]">
                 {cardMana}
               </span>
             )}
           </div>
 
           {/* Central Art Box / Oracle summary + Retry Button */}
-          <div className="flex-1 my-1 rounded bg-slate-800/40 border border-slate-800/60 flex flex-col items-center justify-center p-1 text-center overflow-hidden">
-            <Layers className="w-4 h-4 text-slate-500 mb-0.5 opacity-60" />
-            <p className="text-[9px] text-slate-400 font-medium leading-tight line-clamp-3 px-0.5">
+          <div className="flex-1 my-1 rounded bg-[#040d0f]/60 border border-[#12544F]/50 flex flex-col items-center justify-center p-1 text-center overflow-hidden">
+            <Layers className="w-4 h-4 text-[#8BBB92]/60 mb-0.5 opacity-60" />
+            <p className="text-[9px] text-slate-300 font-medium leading-tight line-clamp-3 px-0.5">
               {cardOracle ? cardOracle.slice(0, 75) : cardName}
             </p>
             <button
@@ -279,7 +279,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
                   imageLoaderQueue.retryUrl(englishCandidate);
                 }
               }}
-              className="mt-1 px-1.5 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/40 border border-amber-500/40 text-amber-300 text-[8px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+              className="mt-1 px-1.5 py-0.5 rounded bg-[#12544F]/40 hover:bg-[#12544F] border border-[#2A835F]/60 text-[#8BBB92] text-[8px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
               title="Reintentar carga de imagen"
             >
               <RefreshCw className="w-2.5 h-2.5" />
@@ -288,12 +288,12 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
           </div>
 
           {/* Bottom Bar: Type Line & P/T */}
-          <div className="flex items-center justify-between text-[8px] text-slate-300 border-t border-slate-800 pt-0.5">
-            <span className="truncate text-slate-400 max-w-[70%]" title={cardType}>
+          <div className="flex items-center justify-between text-[8px] text-slate-300 border-t border-[#12544F] pt-0.5">
+            <span className="truncate text-slate-300 max-w-[70%]" title={cardType}>
               {cardType}
             </span>
             {cardPower !== undefined && (
-              <span className="font-mono font-bold text-amber-200 bg-slate-800 px-1 rounded border border-slate-700/60">
+              <span className="font-mono font-bold text-[#8BBB92] bg-[#040d0f] px-1 rounded border border-[#12544F]">
                 {cardPower}/{cardToughness}
               </span>
             )}
@@ -305,7 +305,7 @@ export const CardDisplay: React.FC<CardDisplayProps> = ({
       {hasMultipleFaces && allowFaceToggle && (
         <button
           onClick={toggleFace}
-          className="absolute top-1 right-1 p-1 rounded-md bg-slate-950/80 hover:bg-amber-500 hover:text-slate-950 text-white border border-slate-700 shadow transition-colors z-20"
+          className="absolute top-1 right-1 p-1 rounded-md bg-[#092328]/90 hover:bg-[#2A835F] hover:text-white text-[#8BBB92] border border-[#12544F] shadow transition-colors z-20"
           title={`Voltear a ${activeFace === card.faces![0] ? card.faces![1].name : card.faces![0].name}`}
         >
           <RefreshCw className="w-2.5 h-2.5" />
