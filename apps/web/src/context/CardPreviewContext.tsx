@@ -143,9 +143,7 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
               padding: 0,
               margin: 0,
             }}
-            className={`select-none animate-in fade-in duration-100 flex items-center gap-4 ${
-              previewSide === 'right' ? 'flex-row-reverse' : 'flex-row'
-            }`}
+            className="select-none animate-in fade-in duration-100 flex items-center justify-center"
           >
             <div
               data-testid="card-preview-image-wrapper"
@@ -156,29 +154,23 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 background: 'transparent',
                 border: 'none',
               }}
-              className="rounded-[4.5%] overflow-hidden flex-shrink-0"
+              className="rounded-[4.5%] overflow-hidden flex-shrink-0 relative"
             >
               <CardDisplay
                 card={activeCard}
                 allowFaceToggle={false}
                 className="bg-transparent border-0 shadow-none"
               />
-            </div>
 
-            {/* Panel explicativo de contadores y palabras clave oficiales (Punto 5) */}
-            {hasExplanations && (
-              <div
-                data-testid="preview-keywords-counters-panel"
-                className="bg-slate-900/95 border border-slate-700/80 rounded-xl p-3 shadow-2xl backdrop-blur-md max-w-[280px] pointer-events-none flex flex-col space-y-2.5 animate-in fade-in duration-100"
-              >
-                <div className="text-[11px] font-bold text-amber-400 border-b border-slate-800 pb-1 flex items-center justify-between">
-                  <span>Contadores y Palabras Clave</span>
-                </div>
-
-                {/* Palabras Clave */}
-                {activeKeywords.length > 0 && (
-                  <div className="space-y-1.5">
-                    {activeKeywords.map(kwId => {
+              {/* Insignias de Palabras Clave y Contadores directamente sobre la carta en lista vertical hacia abajo */}
+              {hasExplanations && (
+                <div
+                  data-testid="preview-keywords-counters-panel"
+                  className="absolute top-12 left-3 z-30 pointer-events-none flex flex-col space-y-1.5 animate-in fade-in duration-100 max-w-[85%]"
+                >
+                  {/* Palabras Clave */}
+                  {activeKeywords.length > 0 &&
+                    activeKeywords.map(kwId => {
                       const def = getKeywordDefinition(kwId);
                       const label = def?.label || kwId;
 
@@ -187,26 +179,24 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                           key={kwId}
                           data-preview-item="true"
                           data-testid={`preview-keyword-${kwId}`}
-                          className="flex items-center space-x-1.5 bg-slate-950/40 p-1.5 rounded border border-slate-800/80"
+                          className="flex items-center space-x-1.5 bg-[#092328]/90 border border-[#12544F] px-2.5 py-1 rounded-lg shadow-lg shadow-black/70 backdrop-blur-md"
                         >
                           <MtgKeywordIcon
                             keyword={kwId}
-                            className="w-3.5 h-3.5 flex-shrink-0 text-amber-400 text-sm"
+                            className="w-4 h-4 flex-shrink-0 text-[#8BBB92]"
                           />
-                          <span className="text-xs font-bold text-amber-300">{label}</span>
+                          <span className="text-xs font-bold text-white tracking-wide drop-shadow-xs">
+                            {label}
+                          </span>
                         </div>
                       );
                     })}
-                  </div>
-                )}
 
-                {/* Contadores */}
-                {activeCounters.length > 0 && (
-                  <div className="space-y-1.5">
-                    {activeCounters.map(([type, count]) => {
+                  {/* Contadores */}
+                  {activeCounters.length > 0 &&
+                    activeCounters.map(([type, count]) => {
                       const def = getCounterDefinition(type);
                       const label = def?.label || type;
-                      const reminder = def?.reminderText || '';
                       const isPlus = type === '+1/+1';
                       const isMinus = type === '−1/−1' || type === '-1/-1';
                       const countDisplay = isPlus
@@ -220,40 +210,32 @@ export const CardPreviewProvider: React.FC<{ children: React.ReactNode }> = ({ c
                           key={type}
                           data-preview-item="true"
                           data-testid={`preview-counter-${type}`}
-                          className="flex flex-col space-y-0.5 bg-slate-950/40 p-1.5 rounded border border-slate-800/80"
+                          className="flex items-center space-x-2 bg-[#092328]/90 border border-[#12544F] px-2.5 py-1 rounded-lg shadow-lg shadow-black/70 backdrop-blur-md"
                         >
-                          <div className="flex items-center justify-between text-xs font-bold text-slate-100">
-                            <div className="flex items-center space-x-1.5">
-                              <MtgCounterIcon
-                                counterType={type}
-                                className="w-3.5 h-3.5 flex-shrink-0 text-amber-400 text-sm"
-                              />
-                              <span className="text-slate-200">{label}</span>
-                            </div>
-                            <span
-                              className={`font-mono text-xs px-1 rounded ${
-                                isPlus
-                                  ? 'text-emerald-400 bg-emerald-950/60'
-                                  : isMinus
-                                    ? 'text-rose-400 bg-rose-950/60'
-                                    : 'text-amber-300 bg-amber-950/60'
-                              }`}
-                            >
-                              {countDisplay}
-                            </span>
-                          </div>
-                          {reminder && (
-                            <p className="text-[10px] text-slate-300 italic pl-5 leading-tight">
-                              {reminder}
-                            </p>
-                          )}
+                          <MtgCounterIcon
+                            counterType={type}
+                            className="w-4 h-4 flex-shrink-0 text-[#8BBB92]"
+                          />
+                          <span className="text-xs font-bold text-white tracking-wide drop-shadow-xs">
+                            {label}
+                          </span>
+                          <span
+                            className={`font-mono text-xs font-black px-1.5 py-0.5 rounded ${
+                              isPlus
+                                ? 'text-[#8BBB92] bg-[#12544F] border border-[#2A835F]'
+                                : isMinus
+                                  ? 'text-rose-300 bg-rose-950/80 border border-rose-800'
+                                  : 'text-[#8BBB92] bg-[#040d0f] border border-[#12544F]'
+                            }`}
+                          >
+                            {countDisplay}
+                          </span>
                         </div>
                       );
                     })}
-                  </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
         </Portal>
       )}
