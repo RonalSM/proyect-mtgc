@@ -63,47 +63,56 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   const marqueeStartRef = useRef<{ x: number; y: number } | null>(null);
   const isMarqueeActiveRef = useRef<boolean>(false);
 
-  // Targeting & Attack Arrows
-  const [activeTargetingSourceId, setActiveTargetingSourceId] = useState<string | null>(null);
+  // Targeting & Attack Arrows (Supports multi-card targeting)
+  const [activeTargetingSourceIds, setActiveTargetingSourceIds] = useState<string[]>([]);
   const [targetingMousePos, setTargetingMousePos] = useState<{ x: number; y: number } | null>(null);
 
-  const handleStartTargeting = useCallback((cardId: string) => {
-    setActiveTargetingSourceId(cardId);
-    const el = document.querySelector(`[data-card-instance-id="${cardId}"]`);
-    if (el) {
-      const rect = el.getBoundingClientRect();
+  const handleStartTargeting = useCallback((cardIds: string | string[]) => {
+    const ids = Array.isArray(cardIds) ? cardIds : [cardIds];
+    if (ids.length === 0) return;
+    setActiveTargetingSourceIds(ids);
+
+    const firstEl = document.querySelector(`[data-card-instance-id="${ids[0]}"]`);
+    if (firstEl) {
+      const rect = firstEl.getBoundingClientRect();
       setTargetingMousePos({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
     }
   }, []);
 
   const handleTargetPlayer = useCallback(
     (targetPlayerId: string) => {
-      if (!activeTargetingSourceId) return;
-      onAction('SET_TARGETING_ARROW', {
-        sourceCardInstanceId: activeTargetingSourceId,
-        targetType: 'player',
-        targetId: targetPlayerId,
-        arrowType: 'target',
+      if (activeTargetingSourceIds.length === 0) return;
+      activeTargetingSourceIds.forEach(sourceId => {
+        onAction('SET_TARGETING_ARROW', {
+          sourceCardInstanceId: sourceId,
+          targetType: 'player',
+          targetId: targetPlayerId,
+          arrowType: 'target',
+        });
       });
-      setActiveTargetingSourceId(null);
+      setActiveTargetingSourceIds([]);
       setTargetingMousePos(null);
     },
-    [activeTargetingSourceId, onAction],
+    [activeTargetingSourceIds, onAction],
   );
 
   const handleTargetCard = useCallback(
     (targetCardId: string) => {
-      if (!activeTargetingSourceId) return;
-      onAction('SET_TARGETING_ARROW', {
-        sourceCardInstanceId: activeTargetingSourceId,
-        targetType: 'card',
-        targetId: targetCardId,
-        arrowType: 'target',
+      if (activeTargetingSourceIds.length === 0) return;
+      activeTargetingSourceIds.forEach(sourceId => {
+        if (sourceId !== targetCardId) {
+          onAction('SET_TARGETING_ARROW', {
+            sourceCardInstanceId: sourceId,
+            targetType: 'card',
+            targetId: targetCardId,
+            arrowType: 'target',
+          });
+        }
       });
-      setActiveTargetingSourceId(null);
+      setActiveTargetingSourceIds([]);
       setTargetingMousePos(null);
     },
-    [activeTargetingSourceId, onAction],
+    [activeTargetingSourceIds, onAction],
   );
 
   const showPermissionWarning = useCallback((message: string) => {
@@ -686,7 +695,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   // Window listeners for Marquee Box Selection and live targeting mouse movement
   useEffect(() => {
     const handleWindowPointerMove = (e: PointerEvent) => {
-      if (activeTargetingSourceId) {
+      if (activeTargetingSourceIds.length > 0) {
         setTargetingMousePos({ x: e.clientX, y: e.clientY });
       }
       if (isMarqueeActiveRef.current && marqueeStartRef.current) {
@@ -727,14 +736,14 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       window.removeEventListener('pointermove', handleWindowPointerMove);
       window.removeEventListener('pointerup', handleWindowPointerUp);
     };
-  }, [activeTargetingSourceId]);
+  }, [activeTargetingSourceIds]);
 
   // Keyboard shortcuts (Escape, T for Tap, A for Target)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (activeTargetingSourceId) {
-          setActiveTargetingSourceId(null);
+        if (activeTargetingSourceIds.length > 0) {
+          setActiveTargetingSourceIds([]);
           setTargetingMousePos(null);
         } else if (selectedCardIds.length > 0) {
           setSelectedCardIds([]);
@@ -748,12 +757,12 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         });
       }
       if ((e.key === 'a' || e.key === 'A') && selectedCardIds.length > 0) {
-        handleStartTargeting(selectedCardIds[0]);
+        handleStartTargeting(selectedCardIds);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeTargetingSourceId, selectedCardIds, allBattlefieldCards, onAction, handleStartTargeting]);
+  }, [activeTargetingSourceIds, selectedCardIds, allBattlefieldCards, onAction, handleStartTargeting]);
 
   // Punto 1: Reconciliación con confirmación del servidor sin retroceder ante ecos desactualizados
   useEffect(() => {
@@ -806,7 +815,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         allBattlefieldCards={allBattlefieldCards}
         onAction={onAction}
         onExpandCell={() => setExpandedPlayerId(prev => (prev === player.id ? null : player.id))}
-        activeTargetingSourceId={activeTargetingSourceId}
+        activeTargetingSourceId={activeTargetingSourceIds.length > 0 ? activeTargetingSourceIds[0] : null}
         onTargetPlayer={handleTargetPlayer}
       />
     );
@@ -836,8 +845,8 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
             return;
           }
 
-          if (activeTargetingSourceId) {
-            setActiveTargetingSourceId(null);
+          if (activeTargetingSourceIds.length > 0) {
+            setActiveTargetingSourceIds([]);
             setTargetingMousePos(null);
             return;
           }
@@ -873,7 +882,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         <TargetingArrowsLayer
           roomState={roomState}
           allBattlefieldCards={allBattlefieldCards}
-          activeTargetingSourceId={activeTargetingSourceId}
+          activeTargetingSourceIds={activeTargetingSourceIds}
           targetingMousePos={targetingMousePos}
           onClearArrow={arrowId => onAction('CLEAR_TARGETING_ARROWS', { arrowId })}
         />
@@ -893,7 +902,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         )}
 
         {/* Multi-Select Floating Toolbar */}
-        {selectedCardIds.length > 0 && !activeTargetingSourceId && (
+        {selectedCardIds.length > 0 && activeTargetingSourceIds.length === 0 && (
           <div
             data-testid="multi-select-toolbar"
             className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-[#092328]/95 border border-[#12544F] rounded-2xl shadow-2xl px-4 py-2 flex items-center space-x-3 text-zinc-100 backdrop-blur-xl ring-1 ring-white/10 animate-fadeIn"
@@ -927,14 +936,14 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
               data-testid="multi-target-btn"
               onClick={() => {
                 if (selectedCardIds.length > 0) {
-                  handleStartTargeting(selectedCardIds[0]);
+                  handleStartTargeting(selectedCardIds);
                 }
               }}
               className="px-2.5 py-1 bg-[#12544F]/60 hover:bg-[#2A835F] text-zinc-200 hover:text-white rounded-lg text-xs font-medium flex items-center space-x-1 transition-colors cursor-pointer"
-              title="Fijar objetivo desde la primera carta seleccionada (A)"
+              title="Fijar objetivo desde todas las cartas seleccionadas (A)"
             >
               <Crosshair className="w-3.5 h-3.5 text-[#8BBB92]" />
-              <span>Fijar objetivo</span>
+              <span>Fijar objetivo {selectedCardIds.length > 1 ? `(${selectedCardIds.length})` : ''}</span>
             </button>
 
             {/* Send all to Graveyard */}
@@ -1003,7 +1012,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           cardPixelHeight={cardPixelHeight}
           selectedCardIds={selectedCardIds}
           onSelectCard={(id, isMulti) => {
-            if (activeTargetingSourceId) {
+            if (activeTargetingSourceIds.length > 0) {
               handleTargetCard(id);
               return;
             }

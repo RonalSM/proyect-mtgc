@@ -52,7 +52,8 @@ export interface CardContextMenuProps {
   onClone?: () => void;
   onFlip?: () => void;
   onSendToCommand?: () => void;
-  onStartTargeting?: (cardInstanceId: string) => void;
+  onStartTargeting?: (cardInstanceIds: string | string[]) => void;
+  selectedCardIds?: string[];
 }
 
 const cardTokensClientCache = new Map<string, CardDefinition[]>();
@@ -72,6 +73,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
   onFlip: _onFlip,
   onSendToCommand,
   onStartTargeting,
+  selectedCardIds,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<'library' | 'reveal' | 'clone' | null>(null);
@@ -516,13 +518,21 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
               type="button"
               data-testid="context-target-btn"
               onClick={() => {
-                onStartTargeting?.(card.instanceId);
+                if (selectedCardIds && selectedCardIds.includes(card.instanceId) && selectedCardIds.length > 1) {
+                  onStartTargeting?.(selectedCardIds);
+                } else {
+                  onStartTargeting?.(card.instanceId);
+                }
                 onClose();
               }}
               className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-[#12544F] rounded-lg text-zinc-200 text-[14px] hover:text-[#8BBB92] cursor-pointer transition-colors"
             >
               <Crosshair className="w-4 h-4 text-[#8BBB92] flex-shrink-0" />
-              <span>Fijar objetivo / Atacar</span>
+              <span>
+                {selectedCardIds && selectedCardIds.includes(card.instanceId) && selectedCardIds.length > 1
+                  ? `Fijar objetivo (${selectedCardIds.length} cartas) / Atacar`
+                  : 'Fijar objetivo / Atacar'}
+              </span>
             </button>
           )}
 

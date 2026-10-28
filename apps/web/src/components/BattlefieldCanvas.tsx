@@ -68,7 +68,7 @@ interface BattlefieldCanvasProps {
   cardPixelHeight?: number;
   selectedCardIds?: string[];
   onSelectCard?: (cardInstanceId: string, isMulti?: boolean) => void;
-  onStartTargeting?: (cardInstanceId: string) => void;
+  onStartTargeting?: (cardInstanceIds: string | string[]) => void;
   onUnauthorizedAttempt?: (card: CardInstance) => void;
   onAction: (type: GameActionType, payload: unknown) => void;
 }
@@ -78,6 +78,7 @@ interface BattlefieldCardItemProps {
   isLocalPlayer?: boolean;
   localPlayerId?: string;
   isSelected: boolean;
+  selectedCardIds?: string[];
   optimisticPosition?: { x: number; y: number; zIndex?: number };
   isRemoteDragging?: boolean;
   viewFraming?: ViewFraming;
@@ -93,7 +94,7 @@ interface BattlefieldCardItemProps {
   onAddCounter: (counterType: string) => void;
   onClone: () => void;
   onSendToCommand?: () => void;
-  onStartTargeting?: (cardInstanceId: string) => void;
+  onStartTargeting?: (cardInstanceIds: string | string[]) => void;
   showPreview: (
     card: CardDefinition,
     posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent,
@@ -106,6 +107,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   card,
   localPlayerId,
   isSelected,
+  selectedCardIds,
   optimisticPosition,
   isRemoteDragging,
   viewFraming,
@@ -324,6 +326,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
           onFlip={onFlip}
           onSendToCommand={onSendToCommand}
           onStartTargeting={onStartTargeting}
+          selectedCardIds={selectedCardIds}
         />
       )}
     </div>
@@ -433,6 +436,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
             onClone={() => handleClone(card)}
             onSendToCommand={() => handleSendToCommand(card)}
             onStartTargeting={onStartTargeting}
+            selectedCardIds={selectedCardIds}
             showPreview={showPreview}
             hidePreview={hidePreview}
           />

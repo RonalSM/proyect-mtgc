@@ -5,7 +5,8 @@ import { Crosshair, Swords, X } from 'lucide-react';
 export interface TargetingArrowsLayerProps {
   roomState?: RoomState;
   allBattlefieldCards?: CardInstance[];
-  activeTargetingSourceId: string | null;
+  activeTargetingSourceId?: string | null;
+  activeTargetingSourceIds?: string[] | null;
   targetingMousePos: { x: number; y: number } | null;
   onClearArrow: (arrowId?: string) => void;
 }
@@ -14,6 +15,7 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
   roomState,
   allBattlefieldCards,
   activeTargetingSourceId,
+  activeTargetingSourceIds,
   targetingMousePos,
   onClearArrow,
 }) => {
@@ -82,10 +84,12 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
     return { midX, midY };
   };
 
-  // Coordinates for live aiming arrow
-  const sourcePos = activeTargetingSourceId
-    ? elementPositions[`card:${activeTargetingSourceId}`]
-    : null;
+  // Normalize source IDs from either activeTargetingSourceIds array or activeTargetingSourceId string
+  const sourceIds = (activeTargetingSourceIds && activeTargetingSourceIds.length > 0)
+    ? activeTargetingSourceIds
+    : activeTargetingSourceId
+    ? [activeTargetingSourceId]
+    : [];
 
   return (
     <svg
@@ -215,10 +219,13 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
         );
       })}
 
-      {/* 2. Live Dynamic Aiming Arrow (while user is dragging or defining target) */}
-      {sourcePos && targetingMousePos && (
+      {/* 2. Live Dynamic Aiming Arrows (for ALL active targeting sources) */}
+      {sourceIds.length > 0 && targetingMousePos && (
         <g data-testid="live-aiming-arrow">
-          {(() => {
+          {sourceIds.map(srcId => {
+            const sourcePos = elementPositions[`card:${srcId}`];
+            if (!sourcePos) return null;
+
             const { midX, midY } = getCurveControlPoint(
               sourcePos.x,
               sourcePos.y,
@@ -227,7 +234,7 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
             );
 
             return (
-              <>
+              <g key={`live-aim-${srcId}`}>
                 {/* Thick background aura */}
                 <path
                   d={`M ${sourcePos.x} ${sourcePos.y} Q ${midX} ${midY} ${targetingMousePos.x} ${targetingMousePos.y}`}
@@ -248,22 +255,22 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
                   markerEnd="url(#arrowhead-aim)"
                   className="animate-pulse"
                 />
-
-                {/* Reticle icon following mouse pointer */}
-                <circle
-                  cx={targetingMousePos.x}
-                  cy={targetingMousePos.y}
-                  r="14"
-                  fill="none"
-                  stroke="#34D399"
-                  strokeWidth="2"
-                  strokeDasharray="4 2"
-                  className="animate-spin"
-                  style={{ transformOrigin: `${targetingMousePos.x}px ${targetingMousePos.y}px` }}
-                />
-              </>
+              </g>
             );
-          })()}
+          })}
+
+          {/* Reticle icon following mouse pointer */}
+          <circle
+            cx={targetingMousePos.x}
+            cy={targetingMousePos.y}
+            r="14"
+            fill="none"
+            stroke="#34D399"
+            strokeWidth="2"
+            strokeDasharray="4 2"
+            className="animate-spin"
+            style={{ transformOrigin: `${targetingMousePos.x}px ${targetingMousePos.y}px` }}
+          />
         </g>
       )}
     </svg>
