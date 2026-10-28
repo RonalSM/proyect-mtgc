@@ -65,6 +65,21 @@ export const MoveCardSchema = z.object({
   destinationIndex: z.number().int().optional(),
   randomPosition: z.boolean().optional(),
   isRandom: z.boolean().optional(),
+  isFaceDown: z.boolean().optional(),
+  isTapped: z.boolean().optional(),
+});
+
+export const SetTargetingArrowSchema = z.object({
+  arrowId: z.string().optional(),
+  sourceCardInstanceId: z.string().min(1),
+  targetType: z.enum(['player', 'card']),
+  targetId: z.string().min(1),
+  arrowType: z.enum(['target', 'attack']).optional(),
+  color: z.string().optional(),
+});
+
+export const ClearTargetingArrowsSchema = z.object({
+  arrowId: z.string().optional(),
 });
 
 export const TapCardSchema = z.object({
@@ -257,6 +272,8 @@ export const ActionEnvelopeSchema = z.object({
     'SET_PLAYMAT',
     'REVEAL_CARD',
     'UNREVEAL_CARD',
+    'SET_TARGETING_ARROW',
+    'CLEAR_TARGETING_ARROWS',
     'CARD_DRAG_MOVE',
   ]),
   payload: z.unknown(),

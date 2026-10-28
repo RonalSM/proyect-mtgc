@@ -60,6 +60,17 @@ export interface UndoProposal {
   createdAt: number;
 }
 
+export interface TargetingArrow {
+  id: string;
+  sourceCardInstanceId: string;
+  sourcePlayerId: string;
+  targetType: 'player' | 'card';
+  targetId: string; // playerId or cardInstanceId
+  arrowType?: 'target' | 'attack';
+  color?: string;
+  createdAt: number;
+}
+
 export interface RoomState {
   id: string;
   code: string;
@@ -77,4 +88,5 @@ export interface RoomState {
   pendingUndoProposal?: UndoProposal;
   initiative?: InitiativeState;
   mulligan?: MulliganState;
+  targetingArrows?: TargetingArrow[];
 }

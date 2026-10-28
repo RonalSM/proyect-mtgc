@@ -49,6 +49,9 @@ export type GameActionType =
   // Reveal card (Punto 7 & Corrección A.1)
   | 'REVEAL_CARD'
   | 'UNREVEAL_CARD'
+  // Targeting and attack arrows
+  | 'SET_TARGETING_ARROW'
+  | 'CLEAR_TARGETING_ARROWS'
   // Live dragging (ephemeral, REQ-9)
   | 'CARD_DRAG_MOVE';
 
@@ -105,6 +108,7 @@ export interface MoveCardPayload {
   cardInstanceId: string;
   fromZone: ZoneType;
   toZone: ZoneType;
+  fromPlayerId?: string;
   toPlayerId?: string; // If donating or transferring control
   holderId?: string | null; // Titular temporal calculado al soltar la carta
   position?: {
@@ -115,6 +119,21 @@ export interface MoveCardPayload {
   destinationIndex?: number; // e.g. 0 for top of library, -1 for bottom
   randomPosition?: boolean;
   isRandom?: boolean;
+  isFaceDown?: boolean;
+  isTapped?: boolean;
+}
+
+export interface SetTargetingArrowPayload {
+  arrowId?: string;
+  sourceCardInstanceId: string;
+  targetType: 'player' | 'card';
+  targetId: string;
+  arrowType?: 'target' | 'attack';
+  color?: string;
+}
+
+export interface ClearTargetingArrowsPayload {
+  arrowId?: string;
 }
 
 export interface TapCardPayload {

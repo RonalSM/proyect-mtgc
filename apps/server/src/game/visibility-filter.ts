@@ -47,11 +47,24 @@ export function filterRoomStateForPlayer(
       };
     });
 
-    // 2. Filter Library: only owner sees their library cards (REQ-9.3, Punto 7)
+    // 2. Filter Library: only owner sees their library cards (REQ-9.3, Punto 7), unless explicitly revealed (Punto 1, REQ-22)
     const filteredLibrary: CardInstance[] = zones.library.map(card => {
-      if (isOwner) return card;
+      const isRevealedToAll =
+        card.revealedTo === 'all' ||
+        (Array.isArray(card.revealedTo) && card.revealedTo.includes('all'));
+      const isRevealedToTarget =
+        !!targetPlayerId &&
+        Array.isArray(card.revealedTo) &&
+        card.revealedTo.includes(targetPlayerId);
+      const canSee = isOwner || isRevealedToAll || isRevealedToTarget;
+
+      if (canSee) {
+        return { ...card };
+      }
+
+      const { revealedTo, ...masked } = card;
       return {
-        ...card,
+        ...masked,
         definition: MASKED_CARD_DEFINITION,
       };
     });

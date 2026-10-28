@@ -27,6 +27,7 @@ import {
   Tag,
   Plus,
   X,
+  Crosshair,
 } from 'lucide-react';
 import { MTG_KEYWORDS, MTG_COUNTERS } from '@mtgc/shared';
 import {
@@ -51,6 +52,7 @@ export interface CardContextMenuProps {
   onClone?: () => void;
   onFlip?: () => void;
   onSendToCommand?: () => void;
+  onStartTargeting?: (cardInstanceId: string) => void;
 }
 
 const cardTokensClientCache = new Map<string, CardDefinition[]>();
@@ -69,6 +71,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
   onClone: _onClone,
   onFlip: _onFlip,
   onSendToCommand,
+  onStartTargeting,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<'library' | 'reveal' | 'clone' | null>(null);
@@ -504,6 +507,22 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                 aria-hidden="true"
               />
               <span>{card.isTapped ? 'Enderezar' : 'Girar'}</span>
+            </button>
+          )}
+
+          {/* Fijar objetivo / Atacar (REQ-Targeting) */}
+          {fromZone === 'battlefield' && (
+            <button
+              type="button"
+              data-testid="context-target-btn"
+              onClick={() => {
+                onStartTargeting?.(card.instanceId);
+                onClose();
+              }}
+              className="w-full flex items-center space-x-2 px-2 py-1 hover:bg-[#12544F] rounded-lg text-zinc-200 text-[14px] hover:text-[#8BBB92] cursor-pointer transition-colors"
+            >
+              <Crosshair className="w-4 h-4 text-[#8BBB92] flex-shrink-0" />
+              <span>Fijar objetivo / Atacar</span>
             </button>
           )}
 

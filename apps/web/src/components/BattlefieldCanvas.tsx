@@ -66,6 +66,9 @@ interface BattlefieldCanvasProps {
   viewFraming?: ViewFraming;
   cardPixelWidth?: number;
   cardPixelHeight?: number;
+  selectedCardIds?: string[];
+  onSelectCard?: (cardInstanceId: string, isMulti?: boolean) => void;
+  onStartTargeting?: (cardInstanceId: string) => void;
   onUnauthorizedAttempt?: (card: CardInstance) => void;
   onAction: (type: GameActionType, payload: unknown) => void;
 }
@@ -84,12 +87,13 @@ interface BattlefieldCardItemProps {
   cardPixelHeight?: number;
   onAction: (type: GameActionType, payload: unknown) => void;
   onUnauthorizedAttempt?: (card: CardInstance) => void;
-  onCardClick: () => void;
+  onCardClick: (e: React.MouseEvent) => void;
   onTap: () => void;
   onFlip: () => void;
   onAddCounter: (counterType: string) => void;
   onClone: () => void;
   onSendToCommand?: () => void;
+  onStartTargeting?: (cardInstanceId: string) => void;
   showPreview: (
     card: CardDefinition,
     posOrEvent?: { clientX?: number; x?: number } | React.MouseEvent,
@@ -117,6 +121,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   onAddCounter,
   onClone,
   onSendToCommand,
+  onStartTargeting,
   showPreview,
   hidePreview,
 }) => {
@@ -318,6 +323,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
           onClone={onClone}
           onFlip={onFlip}
           onSendToCommand={onSendToCommand}
+          onStartTargeting={onStartTargeting}
         />
       )}
     </div>
@@ -333,14 +339,21 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   viewFraming,
   cardPixelWidth,
   cardPixelHeight,
+  selectedCardIds,
+  onSelectCard,
+  onStartTargeting,
   onUnauthorizedAttempt,
   onAction,
 }) => {
   const { showPreview, hidePreview } = useCardPreview();
-  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [internalSelectedCardId, setInternalSelectedCardId] = useState<string | null>(null);
 
-  const handleCardClick = (card: CardInstance) => {
-    setSelectedCardId(selectedCardId === card.instanceId ? null : card.instanceId);
+  const handleCardClick = (card: CardInstance, e: React.MouseEvent) => {
+    if (onSelectCard) {
+      onSelectCard(card.instanceId, e.shiftKey || e.ctrlKey || e.metaKey);
+    } else {
+      setInternalSelectedCardId(internalSelectedCardId === card.instanceId ? null : card.instanceId);
+    }
   };
 
   const handleTap = (card: CardInstance) => {
@@ -399,7 +412,11 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
             key={card.instanceId}
             card={card}
             localPlayerId={localPlayerId}
-            isSelected={selectedCardId === card.instanceId}
+            isSelected={
+              selectedCardIds
+                ? selectedCardIds.includes(card.instanceId)
+                : internalSelectedCardId === card.instanceId
+            }
             optimisticPosition={optimisticPositions?.[card.instanceId]}
             isRemoteDragging={isRemoteDragging}
             viewFraming={viewFraming}
@@ -409,12 +426,13 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
             cardPixelHeight={cardPixelHeight}
             onAction={onAction}
             onUnauthorizedAttempt={onUnauthorizedAttempt}
-            onCardClick={() => handleCardClick(card)}
+            onCardClick={e => handleCardClick(card, e)}
             onTap={() => handleTap(card)}
             onFlip={() => handleFlip(card)}
             onAddCounter={counterType => handleAddCounter(card, counterType)}
             onClone={() => handleClone(card)}
             onSendToCommand={() => handleSendToCommand(card)}
+            onStartTargeting={onStartTargeting}
             showPreview={showPreview}
             hidePreview={hidePreview}
           />

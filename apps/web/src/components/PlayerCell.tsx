@@ -23,6 +23,8 @@ import {
 import { HandFan } from './HandFan';
 import { CardDisplay } from './CardDisplay';
 import { CardContextMenu } from './CardContextMenu';
+import { LibraryContextMenu } from './LibraryContextMenu';
+import { LibraryRevealModal } from './LibraryRevealModal';
 import { CreateTokenModal } from './CreateTokenModal';
 import { Portal } from './Portal';
 import { VirtualizedCardGrid } from './VirtualizedCardGrid';
@@ -91,8 +93,10 @@ const DraggableLibraryCard: React.FC<{
   card?: CardInstance;
   isLocalPlayer: boolean;
   count: number;
+  isTopRevealed?: boolean;
   onClick: () => void;
-}> = ({ card, isLocalPlayer, count, onClick }) => {
+  onContextMenu?: (e: React.MouseEvent) => void;
+}> = ({ card, isLocalPlayer, count, isTopRevealed = false, onClick, onContextMenu }) => {
   const topCard = card || {
     instanceId: 'library-top-card',
     definition: { name: 'Carta de la Biblioteca', typeLine: 'Card' } as any,
@@ -113,28 +117,50 @@ const DraggableLibraryCard: React.FC<{
       data-library-card="true"
       data-card-instance-id={topCard.instanceId}
       onClick={onClick}
+      onContextMenu={e => {
+        if (onContextMenu) {
+          e.preventDefault();
+          e.stopPropagation();
+          onContextMenu(e);
+        }
+      }}
       className={`w-full h-full relative cursor-grab active:cursor-grabbing select-none ${
         isDragging ? 'opacity-0' : ''
       }`}
     >
-      <img
-        src="https://cards.scryfall.io/back.png"
-        alt="Biblioteca"
-        loading="lazy"
-        decoding="async"
-        onError={e => {
-          (e.target as HTMLElement).style.display = 'none';
-        }}
-        className="w-full h-full object-cover pointer-events-none"
-      />
-      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 pointer-events-none">
-        <span className="text-sm sm:text-base font-black font-mono text-white drop-shadow-md">
-          {count}
-        </span>
-        <span className="text-[8px] font-black tracking-wider text-[#8BBB92] uppercase drop-shadow">
-          BIBLIOTECA
-        </span>
-      </div>
+      {isTopRevealed && card?.definition ? (
+        <div className="w-full h-full relative overflow-hidden rounded-[6px]">
+          <CardDisplay card={card.definition} isFaceDown={false} size="small" />
+          <div className="absolute top-1 left-1 bg-[#092328]/90 border border-[#12544F] text-[#8BBB92] px-1 py-0.2 rounded text-[8px] font-black uppercase flex items-center space-x-0.5 shadow pointer-events-none">
+            <Eye className="w-2.5 h-2.5 text-[#8BBB92]" />
+            <span>Revelada</span>
+          </div>
+          <div className="absolute bottom-1 right-1 bg-[#040d0f]/90 border border-[#12544F] text-white px-1.5 py-0.5 rounded text-[10px] font-mono font-bold shadow pointer-events-none">
+            {count}
+          </div>
+        </div>
+      ) : (
+        <>
+          <img
+            src="https://cards.scryfall.io/back.png"
+            alt="Biblioteca"
+            loading="lazy"
+            decoding="async"
+            onError={e => {
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+            className="w-full h-full object-cover pointer-events-none"
+          />
+          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-1 pointer-events-none">
+            <span className="text-sm sm:text-base font-black font-mono text-white drop-shadow-md">
+              {count}
+            </span>
+            <span className="text-[8px] font-black tracking-wider text-[#8BBB92] uppercase drop-shadow">
+              BIBLIOTECA
+            </span>
+          </div>
+        </>
+      )}
     </div>
   );
 };
@@ -282,6 +308,8 @@ interface PlayerCellProps {
   allBattlefieldCards?: CardInstance[];
   onAction: (type: GameActionType, payload: unknown) => void;
   onExpandCell?: () => void;
+  activeTargetingSourceId?: string | null;
+  onTargetPlayer?: (playerId: string) => void;
 }
 
 export const PlayerCell: React.FC<PlayerCellProps> = ({
@@ -298,11 +326,21 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   allBattlefieldCards,
   onAction,
   onExpandCell,
+  activeTargetingSourceId,
+  onTargetPlayer,
 }) => {
   const { openCardDetails } = useCardPreview();
   const [showLifeControls, setShowLifeControls] = useState(false);
   const [damageInput, setDamageInput] = useState('');
   const [healInput, setHealInput] = useState('');
+  const [libraryContextMenuPos, setLibraryContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+  const [isTopRevealedToMe, setIsTopRevealedToMe] = useState(false);
+  const [revealModalState, setRevealModalState] = useState<{
+    isOpen: boolean;
+    title: string;
+    subtitle: string;
+    cards: CardInstance[];
+  }>({ isOpen: false, title: '', subtitle: '', cards: [] });
   const [activePileModal, setActivePileModal] = useState<
     'graveyard' | 'exile' | 'command' | 'library' | null
   >(null);
@@ -643,6 +681,15 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       data-col={col}
       data-two-player={isTwoPlayer ? 'true' : 'false'}
       onContextMenu={handleCellContextMenu}
+      onPointerDown={e => {
+        if (activeTargetingSourceId && onTargetPlayer && !isLocalPlayer) {
+          const target = e.target as HTMLElement;
+          if (!target.closest('[data-battlefield-card], button, input, [data-dock-zone]')) {
+            e.stopPropagation();
+            onTargetPlayer(player.id);
+          }
+        }
+      }}
       style={{ containerType: 'size' } as React.CSSProperties}
       className={`relative w-full h-full transition-all duration-200 select-none ${
         isActiveTurn
@@ -678,8 +725,22 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       <div
         data-player-header={player.id}
         data-name-tag={player.id}
-        className={`absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 px-3.5 py-1 rounded-xl backdrop-blur-xl border text-xs font-sans font-bold transition-all shadow-xl select-none pointer-events-auto ring-1 ring-white/5 ${
-          isActiveTurn
+        onPointerDown={e => {
+          if (activeTargetingSourceId && onTargetPlayer) {
+            e.stopPropagation();
+            onTargetPlayer(player.id);
+          }
+        }}
+        onClick={e => {
+          if (activeTargetingSourceId && onTargetPlayer) {
+            e.stopPropagation();
+            onTargetPlayer(player.id);
+          }
+        }}
+        className={`absolute top-12 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 px-3.5 py-1 rounded-xl backdrop-blur-xl border text-xs font-sans font-bold transition-all shadow-xl select-none pointer-events-auto ring-1 ring-white/5 ${
+          activeTargetingSourceId
+            ? 'ring-2 ring-[#8BBB92] bg-[#2A835F] text-white animate-pulse cursor-crosshair shadow-[0_0_15px_rgba(139,187,146,0.6)]'
+            : isActiveTurn
             ? 'bg-[#2A835F] text-white border-[#8BBB92] shadow-lg shadow-[#2A835F]/40 ring-2 ring-[#8BBB92]/50 tracking-wide'
             : isLocalPlayer
             ? 'bg-[#092328]/95 text-[#8BBB92] border-[#12544F] ring-1 ring-[#2A835F]/30'
@@ -1002,7 +1063,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           />
         </div>
 
-        {/* 4. Biblioteca - Dorso del tamaño de una carta con contador encima (Punto 5c: Arrastrable y Click para robar) */}
+        {/* 4. Biblioteca - Dorso del tamaño de una carta con contador encima (Punto 5c: Arrastrable, Click para robar, Clic derecho menú contextual) */}
         <div
           ref={setLibDropRef}
           data-dock-zone="library"
@@ -1010,6 +1071,13 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           style={{
             width: 'var(--card-w)',
             height: 'var(--card-h)',
+          }}
+          onContextMenu={e => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isLocalPlayer) {
+              setLibraryContextMenuPos({ x: e.clientX, y: e.clientY });
+            }
           }}
           className={`rounded-lg overflow-hidden border shadow-lg relative flex flex-col items-center justify-center flex-shrink-0 pointer-events-auto transition-all z-20 ${
             isLibOver
@@ -1020,7 +1088,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           }`}
           title={
             isLocalPlayer
-              ? 'Click para robar de la Biblioteca, o arrastra al campo o a la mano'
+              ? 'Click para robar de la Biblioteca, clic derecho para menú contextual, o arrastra al campo o mano'
               : 'Biblioteca'
           }
         >
@@ -1028,9 +1096,15 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             card={zones.library[0]}
             isLocalPlayer={isLocalPlayer}
             count={zones.library.length || player.libraryCount}
+            isTopRevealed={isTopRevealedToMe || zones.library[0]?.revealedTo === 'all'}
             onClick={() =>
               isLocalPlayer && onAction('DRAW_CARDS', { playerId: player.id, count: 1 })
             }
+            onContextMenu={e => {
+              if (isLocalPlayer) {
+                setLibraryContextMenuPos({ x: e.clientX, y: e.clientY });
+              }
+            }}
           />
           {isLocalPlayer && (
             <button
@@ -1046,6 +1120,35 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             </button>
           )}
         </div>
+
+        {/* Library Context Menu for Local Player */}
+        {libraryContextMenuPos && isLocalPlayer && (
+          <LibraryContextMenu
+            position={libraryContextMenuPos}
+            onClose={() => setLibraryContextMenuPos(null)}
+            libraryCards={zones.library}
+            localPlayerId={localPlayerId}
+            roomState={roomState}
+            onAction={onAction}
+            onOpenInspectModal={() => setActivePileModal('library')}
+            onOpenRevealModal={(title, subtitle, cards) =>
+              setRevealModalState({ isOpen: true, title, subtitle, cards })
+            }
+            isTopRevealedToMe={isTopRevealedToMe}
+            onToggleTopRevealedToMe={val => setIsTopRevealedToMe(val)}
+          />
+        )}
+
+        {/* Library Reveal Modal */}
+        <LibraryRevealModal
+          isOpen={revealModalState.isOpen}
+          onClose={() => setRevealModalState({ isOpen: false, title: '', subtitle: '', cards: [] })}
+          title={revealModalState.title}
+          subtitle={revealModalState.subtitle}
+          cards={revealModalState.cards}
+          onAction={onAction}
+          localPlayerId={localPlayerId}
+        />
 
         {/* 5. Cementerio y Exilio Apilados (Mismo ancho que una carta, mitad de alto cada uno, Punto 7) */}
         <div

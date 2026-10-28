@@ -30,6 +30,8 @@ import {
   MulliganForceDecisionSchema,
   RevealCardSchema,
   UnrevealCardSchema,
+  SetTargetingArrowSchema,
+  ClearTargetingArrowsSchema,
   SetCardPTSchema,
   ToggleCardKeywordSchema,
 } from '@mtgc/shared';
@@ -364,6 +366,20 @@ export class WebSocketHandler {
           if (success) {
             this.broadcastRoomState(client.roomCode);
           }
+          break;
+        }
+
+        case 'SET_TARGETING_ARROW': {
+          const valid = SetTargetingArrowSchema.parse(payload);
+          session.setTargetingArrow(client.playerId, valid as any);
+          this.broadcastRoomState(client.roomCode);
+          break;
+        }
+
+        case 'CLEAR_TARGETING_ARROWS': {
+          const valid = ClearTargetingArrowsSchema.parse(payload);
+          session.clearTargetingArrows(client.playerId, valid);
+          this.broadcastRoomState(client.roomCode);
           break;
         }
 

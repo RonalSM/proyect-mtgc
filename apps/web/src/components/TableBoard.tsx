@@ -19,9 +19,11 @@ import {
 import { TableGrid } from './TableGrid';
 import { PlayerCell } from './PlayerCell';
 import { BattlefieldCanvas, CardPTBadge } from './BattlefieldCanvas';
+import { TargetingArrowsLayer } from './TargetingArrowsLayer';
 import { CardDisplay } from './CardDisplay';
 import { CardBadges } from './CardBadges';
 import { Portal } from './Portal';
+import { RotateCw, Crosshair, Trash2, Hand, X } from 'lucide-react';
 import { CardPreviewProvider, useCardPreview } from '../context/CardPreviewContext';
 import type { RemoteDragState } from '../hooks/useGameSocket';
 import { getPlayerFraming, getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
@@ -54,6 +56,55 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   >({});
   const [permissionWarning, setPermissionWarning] = useState<string | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Multi-Selection (Marquee Box Selection)
+  const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
+  const [marqueeBox, setMarqueeBox] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
+  const marqueeStartRef = useRef<{ x: number; y: number } | null>(null);
+  const isMarqueeActiveRef = useRef<boolean>(false);
+
+  // Targeting & Attack Arrows
+  const [activeTargetingSourceId, setActiveTargetingSourceId] = useState<string | null>(null);
+  const [targetingMousePos, setTargetingMousePos] = useState<{ x: number; y: number } | null>(null);
+
+  const handleStartTargeting = useCallback((cardId: string) => {
+    setActiveTargetingSourceId(cardId);
+    const el = document.querySelector(`[data-card-instance-id="${cardId}"]`);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      setTargetingMousePos({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+    }
+  }, []);
+
+  const handleTargetPlayer = useCallback(
+    (targetPlayerId: string) => {
+      if (!activeTargetingSourceId) return;
+      onAction('SET_TARGETING_ARROW', {
+        sourceCardInstanceId: activeTargetingSourceId,
+        targetType: 'player',
+        targetId: targetPlayerId,
+        arrowType: 'target',
+      });
+      setActiveTargetingSourceId(null);
+      setTargetingMousePos(null);
+    },
+    [activeTargetingSourceId, onAction],
+  );
+
+  const handleTargetCard = useCallback(
+    (targetCardId: string) => {
+      if (!activeTargetingSourceId) return;
+      onAction('SET_TARGETING_ARROW', {
+        sourceCardInstanceId: activeTargetingSourceId,
+        targetType: 'card',
+        targetId: targetCardId,
+        arrowType: 'target',
+      });
+      setActiveTargetingSourceId(null);
+      setTargetingMousePos(null);
+    },
+    [activeTargetingSourceId, onAction],
+  );
 
   const showPermissionWarning = useCallback((message: string) => {
     if (warningTimerRef.current) {
@@ -591,6 +642,31 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         holderId: calculatedHolderId,
         position: { x: normX, y: normY, zIndex: 10 },
       });
+
+      // Mover cartas seleccionadas en bloque con el mismo delta relativo
+      if (selectedCardIds.includes(active.id as string) && selectedCardIds.length > 1) {
+        const activeCard = allBattlefieldCards.find(c => c.instanceId === active.id);
+        if (activeCard && activeCard.position) {
+          const deltaX = normX - activeCard.position.x;
+          const deltaY = normY - activeCard.position.y;
+          selectedCardIds.forEach(otherId => {
+            if (otherId !== active.id) {
+              const otherCard = allBattlefieldCards.find(c => c.instanceId === otherId);
+              if (otherCard && otherCard.position) {
+                onAction('MOVE_CARD', {
+                  cardInstanceId: otherId,
+                  fromZone: 'battlefield',
+                  toZone: 'battlefield',
+                  position: {
+                    x: Math.max(0.05, Math.min(0.95, otherCard.position.x + deltaX)),
+                    y: Math.max(0.05, Math.min(0.95, otherCard.position.y + deltaY)),
+                  },
+                });
+              }
+            }
+          });
+        }
+      }
     }
   };
 
@@ -606,6 +682,78 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   const allBattlefieldCards = Object.values(roomState.playerZones).flatMap(
     zones => zones.battlefield,
   );
+
+  // Window listeners for Marquee Box Selection and live targeting mouse movement
+  useEffect(() => {
+    const handleWindowPointerMove = (e: PointerEvent) => {
+      if (activeTargetingSourceId) {
+        setTargetingMousePos({ x: e.clientX, y: e.clientY });
+      }
+      if (isMarqueeActiveRef.current && marqueeStartRef.current) {
+        const start = marqueeStartRef.current;
+        const dist = Math.hypot(e.clientX - start.x, e.clientY - start.y);
+        if (dist > 5) {
+          const x1 = Math.min(start.x, e.clientX);
+          const x2 = Math.max(start.x, e.clientX);
+          const y1 = Math.min(start.y, e.clientY);
+          const y2 = Math.max(start.y, e.clientY);
+          setMarqueeBox({ x1, y1, x2, y2 });
+
+          // AABB intersection calculation with cards on battlefield
+          const intersecting: string[] = [];
+          const cardEls = document.querySelectorAll<HTMLElement>('[data-battlefield-card="true"]');
+          cardEls.forEach(el => {
+            const rect = el.getBoundingClientRect();
+            const isOverlapping = !(rect.right < x1 || rect.left > x2 || rect.bottom < y1 || rect.top > y2);
+            if (isOverlapping) {
+              const id = el.getAttribute('data-card-instance-id');
+              if (id) intersecting.push(id);
+            }
+          });
+          setSelectedCardIds(intersecting);
+        }
+      }
+    };
+
+    const handleWindowPointerUp = () => {
+      isMarqueeActiveRef.current = false;
+      marqueeStartRef.current = null;
+      setMarqueeBox(null);
+    };
+
+    window.addEventListener('pointermove', handleWindowPointerMove);
+    window.addEventListener('pointerup', handleWindowPointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handleWindowPointerMove);
+      window.removeEventListener('pointerup', handleWindowPointerUp);
+    };
+  }, [activeTargetingSourceId]);
+
+  // Keyboard shortcuts (Escape, T for Tap, A for Target)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (activeTargetingSourceId) {
+          setActiveTargetingSourceId(null);
+          setTargetingMousePos(null);
+        } else if (selectedCardIds.length > 0) {
+          setSelectedCardIds([]);
+        }
+      }
+      if ((e.key === 't' || e.key === 'T') && selectedCardIds.length > 0) {
+        const activeCard = allBattlefieldCards.find(c => selectedCardIds.includes(c.instanceId));
+        const nextTapped = !activeCard?.isTapped;
+        selectedCardIds.forEach(id => {
+          onAction('TAP_CARD', { cardInstanceId: id, isTapped: nextTapped });
+        });
+      }
+      if ((e.key === 'a' || e.key === 'A') && selectedCardIds.length > 0) {
+        handleStartTargeting(selectedCardIds[0]);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTargetingSourceId, selectedCardIds, allBattlefieldCards, onAction, handleStartTargeting]);
 
   // Punto 1: Reconciliación con confirmación del servidor sin retroceder ante ecos desactualizados
   useEffect(() => {
@@ -658,6 +806,8 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         allBattlefieldCards={allBattlefieldCards}
         onAction={onAction}
         onExpandCell={() => setExpandedPlayerId(prev => (prev === player.id ? null : player.id))}
+        activeTargetingSourceId={activeTargetingSourceId}
+        onTargetPlayer={handleTargetPlayer}
       />
     );
   };
@@ -676,6 +826,30 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         id="mesa-total"
         data-drop-zone="battlefield"
         ref={setTabletopRef}
+        onPointerDown={e => {
+          const targetEl = e.target as HTMLElement;
+          if (
+            targetEl.closest(
+              '[data-battlefield-card], button, input, [data-dock-zone], [data-player-header], [data-testid="permission-warning"]',
+            )
+          ) {
+            return;
+          }
+
+          if (activeTargetingSourceId) {
+            setActiveTargetingSourceId(null);
+            setTargetingMousePos(null);
+            return;
+          }
+
+          if (e.button === 0) {
+            marqueeStartRef.current = { x: e.clientX, y: e.clientY };
+            isMarqueeActiveRef.current = true;
+            if (!e.shiftKey && !e.ctrlKey) {
+              setSelectedCardIds([]);
+            }
+          }
+        }}
         style={
           {
             '--card-w': `${cardPixelWidth}px`,
@@ -695,6 +869,128 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           onCloseExpanded={() => setExpandedPlayerId(null)}
         />
 
+        {/* Capa de flechas de objetivo y ataque (REQ-Targeting) */}
+        <TargetingArrowsLayer
+          roomState={roomState}
+          allBattlefieldCards={allBattlefieldCards}
+          activeTargetingSourceId={activeTargetingSourceId}
+          targetingMousePos={targetingMousePos}
+          onClearArrow={arrowId => onAction('CLEAR_TARGETING_ARROWS', { arrowId })}
+        />
+
+        {/* Marquee Selection Bounding Box */}
+        {marqueeBox && (
+          <div
+            data-testid="marquee-selection-box"
+            className="fixed pointer-events-none z-50 border-2 border-[#8BBB92] bg-[#2A835F]/20 rounded-xs shadow-[0_0_20px_rgba(42,131,95,0.4)] backdrop-blur-[0.5px]"
+            style={{
+              left: `${marqueeBox.x1}px`,
+              top: `${marqueeBox.y1}px`,
+              width: `${marqueeBox.x2 - marqueeBox.x1}px`,
+              height: `${marqueeBox.y2 - marqueeBox.y1}px`,
+            }}
+          />
+        )}
+
+        {/* Multi-Select Floating Toolbar */}
+        {selectedCardIds.length > 0 && !activeTargetingSourceId && (
+          <div
+            data-testid="multi-select-toolbar"
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-[#092328]/95 border border-[#12544F] rounded-2xl shadow-2xl px-4 py-2 flex items-center space-x-3 text-zinc-100 backdrop-blur-xl ring-1 ring-white/10 animate-fadeIn"
+          >
+            <div className="flex items-center space-x-1.5 text-xs font-semibold text-[#8BBB92]">
+              <span className="w-2 h-2 rounded-full bg-[#8BBB92] animate-pulse" />
+              <span>{selectedCardIds.length} seleccionada(s)</span>
+            </div>
+
+            <div className="h-4 w-px bg-[#12544F]" />
+
+            {/* Tap / Untap all */}
+            <button
+              data-testid="multi-tap-btn"
+              onClick={() => {
+                const firstCard = allBattlefieldCards.find(c => selectedCardIds.includes(c.instanceId));
+                const targetTapped = !firstCard?.isTapped;
+                selectedCardIds.forEach(id => {
+                  onAction('TAP_CARD', { cardInstanceId: id, isTapped: targetTapped });
+                });
+              }}
+              className="px-2.5 py-1 bg-[#12544F]/60 hover:bg-[#2A835F] text-zinc-200 hover:text-white rounded-lg text-xs font-medium flex items-center space-x-1 transition-colors cursor-pointer"
+              title="Girar o enderezar seleccionadas (T)"
+            >
+              <RotateCw className="w-3.5 h-3.5 text-[#8BBB92]" />
+              <span>Girar / Enderezar</span>
+            </button>
+
+            {/* Target from selected */}
+            <button
+              data-testid="multi-target-btn"
+              onClick={() => {
+                if (selectedCardIds.length > 0) {
+                  handleStartTargeting(selectedCardIds[0]);
+                }
+              }}
+              className="px-2.5 py-1 bg-[#12544F]/60 hover:bg-[#2A835F] text-zinc-200 hover:text-white rounded-lg text-xs font-medium flex items-center space-x-1 transition-colors cursor-pointer"
+              title="Fijar objetivo desde la primera carta seleccionada (A)"
+            >
+              <Crosshair className="w-3.5 h-3.5 text-[#8BBB92]" />
+              <span>Fijar objetivo</span>
+            </button>
+
+            {/* Send all to Graveyard */}
+            <button
+              data-testid="multi-graveyard-btn"
+              onClick={() => {
+                selectedCardIds.forEach(id => {
+                  onAction('MOVE_CARD', {
+                    cardInstanceId: id,
+                    fromZone: 'battlefield',
+                    toZone: 'graveyard',
+                    toPlayerId: localPlayerId,
+                  });
+                });
+                setSelectedCardIds([]);
+              }}
+              className="px-2.5 py-1 bg-rose-950/40 hover:bg-rose-900 border border-rose-900/40 text-rose-300 hover:text-white rounded-lg text-xs font-medium flex items-center space-x-1 transition-colors cursor-pointer"
+              title="Enviar seleccionadas al cementerio"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+              <span>Cementerio</span>
+            </button>
+
+            {/* Send all to Hand */}
+            <button
+              data-testid="multi-hand-btn"
+              onClick={() => {
+                selectedCardIds.forEach(id => {
+                  onAction('MOVE_CARD', {
+                    cardInstanceId: id,
+                    fromZone: 'battlefield',
+                    toZone: 'hand',
+                    toPlayerId: localPlayerId,
+                  });
+                });
+                setSelectedCardIds([]);
+              }}
+              className="px-2.5 py-1 bg-[#12544F]/40 hover:bg-[#12544F] text-zinc-200 hover:text-white rounded-lg text-xs font-medium flex items-center space-x-1 transition-colors cursor-pointer"
+              title="Enviar seleccionadas a la mano"
+            >
+              <Hand className="w-3.5 h-3.5 text-[#8BBB92]" />
+              <span>Mano</span>
+            </button>
+
+            {/* Deselect button */}
+            <button
+              data-testid="multi-deselect-btn"
+              onClick={() => setSelectedCardIds([])}
+              className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-[#12544F] transition-colors cursor-pointer"
+              title="Deseleccionar todas (Esc)"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas y Zoom (Punto 1, Punto 3) */}
         <BattlefieldCanvas
           cards={allBattlefieldCards}
@@ -705,6 +1001,17 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           roomState={roomState}
           cardPixelWidth={cardPixelWidth}
           cardPixelHeight={cardPixelHeight}
+          selectedCardIds={selectedCardIds}
+          onSelectCard={(id, isMulti) => {
+            if (activeTargetingSourceId) {
+              handleTargetCard(id);
+              return;
+            }
+            setSelectedCardIds(prev =>
+              isMulti ? (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]) : [id],
+            );
+          }}
+          onStartTargeting={handleStartTargeting}
           onUnauthorizedAttempt={() =>
             showPermissionWarning('No puedes mover una carta ajena sin ser su titular temporal.')
           }

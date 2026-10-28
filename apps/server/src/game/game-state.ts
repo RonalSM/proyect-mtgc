@@ -21,6 +21,9 @@ import {
   SetReadyPayload,
   RevealCardPayload,
   UnrevealCardPayload,
+  TargetingArrow,
+  SetTargetingArrowPayload,
+  ClearTargetingArrowsPayload,
   toArtCropUrl,
   getCardDimensions,
   computeCardPT,
@@ -51,6 +54,9 @@ export class GameStateSession {
 
   constructor(initialState: RoomState) {
     this.state = initialState;
+    if (!this.state.targetingArrows) {
+      this.state.targetingArrows = [];
+    }
     this.lobbyManager = new LobbyManager(this.state);
     this.initiativeService = new InitiativeService(this);
     this.mulliganService = new MulliganService(this);
@@ -852,18 +858,31 @@ export class GameStateSession {
         newHolderId = geomHolder;
       }
 
+      if (payload.isTapped !== undefined) {
+        card.isTapped = payload.isTapped;
+      }
+      if (payload.isFaceDown !== undefined) {
+        card.isFaceDown = payload.isFaceDown;
+      }
+
       // Si la carta entra en la sección del propio jugador, su holderId es el jugador
       card.holderId = newHolderId;
       targetPlayerId = payload.toPlayerId || card.ownerId;
     } else {
       card.position = undefined;
       card.isTapped = false;
-      card.isFaceDown = false;
+      card.isFaceDown = payload.isFaceDown ?? false;
       card.holderId = undefined; // Fuera del campo de batalla no hay titular temporal
       card.counters = {};
       delete card.basePower;
       delete card.baseToughness;
       delete card.keywords;
+      // Limpiar flechas dirigidas o que partan de esta carta si sale del campo de batalla
+      if (this.state.targetingArrows) {
+        this.state.targetingArrows = this.state.targetingArrows.filter(
+          a => a.sourceCardInstanceId !== card.instanceId && (a.targetType !== 'card' || a.targetId !== card.instanceId),
+        );
+      }
       // Fuera del campo de batalla siempre regresa a zonas del propietario original (salvo donación explícita)
       targetPlayerId = payload.toPlayerId || card.ownerId;
     }
@@ -1065,6 +1084,70 @@ export class GameStateSession {
     }
 
     this.addLog(playerId, `enderezó todos sus permanentes`);
+    this.incrementVersion();
+  }
+
+  /**
+   * Sets or creates a targeting or attack arrow from a source card to a target (card or player)
+   */
+  public setTargetingArrow(playerId: string, payload: SetTargetingArrowPayload): void {
+    if (!this.state.targetingArrows) {
+      this.state.targetingArrows = [];
+    }
+
+    const arrowId = payload.arrowId || `arrow_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const newArrow: TargetingArrow = {
+      id: arrowId,
+      sourceCardInstanceId: payload.sourceCardInstanceId,
+      sourcePlayerId: playerId,
+      targetType: payload.targetType,
+      targetId: payload.targetId,
+      arrowType: payload.arrowType || 'target',
+      color: payload.color,
+      createdAt: Date.now(),
+    };
+
+    // Find source card name for log
+    let sourceCardName = 'Carta';
+    const foundSource = this.findBattlefieldCard(payload.sourceCardInstanceId);
+    if (foundSource) {
+      sourceCardName = foundSource.card.definition.name;
+    }
+
+    // Find target name for log
+    let targetName = 'Objetivo';
+    if (payload.targetType === 'player') {
+      targetName = this.state.players[payload.targetId]?.name || 'Jugador';
+    } else {
+      const foundTarget = this.findBattlefieldCard(payload.targetId);
+      if (foundTarget) {
+        targetName = foundTarget.card.definition.name;
+      }
+    }
+
+    const existingIdx = this.state.targetingArrows.findIndex(a => a.id === arrowId);
+    if (existingIdx !== -1) {
+      this.state.targetingArrows[existingIdx] = newArrow;
+    } else {
+      this.state.targetingArrows.push(newArrow);
+    }
+
+    const verb = payload.arrowType === 'attack' ? 'atacó con' : 'apuntó con';
+    this.addLog(playerId, `${verb} "${sourceCardName}" hacia ${targetName}`, false);
+    this.incrementVersion();
+  }
+
+  /**
+   * Clears targeting arrows
+   */
+  public clearTargetingArrows(_playerId: string, payload: ClearTargetingArrowsPayload): void {
+    if (!this.state.targetingArrows) return;
+
+    if (payload.arrowId) {
+      this.state.targetingArrows = this.state.targetingArrows.filter(a => a.id !== payload.arrowId);
+    } else {
+      this.state.targetingArrows = [];
+    }
     this.incrementVersion();
   }
 
