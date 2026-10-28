@@ -34,25 +34,25 @@ export const LegalModal: React.FC<LegalModalProps> = ({
         onPointerDown={e => e.stopPropagation()}
         onMouseDown={e => e.stopPropagation()}
         onContextMenu={e => e.stopPropagation()}
-        className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl space-y-5"
+        className="bg-[#092328] border border-[#12544F] rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl space-y-5 text-zinc-100 ring-1 ring-[#2A835F]/30"
       >
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center space-x-2 text-amber-400 font-bold text-base">
-            <ShieldCheck className="w-5 h-5" />
+        <div className="flex items-center justify-between border-b border-[#12544F] pb-3">
+          <div className="flex items-center space-x-2 text-[#8BBB92] font-bold text-base">
+            <ShieldCheck className="w-5 h-5 text-[#8BBB92]" />
             <span>Avisos Legales y Privacidad</span>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors cursor-pointer p-1 rounded-lg hover:bg-[#12544F]">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Wizards of the Coast Disclaimer */}
         <section className="space-y-1.5">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
-            <HeartHandshake className="w-4 h-4 text-amber-400" />
+          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center space-x-1.5">
+            <HeartHandshake className="w-4 h-4 text-[#8BBB92]" />
             <span>Política de Contenido de Fans de Wizards of the Coast</span>
           </h4>
-          <p className="text-xs text-slate-400 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800">
+          <p className="text-xs text-zinc-300 leading-relaxed bg-[#040d0f] p-3 rounded-xl border border-[#12544F]">
             <strong>Mesa Virtual de Commander (MTGC)</strong> es un proyecto no oficial creado por y
             para aficionados, permitido de acuerdo con la <em>Política de Contenido de Fans</em> de
             Wizards of the Coast. Este software no está respaldado, patrocinado ni afiliado de
@@ -63,11 +63,11 @@ export const LegalModal: React.FC<LegalModalProps> = ({
 
         {/* Scryfall Attribution */}
         <section className="space-y-1.5">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
-            <Lock className="w-4 h-4 text-sky-400" />
+          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center space-x-1.5">
+            <Lock className="w-4 h-4 text-[#8BBB92]" />
             <span>Atribución de Scryfall API</span>
           </h4>
-          <p className="text-xs text-slate-400 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800">
+          <p className="text-xs text-zinc-300 leading-relaxed bg-[#040d0f] p-3 rounded-xl border border-[#12544F]">
             Toda la información literal y gráfica relacionada con las cartas de Magic: The Gathering
             (incluyendo nombres, costes de maná, textos de reglas y artes) es propiedad exclusiva de
             Wizards of the Coast. Los datos de las cartas se obtienen de manera no comercial a
@@ -77,11 +77,11 @@ export const LegalModal: React.FC<LegalModalProps> = ({
 
         {/* Fuentes e Iconografía: Mana y Keyrune */}
         <section className="space-y-1.5">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
-            <HeartHandshake className="w-4 h-4 text-amber-400" />
+          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center space-x-1.5">
+            <HeartHandshake className="w-4 h-4 text-[#8BBB92]" />
             <span>Fuentes e Iconografía: Mana Font y Keyrune</span>
           </h4>
-          <p className="text-xs text-slate-400 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800">
+          <p className="text-xs text-zinc-300 leading-relaxed bg-[#040d0f] p-3 rounded-xl border border-[#12544F]">
             Los iconos de símbolos de maná, acciones de girar/desgirar, palabras clave y contadores
             emplean la fuente <strong>Mana</strong> (creada por Andrew Gioia; fuentes bajo SIL OFL 1.1,
             código CSS bajo licencia MIT). Los símbolos de expansiones emplean exclusivamente los archivos de fuente
@@ -94,11 +94,11 @@ export const LegalModal: React.FC<LegalModalProps> = ({
 
         {/* Privacy & GDPR Right to Deletion */}
         <section className="space-y-1.5">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-1.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center space-x-1.5">
+            <ShieldCheck className="w-4 h-4 text-[#8BBB92]" />
             <span>Política de Privacidad y Eliminación de Cuenta</span>
           </h4>
-          <p className="text-xs text-slate-400 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800">
+          <p className="text-xs text-zinc-300 leading-relaxed bg-[#040d0f] p-3 rounded-xl border border-[#12544F]">
             Respetamos tu privacidad. No comercializamos datos de usuarios, no empleamos
             rastreadores de terceros ni cookies con fines publicitarios. Las contraseñas se
             almacenan mediante algoritmos criptográficos con salt único. Puedes solicitar la
@@ -117,7 +117,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                     onDeleteAccount();
                   }
                 }}
-                className="flex items-center space-x-1.5 text-xs text-rose-400 hover:text-rose-300 bg-rose-950/30 hover:bg-rose-950/50 border border-rose-900/40 px-3 py-1.5 rounded-lg transition-colors"
+                className="flex items-center space-x-1.5 text-xs text-rose-300 hover:text-rose-200 bg-rose-950/60 hover:bg-rose-900 border border-rose-800 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Eliminar mi cuenta permanentemente</span>
@@ -129,7 +129,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
         <div className="pt-2 text-right">
           <button
             onClick={onClose}
-            className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow"
+            className="bg-[#2A835F] hover:bg-[#349e73] text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow border border-[#8BBB92]/40 cursor-pointer"
           >
             Entendido
           </button>

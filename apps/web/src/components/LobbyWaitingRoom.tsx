@@ -963,12 +963,12 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                       value={deckNameInput}
                       onChange={e => setDeckNameInput(e.target.value)}
                       placeholder="Ej. Atraxa Contadores"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                      className="w-full bg-[#040d0f] border border-[#12544F] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#2A835F]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">
+                    <label className="block text-xs font-bold text-zinc-300 mb-1">
                       Lista en formato texto (MTG Arena, Moxfield o Archidekt)
                     </label>
                     <textarea
@@ -976,7 +976,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                       value={rawDeckText}
                       onChange={e => setRawDeckText(e.target.value)}
                       placeholder={`Commander\n1 Atraxa, Praetors' Voice\n\nDeck\n1 Sol Ring\n1 Command Tower...`}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-white focus:outline-none focus:border-amber-500"
+                      className="w-full bg-[#040d0f] border border-[#12544F] rounded-xl p-3 text-xs font-mono text-white focus:outline-none focus:border-[#2A835F]"
                     />
                   </div>
 
@@ -986,9 +986,9 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                       id="saveToAcc"
                       checked={saveToAccount}
                       onChange={e => setSaveToAccount(e.target.checked)}
-                      className="rounded bg-slate-950 border-slate-800 text-amber-500 focus:ring-0"
+                      className="rounded bg-[#040d0f] border-[#12544F] text-[#2A835F] focus:ring-0 cursor-pointer"
                     />
-                    <label htmlFor="saveToAcc" className="text-xs text-slate-400">
+                    <label htmlFor="saveToAcc" className="text-xs text-zinc-400 cursor-pointer">
                       Guardar también en mi cuenta (para usuarios registrados)
                     </label>
                   </div>
@@ -996,21 +996,21 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                   <button
                     onClick={handleValidateText}
                     disabled={isValidating}
-                    className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-xs py-2 rounded-xl transition-colors disabled:opacity-50"
+                    className="w-full bg-[#2A835F] hover:bg-[#349e73] text-white font-bold text-xs py-2 rounded-xl transition-all shadow-md shadow-[#2A835F]/20 disabled:opacity-50 cursor-pointer"
                   >
                     {isValidating ? 'Validando lista con Scryfall...' : 'Validar lista'}
                   </button>
 
                   {validationResult && (
-                    <div className="space-y-2 pt-2 border-t border-slate-800">
+                    <div className="space-y-2 pt-2 border-t border-[#12544F]">
                       <div className="flex items-center space-x-2 text-xs font-bold">
                         {validationResult.valid ? (
-                          <span className="text-emerald-400 flex items-center space-x-1">
+                          <span className="text-[#8BBB92] flex items-center space-x-1">
                             <CheckCircle2 className="w-4 h-4" />
                             <span>Mazo válido para Commander (100 cartas)</span>
                           </span>
                         ) : (
-                          <span className="text-amber-400 flex items-center space-x-1">
+                          <span className="text-[#8BBB92] flex items-center space-x-1">
                             <AlertTriangle className="w-4 h-4" />
                             <span>Mazo con advertencias (permitido en modo sandbox)</span>
                           </span>
@@ -1023,7 +1023,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                         </div>
                       ))}
                       {validationResult.warnings.map((warn, i) => (
-                        <div key={i} className="text-[11px] text-amber-400">
+                        <div key={i} className="text-[11px] text-[#8BBB92]">
                           &bull; {warn}
                         </div>
                       ))}

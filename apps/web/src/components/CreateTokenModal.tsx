@@ -224,7 +224,7 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
     <Portal>
       <div
         data-testid="create-token-backdrop"
-        className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
+        className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150"
         onClick={e => {
           e.stopPropagation();
           onClose();
@@ -239,7 +239,7 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
       >
         <div
           data-testid="create-token-modal"
-          className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-2xl max-h-[85vh] shadow-2xl flex flex-col overflow-hidden text-slate-100"
+          className="bg-[#092328] border border-[#12544F] rounded-2xl w-full max-w-2xl max-h-[85vh] shadow-2xl flex flex-col overflow-hidden text-zinc-100 ring-1 ring-[#2A835F]/30"
           onClick={e => e.stopPropagation()}
           onDoubleClick={e => e.stopPropagation()}
           onPointerDown={e => e.stopPropagation()}
@@ -250,9 +250,9 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
           }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#12544F] bg-[#040d0f]/90">
             <div className="flex items-center space-x-2.5">
-              <Sparkles className="w-5 h-5 text-amber-400" />
+              <Sparkles className="w-5 h-5 text-[#8BBB92]" />
               <h2 className="text-base font-bold tracking-tight text-white">
                 Crear Ficha en la Mesa
               </h2>
@@ -261,22 +261,22 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
               type="button"
               data-testid="close-create-token-modal-btn"
               onClick={onClose}
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-[#12544F] transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Navegación por pestañas (a, b, c) */}
-          <div className="flex border-b border-slate-800 bg-slate-950/60 px-6 pt-2 space-x-2">
+          <div className="flex border-b border-[#12544F] bg-[#040d0f]/60 px-6 pt-2 space-x-2">
             <button
               type="button"
               data-testid="tab-deck-tokens"
               onClick={() => setActiveTab('deck')}
               className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer border-b-2 flex items-center space-x-1.5 ${
                 activeTab === 'deck'
-                  ? 'border-amber-400 text-amber-300 bg-slate-900'
-                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                  ? 'border-[#2A835F] text-[#8BBB92] bg-[#0c2d32] font-bold'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-[#0c2d32]/50'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -291,8 +291,8 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
               onClick={() => setActiveTab('common')}
               className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer border-b-2 flex items-center space-x-1.5 ${
                 activeTab === 'common'
-                  ? 'border-amber-400 text-amber-300 bg-slate-900'
-                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                  ? 'border-[#2A835F] text-[#8BBB92] bg-[#0c2d32] font-bold'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-[#0c2d32]/50'
               }`}
             >
               <i className="ms ms-token text-xs" aria-hidden="true" />
@@ -305,8 +305,8 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
               onClick={() => setActiveTab('custom')}
               className={`px-4 py-2 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer border-b-2 flex items-center space-x-1.5 ${
                 activeTab === 'custom'
-                  ? 'border-amber-400 text-amber-300 bg-slate-900'
-                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
+                  ? 'border-[#2A835F] text-[#8BBB92] bg-[#0c2d32] font-bold'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-[#0c2d32]/50'
               }`}
             >
               <Plus className="w-3.5 h-3.5" />
@@ -320,23 +320,23 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
             {activeTab === 'deck' && (
               <div className="space-y-4">
                 <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
                   <input
                     type="text"
                     data-testid="token-search-input"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     placeholder="Buscar ficha o carta de origen..."
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
+                    className="w-full bg-[#040d0f] border border-[#12544F] rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#2A835F] transition-colors"
                   />
                 </div>
 
                 {isLoadingDeck ? (
-                  <div className="py-12 text-center text-xs text-slate-400 animate-pulse">
+                  <div className="py-12 text-center text-xs text-zinc-400 animate-pulse">
                     Cargando fichas asociadas a las cartas de tu mazo...
                   </div>
                 ) : filteredDeckGroups.length === 0 ? (
-                  <div className="py-12 text-center text-xs text-slate-400">
+                  <div className="py-12 text-center text-xs text-zinc-400">
                     {searchQuery
                       ? 'No se encontraron fichas que coincidan con la búsqueda.'
                       : 'Ninguna carta de tu mazo genera fichas registradas en Scryfall (o puedes crearlas en "Fichas comunes" o "Ficha personalizada").'}
@@ -346,9 +346,9 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                     {filteredDeckGroups.map(group => (
                       <div
                         key={group.sourceCard}
-                        className="bg-slate-950/70 border border-slate-800 rounded-xl p-3.5 space-y-2.5"
+                        className="bg-[#040d0f]/80 border border-[#12544F] rounded-xl p-3.5 space-y-2.5"
                       >
-                        <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-400">
+                        <div className="flex items-center space-x-1.5 text-xs font-bold text-[#8BBB92]">
                           <Layers className="w-3.5 h-3.5" />
                           <span>{group.sourceCard}</span>
                         </div>
@@ -360,7 +360,7 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                               <div
                                 key={token.scryfallId || token.name}
                                 data-testid={`deck-token-item-${token.name.toLowerCase().replace(/\s+/g, '-')}`}
-                                className="flex items-center justify-between p-2.5 bg-slate-900 border border-slate-800 hover:border-amber-400/60 rounded-xl transition-all group"
+                                className="flex items-center justify-between p-2.5 bg-[#092328] border border-[#12544F] hover:border-[#8BBB92] rounded-xl transition-all group"
                               >
                                 <div className="flex items-center space-x-2.5 min-w-0 pr-2">
                                   {getCardImageUrl(token, { size: 'small', lang: language }) ? (
@@ -370,20 +370,20 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                                       className="w-10 h-14 object-cover rounded shadow flex-shrink-0"
                                     />
                                   ) : (
-                                    <div className="w-10 h-14 bg-slate-800 rounded flex items-center justify-center flex-shrink-0 text-slate-500 text-[10px]">
+                                    <div className="w-10 h-14 bg-[#0c2d32] rounded flex items-center justify-center flex-shrink-0 text-zinc-500 text-[10px]">
                                       Ficha
                                     </div>
                                   )}
                                   <div className="min-w-0">
-                                    <div className="text-xs font-bold text-white truncate group-hover:text-amber-300 transition-colors">
+                                    <div className="text-xs font-bold text-white truncate group-hover:text-[#8BBB92] transition-colors">
                                       {display.name}
                                     </div>
-                                    <div className="text-[10px] text-slate-400 truncate">
+                                    <div className="text-[10px] text-zinc-400 truncate">
                                       {display.typeLine}
                                     </div>
                                     {(token.power !== undefined ||
                                       token.toughness !== undefined) && (
-                                      <div className="text-[11px] font-mono font-bold text-amber-400">
+                                      <div className="text-[11px] font-mono font-bold text-[#8BBB92]">
                                         {token.power}/{token.toughness}
                                       </div>
                                     )}
@@ -394,7 +394,7 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                                   type="button"
                                   data-testid={`create-deck-token-${token.name.toLowerCase().replace(/\s+/g, '-')}`}
                                   onClick={() => handleCreateToken(token)}
-                                  className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center space-x-1 flex-shrink-0 cursor-pointer shadow"
+                                  className="px-3 py-1.5 bg-[#2A835F] hover:bg-[#349e73] text-white font-bold text-xs rounded-lg transition-colors flex items-center space-x-1 flex-shrink-0 cursor-pointer shadow border border-[#8BBB92]/40"
                                 >
                                   <Plus className="w-3.5 h-3.5" />
                                   <span>Crear</span>
@@ -419,7 +419,7 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                     <div
                       key={token.name}
                       data-testid={`common-token-item-${token.name.toLowerCase()}`}
-                      className="flex items-center justify-between p-3 bg-slate-950/70 border border-slate-800 hover:border-amber-400/60 rounded-xl transition-all group"
+                      className="flex items-center justify-between p-3 bg-[#040d0f]/80 border border-[#12544F] hover:border-[#8BBB92] rounded-xl transition-all group"
                     >
                       <div className="flex items-center space-x-3 min-w-0 pr-2">
                         <img
@@ -428,13 +428,13 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                           className="w-12 h-16 object-cover rounded shadow flex-shrink-0"
                         />
                         <div className="min-w-0">
-                          <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                          <div className="text-xs font-bold text-white group-hover:text-[#8BBB92] transition-colors">
                             {display.name}
                           </div>
-                          <div className="text-[10px] text-slate-400 truncate">
+                          <div className="text-[10px] text-zinc-400 truncate">
                             {display.typeLine}
                           </div>
-                          <div className="text-[9px] text-slate-400 line-clamp-2 mt-0.5 leading-tight">
+                          <div className="text-[9px] text-zinc-400 line-clamp-2 mt-0.5 leading-tight">
                             {display.oracleText}
                           </div>
                         </div>
@@ -444,7 +444,7 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                         type="button"
                         data-testid={`create-common-token-${token.name.toLowerCase()}`}
                         onClick={() => handleCreateToken(token)}
-                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center space-x-1 flex-shrink-0 cursor-pointer shadow"
+                        className="px-3 py-1.5 bg-[#2A835F] hover:bg-[#349e73] text-white font-bold text-xs rounded-lg transition-colors flex items-center space-x-1 flex-shrink-0 cursor-pointer shadow border border-[#8BBB92]/40"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Crear</span>
@@ -459,7 +459,7 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
             {activeTab === 'custom' && (
               <form onSubmit={handleCreateCustom} className="space-y-4 max-w-lg mx-auto">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-300">Nombre de la ficha *</label>
+                  <label className="text-xs font-bold text-zinc-300">Nombre de la ficha *</label>
                   <input
                     type="text"
                     required
@@ -467,50 +467,50 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                     value={customName}
                     onChange={e => setCustomName(e.target.value)}
                     placeholder="Ej: Soldado, Bestia, Goblin..."
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                    className="w-full bg-[#040d0f] border border-[#12544F] rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#2A835F]"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-300">Poder</label>
+                    <label className="text-xs font-bold text-zinc-300">Poder</label>
                     <input
                       type="text"
                       data-testid="custom-token-power-input"
                       value={customPower}
                       onChange={e => setCustomPower(e.target.value)}
                       placeholder="Ej: 1 o *"
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                      className="w-full bg-[#040d0f] border border-[#12544F] rounded-xl px-3 py-2 text-xs font-mono text-white placeholder-zinc-500 focus:outline-none focus:border-[#2A835F]"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-300">Resistencia</label>
+                    <label className="text-xs font-bold text-zinc-300">Resistencia</label>
                     <input
                       type="text"
                       data-testid="custom-token-toughness-input"
                       value={customToughness}
                       onChange={e => setCustomToughness(e.target.value)}
                       placeholder="Ej: 1 o *"
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                      className="w-full bg-[#040d0f] border border-[#12544F] rounded-xl px-3 py-2 text-xs font-mono text-white placeholder-zinc-500 focus:outline-none focus:border-[#2A835F]"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-300">Línea de tipo</label>
+                  <label className="text-xs font-bold text-zinc-300">Línea de tipo</label>
                   <input
                     type="text"
                     data-testid="custom-token-typeline-input"
                     value={customTypeLine}
                     onChange={e => setCustomTypeLine(e.target.value)}
                     placeholder="Ej: Criatura — Soldado"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                    className="w-full bg-[#040d0f] border border-[#12544F] rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#2A835F]"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300">Colores</label>
+                  <label className="text-xs font-bold text-zinc-300">Colores</label>
                   <div className="flex flex-wrap gap-2">
                     {colorOptions.map(({ color, label, bg }) => {
                       const isSelected = customColors.includes(color);
@@ -528,7 +528,7 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                           className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer border ${
                             isSelected
                               ? `${bg} border-white shadow`
-                              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                              : 'bg-[#040d0f] border-[#12544F] text-zinc-400 hover:text-white'
                           }`}
                         >
                           {label}
@@ -542,7 +542,7 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                   <button
                     type="submit"
                     data-testid="create-custom-token-btn"
-                    className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition-colors flex items-center justify-center space-x-2 cursor-pointer shadow-lg"
+                    className="w-full py-2.5 bg-[#2A835F] hover:bg-[#349e73] text-white font-bold text-xs rounded-xl transition-colors flex items-center justify-center space-x-2 cursor-pointer shadow-lg border border-[#8BBB92]/40"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Crear Ficha Personalizada</span>

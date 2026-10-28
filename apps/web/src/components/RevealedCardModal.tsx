@@ -48,7 +48,7 @@ export const RevealedCardModal: React.FC<RevealedCardModalProps> = ({
       onContextMenu={e => e.stopPropagation()}
     >
       <div
-        className="relative bg-slate-900 border border-amber-500/80 rounded-2xl shadow-[0_0_60px_rgba(245,158,11,0.25)] p-5 max-w-sm w-full flex flex-col items-center space-y-4 text-center"
+        className="relative bg-[#092328] border border-[#12544F] rounded-2xl shadow-[0_0_60px_rgba(42,131,95,0.25)] p-5 max-w-sm w-full flex flex-col items-center space-y-4 text-center ring-1 ring-[#2A835F]/30"
         onClick={e => e.stopPropagation()}
         onDoubleClick={e => e.stopPropagation()}
         onPointerDown={e => e.stopPropagation()}
@@ -60,7 +60,7 @@ export const RevealedCardModal: React.FC<RevealedCardModalProps> = ({
           type="button"
           data-testid="close-revealed-card-btn"
           onClick={onClose}
-          className="absolute top-3 right-3 p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+          className="absolute top-3 right-3 p-1.5 text-zinc-400 hover:text-white hover:bg-[#12544F] rounded-lg transition-colors cursor-pointer"
           title="Cerrar vista de carta revelada"
         >
           <X className="w-5 h-5" />
@@ -68,8 +68,8 @@ export const RevealedCardModal: React.FC<RevealedCardModalProps> = ({
 
         {/* Encabezado */}
         <div className="flex flex-col items-center space-y-1">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-300 text-xs font-bold tracking-wide">
-            <Eye className="w-3.5 h-3.5 text-amber-400" />
+          <div className="inline-flex items-center space-x-2 px-3 py-1 bg-[#12544F]/50 border border-[#2A835F] rounded-full text-[#8BBB92] text-xs font-bold tracking-wide">
+            <Eye className="w-3.5 h-3.5 text-[#8BBB92]" />
             <span>
               {isForMeOnly
                 ? `${fromPlayerName} te reveló esta carta`
@@ -77,11 +77,11 @@ export const RevealedCardModal: React.FC<RevealedCardModalProps> = ({
             </span>
           </div>
           <h3 className="text-base font-extrabold text-white">{card.definition.name}</h3>
-          <p className="text-xs text-slate-400 font-medium">{card.definition.typeLine}</p>
+          <p className="text-xs text-zinc-400 font-medium">{card.definition.typeLine}</p>
         </div>
 
         {/* Imagen de la carta en alta resolución */}
-        <div className="w-56 aspect-[5/7] rounded-xl overflow-hidden border border-slate-700 shadow-2xl relative bg-slate-950 flex-shrink-0">
+        <div className="w-56 aspect-[5/7] rounded-xl overflow-hidden border border-[#12544F] shadow-2xl relative bg-[#040d0f] flex-shrink-0">
           <CardDisplay card={card.definition} isFaceDown={false} allowFaceToggle={false} />
         </div>
 
@@ -90,7 +90,7 @@ export const RevealedCardModal: React.FC<RevealedCardModalProps> = ({
           type="button"
           onClick={onClose}
           data-testid="dismiss-revealed-btn"
-          className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-sm shadow-lg transition-all cursor-pointer"
+          className="w-full py-2.5 bg-[#2A835F] hover:bg-[#349e73] text-white font-bold rounded-xl text-sm shadow-lg transition-all cursor-pointer border border-[#8BBB92]/40"
         >
           Entendido / Cerrar
         </button>

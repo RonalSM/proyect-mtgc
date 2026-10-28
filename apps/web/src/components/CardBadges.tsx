@@ -39,7 +39,7 @@ export const CardBadges: React.FC<CardBadgesProps> = ({ card }) => {
             data-badge-item="true"
             data-testid={`card-badge-keyword-${kwId}`}
             title={`${label}\n${reminder}`}
-            className="inline-flex items-center justify-center p-0.5 rounded bg-slate-900/95 border border-amber-400/60 text-amber-300 shadow shadow-black/60 cursor-help transition-transform hover:scale-110"
+            className="inline-flex items-center justify-center p-0.5 rounded bg-[#092328]/95 border border-[#12544F] text-[#8BBB92] shadow shadow-black/60 cursor-help transition-transform hover:scale-110"
           >
             <MtgKeywordIcon keyword={kwId} className="w-2.5 h-2.5 text-[10px]" />
           </span>
@@ -56,10 +56,10 @@ export const CardBadges: React.FC<CardBadgesProps> = ({ card }) => {
         const isMinus = type === '−1/−1' || type === '-1/-1';
         const isFinality = type === 'finality';
 
-        let badgeStyle = 'bg-slate-900/95 border-slate-600 text-slate-200';
-        if (isPlus) badgeStyle = 'bg-emerald-950/95 border-emerald-500/70 text-emerald-300';
+        let badgeStyle = 'bg-[#092328]/95 border-[#12544F] text-zinc-200';
+        if (isPlus) badgeStyle = 'bg-[#12544F]/95 border-[#2A835F] text-[#8BBB92]';
         if (isMinus) badgeStyle = 'bg-rose-950/95 border-rose-500/70 text-rose-300';
-        if (type === 'loyalty') badgeStyle = 'bg-amber-950/95 border-amber-500/70 text-amber-300';
+        if (type === 'loyalty') badgeStyle = 'bg-[#12544F]/95 border-[#2A835F] text-[#8BBB92]';
 
         return (
           <span

@@ -740,7 +740,7 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
               >
                 <div
                   data-card-rotator="true"
-                  className="card-rotator rounded-md overflow-hidden border border-amber-400 shadow-2xl relative bg-slate-900 flex-shrink-0"
+                  className="card-rotator rounded-md overflow-hidden border-2 border-[#8BBB92] shadow-2xl relative bg-[#092328] flex-shrink-0 ring-2 ring-[#2A835F]/50"
                   style={{
                     width: `${cardPixelWidth}px`,
                     height: `${cardPixelHeight}px`,

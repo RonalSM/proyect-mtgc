@@ -88,9 +88,9 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
         data-floating-toolbar="true"
         className="fixed top-2 left-1/2 -translate-x-1/2 z-40 transition-all duration-300"
       >
-        <div className="bg-obsidian-900/95 hover:bg-obsidian-900 backdrop-blur-xl border border-obsidian-800 rounded-2xl shadow-2xl px-4 py-1.5 flex items-center space-x-3 text-xs text-zinc-200 select-none ring-1 ring-white/5 transition-all">
+        <div className="bg-[#092328]/95 hover:bg-[#092328] backdrop-blur-xl border border-[#12544F] rounded-2xl shadow-2xl px-4 py-1.5 flex items-center space-x-3 text-xs text-zinc-200 select-none ring-1 ring-[#2A835F]/20 transition-all">
           {/* Round & Active Player */}
-          <div className="flex items-center space-x-2 pr-2 border-r border-obsidian-800/80">
+          <div className="flex items-center space-x-2 pr-2 border-r border-[#12544F]">
             <span className="font-sans font-bold text-[#8BBB92] bg-[#12544F]/40 px-2.5 py-0.5 rounded-lg border border-[#2A835F]/40 tracking-wide">
               Ronda {roomState.turnNumber}
             </span>
@@ -103,7 +103,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                   className={`font-sans font-bold px-2 py-0.5 rounded-md text-[11px] flex items-center space-x-1.5 transition-colors cursor-pointer ${
                     isMyTurn
                       ? 'bg-[#2A835F]/30 text-[#8BBB92] border border-[#2A835F] shadow-sm shadow-[#2A835F]/30 animate-pulse'
-                      : 'text-zinc-100 bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-800'
+                      : 'text-zinc-100 bg-[#0c2d32] hover:bg-[#12544F] border border-[#12544F]'
                   }`}
                   title="Clic para ver el orden de iniciativa de todos los jugadores"
                 >
@@ -144,9 +144,9 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                 {isInitiativeDropdownOpen && (
                   <div
                     data-initiative-dropdown="true"
-                    className="absolute top-full mt-2 left-0 bg-obsidian-900 border border-obsidian-800 rounded-xl shadow-2xl p-2 min-w-[220px] space-y-1 z-50 animate-in fade-in zoom-in-95 ring-1 ring-white/5"
+                    className="absolute top-full mt-2 left-0 bg-[#092328] border border-[#12544F] rounded-xl shadow-2xl p-2 min-w-[220px] space-y-1 z-50 animate-in fade-in zoom-in-95 ring-1 ring-[#2A835F]/30"
                   >
-                    <div className="text-[10px] font-sans font-bold text-[#8BBB92] uppercase px-2 py-1 tracking-wider border-b border-obsidian-800 flex items-center justify-between">
+                    <div className="text-[10px] font-sans font-bold text-[#8BBB92] uppercase px-2 py-1 tracking-wider border-b border-[#12544F] flex items-center justify-between">
                       <span>Orden de Iniciativa</span>
                       <span className="font-mono text-zinc-400">Ronda {roomState.turnNumber}</span>
                     </div>
@@ -159,7 +159,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                           className={`flex items-center justify-between px-2 py-1 rounded-lg text-xs ${
                             isCurrentActive
                               ? 'bg-[#2A835F]/20 text-[#8BBB92] font-bold border border-[#2A835F]/40'
-                              : 'text-zinc-300 hover:bg-obsidian-800'
+                              : 'text-zinc-300 hover:bg-[#12544F]'
                           }`}
                         >
                           <div className="flex items-center space-x-2 min-w-0">
@@ -222,7 +222,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
           {isCollapsed && isMyTurn && (
             <button
               onClick={() => onAction('PASS_TURN', {})}
-              className="flex items-center space-x-1 bg-gradient-to-r from-[#2A835F] to-[#21704e] hover:from-[#349e73] hover:to-[#2A835F] text-white font-sans font-bold px-2.5 py-1 rounded-xl shadow-md shadow-[#2A835F]/30 transition-all cursor-pointer text-xs ml-0.5 animate-pulse"
+              className="flex items-center space-x-1 bg-[#2A835F] hover:bg-[#349e73] text-white font-sans font-bold px-2.5 py-1 rounded-xl shadow-md shadow-[#2A835F]/30 transition-all cursor-pointer text-xs ml-0.5 animate-pulse border border-[#8BBB92]/40"
               title="Pasar turno (Espacio o Enter)"
             >
               <SkipForward className="w-3.5 h-3.5" />
@@ -236,7 +236,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               {isMyTurn && (
                 <button
                   onClick={() => onAction('PASS_TURN', {})}
-                  className="flex items-center space-x-1 bg-gradient-to-r from-[#2A835F] to-[#21704e] hover:from-[#349e73] hover:to-[#2A835F] text-white font-sans font-bold px-3 py-1 rounded-xl shadow-md shadow-[#2A835F]/30 transition-all cursor-pointer text-xs"
+                  className="flex items-center space-x-1 bg-[#2A835F] hover:bg-[#349e73] text-white font-sans font-bold px-3 py-1 rounded-xl shadow-md shadow-[#2A835F]/30 transition-all cursor-pointer text-xs border border-[#8BBB92]/40"
                   title="Pasar turno al siguiente jugador (Espacio o Enter)"
                 >
                   <SkipForward className="w-3.5 h-3.5" />
@@ -248,7 +248,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               <button
                 onClick={onToggleChat}
                 data-testid="toggle-chat-log"
-                className="flex items-center space-x-1 bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-800 px-2.5 py-1 rounded-xl text-zinc-200 transition-colors cursor-pointer"
+                className="flex items-center space-x-1 bg-[#0c2d32] hover:bg-[#12544F] border border-[#12544F] px-2.5 py-1 rounded-xl text-zinc-200 transition-colors cursor-pointer"
                 title="Historial de acciones y chat"
               >
                 <MessageSquare className="w-3.5 h-3.5 text-[#8BBB92]" />
@@ -259,7 +259,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               <div className="relative">
                 <button
                   onClick={() => setIsDiceOpen(!isDiceOpen)}
-                  className="flex items-center space-x-1 bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-800 px-2.5 py-1 rounded-xl text-zinc-200 transition-colors cursor-pointer"
+                  className="flex items-center space-x-1 bg-[#0c2d32] hover:bg-[#12544F] border border-[#12544F] px-2.5 py-1 rounded-xl text-zinc-200 transition-colors cursor-pointer"
                   title="Tirar dados o moneda"
                 >
                   <Dices className="w-3.5 h-3.5 text-[#8BBB92]" />
@@ -267,26 +267,26 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                 </button>
 
                 {isDiceOpen && (
-                  <div className="absolute top-full mt-2 left-0 bg-obsidian-900 border border-obsidian-800 rounded-xl shadow-2xl p-2 w-36 space-y-1 z-50 ring-1 ring-white/5 animate-in fade-in zoom-in-95">
+                  <div className="absolute top-full mt-2 left-0 bg-[#092328] border border-[#12544F] rounded-xl shadow-2xl p-2 w-36 space-y-1 z-50 ring-1 ring-[#2A835F]/30 animate-in fade-in zoom-in-95">
                     <button
                       onClick={() => rollDice(20)}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-obsidian-800 font-semibold text-xs flex items-center space-x-2 text-zinc-200 hover:text-white cursor-pointer"
+                      className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#12544F] font-semibold text-xs flex items-center space-x-2 text-zinc-200 hover:text-white cursor-pointer"
                     >
                       <Dices className="w-3.5 h-3.5 text-[#8BBB92]" />
                       <span>Dado D20</span>
                     </button>
                     <button
                       onClick={() => rollDice(6)}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-obsidian-800 font-semibold text-xs flex items-center space-x-2 text-zinc-200 hover:text-white cursor-pointer"
+                      className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#12544F] font-semibold text-xs flex items-center space-x-2 text-zinc-200 hover:text-white cursor-pointer"
                     >
-                      <Dices className="w-3.5 h-3.5 text-blue-400" />
+                      <Dices className="w-3.5 h-3.5 text-[#8BBB92]" />
                       <span>Dado D6</span>
                     </button>
                     <button
                       onClick={flipCoin}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-obsidian-800 font-semibold text-xs flex items-center space-x-2 text-zinc-200 hover:text-white cursor-pointer"
+                      className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-[#12544F] font-semibold text-xs flex items-center space-x-2 text-zinc-200 hover:text-white cursor-pointer"
                     >
-                      <Coins className="w-3.5 h-3.5 text-yellow-400" />
+                      <Coins className="w-3.5 h-3.5 text-[#8BBB92]" />
                       <span>Lanzar Moneda</span>
                     </button>
                   </div>
@@ -296,7 +296,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               {/* Spectators */}
               {spectatorsCount > 0 && (
                 <div
-                  className="flex items-center space-x-1 text-zinc-400 bg-obsidian-950/80 px-2 py-0.5 rounded-lg border border-obsidian-800"
+                  className="flex items-center space-x-1 text-zinc-400 bg-[#040d0f] px-2 py-0.5 rounded-lg border border-[#12544F]"
                   title={`${spectatorsCount} espectador(es)`}
                 >
                   <Eye className="w-3.5 h-3.5" />
@@ -307,7 +307,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               {/* Share Code */}
               <button
                 onClick={copyRoomCode}
-                className="flex items-center space-x-1 bg-obsidian-950 hover:bg-obsidian-800 border border-[#12544F] px-2 py-1 rounded-xl font-mono text-[11px] font-bold text-[#8BBB92] transition-colors cursor-pointer"
+                className="flex items-center space-x-1 bg-[#040d0f] hover:bg-[#12544F] border border-[#12544F] px-2 py-1 rounded-xl font-mono text-[11px] font-bold text-[#8BBB92] transition-colors cursor-pointer"
                 title="Copiar código de la mesa"
               >
                 <span>{roomState.code}</span>
@@ -322,7 +322,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               <button
                 data-testid="settings-btn"
                 onClick={() => setIsSettingsOpen(true)}
-                className="p-1.5 text-zinc-400 hover:text-white hover:bg-obsidian-800 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-zinc-400 hover:text-white hover:bg-[#12544F] rounded-lg transition-colors cursor-pointer"
                 title="Ajustes de visualización"
               >
                 <Settings className="w-3.5 h-3.5" />
@@ -331,7 +331,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               {/* Help button */}
               <button
                 onClick={() => setIsHelpOpen(true)}
-                className="p-1.5 text-zinc-400 hover:text-white hover:bg-obsidian-800 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-zinc-400 hover:text-white hover:bg-[#12544F] rounded-lg transition-colors cursor-pointer"
                 title="Ayuda y atajos"
               >
                 <HelpCircle className="w-3.5 h-3.5" />
@@ -341,7 +341,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               {onLeaveRoom && (
                 <button
                   onClick={onLeaveRoom}
-                  className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-obsidian-800 rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-[#12544F] rounded-lg transition-colors cursor-pointer"
                   title="Salir de la mesa"
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -353,7 +353,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
           {/* Collapse Toggle */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1 text-zinc-400 hover:text-white hover:bg-obsidian-800 rounded-lg transition-colors ml-1 cursor-pointer"
+            className="p-1 text-zinc-400 hover:text-white hover:bg-[#12544F] rounded-lg transition-colors ml-1 cursor-pointer"
             title={isCollapsed ? 'Desplegar barra' : 'Plegar barra'}
           >
             {isCollapsed ? (
@@ -368,7 +368,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
       {/* Settings Modal */}
       {isSettingsOpen && (
         <div
-          className="fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in"
           onClick={() => setIsSettingsOpen(false)}
           onDoubleClick={e => {
             e.stopPropagation();
@@ -384,9 +384,9 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             onPointerDown={e => e.stopPropagation()}
             onMouseDown={e => e.stopPropagation()}
             onContextMenu={e => e.stopPropagation()}
-            className="bg-obsidian-900 border border-obsidian-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl ring-1 ring-white/5"
+            className="bg-[#092328] border border-[#12544F] rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl ring-1 ring-[#2A835F]/30"
           >
-            <div className="flex items-center justify-between border-b border-obsidian-800/80 pb-3">
+            <div className="flex items-center justify-between border-b border-[#12544F] pb-3">
               <h3 className="font-sans font-bold text-sm text-[#8BBB92] flex items-center space-x-2 tracking-wide">
                 <Settings className="w-4 h-4 text-[#8BBB92]" />
                 <span>Ajustes de Mesa</span>
@@ -401,7 +401,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
 
             <div className="space-y-4">
               {/* Visuals / Playmats */}
-              <label className="flex items-center justify-between cursor-pointer p-2.5 rounded-xl bg-obsidian-950/60 border border-obsidian-800/60 hover:border-[#2A835F]/40 transition-colors">
+              <label className="flex items-center justify-between cursor-pointer p-2.5 rounded-xl bg-[#040d0f] border border-[#12544F] hover:border-[#2A835F] transition-colors">
                 <div>
                   <div className="text-xs font-semibold text-zinc-200">Reducir fondos (Playmats)</div>
                   <div className="text-[11px] text-zinc-400">
@@ -412,14 +412,14 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                   type="checkbox"
                   checked={reduceBackgrounds}
                   onChange={e => onToggleReduceBackgrounds(e.target.checked)}
-                  className="rounded bg-obsidian-950 border-obsidian-700 text-[#2A835F] focus:ring-0 ml-3 cursor-pointer"
+                  className="rounded bg-[#040d0f] border-[#12544F] text-[#2A835F] focus:ring-0 ml-3 cursor-pointer"
                 />
               </label>
             </div>
 
             <button
               onClick={() => setIsSettingsOpen(false)}
-              className="w-full bg-obsidian-800 hover:bg-obsidian-750 border border-[#12544F] text-zinc-200 hover:text-white font-semibold text-xs py-2 rounded-xl transition-colors cursor-pointer"
+              className="w-full bg-[#0c2d32] hover:bg-[#12544F] border border-[#12544F] text-zinc-200 hover:text-white font-semibold text-xs py-2 rounded-xl transition-colors cursor-pointer"
             >
               Cerrar
             </button>
@@ -430,7 +430,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
       {/* Help Modal */}
       {isHelpOpen && (
         <div
-          className="fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in"
           onClick={() => setIsHelpOpen(false)}
           onDoubleClick={e => {
             e.stopPropagation();
@@ -446,9 +446,9 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             onPointerDown={e => e.stopPropagation()}
             onMouseDown={e => e.stopPropagation()}
             onContextMenu={e => e.stopPropagation()}
-            className="bg-obsidian-900 border border-obsidian-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl ring-1 ring-white/5"
+            className="bg-[#092328] border border-[#12544F] rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl ring-1 ring-[#2A835F]/30"
           >
-            <div className="flex items-center justify-between border-b border-obsidian-800/80 pb-3">
+            <div className="flex items-center justify-between border-b border-[#12544F] pb-3">
               <h3 className="font-sans font-bold text-sm text-[#8BBB92] flex items-center space-x-2 tracking-wide">
                 <HelpCircle className="w-4 h-4 text-[#8BBB92]" />
                 <span>Cómo Jugar en la Mesa Virtual</span>
@@ -462,21 +462,21 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             </div>
 
             <div className="text-xs text-zinc-300 space-y-2.5">
-              <div className="p-2.5 rounded-xl bg-obsidian-950/50 border border-obsidian-800/50">
+              <div className="p-2.5 rounded-xl bg-[#040d0f] border border-[#12544F]">
                 <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">🎮 Arrastrar y Soltar (DND):</strong>
                 Arrastra cartas desde tu mano al campo de batalla. También puedes moverlas
                 libremente entre zonas (cementerio, exilio, comando).
               </div>
-              <div className="p-2.5 rounded-xl bg-obsidian-950/50 border border-obsidian-800/50">
+              <div className="p-2.5 rounded-xl bg-[#040d0f] border border-[#12544F]">
                 <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">💖 Vidas y Contadores:</strong>
                 Haz clic en la pastilla de vida de tu esquina interior para modificar vidas (+1, −1,
                 daño recibido, vida ganada) o gestionar daño de comandante y veneno.
               </div>
-              <div className="p-2.5 rounded-xl bg-obsidian-950/50 border border-obsidian-800/50">
+              <div className="p-2.5 rounded-xl bg-[#040d0f] border border-[#12544F]">
                 <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">🔍 Zoom de Cartas:</strong>
                 Pasa el cursor sobre cualquier carta para ampliar su arte y texto Oracle.
               </div>
-              <div className="p-2.5 rounded-xl bg-obsidian-950/50 border border-obsidian-800/50">
+              <div className="p-2.5 rounded-xl bg-[#040d0f] border border-[#12544F]">
                 <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">🖼️ Ampliar Celda:</strong>
                 Pulsa el botón de maximizar en la etiqueta de nombre de una celda para verla en
                 pantalla completa.
@@ -485,7 +485,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
 
             <button
               onClick={() => setIsHelpOpen(false)}
-              className="w-full bg-gradient-to-r from-[#2A835F] to-[#12544F] hover:from-[#349e73] hover:to-[#18645e] text-white font-sans font-bold text-xs py-2.5 rounded-xl transition-all shadow-md shadow-[#2A835F]/20 cursor-pointer"
+              className="w-full bg-[#2A835F] hover:bg-[#349e73] text-white font-sans font-bold text-xs py-2.5 rounded-xl transition-all shadow-md shadow-[#2A835F]/20 cursor-pointer border border-[#8BBB92]/40"
             >
               Entendido
             </button>

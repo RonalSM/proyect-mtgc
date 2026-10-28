@@ -34,22 +34,22 @@ export const ExpandedCellView: React.FC<ExpandedCellViewProps> = ({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col p-3 sm:p-6 select-none animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col p-3 sm:p-6 select-none animate-in fade-in duration-200">
       {/* Top Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+      <div className="flex items-center justify-between pb-3 border-b border-[#12544F]">
         <div className="flex items-center space-x-2">
-          <Maximize2 className="w-4 h-4 text-amber-400" />
+          <Maximize2 className="w-4 h-4 text-[#8BBB92]" />
           <h3 className="font-extrabold text-sm sm:text-base text-white">
-            Vista Ampliada: <span className="text-amber-300">{player.name}</span>
+            Vista Ampliada: <span className="text-[#8BBB92]">{player.name}</span>
           </h3>
-          <span className="text-xs text-slate-500 font-mono hidden sm:inline">
+          <span className="text-xs text-zinc-400 font-mono hidden sm:inline">
             (Pulsa Esc para salir)
           </span>
         </div>
 
         <button
           onClick={onClose}
-          className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-xs font-bold transition-colors cursor-pointer"
+          className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-[#0c2d32] hover:bg-[#12544F] border border-[#12544F] text-zinc-300 hover:text-white text-xs font-bold transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
           <span>Cerrar</span>
@@ -57,7 +57,7 @@ export const ExpandedCellView: React.FC<ExpandedCellViewProps> = ({
       </div>
 
       {/* Expanded Cell Container */}
-      <div className="flex-1 overflow-hidden mt-3 rounded-2xl border border-slate-800 relative bg-slate-950 shadow-2xl">
+      <div className="flex-1 overflow-hidden mt-3 rounded-2xl border border-[#12544F] relative bg-[#092328] shadow-2xl">
         <PlayerCell
           player={player}
           zones={zones}
@@ -76,7 +76,7 @@ export const ExpandedCellView: React.FC<ExpandedCellViewProps> = ({
               {zones.battlefield.map(card => (
                 <div
                   key={card.instanceId}
-                  className={`w-24 h-34 rounded-lg overflow-hidden border border-slate-700 shadow-md bg-slate-900 transition-transform origin-center ${
+                  className={`w-24 h-34 rounded-lg overflow-hidden border border-[#12544F] shadow-md bg-[#040d0f] transition-transform origin-center ${
                     card.isTapped ? 'rotate-90' : ''
                   }`}
                 >
@@ -88,7 +88,7 @@ export const ExpandedCellView: React.FC<ExpandedCellViewProps> = ({
                 </div>
               ))}
               {zones.battlefield.length === 0 && (
-                <div className="w-full text-center py-24 text-slate-500 text-xs italic">
+                <div className="w-full text-center py-24 text-zinc-400 text-xs italic">
                   Sin cartas en el campo de batalla
                 </div>
               )}

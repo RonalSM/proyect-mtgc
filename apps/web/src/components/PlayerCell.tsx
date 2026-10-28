@@ -168,20 +168,18 @@ const DraggablePileCard: React.FC<{
         card?.definition && !card.isFaceDown && !isDragging && showPreview(card.definition, e)
       }
       onMouseLeave={hidePreview}
-      className={`w-full h-full relative cursor-grab active:cursor-grabbing select-none overflow-hidden rounded-md border ${
-        isGraveyard ? 'border-slate-700 bg-slate-900' : 'border-purple-800 bg-purple-950'
-      } ${isDragging ? 'opacity-0' : ''}`}
+      className={`w-full h-full relative cursor-grab active:cursor-grabbing select-none overflow-hidden rounded-md border border-[#12544F] bg-[#092328] ${isDragging ? 'opacity-0' : ''}`}
     >
       <CardDisplay card={card.definition} allowFaceToggle={false} />
       {/* Overlay Badge con Nombre de Pila y Conteo (Punto 7) */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent flex flex-col items-center justify-end p-0.5 pointer-events-none">
+      <div className="absolute inset-0 bg-gradient-to-t from-[#040d0f]/90 via-[#040d0f]/40 to-transparent flex flex-col items-center justify-end p-0.5 pointer-events-none">
         <span
-          className={`text-[7px] font-black tracking-tight uppercase ${isGraveyard ? 'text-slate-300' : 'text-purple-300'}`}
+          className={`text-[7px] font-black tracking-tight uppercase ${isGraveyard ? 'text-zinc-300' : 'text-[#8BBB92]'}`}
         >
           {isGraveyard ? 'CEMENTERIO' : 'EXILIO'}
         </span>
         <span
-          className={`text-[11px] font-mono font-black leading-none drop-shadow ${isGraveyard ? 'text-[#8BBB92]' : 'text-purple-200'}`}
+          className="text-[11px] font-mono font-black leading-none drop-shadow text-[#8BBB92]"
         >
           {count}
         </span>
@@ -220,11 +218,11 @@ const ModalCardItem: React.FC<{
       className="space-y-1 relative group cursor-context-menu"
       title="Clic derecho para opciones (Enviar a la mano, Enviar al campo)"
     >
-      <div className="aspect-[146/204] rounded-lg overflow-hidden border border-slate-700 bg-slate-950 group-hover:border-amber-400/80 transition-colors">
+      <div className="aspect-[146/204] rounded-lg overflow-hidden border border-[#12544F] bg-[#040d0f] group-hover:border-[#8BBB92] transition-colors shadow">
         <CardDisplay card={card.definition} size={zone === 'library' ? 'small' : 'normal'} />
       </div>
       <div
-        className="text-[10px] font-bold text-slate-300 truncate"
+        className="text-[10px] font-bold text-zinc-300 group-hover:text-white truncate transition-colors"
         title={card.definition.name}
       >
         {card.definition.name}
@@ -720,7 +718,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             data-testid="playmat-custom-btn"
             data-player-playmat-btn={player.id}
             onClick={() => setIsPlaymatModalOpen(true)}
-            className="p-1 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer shadow-sm"
+            className="p-1 bg-[#092328]/90 hover:bg-[#0c2d32] border border-[#12544F] rounded-lg text-[#8BBB92] hover:text-white transition-colors cursor-pointer shadow-sm"
             title="Cambiar imagen de Playmat"
           >
             <ImageIcon className="w-3.5 h-3.5" />
@@ -763,7 +761,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   ? 'bg-rose-950/90 border-rose-600 text-rose-300 ring-2 ring-rose-500/30 shadow-rose-900/40'
                   : player.life <= 10
                     ? 'bg-amber-950/90 border-amber-500 text-amber-200 shadow-amber-900/30'
-                    : 'bg-obsidian-900/90 border-obsidian-750 text-zinc-100 hover:border-amber-400/60 shadow-black/80'
+                    : 'bg-[#092328]/95 border-[#12544F] text-zinc-100 hover:border-[#8BBB92] shadow-black/80'
               }`}
             >
               <Heart
@@ -782,12 +780,12 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                 {/* Invisible overlay for click-outside */}
                 <div
                   data-life-backdrop="true"
-                  className="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs"
+                  className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs"
                   onClick={() => setShowLifeControls(false)}
                 />
                 <div
                   style={{ top: `${lifePopoverPos.top}px`, left: `${lifePopoverPos.left}px` }}
-                  className="fixed z-50 bg-obsidian-900/95 border border-obsidian-750 rounded-2xl shadow-2xl p-3 flex flex-col space-y-2.5 w-52 backdrop-blur-xl animate-in fade-in zoom-in-95 ring-1 ring-white/10"
+                  className="fixed z-50 bg-[#092328] border border-[#12544F] rounded-2xl shadow-2xl p-3 flex flex-col space-y-2.5 w-52 backdrop-blur-xl animate-in fade-in zoom-in-95 ring-1 ring-[#2A835F]/30"
                   onClick={e => e.stopPropagation()}
                 >
                   {/* Botones -1 y +1 (Punto 7: se eliminan los botones +-5) */}
@@ -795,21 +793,21 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     <button
                       data-testid="life-minus-1"
                       onClick={() => adjustLife(-1)}
-                      className="bg-rose-950/70 hover:bg-rose-900/80 border border-rose-800/80 text-rose-200 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      className="bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-200 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       -1
                     </button>
                     <button
                       data-testid="life-plus-1"
                       onClick={() => adjustLife(1)}
-                      className="bg-emerald-950/70 hover:bg-emerald-900/80 border border-emerald-800/80 text-emerald-200 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      className="bg-[#12544F] hover:bg-[#2A835F] border border-[#2A835F] text-[#8BBB92] hover:text-white py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       +1
                     </button>
                   </div>
 
                   {/* Punto 7: Dos inputs numéricos: 'Daño recibido' y 'Vida ganada' */}
-                  <div className="flex flex-col space-y-2 pt-2 border-t border-obsidian-800">
+                  <div className="flex flex-col space-y-2 pt-2 border-t border-[#12544F]">
                     <form onSubmit={handleDamageSubmit} className="flex flex-col space-y-1">
                       <label className="text-[10px] font-semibold text-rose-300">
                         Daño recibido
@@ -830,12 +828,12 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                               handleDamageSubmit(e);
                             }
                           }}
-                          className="w-full bg-obsidian-950 border border-obsidian-750 focus:border-rose-500 rounded-lg px-2 py-0.5 text-xs text-rose-200 font-mono focus:outline-none"
+                          className="w-full bg-[#040d0f] border border-[#12544F] focus:border-rose-500 rounded-lg px-2 py-0.5 text-xs text-rose-200 font-mono focus:outline-none"
                         />
                         <button
                           type="submit"
                           data-testid="apply-damage-btn"
-                          className="px-2 py-0.5 bg-rose-900 hover:bg-rose-800 text-rose-200 font-bold text-xs rounded-lg cursor-pointer"
+                          className="px-2.5 py-0.5 bg-rose-900 hover:bg-rose-800 text-rose-100 font-bold text-xs rounded-lg cursor-pointer transition-colors"
                         >
                           -
                         </button>
@@ -843,7 +841,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     </form>
 
                     <form onSubmit={handleHealSubmit} className="flex flex-col space-y-1">
-                      <label className="text-[10px] font-semibold text-emerald-300">
+                      <label className="text-[10px] font-semibold text-[#8BBB92]">
                         Vida ganada
                       </label>
                       <div className="flex space-x-1">
@@ -862,12 +860,12 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                               handleHealSubmit(e);
                             }
                           }}
-                          className="w-full bg-obsidian-950 border border-obsidian-750 focus:border-emerald-500 rounded-lg px-2 py-0.5 text-xs text-emerald-200 font-mono focus:outline-none"
+                          className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-lg px-2 py-0.5 text-xs text-[#8BBB92] font-mono focus:outline-none"
                         />
                         <button
                           type="submit"
                           data-testid="apply-heal-btn"
-                          className="px-2 py-0.5 bg-emerald-900 hover:bg-emerald-800 text-emerald-200 font-bold text-xs rounded-lg cursor-pointer"
+                          className="px-2.5 py-0.5 bg-[#2A835F] hover:bg-[#349e73] text-white font-bold text-xs rounded-lg cursor-pointer transition-colors"
                         >
                           +
                         </button>
@@ -876,21 +874,21 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   </div>
 
                   {/* Counter Badges Menu */}
-                  <div className="pt-2 border-t border-obsidian-800 flex items-center justify-between bg-obsidian-950/80 px-2 py-1.5 rounded-lg text-[10px]">
-                    <span className="text-emerald-400 flex items-center space-x-1">
+                  <div className="pt-2 border-t border-[#12544F] flex items-center justify-between bg-[#040d0f] px-2 py-1.5 rounded-lg text-[10px]">
+                    <span className="text-[#8BBB92] flex items-center space-x-1 font-medium">
                       <i className="ms ms-counter-skull text-xs flex-shrink-0" aria-hidden="true" />
                       <span>Veneno: {player.counters.poison}</span>
                     </span>
                     <div className="flex space-x-1">
                       <button
                         onClick={() => adjustCounter('poison', -1)}
-                        className="hover:text-white px-1 font-bold cursor-pointer text-zinc-400"
+                        className="hover:text-white px-1.5 py-0.5 font-bold cursor-pointer text-zinc-400 hover:bg-[#12544F] rounded transition-colors"
                       >
                         -
                       </button>
                       <button
                         onClick={() => adjustCounter('poison', 1)}
-                        className="hover:text-white px-1 font-bold cursor-pointer text-zinc-400"
+                        className="hover:text-white px-1.5 py-0.5 font-bold cursor-pointer text-zinc-400 hover:bg-[#12544F] rounded transition-colors"
                       >
                         +
                       </button>
@@ -911,10 +909,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             width: 'var(--card-w)',
             height: 'var(--card-h)',
           }}
-          className={`rounded-lg overflow-hidden border shadow-lg bg-obsidian-950 flex flex-col items-center justify-center relative flex-shrink-0 pointer-events-auto z-20 transition-all ${
+          className={`rounded-lg overflow-hidden border shadow-lg bg-[#092328] flex flex-col items-center justify-center relative flex-shrink-0 pointer-events-auto z-20 transition-all ${
             isCommandOver
-              ? 'ring-2 ring-amber-400 bg-amber-950/40 border-amber-400 scale-[1.03]'
-              : 'border-obsidian-800 hover:border-obsidian-700'
+              ? 'ring-2 ring-[#8BBB92] bg-[#12544F]/50 border-[#8BBB92] scale-[1.03]'
+              : 'border-[#12544F] hover:border-[#8BBB92]'
           }`}
           title={`Zona de Comando (${zones.command.length} cartas)`}
         >
@@ -1015,10 +1013,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           }}
           className={`rounded-lg overflow-hidden border shadow-lg relative flex flex-col items-center justify-center flex-shrink-0 pointer-events-auto transition-all z-20 ${
             isLibOver
-              ? 'ring-4 ring-amber-400 scale-110 shadow-2xl shadow-amber-500/60 z-30'
+              ? 'ring-4 ring-[#8BBB92] scale-110 shadow-2xl shadow-[#2A835F]/60 z-30'
               : isLocalPlayer
-                ? 'cursor-pointer hover:scale-105 active:scale-95 border-amber-500/40 hover:border-amber-400'
-                : 'border-obsidian-800'
+                ? 'cursor-pointer hover:scale-105 active:scale-95 border-[#12544F] hover:border-[#8BBB92]'
+                : 'border-[#12544F]'
           }`}
           title={
             isLocalPlayer
@@ -1041,7 +1039,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                 e.stopPropagation();
                 setActivePileModal('library');
               }}
-              className="absolute top-1 right-1 p-1 bg-obsidian-900/90 hover:bg-amber-500 hover:text-obsidian-950 text-zinc-300 rounded-md border border-obsidian-750 shadow transition-colors cursor-pointer z-10"
+              className="absolute top-1 right-1 p-1 bg-[#092328]/90 hover:bg-[#2A835F] hover:text-white text-zinc-300 rounded-md border border-[#12544F] shadow transition-colors cursor-pointer z-10"
               title="Ver contenido de la biblioteca (solo tú)"
             >
               <Eye className="w-3 h-3" />
@@ -1062,11 +1060,11 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           <div
             ref={setGydDropRef}
             data-pile-zone="graveyard"
-            className={`flex-1 rounded-md overflow-hidden border border-obsidian-800 bg-obsidian-900/90 shadow flex flex-col items-center justify-center cursor-pointer hover:border-obsidian-700 active:scale-95 transition-all relative ${
+            className={`flex-1 rounded-md overflow-hidden border border-[#12544F] bg-[#092328]/90 shadow flex flex-col items-center justify-center cursor-pointer hover:border-[#8BBB92] active:scale-95 transition-all relative ${
               isGydOver
-                ? 'ring-4 ring-zinc-300 scale-105 bg-obsidian-800 shadow-xl'
+                ? 'ring-4 ring-[#8BBB92] scale-105 bg-[#12544F] shadow-xl'
                 : zones.graveyard.length > 0
-                  ? 'bg-obsidian-850/90'
+                  ? 'bg-[#092328]/95'
                   : 'opacity-70'
             }`}
             title={`Cementerio: ${zones.graveyard.length} cartas (clic para ver, arrastra la superior)`}
@@ -1098,11 +1096,11 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           <div
             ref={setExileDropRef}
             data-pile-zone="exile"
-            className={`flex-1 rounded-md overflow-hidden border border-obsidian-800 bg-obsidian-900/90 shadow flex flex-col items-center justify-center cursor-pointer hover:border-purple-500/50 active:scale-95 transition-all relative ${
+            className={`flex-1 rounded-md overflow-hidden border border-[#12544F] bg-[#092328]/90 shadow flex flex-col items-center justify-center cursor-pointer hover:border-[#8BBB92] active:scale-95 transition-all relative ${
               isExileOver
-                ? 'ring-4 ring-purple-400 scale-105 bg-purple-900/80 shadow-xl'
+                ? 'ring-4 ring-[#8BBB92] scale-105 bg-[#12544F] shadow-xl'
                 : zones.exile.length > 0
-                  ? 'bg-purple-950/40 border-purple-800/60'
+                  ? 'bg-[#092328]/95 border-[#12544F]'
                   : 'opacity-70'
             }`}
             title={`Exilio: ${zones.exile.length} cartas (clic para ver, arrastra la superior)`}
@@ -1120,10 +1118,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                 onClick={() => setActivePileModal('exile')}
                 className="w-full h-full flex flex-col items-center justify-center p-0.5"
               >
-                <span className="text-[7px] font-sans font-bold text-purple-300 uppercase tracking-wider">
+                <span className="text-[7px] font-sans font-bold text-zinc-400 uppercase tracking-wider">
                   EXILIO
                 </span>
-                <span className="text-[11px] font-mono font-black text-purple-200 leading-tight">
+                <span className="text-[11px] font-mono font-black text-[#8BBB92] leading-tight">
                   0
                 </span>
               </div>
@@ -1138,7 +1136,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           <div
             data-testid="pile-viewer-modal"
             data-active-pile={activePileModal}
-            className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
             onClick={() => setActivePileModal(null)}
             onDoubleClick={e => {
               e.stopPropagation();
@@ -1154,11 +1152,11 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               onPointerDown={e => e.stopPropagation()}
               onMouseDown={e => e.stopPropagation()}
               onContextMenu={e => e.stopPropagation()}
-              className={`bg-obsidian-900 border border-obsidian-800 rounded-2xl w-full ${
+              className={`bg-[#092328] border border-[#12544F] rounded-2xl w-full ${
                 activePileModal === 'library' ? 'max-w-2xl' : 'max-w-lg'
-              } max-h-[80vh] flex flex-col shadow-2xl overflow-hidden ring-1 ring-white/5 animate-in fade-in zoom-in-95`}
+              } max-h-[80vh] flex flex-col shadow-2xl overflow-hidden ring-1 ring-[#2A835F]/30 animate-in fade-in zoom-in-95`}
             >
-              <div className="px-5 py-3 border-b border-obsidian-800/80 flex items-center justify-between bg-obsidian-950/60">
+              <div className="px-5 py-3 border-b border-[#12544F] flex items-center justify-between bg-[#040d0f]/90">
                 <div className="flex items-center space-x-3">
                   <h3 className="font-sans font-bold text-sm text-[#8BBB92] capitalize tracking-wide">
                     {activePileModal === 'command'
@@ -1203,9 +1201,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                       ) : imageStats.loaded > 0 ? (
                         <div
                           data-testid="image-queue-complete"
-                          className="text-[10px] text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full flex items-center gap-1"
+                          className="text-[10px] text-[#8BBB92] bg-[#12544F]/60 border border-[#2A835F]/60 px-2 py-0.5 rounded-full flex items-center gap-1 font-medium"
                         >
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#8BBB92]" />
                           <span>
                             Imágenes listas ({imageStats.loaded}/
                             {imageStats.total || zones.library.length})
@@ -1241,7 +1239,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
 
               {/* Barra de búsqueda y filtros rápidos por tipo (solo en Biblioteca, Punto 8) */}
               {activePileModal === 'library' && (
-                <div className="px-5 py-2.5 bg-obsidian-950/80 border-b border-obsidian-800/80 flex flex-col space-y-2">
+                <div className="px-5 py-2.5 bg-[#040d0f]/80 border-b border-[#12544F] flex flex-col space-y-2">
                   <div className="relative">
                     <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-zinc-400 pointer-events-none" />
                     <input
@@ -1251,7 +1249,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                       value={librarySearchQuery}
                       onChange={e => setLibrarySearchQuery(e.target.value)}
                       data-testid="library-search-input"
-                      className="w-full bg-obsidian-900 border border-obsidian-750 rounded-xl pl-9 pr-8 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#2A835F] font-sans transition-colors"
+                      className="w-full bg-[#040d0f] border border-[#12544F] rounded-xl pl-9 pr-8 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-[#2A835F] font-sans transition-colors"
                     />
                     {librarySearchQuery && (
                       <button
@@ -1269,8 +1267,8 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                       onClick={() => setLibraryTypeFilter(null)}
                       className={`px-2.5 py-1 rounded-lg border font-medium cursor-pointer transition-all ${
                         libraryTypeFilter === null
-                          ? 'bg-[#2A835F]/30 text-[#8BBB92] border-[#2A835F]/60 shadow-sm'
-                          : 'bg-obsidian-900 text-zinc-400 border-obsidian-800 hover:text-zinc-200 hover:border-obsidian-700'
+                          ? 'bg-[#2A835F] text-white border-[#8BBB92] shadow-sm font-bold'
+                          : 'bg-[#0c2d32] text-zinc-300 border-[#12544F] hover:text-white hover:border-[#2A835F]'
                       }`}
                     >
                       Todos
@@ -1290,7 +1288,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                           className={`px-2.5 py-1 rounded-lg border font-medium cursor-pointer transition-all ${
                             isSelected
                               ? 'bg-[#2A835F] text-white font-bold border-[#8BBB92] shadow-md shadow-[#2A835F]/30'
-                              : 'bg-obsidian-900 text-zinc-300 border-obsidian-800 hover:border-obsidian-700 hover:text-white'
+                              : 'bg-[#0c2d32] text-zinc-300 border-[#12544F] hover:border-[#2A835F] hover:text-white'
                           }`}
                         >
                           {type}
@@ -1337,7 +1335,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     />
                   ))}
                   {filteredModalCards.length === 0 && (
-                    <div className="col-span-full text-center py-8 text-slate-500 text-xs italic">
+                    <div className="col-span-full text-center py-16 text-zinc-400 text-xs italic">
                       Esta zona está vacía
                     </div>
                   )}
@@ -1353,7 +1351,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         <Portal>
           <div
             data-testid="playmat-modal-overlay"
-            className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
             onClick={() => setIsPlaymatModalOpen(false)}
             onDoubleClick={e => {
               e.stopPropagation();
@@ -1370,9 +1368,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               onPointerDown={e => e.stopPropagation()}
               onMouseDown={e => e.stopPropagation()}
               onContextMenu={e => e.stopPropagation()}
-              className="bg-obsidian-900 border border-obsidian-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl"
+              className="bg-[#092328] border border-[#12544F] rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl"
             >
-              <div className="flex items-center justify-between border-b border-obsidian-800 pb-2">
+              <div className="flex items-center justify-between border-b border-[#12544F] pb-2">
                 <h3 className="font-bold text-sm text-[#8BBB92] flex items-center space-x-2">
                   <ImageIcon className="w-4 h-4 text-[#8BBB92]" />
                   <span>Personalizar Playmat</span>
@@ -1381,7 +1379,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   type="button"
                   data-testid="close-playmat-modal-btn"
                   onClick={() => setIsPlaymatModalOpen(false)}
-                  className="text-zinc-400 hover:text-white font-bold p-1 rounded-lg hover:bg-obsidian-800 transition-colors"
+                  className="text-zinc-400 hover:text-white font-bold p-1 rounded-lg hover:bg-[#12544F] transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1392,7 +1390,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                 <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                   Fondo del Playmat
                 </span>
-                <div className="relative w-full h-36 rounded-xl overflow-hidden border border-obsidian-800 bg-obsidian-950 shadow-inner group">
+                <div className="relative w-full h-36 rounded-xl overflow-hidden border border-[#12544F] bg-[#040d0f] shadow-inner group">
                   {previewPlaymatUrl ? (
                     <>
                       <img
@@ -1400,7 +1398,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                         alt="Playmat actual"
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-obsidian-950/90 via-obsidian-950/30 to-transparent pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#040d0f]/90 via-[#040d0f]/30 to-transparent pointer-events-none" />
                     </>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-xs text-zinc-500">
@@ -1412,7 +1410,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   {isUsingArtCrop && (
                     <div
                       data-testid="playmat-attribution-box"
-                      className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-auto bg-obsidian-950/90 backdrop-blur-md px-3 py-2 rounded-lg border border-obsidian-800/80 text-[11px] shadow-lg"
+                      className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-auto bg-[#040d0f]/90 backdrop-blur-md px-3 py-2 rounded-lg border border-[#12544F] text-[11px] shadow-lg"
                     >
                       <div className="min-w-0 pr-2">
                         <div
@@ -1458,7 +1456,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   value={customPlaymatInput}
                   onChange={e => setCustomPlaymatInput(e.target.value)}
                   placeholder="https://cards.scryfall.io/art_crop/..."
-                  className="w-full bg-obsidian-950 border border-obsidian-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#2A835F]"
+                  className="w-full bg-[#040d0f] border border-[#12544F] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#2A835F]"
                   autoFocus
                 />
               </div>
@@ -1484,7 +1482,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                   type="button"
                   data-testid="playmat-cancel-btn"
                   onClick={() => setIsPlaymatModalOpen(false)}
-                  className="flex-1 bg-obsidian-800 hover:bg-obsidian-750 text-white font-bold text-xs py-2 rounded-xl transition-colors cursor-pointer"
+                  className="flex-1 bg-[#0c2d32] hover:bg-[#12544F] text-white font-bold text-xs py-2 rounded-xl transition-colors cursor-pointer border border-[#12544F]"
                 >
                   Cancelar
                 </button>
@@ -1506,27 +1504,27 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
         <Portal>
           <div
             onClick={() => setZoomedCard(null)}
-            className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
           >
             <div
               onClick={e => e.stopPropagation()}
-              className="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-4 flex flex-col space-y-3 shadow-2xl overflow-hidden cursor-default"
+              className="bg-[#092328] border border-[#12544F] rounded-3xl max-w-sm w-full p-4 flex flex-col space-y-3 shadow-2xl overflow-hidden cursor-default ring-1 ring-[#2A835F]/30"
             >
-              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <div className="flex items-center justify-between pb-2 border-b border-[#12544F]">
                 <span className="font-bold text-sm text-white truncate">
                   {zoomedCard.definition.name}
                 </span>
                 <button
                   onClick={() => setZoomedCard(null)}
-                  className="text-slate-400 hover:text-white font-bold text-lg"
+                  className="text-zinc-400 hover:text-white font-bold text-lg"
                 >
                   &times;
                 </button>
               </div>
-              <div className="aspect-[2.5/3.5] rounded-2xl overflow-hidden border border-slate-800 shadow-xl">
+              <div className="aspect-[2.5/3.5] rounded-2xl overflow-hidden border border-[#12544F] shadow-xl">
                 <CardDisplay card={zoomedCard.definition} allowFaceToggle={true} />
               </div>
-              <div className="text-center text-xs text-slate-400">
+              <div className="text-center text-xs text-zinc-400">
                 {zoomedCard.definition.typeLine}
               </div>
             </div>

@@ -14,21 +14,21 @@ export const CardPTBadge: React.FC<{ card: CardInstance }> = ({ card }) => {
 
   const { effectiveP, effectiveT, baseP, baseT, pStatus, tStatus, overallStatus } = pt;
 
-  let badgeBorderBg = 'bg-slate-950/95 border-slate-700/80 text-slate-200 shadow-sm';
+  let badgeBorderBg = 'bg-[#040d0f]/95 border-[#12544F] text-zinc-200 shadow-sm';
   if (overallStatus === 'up') {
     badgeBorderBg =
-      'bg-slate-950/95 border-emerald-500/80 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.35)]';
+      'bg-[#040d0f]/95 border-[#2A835F] text-[#8BBB92] shadow-[0_0_8px_rgba(42,131,95,0.35)]';
   } else if (overallStatus === 'down') {
     badgeBorderBg =
-      'bg-slate-950/95 border-rose-500/80 text-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.35)]';
+      'bg-[#040d0f]/95 border-rose-500/80 text-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.35)]';
   }
 
-  let pColor = 'text-slate-100 font-bold';
-  if (pStatus === 'up') pColor = 'text-emerald-400 font-extrabold';
+  let pColor = 'text-zinc-100 font-bold';
+  if (pStatus === 'up') pColor = 'text-[#8BBB92] font-extrabold';
   else if (pStatus === 'down') pColor = 'text-rose-400 font-extrabold';
 
-  let tColor = 'text-slate-100 font-bold';
-  if (tStatus === 'up') tColor = 'text-emerald-400 font-extrabold';
+  let tColor = 'text-zinc-100 font-bold';
+  if (tStatus === 'up') tColor = 'text-[#8BBB92] font-extrabold';
   else if (tStatus === 'down') tColor = 'text-rose-400 font-extrabold';
 
   return (
@@ -274,12 +274,12 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
       {/* Rotating Card Body (Punto 7: rotación 90° alrededor del centro invariante, nítida y sin 3D) */}
       <div
         data-card-rotator="true"
-        className={`card-rotator rounded-md overflow-hidden border shadow-md relative bg-slate-900 flex-shrink-0 ${
+        className={`card-rotator rounded-md overflow-hidden border shadow-md relative bg-[#092328] flex-shrink-0 ${
           isAnimatingTap ? 'is-animating-tap' : ''
         } ${
           isSelected
-            ? 'border-amber-400 ring-2 ring-amber-400/50 shadow-amber-500/20'
-            : 'border-slate-800 hover:border-slate-600'
+            ? 'border-[#8BBB92] ring-2 ring-[#2A835F]/50 shadow-[#2A835F]/20'
+            : 'border-[#12544F] hover:border-[#8BBB92]'
         }`}
         style={{
           width: `${cardWNum}px`,
@@ -489,16 +489,16 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
                   transform: item.isTapped ? 'rotate(90deg)' : 'rotate(0deg)',
                   transformOrigin: 'center center',
                 }}
-                className="card-rotator flex-shrink-0 rounded-md overflow-hidden border border-amber-400/80 shadow-lg shadow-amber-500/25 bg-slate-900 relative"
+                className="card-rotator flex-shrink-0 rounded-md overflow-hidden border-2 border-[#8BBB92] shadow-lg shadow-[#2A835F]/25 bg-[#092328] relative"
               >
                 {item.cardDefinition ? (
                   <CardDisplay card={item.cardDefinition} isTapped={item.isTapped} />
                 ) : (
-                  <div className="w-full h-full bg-slate-800 flex items-center justify-center text-xs text-amber-200">
+                  <div className="w-full h-full bg-[#040d0f] flex items-center justify-center text-xs text-[#8BBB92]">
                     {item.playerName}
                   </div>
                 )}
-                <div className="absolute bottom-0 inset-x-0 bg-black/75 backdrop-blur-xs text-[9px] text-amber-300 font-semibold text-center py-0.5 truncate px-1 border-t border-amber-400/30">
+                <div className="absolute bottom-0 inset-x-0 bg-black/75 backdrop-blur-xs text-[9px] text-[#8BBB92] font-semibold text-center py-0.5 truncate px-1 border-t border-[#12544F]">
                   {item.playerName}
                 </div>
               </div>

@@ -202,7 +202,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
   return (
     <div
       data-testid="card-details-modal"
-      className="fixed inset-0 z-[60] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto select-none"
+      className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto select-none"
       onClick={onClose}
       onDoubleClick={e => {
         e.stopPropagation();
@@ -213,7 +213,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
       onContextMenu={e => e.stopPropagation()}
     >
       <div
-        className="bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-slate-100 animate-in fade-in zoom-in-95 duration-150"
+        className="bg-[#092328] border border-[#12544F] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-zinc-100 ring-1 ring-[#2A835F]/30 animate-in fade-in zoom-in-95 duration-150"
         onClick={e => e.stopPropagation()}
         onDoubleClick={e => e.stopPropagation()}
         onPointerDown={e => e.stopPropagation()}
@@ -221,21 +221,21 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
         onContextMenu={e => e.stopPropagation()}
       >
         {/* Header Bar */}
-        <div className="bg-slate-950/80 px-5 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div className="bg-[#040d0f]/90 px-5 py-3 border-b border-[#12544F] flex items-center justify-between">
           <div className="flex items-center space-x-3 min-w-0">
             <h2
               data-testid="card-details-name"
-              className="text-base sm:text-lg font-black text-amber-300 truncate tracking-wide"
+              className="text-base sm:text-lg font-black text-white truncate tracking-wide"
             >
               {displayName}
             </h2>
             {hasMultipleFaces && (
-              <div className="flex items-center space-x-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700">
+              <div className="flex items-center space-x-1 bg-[#0c2d32] p-0.5 rounded-lg border border-[#12544F]">
                 <button
                   type="button"
                   data-testid="card-details-face-switcher"
                   onClick={() => setActiveFaceIndex(prev => (prev === 0 ? 1 : 0))}
-                  className="px-2.5 py-1 rounded text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-400 flex items-center space-x-1.5 transition-all cursor-pointer shadow"
+                  className="px-2.5 py-1 rounded-md text-xs font-bold bg-[#2A835F] text-white hover:bg-[#349e73] border border-[#8BBB92]/40 flex items-center space-x-1.5 transition-all cursor-pointer shadow"
                 >
                   <RefreshCw className="w-3 h-3" />
                   <span>{activeFaceIndex === 0 ? 'Cara Posterior ↷' : 'Cara Frontal ↶'}</span>
@@ -248,7 +248,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
             type="button"
             data-testid="close-card-details-modal"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+            className="p-1.5 text-zinc-400 hover:text-white hover:bg-[#12544F] rounded-xl transition-colors cursor-pointer"
             title="Cerrar (Esc)"
           >
             <X className="w-5 h-5" />
@@ -260,11 +260,11 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
           {isNotInDb && (
             <div
               data-testid="card-not-in-db-warning"
-              className="md:col-span-12 bg-amber-500/20 border border-amber-500/60 text-amber-200 px-4 py-3 rounded-xl flex items-center space-x-3 shadow"
+              className="md:col-span-12 bg-[#12544F]/40 border border-[#2A835F] text-[#8BBB92] px-4 py-3 rounded-xl flex items-center space-x-3 shadow"
             >
-              <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
+              <AlertTriangle className="w-5 h-5 text-[#8BBB92] shrink-0" />
               <div className="text-xs">
-                <strong className="block font-bold text-amber-300">Aviso: Carta no encontrada en la base local</strong>
+                <strong className="block font-bold text-white">Aviso: Carta no encontrada en la base local</strong>
                 <span>Esta carta no se encuentra en la base de datos local de Scryfall. Se muestran los datos disponibles y el fallo se ha registrado en el panel de diagnóstico.</span>
               </div>
             </div>
@@ -272,7 +272,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
 
           {/* Columna Izquierda: Imagen Grande de la Carta */}
           <div className="md:col-span-5 flex flex-col items-center">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-700/60 bg-slate-950 aspect-[5/7] max-w-[320px] w-full">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-[#12544F] bg-[#040d0f] aspect-[5/7] max-w-[320px] w-full">
               <img
                 data-testid="card-details-image"
                 src={currentImageSrc}
@@ -286,17 +286,17 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
             <div className="mt-3 text-center space-y-1 w-full max-w-[320px]">
               <div
                 data-testid="card-details-artist"
-                className="text-[11px] text-slate-400 flex items-center justify-center space-x-1.5"
+                className="text-[11px] text-zinc-400 flex items-center justify-center space-x-1.5"
               >
-                <User className="w-3.5 h-3.5 text-amber-400/80" />
+                <User className="w-3.5 h-3.5 text-[#8BBB92]" />
                 <span>
                   Ilustrado por{' '}
-                  <strong className="text-slate-200 font-semibold">{displayArtist}</strong>
+                  <strong className="text-zinc-200 font-semibold">{displayArtist}</strong>
                 </span>
               </div>
               <div
                 data-testid="card-details-copyright"
-                className="text-[10px] text-slate-500 font-mono"
+                className="text-[10px] text-zinc-500 font-mono"
               >
                 {currentCard.copyright || '™ & © Wizards of the Coast'}
               </div>
@@ -306,8 +306,8 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
           {/* Columna Derecha: Metadatos, Oracle Text y Dictámenes Oficiales */}
           <div className="md:col-span-7 flex flex-col space-y-4">
             {/* Cabecera: Nombre y Coste de Maná con Símbolos */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <span className="font-bold text-sm text-slate-200">{displayName}</span>
+            <div className="flex items-center justify-between border-b border-[#12544F] pb-2">
+              <span className="font-bold text-sm text-zinc-200">{displayName}</span>
               {displayMana ? (
                 <div data-testid="card-details-mana" className="flex items-center flex-wrap">
                   {displayMana.match(/\{[^}]+\}/g)?.map((sym, i) => (
@@ -315,7 +315,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                   ))}
                 </div>
               ) : (
-                <span data-testid="card-details-mana" className="text-xs text-slate-500 italic">
+                <span data-testid="card-details-mana" className="text-xs text-zinc-500 italic">
                   Sin coste
                 </span>
               )}
@@ -323,19 +323,19 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
 
             {/* Línea de Tipo y Estadísticas */}
             <div className="flex items-center justify-between text-xs">
-              <span data-testid="card-details-type" className="font-semibold text-slate-300">
+              <span data-testid="card-details-type" className="font-semibold text-zinc-300">
                 {displayType}
               </span>
               {(displayPower !== undefined || displayLoyalty !== undefined) && (
                 <span
                   data-testid="card-details-pt"
-                  className="font-mono font-black text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 inline-flex items-center space-x-1"
+                  className="font-mono font-black text-[#8BBB92] bg-[#12544F]/50 px-2 py-0.5 rounded border border-[#2A835F]/60 inline-flex items-center space-x-1"
                 >
                   {displayPower !== undefined ? (
                     <span>{`${displayPower}/${displayToughness ?? '?'}`}</span>
                   ) : (
                     <>
-                      <i className="ms ms-counter-loyalty text-xs text-amber-400 mr-1" aria-hidden="true" />
+                      <i className="ms ms-counter-loyalty text-xs text-[#8BBB92] mr-1" aria-hidden="true" />
                       <span>{`Lealtad: ${displayLoyalty}`}</span>
                     </>
                   )}
@@ -344,9 +344,9 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
             </div>
 
             {/* Caja de Texto Oracle con Símbolos Formateados */}
-            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 shadow-inner">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center space-x-1">
-                <BookOpen className="w-3 h-3 text-amber-400" />
+            <div className="bg-[#040d0f]/80 border border-[#12544F] rounded-xl p-3.5 shadow-inner">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5 flex items-center space-x-1">
+                <BookOpen className="w-3 h-3 text-[#8BBB92]" />
                 <span>Texto Oracle Oficial</span>
               </div>
               <div data-testid="card-details-oracle">
@@ -356,64 +356,64 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
 
             {/* Metadatos: Set, Rareza, Número e Identidad de Color */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
-              <div className="bg-slate-800/40 border border-slate-800 p-2 rounded-lg">
-                <span className="text-slate-400 block text-[9px] uppercase font-bold">
+              <div className="bg-[#0c2d32] border border-[#12544F] p-2 rounded-lg">
+                <span className="text-zinc-400 block text-[9px] uppercase font-bold">
                   Edición / Set
                 </span>
                 <span
                   data-testid="card-details-set"
-                  className="font-semibold text-slate-200 truncate flex items-center space-x-1.5"
+                  className="font-semibold text-zinc-200 truncate flex items-center space-x-1.5"
                   title={currentCard.setName || currentCard.set}
                 >
                   <KeyruneSetIcon
                     setCode={currentCard.set}
                     rarity={currentCard.rarity}
-                    className="text-sm text-amber-300"
+                    className="text-sm text-[#8BBB92]"
                   />
                   <span className="truncate">{currentCard.setName || currentCard.set?.toUpperCase() || 'Commander'}</span>
                 </span>
               </div>
 
-              <div className="bg-slate-800/40 border border-slate-800 p-2 rounded-lg">
-                <span className="text-slate-400 block text-[9px] uppercase font-bold">Rareza</span>
+              <div className="bg-[#0c2d32] border border-[#12544F] p-2 rounded-lg">
+                <span className="text-zinc-400 block text-[9px] uppercase font-bold">Rareza</span>
                 <span
                   data-testid="card-details-rarity"
-                  className="font-semibold text-amber-300 capitalize"
+                  className="font-semibold text-[#8BBB92] capitalize"
                 >
                   {currentCard.rarity || 'Desconocida'}
                 </span>
               </div>
 
-              <div className="bg-slate-800/40 border border-slate-800 p-2 rounded-lg">
-                <span className="text-slate-400 block text-[9px] uppercase font-bold">
+              <div className="bg-[#0c2d32] border border-[#12544F] p-2 rounded-lg">
+                <span className="text-zinc-400 block text-[9px] uppercase font-bold">
                   Coleccionista
                 </span>
                 <span
                   data-testid="card-details-collector-number"
-                  className="font-mono text-slate-300"
+                  className="font-mono text-zinc-300"
                 >
                   {currentCard.collectorNumber ? `#${currentCard.collectorNumber}` : '-'}
                 </span>
               </div>
 
-              <div className="bg-slate-800/40 border border-slate-800 p-2 rounded-lg">
-                <span className="text-slate-400 block text-[9px] uppercase font-bold">
+              <div className="bg-[#0c2d32] border border-[#12544F] p-2 rounded-lg">
+                <span className="text-zinc-400 block text-[9px] uppercase font-bold">
                   Legalidad
                 </span>
                 <span
                   data-testid="card-details-legality"
                   className={`font-bold inline-flex items-center space-x-1 ${
-                    isCommanderLegal ? 'text-emerald-400' : 'text-rose-400'
+                    isCommanderLegal ? 'text-[#8BBB92]' : 'text-rose-400'
                   }`}
                 >
                   {isCommanderLegal ? (
                     <>
-                      <ShieldCheck className="w-3 h-3" />
+                      <ShieldCheck className="w-3 h-3 text-[#8BBB92]" />
                       <span>Legal</span>
                     </>
                   ) : (
                     <>
-                      <ShieldAlert className="w-3 h-3" />
+                      <ShieldAlert className="w-3 h-3 text-rose-400" />
                       <span>Baneada</span>
                     </>
                   )}
@@ -423,7 +423,7 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
 
             {/* Identidad de Color */}
             {currentCard.colorIdentity && currentCard.colorIdentity.length > 0 && (
-              <div className="flex items-center space-x-2 text-xs text-slate-400">
+              <div className="flex items-center space-x-2 text-xs text-zinc-400">
                 <span className="font-bold text-[10px] uppercase">Identidad de Color:</span>
                 <div data-testid="card-details-color-identity" className="flex items-center">
                   {currentCard.colorIdentity.map((c, i) => (
@@ -434,19 +434,19 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
             )}
 
             {/* Dictámenes Oficiales (Rulings) */}
-            <div className="border-t border-slate-800 pt-3">
+            <div className="border-t border-[#12544F] pt-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold text-slate-300 flex items-center space-x-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-xs font-bold text-zinc-300 flex items-center space-x-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#8BBB92]" />
                   <span>Dictámenes Oficiales (WotC / Gatherer Rulings)</span>
                 </span>
                 {rulings.length > 0 && (
-                  <span className="text-[10px] text-slate-400 font-mono bg-slate-800 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] text-[#8BBB92] font-mono bg-[#12544F] px-1.5 py-0.5 rounded border border-[#2A835F]">
                     {rulings.length} dictamen(es)
                   </span>
                 )}
               </div>
-              <div className="text-[10px] text-slate-400 italic mb-2">
+              <div className="text-[10px] text-zinc-400 italic mb-2">
                 Dictámenes oficiales emitidos por Wizards of the Coast en inglés original.
               </div>
 
@@ -455,13 +455,13 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                 className="max-h-48 overflow-y-auto space-y-2 pr-1"
               >
                 {isLoadingRulings ? (
-                  <div className="text-xs text-slate-500 italic p-2 text-center">
+                  <div className="text-xs text-zinc-400 italic p-2 text-center">
                     Cargando dictámenes de la base de datos local...
                   </div>
                 ) : rulings.length === 0 ? (
                   <div
                     data-testid="card-details-rulings-empty"
-                    className="text-xs text-slate-400 italic bg-slate-950/40 border border-slate-800/80 rounded-xl p-3 text-center"
+                    className="text-xs text-zinc-400 italic bg-[#040d0f]/60 border border-[#12544F] rounded-xl p-3 text-center"
                   >
                     Sin dictámenes
                   </div>
@@ -470,23 +470,23 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                     <div
                       key={idx}
                       data-testid="card-ruling-item"
-                      className="bg-slate-950/70 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 space-y-1"
+                      className="bg-[#040d0f]/80 border border-[#12544F] rounded-xl p-2.5 text-xs text-zinc-200 space-y-1"
                     >
-                      <div className="flex items-center justify-between text-[10px] text-slate-400">
+                      <div className="flex items-center justify-between text-[10px] text-zinc-400">
                         <span data-testid="ruling-date" className="flex items-center space-x-1">
-                          <Calendar className="w-3 h-3 text-amber-500/70" />
+                          <Calendar className="w-3 h-3 text-[#8BBB92]" />
                           <span>{ruling.publishedAt}</span>
                         </span>
                         <span
                           data-testid="ruling-source"
-                          className="uppercase font-mono text-[9px] bg-slate-800/80 px-1 rounded"
+                          className="uppercase font-mono text-[9px] bg-[#12544F] text-[#8BBB92] px-1.5 py-0.5 rounded border border-[#2A835F]"
                         >
                           {ruling.source}
                         </span>
                       </div>
                       <div
                         data-testid="ruling-comment"
-                        className="text-slate-300 leading-relaxed select-text"
+                        className="text-zinc-200 leading-relaxed select-text"
                       >
                         <FormattedOracleText text={ruling.comment} />
                       </div>

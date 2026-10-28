@@ -84,28 +84,28 @@ export const DiagnosticPanel: React.FC = () => {
           className={`flex items-center space-x-2 px-3 py-1.5 rounded-full shadow-2xl text-xs font-bold border transition-all cursor-pointer ${
             failures.length > 0
               ? 'bg-rose-950/90 hover:bg-rose-900 border-rose-500/80 text-rose-200 ring-2 ring-rose-500/30'
-              : 'bg-slate-900/90 hover:bg-slate-800 border-slate-700 text-slate-300'
+              : 'bg-[#092328]/95 hover:bg-[#12544F] border-[#12544F] text-zinc-200'
           }`}
         >
-          <Bug className="w-3.5 h-3.5 text-rose-400" />
+          <Bug className="w-3.5 h-3.5 text-[#8BBB92]" />
           <span>Diagnóstico (?debug=1)</span>
           <span
             data-testid="diagnostic-failure-count-badge"
-            className="px-1.5 py-0.2 bg-black/60 rounded-full text-[10px] font-mono"
+            className="px-1.5 py-0.2 bg-black/60 rounded-full text-[10px] font-mono text-[#8BBB92]"
           >
             {failures.length}
           </span>
-          <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+          <ChevronUp className="w-3.5 h-3.5 text-zinc-400" />
         </button>
       ) : (
         <div
           data-testid="diagnostic-panel"
-          className="bg-slate-950/95 border border-slate-700/90 rounded-2xl shadow-2xl backdrop-blur-md w-[440px] max-w-[calc(100vw-24px)] max-h-[85vh] flex flex-col text-slate-200 overflow-hidden"
+          className="bg-[#092328]/95 border border-[#12544F] rounded-2xl shadow-2xl backdrop-blur-md w-[440px] max-w-[calc(100vw-24px)] max-h-[85vh] flex flex-col text-zinc-200 overflow-hidden ring-1 ring-[#2A835F]/20"
         >
           {/* Header */}
-          <div className="px-3 py-2.5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+          <div className="px-3 py-2.5 bg-[#040d0f]/90 border-b border-[#12544F] flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Bug className="w-4 h-4 text-rose-400" />
+              <Bug className="w-4 h-4 text-[#8BBB92]" />
               <h4 className="text-xs font-bold text-white tracking-wide">
                 Diagnóstico del Sistema (?debug=1)
               </h4>
@@ -117,7 +117,7 @@ export const DiagnosticPanel: React.FC = () => {
                     type="button"
                     data-testid="diagnostic-retry-all-btn"
                     onClick={() => diagnosticsService.retryAll()}
-                    className="p-1 hover:bg-slate-800 rounded text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
+                    className="p-1 hover:bg-[#12544F] rounded text-[#8BBB92] hover:text-white transition-colors cursor-pointer"
                     title="Reintentar todas las cargas fallidas"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
@@ -126,7 +126,7 @@ export const DiagnosticPanel: React.FC = () => {
                     type="button"
                     data-testid="diagnostic-clear-btn"
                     onClick={() => diagnosticsService.clear()}
-                    className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
+                    className="p-1 hover:bg-[#12544F] rounded text-zinc-400 hover:text-rose-400 transition-colors cursor-pointer"
                     title="Limpiar registro"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -139,7 +139,7 @@ export const DiagnosticPanel: React.FC = () => {
                   data-testid="diagnostic-refresh-health-btn"
                   onClick={fetchCardHealth}
                   disabled={isLoadingHealth}
-                  className="p-1 hover:bg-slate-800 rounded text-sky-400 hover:text-sky-300 transition-colors cursor-pointer disabled:opacity-50"
+                  className="p-1 hover:bg-[#12544F] rounded text-[#8BBB92] hover:text-white transition-colors cursor-pointer disabled:opacity-50"
                   title="Actualizar estado de la base de datos"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isLoadingHealth ? 'animate-spin' : ''}`} />
@@ -149,7 +149,7 @@ export const DiagnosticPanel: React.FC = () => {
                 type="button"
                 data-testid="diagnostic-panel-toggle-close"
                 onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1 hover:bg-[#12544F] rounded text-zinc-400 hover:text-white transition-colors cursor-pointer"
                 title="Minimizar panel"
               >
                 <ChevronDown className="w-3.5 h-3.5" />
@@ -158,15 +158,15 @@ export const DiagnosticPanel: React.FC = () => {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex border-b border-slate-800 bg-slate-900/60 text-xs">
+          <div className="flex border-b border-[#12544F] bg-[#0c2d32]/60 text-xs">
             <button
               type="button"
               data-testid="diagnostic-tab-failures"
               onClick={() => setActiveTab('failures')}
-              className={`flex-1 py-1.5 px-3 flex items-center justify-center space-x-1.5 font-medium border-b-2 transition-all ${
+              className={`flex-1 py-1.5 px-3 flex items-center justify-center space-x-1.5 font-medium border-b-2 transition-all cursor-pointer ${
                 activeTab === 'failures'
-                  ? 'border-rose-500 text-white bg-slate-800/40'
-                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/20'
+                  ? 'border-[#2A835F] text-[#8BBB92] bg-[#12544F]/40 font-bold'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-[#12544F]/20'
               }`}
             >
               <Bug className="w-3.5 h-3.5 text-rose-400" />
@@ -176,7 +176,7 @@ export const DiagnosticPanel: React.FC = () => {
                 className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full border ${
                   failures.length > 0
                     ? 'bg-rose-950/80 text-rose-300 border-rose-700/60'
-                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                    : 'bg-[#092328] text-zinc-400 border-[#12544F]'
                 }`}
               >
                 {failures.length}
@@ -190,17 +190,17 @@ export const DiagnosticPanel: React.FC = () => {
                 setActiveTab('database');
                 fetchCardHealth();
               }}
-              className={`flex-1 py-1.5 px-3 flex items-center justify-center space-x-1.5 font-medium border-b-2 transition-all ${
+              className={`flex-1 py-1.5 px-3 flex items-center justify-center space-x-1.5 font-medium border-b-2 transition-all cursor-pointer ${
                 activeTab === 'database'
-                  ? 'border-sky-500 text-white bg-slate-800/40'
-                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/20'
+                  ? 'border-[#2A835F] text-[#8BBB92] bg-[#12544F]/40 font-bold'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-[#12544F]/20'
               }`}
             >
-              <Database className="w-3.5 h-3.5 text-sky-400" />
+              <Database className="w-3.5 h-3.5 text-[#8BBB92]" />
               <span>Base Local</span>
               <span
                 data-testid="diagnostic-card-count-badge"
-                className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-sky-950/80 text-sky-300 border border-sky-700/60"
+                className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-[#12544F] text-[#8BBB92] border border-[#2A835F]"
               >
                 {cardHealth?.counts?.cards ?? 0}
               </span>
@@ -208,7 +208,7 @@ export const DiagnosticPanel: React.FC = () => {
           </div>
 
           {/* Subheader / Status Bar */}
-          <div className="px-3 py-1.5 bg-slate-900/40 border-b border-slate-800/60 flex items-center justify-between text-[10px] text-slate-400">
+          <div className="px-3 py-1.5 bg-[#040d0f]/60 border-b border-[#12544F] flex items-center justify-between text-[10px] text-zinc-400">
             {activeTab === 'failures' ? (
               <>
                 <span>Cadena: Español → Inglés → Marco</span>
@@ -248,7 +248,7 @@ export const DiagnosticPanel: React.FC = () => {
                   <div
                     key={item.id}
                     data-testid="diagnostic-failure-item"
-                    className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex flex-col space-y-1.5 hover:border-slate-700 transition-all text-xs"
+                    className="bg-[#040d0f] border border-[#12544F] rounded-xl p-2.5 flex flex-col space-y-1.5 hover:border-[#2A835F] transition-all text-xs"
                   >
                     <div className="flex items-center justify-between gap-1">
                       <span className="font-bold text-white truncate max-w-[200px]" title={item.cardName}>
@@ -256,18 +256,18 @@ export const DiagnosticPanel: React.FC = () => {
                       </span>
                       <span
                         data-testid="diagnostic-item-status"
-                        className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-950/80 border border-rose-800/80 text-rose-300"
+                        className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-950/80 border border-rose-800 text-rose-300"
                       >
                         HTTP {item.status}
                       </span>
                     </div>
 
                     {/* URL */}
-                    <div className="flex items-center space-x-1 text-[11px] font-mono text-slate-400 truncate">
-                      <span className="text-slate-500 select-none">URL:</span>
+                    <div className="flex items-center space-x-1 text-[11px] font-mono text-zinc-400 truncate">
+                      <span className="text-zinc-500 select-none">URL:</span>
                       <span
                         data-testid="diagnostic-item-url"
-                        className="truncate text-sky-400 hover:underline"
+                        className="truncate text-[#8BBB92] hover:underline"
                         title={item.url}
                       >
                         {item.url}
@@ -275,22 +275,22 @@ export const DiagnosticPanel: React.FC = () => {
                     </div>
 
                     {/* Motivo */}
-                    <div className="flex items-start space-x-1.5 text-[11px] text-amber-300/90 bg-amber-950/30 border border-amber-500/20 rounded p-1">
-                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex items-start space-x-1.5 text-[11px] text-[#8BBB92] bg-[#12544F]/40 border border-[#2A835F]/40 rounded p-1">
+                      <AlertTriangle className="w-3.5 h-3.5 text-[#8BBB92] flex-shrink-0 mt-0.5" />
                       <span data-testid="diagnostic-item-reason" className="leading-tight">
                         {item.reason}
                       </span>
                     </div>
 
                     {/* Action Bar */}
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-800/80 text-[10px] text-slate-500">
+                    <div className="flex items-center justify-between pt-1 border-t border-[#12544F] text-[10px] text-zinc-500">
                       <span>{new Date(item.timestamp).toLocaleTimeString()}</span>
                       <button
                         type="button"
                         data-testid="diagnostic-retry-item-btn"
                         onClick={() => diagnosticsService.retryFailure(item.id)}
                         disabled={item.retried}
-                        className="flex items-center space-x-1 px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 disabled:opacity-40 font-bold transition-all cursor-pointer"
+                        className="flex items-center space-x-1 px-2 py-0.5 rounded bg-[#0c2d32] hover:bg-[#12544F] text-[#8BBB92] hover:text-white border border-[#12544F] disabled:opacity-40 font-bold transition-all cursor-pointer"
                       >
                         <RefreshCw className="w-2.5 h-2.5" />
                         <span>{item.retried ? 'Reintentado' : 'Reintentar'}</span>
@@ -304,38 +304,38 @@ export const DiagnosticPanel: React.FC = () => {
               <div data-testid="diagnostic-database-view" className="space-y-3">
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex flex-col">
-                    <span className="text-[10px] font-semibold text-slate-400">Cartas (cards)</span>
+                  <div className="bg-[#040d0f] border border-[#12544F] rounded-xl p-2.5 flex flex-col">
+                    <span className="text-[10px] font-semibold text-zinc-400">Cartas (cards)</span>
                     <span
                       data-testid="diagnostic-metric-cards"
-                      className="text-lg font-bold font-mono text-sky-400"
+                      className="text-lg font-bold font-mono text-[#8BBB92]"
                     >
                       {cardHealth?.counts?.cards ?? 0}
                     </span>
                   </div>
-                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex flex-col">
-                    <span className="text-[10px] font-semibold text-slate-400">Fichas (tokens)</span>
+                  <div className="bg-[#040d0f] border border-[#12544F] rounded-xl p-2.5 flex flex-col">
+                    <span className="text-[10px] font-semibold text-zinc-400">Fichas (tokens)</span>
                     <span
                       data-testid="diagnostic-metric-tokens"
-                      className="text-lg font-bold font-mono text-emerald-400"
+                      className="text-lg font-bold font-mono text-[#8BBB92]"
                     >
                       {cardHealth?.counts?.tokens ?? 0}
                     </span>
                   </div>
-                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex flex-col">
-                    <span className="text-[10px] font-semibold text-slate-400">Dictámenes (rulings)</span>
+                  <div className="bg-[#040d0f] border border-[#12544F] rounded-xl p-2.5 flex flex-col">
+                    <span className="text-[10px] font-semibold text-zinc-400">Dictámenes (rulings)</span>
                     <span
                       data-testid="diagnostic-metric-rulings"
-                      className="text-lg font-bold font-mono text-purple-400"
+                      className="text-lg font-bold font-mono text-[#8BBB92]"
                     >
                       {cardHealth?.counts?.rulings ?? 0}
                     </span>
                   </div>
-                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 flex flex-col">
-                    <span className="text-[10px] font-semibold text-slate-400">Locales ES (CardLocale)</span>
+                  <div className="bg-[#040d0f] border border-[#12544F] rounded-xl p-2.5 flex flex-col">
+                    <span className="text-[10px] font-semibold text-zinc-400">Locales ES (CardLocale)</span>
                     <span
                       data-testid="diagnostic-metric-locales"
-                      className="text-lg font-bold font-mono text-amber-400"
+                      className="text-lg font-bold font-mono text-[#8BBB92]"
                     >
                       {cardHealth?.counts?.cardLocales ?? 0}
                     </span>
