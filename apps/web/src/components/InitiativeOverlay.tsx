@@ -67,17 +67,17 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
   return (
     <div
       data-testid="initiative-overlay"
-      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 select-none"
+      className="fixed inset-0 z-50 bg-[#040d0f]/90 backdrop-blur-md flex items-center justify-center p-4 select-none"
     >
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl p-6 shadow-2xl space-y-6 relative overflow-hidden">
+      <div className="bg-[#092328] border-2 border-[#12544F] rounded-3xl w-full max-w-2xl p-6 sm:p-7 shadow-2xl space-y-6 relative overflow-hidden text-white">
         {/* Glow accent */}
-        <div className="absolute -top-24 -left-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#2A835F]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-[#2A835F]/15 rounded-full blur-3xl pointer-events-none" />
 
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold tracking-wide">
-            <Dices className="w-4 h-4" />
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0c2d32] border border-[#12544F] text-[#8BBB92] text-xs font-bold tracking-wide">
+            <Dices className="w-4 h-4 text-[#8BBB92]" />
             <span>
               {initiative && initiative.round > 1
                 ? `Ronda ${initiative.round} (Desempate)`
@@ -85,40 +85,40 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
             </span>
           </div>
 
-          <h2 className="text-2xl font-black text-white tracking-wide">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-wide">
             {isResolved ? '¡Orden de Turnos Decidido!' : 'Tirada de Iniciativa'}
           </h2>
 
           {!isResolved ? (
-            <p className="text-xs text-slate-400 flex items-center justify-center space-x-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <p className="text-xs text-zinc-300 flex items-center justify-center space-x-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#8BBB92]" />
               <span>
                 Tirada 100% automática del servidor (CSPRNG). Avanzando en {secondsRemaining}s...
               </span>
             </p>
           ) : (
-            <p className="text-xs text-emerald-400 flex items-center justify-center space-x-1.5">
-              <Sparkles className="w-3.5 h-3.5" />
+            <p className="text-xs text-[#8BBB92] flex items-center justify-center space-x-1.5 font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-[#8BBB92]" />
               <span>Iniciativa resuelta. Entrando a la mesa de juego...</span>
             </p>
           )}
         </div>
 
-        {/* Status / Local Player Roll Indicator (Sin botones, 100% automático Punto 4) */}
+        {/* Status / Local Player Roll Indicator */}
         {!isResolved && (
           <div className="flex flex-col items-center justify-center py-2 space-y-2">
-            <div className="flex items-center space-x-3 bg-slate-950/80 border border-amber-500/30 px-6 py-3 rounded-2xl shadow-inner">
-              <Dices className="w-6 h-6 animate-spin text-amber-400" />
-              <span className="text-sm font-semibold text-slate-300">
+            <div className="flex items-center space-x-3 bg-[#040d0f] border border-[#12544F] px-6 py-3 rounded-2xl shadow-inner">
+              <Dices className="w-5 h-5 animate-spin text-[#8BBB92]" />
+              <span className="text-sm font-semibold text-zinc-200">
                 {initiative?.activeTiedPlayerIds && initiative.activeTiedPlayerIds.length > 0
                   ? `Resolviendo desempate automático (Ronda ${initiative.round})...`
                   : 'El servidor está calculando la iniciativa de todos los jugadores...'}
               </span>
             </div>
             {localHasRolled && !isSpectator && (
-              <div className="flex items-center space-x-2 text-xs text-slate-400">
+              <div className="flex items-center space-x-2 text-xs text-zinc-300">
                 <span>Tu tirada de D20:</span>
-                <strong className="text-amber-400 font-mono text-sm">
+                <strong className="text-[#8BBB92] font-mono text-sm font-extrabold">
                   🎲 {initiative?.rolls[localPlayerId]}
                 </strong>
               </div>
@@ -138,33 +138,35 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
             return (
               <div
                 key={player.id}
-                className={`bg-slate-950/80 border rounded-2xl p-4 flex items-center justify-between transition-all ${
-                  isLocal ? 'border-amber-500/50 shadow-md shadow-amber-500/5' : 'border-slate-800'
+                className={`border rounded-2xl p-4 flex items-center justify-between transition-all ${
+                  isLocal
+                    ? 'border-[#8BBB92] ring-1 ring-[#8BBB92]/40 shadow-lg shadow-[#2A835F]/20 bg-[#0c2d32]'
+                    : 'border-[#12544F] bg-[#092328]'
                 }`}
               >
                 <div className="space-y-0.5">
                   <div className="flex items-center space-x-1.5">
-                    <span className="text-xs font-mono font-bold text-slate-500">#{idx + 1}</span>
+                    <span className="text-xs font-mono font-bold text-zinc-500">#{idx + 1}</span>
                     <span className="font-bold text-sm text-white flex items-center space-x-1">
                       <span>{player.name}</span>
-                      {player.isHost && <Crown className="w-3.5 h-3.5 text-amber-400 inline" />}
+                      {player.isHost && <Crown className="w-3.5 h-3.5 text-[#8BBB92] inline" />}
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-[11px] text-zinc-400">
                     {player.selectedDeck?.commanderName || 'Comandante'}
                   </div>
                   {isTied && !isResolved && (
-                    <div className="text-[10px] font-bold text-amber-400">En desempate</div>
+                    <div className="text-[10px] font-bold text-[#8BBB92]">En desempate</div>
                   )}
                 </div>
 
                 <div className="flex items-center">
                   {hasRolled ? (
-                    <div className="w-12 h-12 rounded-xl bg-slate-900 border border-slate-700 flex flex-col items-center justify-center font-mono font-black text-xl text-amber-300 shadow-inner">
+                    <div className="w-12 h-12 rounded-xl bg-[#040d0f] border border-[#12544F] flex flex-col items-center justify-center font-mono font-black text-xl text-[#8BBB92] shadow-inner">
                       {roll}
                     </div>
                   ) : (
-                    <div className="px-3 py-1.5 rounded-xl bg-slate-900/60 border border-dashed border-slate-800 text-[11px] font-semibold text-slate-500 animate-pulse">
+                    <div className="px-3 py-1.5 rounded-xl bg-[#040d0f]/60 border border-dashed border-[#12544F] text-[11px] font-semibold text-zinc-500 animate-pulse">
                       Esperando...
                     </div>
                   )}
@@ -176,9 +178,9 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
 
         {/* Final Resolved Order */}
         {isResolved && (
-          <div className="bg-slate-950/90 border border-amber-500/30 rounded-2xl p-4 space-y-3">
-            <div className="text-xs font-bold text-amber-400 flex items-center space-x-1.5">
-              <Sparkles className="w-4 h-4" />
+          <div className="bg-[#0c2d32] border border-[#12544F] rounded-2xl p-4 space-y-3">
+            <div className="text-xs font-bold text-[#8BBB92] flex items-center space-x-1.5">
+              <Sparkles className="w-4 h-4 text-[#8BBB92]" />
               <span>Orden de Turnos Oficial (de mayor a menor resultado):</span>
             </div>
 
@@ -192,14 +194,14 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
                     key={pid}
                     className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl border text-xs font-bold ${
                       isFirst
-                        ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
-                        : 'bg-slate-900 text-slate-200 border-slate-800'
+                        ? 'bg-[#2A835F] text-white border-[#349e73] shadow-md shadow-[#2A835F]/25'
+                        : 'bg-[#092328] text-zinc-200 border-[#12544F]'
                     }`}
                   >
                     <span className="font-mono">{rank + 1}.º</span>
                     <span>{p?.name || pid}</span>
                     {isFirst && (
-                      <span className="text-[10px] font-black uppercase">(Juega 1.º)</span>
+                      <span className="text-[10px] font-black uppercase text-[#8BBB92] ml-1">(Juega 1.º)</span>
                     )}
                   </div>
                 );
