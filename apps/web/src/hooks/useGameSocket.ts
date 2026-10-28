@@ -45,6 +45,7 @@ export function useGameSocket({
   const reconnectAttemptsRef = useRef<number>(0);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const remoteDragTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const pendingActionsRef = useRef<{ type: GameActionType; payload: unknown }[]>([]);
 
   const connect = useCallback(() => {
     if (!enabled || !roomCode || !playerId) return;
@@ -74,6 +75,16 @@ export function useGameSocket({
       ws.onopen = () => {
         setStatus('connected');
         reconnectAttemptsRef.current = 0;
+        if (pendingActionsRef.current.length > 0) {
+          pendingActionsRef.current.forEach(({ type, payload }) => {
+            try {
+              ws.send(JSON.stringify({ type, payload, clientTimestamp: Date.now() }));
+            } catch (err) {
+              console.error('[WS Flush Error]:', err);
+            }
+          });
+          pendingActionsRef.current = [];
+        }
       };
 
       ws.onmessage = (event: MessageEvent) => {
@@ -225,7 +236,8 @@ export function useGameSocket({
         }),
       );
     } else {
-      console.warn('[WS Send Warning]: Socket no está conectado');
+      console.warn('[WS Send Warning]: Socket no está conectado, encolando acción:', type);
+      pendingActionsRef.current.push({ type, payload });
     }
   }, []);
 

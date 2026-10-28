@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { RoomState, GameActionType, CardDefinition, DeckCardWithQuantity } from '@mtgc/shared';
 import {
   parseDecklist,
@@ -129,13 +129,17 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
   }, []);
 
   // Remember last selected deck from localStorage on initial lobby entry (Punto 8)
+  const hasAutoSelectedRef = useRef(false);
+
   useEffect(() => {
-    if (!localPlayer?.selectedDeck) {
+    if (hasAutoSelectedRef.current) return;
+    if (localPlayer && !localPlayer.selectedDeck) {
       try {
         const cached = localStorage.getItem('mtgc_last_selected_deck');
         if (cached) {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.name && parsed.commanderName) {
+            hasAutoSelectedRef.current = true;
             // Sanitize / upgrade any obsolete or art_series cards stored in previous sessions
             const hasObsoleteCard = (parsed.maindeckCards || []).some(
               (c: any) =>
@@ -192,7 +196,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         // Ignore JSON/localStorage error
       }
     }
-  }, []);
+  }, [localPlayer?.selectedDeck, localPlayer?.id, onAction]);
 
   // Priority Preloading during Lobby phase (Punto 5):
   // (1) Commander in normal version (priority 10)
@@ -389,6 +393,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
 
     try {
       localStorage.setItem('mtgc_last_selected_deck', JSON.stringify(deck));
+      hasAutoSelectedRef.current = true;
     } catch {
       // Ignore quota error
     }

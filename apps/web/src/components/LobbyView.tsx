@@ -61,7 +61,18 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
         if (isMounted && data?.presets) {
           setPresets(data.presets);
           if (data.presets.length > 0) {
-            setSelectedPresetForView(data.presets[0]);
+            let activePreset = data.presets[0];
+            try {
+              const cached = localStorage.getItem('mtgc_last_selected_deck');
+              if (cached) {
+                const parsed = JSON.parse(cached);
+                const match = data.presets.find(
+                  (p: any) => p.id === parsed.id || p.name === parsed.name,
+                );
+                if (match) activePreset = match;
+              }
+            } catch {}
+            setSelectedPresetForView(activePreset);
           }
         }
       })
@@ -78,6 +89,11 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
     e.preventDefault();
     if (!roomName.trim() || !hostName.trim()) return;
     localStorage.setItem('mtgc_player_name', hostName.trim());
+    if (selectedPresetForView) {
+      try {
+        localStorage.setItem('mtgc_last_selected_deck', JSON.stringify(selectedPresetForView));
+      } catch {}
+    }
     await onCreateRoom({
       name: roomName.trim(),
       hostName: hostName.trim(),
@@ -159,7 +175,12 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               return (
                 <div
                   key={deck.id}
-                  onClick={() => setSelectedPresetForView(deck)}
+                  onClick={() => {
+                    setSelectedPresetForView(deck);
+                    try {
+                      localStorage.setItem('mtgc_last_selected_deck', JSON.stringify(deck));
+                    } catch {}
+                  }}
                   className={`group relative rounded-xl bg-[#092328] border transition-all cursor-pointer overflow-hidden p-4 flex flex-col justify-between space-y-3.5 ${
                     isSelected
                       ? 'border-[#8BBB92] ring-1 ring-[#8BBB92]/50 bg-[#0c2d32]'
@@ -333,7 +354,15 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setRoomName(`Mesa ${selectedPresetForView.name}`);
+                      if (selectedPresetForView) {
+                        try {
+                          localStorage.setItem(
+                            'mtgc_last_selected_deck',
+                            JSON.stringify(selectedPresetForView),
+                          );
+                        } catch {}
+                        setRoomName(`Mesa ${selectedPresetForView.name}`);
+                      }
                       setModalMode('create');
                     }}
                     className="w-full py-2.5 px-4 rounded-xl bg-[#2A835F] hover:bg-[#349e73] active:bg-[#237050] text-white font-bold text-xs tracking-wide uppercase transition-all shadow-md shadow-[#2A835F]/20 cursor-pointer flex items-center justify-center space-x-2"
@@ -605,6 +634,9 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
         onClose={() => setInspectedDeck(null)}
         onSelectDeck={deck => {
           setSelectedPresetForView(deck);
+          try {
+            localStorage.setItem('mtgc_last_selected_deck', JSON.stringify(deck));
+          } catch {}
           setRoomName(`Mesa ${deck.name}`);
           setModalMode('create');
         }}
