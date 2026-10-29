@@ -221,7 +221,9 @@ export const DiagnosticPanel: React.FC = () => {
               <>
                 <span>Telemetría: PostgreSQL / Scryfall</span>
                 <span className="text-slate-400 font-mono text-[9px]">
-                  {cardHealth?.timestamp ? new Date(cardHealth.timestamp).toLocaleTimeString() : '---'}
+                  {cardHealth?.timestamp
+                    ? new Date(cardHealth.timestamp).toLocaleTimeString()
+                    : '---'}
                 </span>
               </>
             )}
@@ -240,7 +242,8 @@ export const DiagnosticPanel: React.FC = () => {
                     Cero fallos de carga registrados
                   </p>
                   <p className="text-[10px] text-slate-500 max-w-[260px]">
-                    Todas las cartas y fichas cargaron con éxito o resolvieron sus respaldos correctamente.
+                    Todas las cartas y fichas cargaron con éxito o resolvieron sus respaldos
+                    correctamente.
                   </p>
                 </div>
               ) : (
@@ -251,7 +254,10 @@ export const DiagnosticPanel: React.FC = () => {
                     className="bg-[#040d0f] border border-[#12544F] rounded-xl p-2.5 flex flex-col space-y-1.5 hover:border-[#2A835F] transition-all text-xs"
                   >
                     <div className="flex items-center justify-between gap-1">
-                      <span className="font-bold text-white truncate max-w-[200px]" title={item.cardName}>
+                      <span
+                        className="font-bold text-white truncate max-w-[200px]"
+                        title={item.cardName}
+                      >
                         {item.cardName || 'Carta Desconocida'}
                       </span>
                       <span
@@ -323,7 +329,9 @@ export const DiagnosticPanel: React.FC = () => {
                     </span>
                   </div>
                   <div className="bg-[#040d0f] border border-[#12544F] rounded-xl p-2.5 flex flex-col">
-                    <span className="text-[10px] font-semibold text-zinc-400">Dictámenes (rulings)</span>
+                    <span className="text-[10px] font-semibold text-zinc-400">
+                      Dictámenes (rulings)
+                    </span>
                     <span
                       data-testid="diagnostic-metric-rulings"
                       className="text-lg font-bold font-mono text-[#8BBB92]"
@@ -332,7 +340,9 @@ export const DiagnosticPanel: React.FC = () => {
                     </span>
                   </div>
                   <div className="bg-[#040d0f] border border-[#12544F] rounded-xl p-2.5 flex flex-col">
-                    <span className="text-[10px] font-semibold text-zinc-400">Locales ES (CardLocale)</span>
+                    <span className="text-[10px] font-semibold text-zinc-400">
+                      Locales ES (CardLocale)
+                    </span>
                     <span
                       data-testid="diagnostic-metric-locales"
                       className="text-lg font-bold font-mono text-[#8BBB92]"
@@ -356,7 +366,8 @@ export const DiagnosticPanel: React.FC = () => {
 
                   <div className="space-y-1.5">
                     {cardHealth?.presetDecks?.map(deck => {
-                      const isComplete = deck.existingInDb === deck.totalUniqueCards && deck.totalUniqueCards > 0;
+                      const isComplete =
+                        deck.existingInDb === deck.totalUniqueCards && deck.totalUniqueCards > 0;
                       const isExpanded = expandedDeckId === deck.id;
 
                       return (
@@ -366,7 +377,10 @@ export const DiagnosticPanel: React.FC = () => {
                           className="bg-slate-900/80 border border-slate-800/90 rounded-xl p-2 text-xs flex flex-col space-y-1"
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-white truncate max-w-[220px]" title={deck.name}>
+                            <span
+                              className="font-semibold text-white truncate max-w-[220px]"
+                              title={deck.name}
+                            >
                               {deck.name}
                             </span>
                             <span
@@ -374,8 +388,8 @@ export const DiagnosticPanel: React.FC = () => {
                                 isComplete
                                   ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60'
                                   : deck.existingInDb > 0
-                                  ? 'bg-amber-950/80 text-amber-300 border-amber-700/60'
-                                  : 'bg-rose-950/80 text-rose-300 border-rose-700/60'
+                                    ? 'bg-amber-950/80 text-amber-300 border-amber-700/60'
+                                    : 'bg-rose-950/80 text-rose-300 border-rose-700/60'
                               }`}
                             >
                               {deck.existingInDb} / {deck.totalUniqueCards} en DB
@@ -391,7 +405,11 @@ export const DiagnosticPanel: React.FC = () => {
                                 className="text-amber-400 hover:underline cursor-pointer flex items-center gap-0.5"
                               >
                                 <span>{deck.missingInDb.length} faltantes</span>
-                                {isExpanded ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
+                                {isExpanded ? (
+                                  <ChevronUp className="w-2.5 h-2.5" />
+                                ) : (
+                                  <ChevronDown className="w-2.5 h-2.5" />
+                                )}
                               </button>
                             )}
                           </div>
@@ -399,7 +417,9 @@ export const DiagnosticPanel: React.FC = () => {
                           {/* Expanded missing list */}
                           {isExpanded && deck.missingInDb.length > 0 && (
                             <div className="mt-1 pt-1 border-t border-slate-800 text-[10px] font-mono text-rose-300/80 max-h-24 overflow-y-auto space-y-0.5 bg-black/40 p-1.5 rounded">
-                              <span className="text-slate-400 font-bold block mb-0.5">Cartas faltantes en DB:</span>
+                              <span className="text-slate-400 font-bold block mb-0.5">
+                                Cartas faltantes en DB:
+                              </span>
                               {deck.missingInDb.map((cName, idx) => (
                                 <div key={idx} className="truncate select-text">
                                   • {cName}

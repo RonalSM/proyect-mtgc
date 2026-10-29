@@ -448,7 +448,7 @@ validateCommander(deck: ResolvedDeck): ValidationReport
   - **Resolución sin Falsificación:** `deckService.resolveCardFromDb(cardName)` consulta la tabla `cards` por nombre exacto, por prefijo de cara frontal (`${name} //`) para cartas DFC/Aventuras, y por contención. Asocia impresiones en español directamente desde `prisma.cardLocale` según el `oracleId` de la carta.
   - **Fallo Rápido si Faltan Cartas:** Si una carta no se encuentra en la base local, `DeckService.loadPresetDecks()` y `generate-preset-decks.ts` abortan inmediatamente lanzando un error detallado con los nombres faltantes (`missingCards.join(', ')`), prohibiendo generar identificadores sintéticos (`cmdr_`, `main_`, `id_`).
   - **Purga de `PRESEEDED_SPANISH_LOCALES`:** Eliminación total de colecciones estáticas en código fuente que inyectaban IDs inventados (`5b492372-8820-410a-b363-d1f855263641`) y URLs con marcas de tiempo artificiales terminadas en `01` con múltiplos de 100 (`...jpg?1789755201`).
-  - **Legalidad de Identidad de Color:** Sustitución de *Quartzwood Crasher* (identidad Gruul [R, G]) por *Thorn Mammoth* (identidad Mono-Verde [G]) en el mazo listo de Goreclaw (`02-goreclaw-terror-of-qal-sisma.txt`).
+  - **Legalidad de Identidad de Color:** Sustitución de _Quartzwood Crasher_ (identidad Gruul [R, G]) por _Thorn Mammoth_ (identidad Mono-Verde [G]) en el mazo listo de Goreclaw (`02-goreclaw-terror-of-qal-sisma.txt`).
   - **Siembra y Validación 100% Real:** Ejecución de `npm run seed:presets` certificando que los 8 mazos listos quedan persistidos con 100 cartas resueltas desde Scryfall local.
 - **Resolvedor Canónico por Lotes `POST /api/cards/resolve` (Punto 4 - A.4):**
   - **Endpoint Consolidado:** `POST /api/cards/resolve` sustituye las llamadas individuales por carta `GET /api/cards/search`, recibiendo lotes de nombres o IDs (`names`, `ids`, `cards`, `lang`).
@@ -479,7 +479,7 @@ validateCommander(deck: ResolvedDeck): ValidationReport
   - **Detección y Cómputo Automático:** Función `computeCardPT` en `@mtgc/shared` que extrae el P/T impreso tomado de la base de datos PostgreSQL local (`dbCard.power`, `dbCard.toughness` o caras `faces[activeFaceIndex]` para cartas DFC/split/adventure). Retorna `null` para cartas sin P/T (tierras, artefactos, etc.).
   - **Anclaje Exterior al Borde de la Imagen:** Componente `CardPTBadge` (`data-testid="card-pt-indicator"`) ubicado con `absolute -bottom-2.5 -left-1`, situándose por fuera del borde delimitador de la carta (`card-rotator`) en la esquina inferior izquierda.
   - **Invarianza de Rotación al Girar Permanente:** Cuando la carta se gira (`isTapped: true`), `card-rotator` rota $90^\circ$ internamente, pero `CardPTBadge` es un hermano independiente que permanece erguido y anclado a la esquina inferior izquierda.
-  - **Certificación con Datos Reales de Mazos Listos:** Probado con *Krenko, Mob Boss* (`3/3`), *Krenko, Tin Street Kingpin* (`1/2`), *Goreclaw* (`4/3`) y *Mountain* (`null`, sin badge) en suite unitaria y Playwright E2E (`apps/web/e2e/card-pt-indicator.spec.ts`, captura `audit-p7-card-pt-indicator.png`).
+  - **Certificación con Datos Reales de Mazos Listos:** Probado con _Krenko, Mob Boss_ (`3/3`), _Krenko, Tin Street Kingpin_ (`1/2`), _Goreclaw_ (`4/3`) y _Mountain_ (`null`, sin badge) en suite unitaria y Playwright E2E (`apps/web/e2e/card-pt-indicator.spec.ts`, captura `audit-p7-card-pt-indicator.png`).
 
 ### COMP-4 Room Manager
 
@@ -1054,7 +1054,7 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
   - **Eliminación de encabezado:** Se suprime el contenedor de cabecera con `cardDisplayName`, eliminando elementos de sólo lectura y permitiendo que el primer elemento enfocable y visible sea la acción inmediata de interacción.
 
 - **Filtrado Canónico de Biblioteca por type_line y Búsqueda Bilingüe (Punto 9 - B.9):**
-  - **Filtro canónico en inglés:** Los botones de filtro de tipos del inspector de biblioteca evalúan exclusivamente el campo canónico `typeLine` en inglés procedente de la base de datos local (`creature`, `instant`, `sorcery`, `artifact`, `enchantment`, `land`, `planeswalker`). Las cartas que combinan múltiples tipos (p. ej. *Artifact Creature*) son retenidas de forma no excluyente al seleccionar cualquiera de los filtros aplicables.
+  - **Filtro canónico en inglés:** Los botones de filtro de tipos del inspector de biblioteca evalúan exclusivamente el campo canónico `typeLine` en inglés procedente de la base de datos local (`creature`, `instant`, `sorcery`, `artifact`, `enchantment`, `land`, `planeswalker`). Las cartas que combinan múltiples tipos (p. ej. _Artifact Creature_) son retenidas de forma no excluyente al seleccionar cualquiera de los filtros aplicables.
   - **Búsqueda bilingüe:** El buscador por nombre compara el término ingresado contra el nombre en inglés (`definition.name`) y simultáneamente contra el nombre localizado impreso en español (`locales.es.printedName`).
   - **Títulos en español:** La cuadrícula de cartas del inspector muestra el nombre localizado en español cuando existe, garantizando consistencia bilingüe entre la búsqueda y la representación visual.
 

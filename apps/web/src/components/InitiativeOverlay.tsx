@@ -201,7 +201,9 @@ export const InitiativeOverlay: React.FC<InitiativeOverlayProps> = ({
                     <span className="font-mono">{rank + 1}.º</span>
                     <span>{p?.name || pid}</span>
                     {isFirst && (
-                      <span className="text-[10px] font-black uppercase text-[#8BBB92] ml-1">(Juega 1.º)</span>
+                      <span className="text-[10px] font-black uppercase text-[#8BBB92] ml-1">
+                        (Juega 1.º)
+                      </span>
                     )}
                   </div>
                 );

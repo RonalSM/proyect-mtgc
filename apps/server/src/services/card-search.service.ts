@@ -109,7 +109,9 @@ export class CardSearchService {
             OR: [{ scryfallId: targetId }, { id: targetId }, { oracleId: targetId }],
           },
         });
-      } catch { dbCard = null; }
+      } catch {
+        dbCard = null;
+      }
     }
 
     if (!dbCard) {
@@ -121,7 +123,9 @@ export class CardSearchService {
             layout: { not: 'art_series' },
           },
         });
-      } catch { dbCard = null; }
+      } catch {
+        dbCard = null;
+      }
     }
 
     // 2. Coincidencia de cara frontal para cartas dobles (DFC / Aventuras / Split) (excluyendo art_series)
@@ -133,7 +137,9 @@ export class CardSearchService {
             layout: { not: 'art_series' },
           },
         });
-      } catch { dbCard = null; }
+      } catch {
+        dbCard = null;
+      }
     }
 
     // 3. Buscar en traducciones al español en card_locales
@@ -150,7 +156,9 @@ export class CardSearchService {
             },
           });
         }
-      } catch { dbCard = null; }
+      } catch {
+        dbCard = null;
+      }
     }
 
     // 4. Coincidencia por contención como respaldo (excluyendo art_series)
@@ -162,7 +170,9 @@ export class CardSearchService {
             layout: { not: 'art_series' },
           },
         });
-      } catch { dbCard = null; }
+      } catch {
+        dbCard = null;
+      }
     }
 
     // 5. Fallback a Scryfall si aún no existe en base local — solo si no es una cadena claramente
@@ -267,22 +277,25 @@ export class CardSearchService {
           dbCard.set = scryfallCard.set || dbCard.set || undefined;
           dbCard.setName = scryfallCard.setName || dbCard.setName || undefined;
           dbCard.rarity = scryfallCard.rarity || dbCard.rarity || undefined;
-          dbCard.collectorNumber = scryfallCard.collectorNumber || dbCard.collectorNumber || undefined;
+          dbCard.collectorNumber =
+            scryfallCard.collectorNumber || dbCard.collectorNumber || undefined;
           dbCard.artist = scryfallCard.artist || dbCard.artist || undefined;
           dbCard.loyalty = scryfallCard.loyalty || dbCard.loyalty || undefined;
 
           // Guardar de forma persistente en la base de datos local
-          (prisma as any).card.update({
-            where: { id: dbCard.id },
-            data: {
-              set: dbCard.set,
-              setName: dbCard.setName,
-              rarity: dbCard.rarity,
-              collectorNumber: dbCard.collectorNumber,
-              artist: dbCard.artist,
-              loyalty: dbCard.loyalty,
-            },
-          }).catch(() => {});
+          (prisma as any).card
+            .update({
+              where: { id: dbCard.id },
+              data: {
+                set: dbCard.set,
+                setName: dbCard.setName,
+                rarity: dbCard.rarity,
+                collectorNumber: dbCard.collectorNumber,
+                artist: dbCard.artist,
+                loyalty: dbCard.loyalty,
+              },
+            })
+            .catch(() => {});
         }
       } catch {
         // En caso de fallo de red, se devolverán los datos locales

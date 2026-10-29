@@ -41,7 +41,10 @@ export const LegalModal: React.FC<LegalModalProps> = ({
             <ShieldCheck className="w-5 h-5 text-[#8BBB92]" />
             <span>Avisos Legales y Privacidad</span>
           </div>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors cursor-pointer p-1 rounded-lg hover:bg-[#12544F]">
+          <button
+            onClick={onClose}
+            className="text-zinc-400 hover:text-white transition-colors cursor-pointer p-1 rounded-lg hover:bg-[#12544F]"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -83,12 +86,14 @@ export const LegalModal: React.FC<LegalModalProps> = ({
           </h4>
           <p className="text-xs text-zinc-300 leading-relaxed bg-[#040d0f] p-3 rounded-xl border border-[#12544F]">
             Los iconos de símbolos de maná, acciones de girar/desgirar, palabras clave y contadores
-            emplean la fuente <strong>Mana</strong> (creada por Andrew Gioia; fuentes bajo SIL OFL 1.1,
-            código CSS bajo licencia MIT). Los símbolos de expansiones emplean exclusivamente los archivos de fuente
-            compilados de <strong>Keyrune</strong> (creada por Andrew Gioia; fuentes bajo SIL OFL 1.1) junto con una hoja
-            de estilos propia sin inclusión de código bajo GPL 3.0. Ambas fuentes están auto-alojadas
-            localmente en el servidor para cumplir con las directivas de seguridad CSP. Respaldos vectoriales bajo MPL-2.0.
-            Consulta el archivo <code>THIRD_PARTY_NOTICES.md</code> en el repositorio para los textos íntegros de las licencias.
+            emplean la fuente <strong>Mana</strong> (creada por Andrew Gioia; fuentes bajo SIL OFL
+            1.1, código CSS bajo licencia MIT). Los símbolos de expansiones emplean exclusivamente
+            los archivos de fuente compilados de <strong>Keyrune</strong> (creada por Andrew Gioia;
+            fuentes bajo SIL OFL 1.1) junto con una hoja de estilos propia sin inclusión de código
+            bajo GPL 3.0. Ambas fuentes están auto-alojadas localmente en el servidor para cumplir
+            con las directivas de seguridad CSP. Respaldos vectoriales bajo MPL-2.0. Consulta el
+            archivo <code>THIRD_PARTY_NOTICES.md</code> en el repositorio para los textos íntegros
+            de las licencias.
           </p>
         </section>
 

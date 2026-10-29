@@ -1,11 +1,6 @@
 import React from 'react';
 import { CardInstance, getKeywordDefinition, getCounterDefinition } from '@mtgc/shared';
-import {
-  KEYWORD_ICONS,
-  COUNTER_ICONS,
-  MtgKeywordIcon,
-  MtgCounterIcon,
-} from '../utils/mana-icons';
+import { KEYWORD_ICONS, COUNTER_ICONS, MtgKeywordIcon, MtgCounterIcon } from '../utils/mana-icons';
 
 export { KEYWORD_ICONS, COUNTER_ICONS };
 

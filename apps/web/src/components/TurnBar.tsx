@@ -115,7 +115,9 @@ export const TurnBar: React.FC<TurnBarProps> = ({
                       : 'bg-[#040d0f] text-zinc-300 border-[#12544F]'
                   }`}
                 >
-                  <span className={`${isCurrent ? 'text-white' : 'text-[#8BBB92]'} font-mono text-[10px]`}>
+                  <span
+                    className={`${isCurrent ? 'text-white' : 'text-[#8BBB92]'} font-mono text-[10px]`}
+                  >
                     {idx + 1}.º
                   </span>
                   <span className="truncate max-w-[80px]">{p?.name || pid}</span>

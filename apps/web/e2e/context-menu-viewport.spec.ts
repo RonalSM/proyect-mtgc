@@ -128,15 +128,18 @@ test.describe('Punto 3: Menú contextual siempre visible y compacto', () => {
       for (const pt of testPoints) {
         console.log(`[${res.name}] Clic derecho en ${pt.label} (clientX=${pt.x}, clientY=${pt.y})`);
 
-        await cardOnField.evaluate((el: any, coords: any) => {
-          const evt = new MouseEvent('contextmenu', {
-            clientX: coords.x,
-            clientY: coords.y,
-            bubbles: true,
-            cancelable: true,
-          });
-          el.dispatchEvent(evt);
-        }, { x: pt.x, y: pt.y });
+        await cardOnField.evaluate(
+          (el: any, coords: any) => {
+            const evt = new MouseEvent('contextmenu', {
+              clientX: coords.x,
+              clientY: coords.y,
+              bubbles: true,
+              cancelable: true,
+            });
+            el.dispatchEvent(evt);
+          },
+          { x: pt.x, y: pt.y },
+        );
 
         const menu = page1.locator('[data-card-context-menu="true"]');
         await expect(menu).toBeVisible({ timeout: 5000 });
@@ -227,7 +230,10 @@ test.describe('Punto 3: Menú contextual siempre visible y compacto', () => {
         // Cerrar menú con Escape (o clic en backdrop como fallback)
         await page1.keyboard.press('Escape');
         if (await menu.isVisible().catch(() => false)) {
-          await page1.locator('[data-testid="context-menu-backdrop"]').click({ force: true, position: { x: 5, y: 5 } }).catch(() => {});
+          await page1
+            .locator('[data-testid="context-menu-backdrop"]')
+            .click({ force: true, position: { x: 5, y: 5 } })
+            .catch(() => {});
         }
         await expect(menu).toHaveCount(0);
         await page1.waitForTimeout(100);

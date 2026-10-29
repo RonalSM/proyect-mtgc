@@ -59,7 +59,12 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
   // Multi-Selection (Marquee Box Selection)
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
-  const [marqueeBox, setMarqueeBox] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
+  const [marqueeBox, setMarqueeBox] = useState<{
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  } | null>(null);
   const marqueeStartRef = useRef<{ x: number; y: number } | null>(null);
   const isMarqueeActiveRef = useRef<boolean>(false);
 
@@ -713,7 +718,12 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
           const cardEls = document.querySelectorAll<HTMLElement>('[data-battlefield-card="true"]');
           cardEls.forEach(el => {
             const rect = el.getBoundingClientRect();
-            const isOverlapping = !(rect.right < x1 || rect.left > x2 || rect.bottom < y1 || rect.top > y2);
+            const isOverlapping = !(
+              rect.right < x1 ||
+              rect.left > x2 ||
+              rect.bottom < y1 ||
+              rect.top > y2
+            );
             if (isOverlapping) {
               const id = el.getAttribute('data-card-instance-id');
               if (id) intersecting.push(id);
@@ -762,7 +772,13 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeTargetingSourceIds, selectedCardIds, allBattlefieldCards, onAction, handleStartTargeting]);
+  }, [
+    activeTargetingSourceIds,
+    selectedCardIds,
+    allBattlefieldCards,
+    onAction,
+    handleStartTargeting,
+  ]);
 
   // Punto 1: Reconciliación con confirmación del servidor sin retroceder ante ecos desactualizados
   useEffect(() => {
@@ -815,7 +831,9 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         allBattlefieldCards={allBattlefieldCards}
         onAction={onAction}
         onExpandCell={() => setExpandedPlayerId(prev => (prev === player.id ? null : player.id))}
-        activeTargetingSourceId={activeTargetingSourceIds.length > 0 ? activeTargetingSourceIds[0] : null}
+        activeTargetingSourceId={
+          activeTargetingSourceIds.length > 0 ? activeTargetingSourceIds[0] : null
+        }
         onTargetPlayer={handleTargetPlayer}
       />
     );
@@ -918,7 +936,9 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
             <button
               data-testid="multi-tap-btn"
               onClick={() => {
-                const firstCard = allBattlefieldCards.find(c => selectedCardIds.includes(c.instanceId));
+                const firstCard = allBattlefieldCards.find(c =>
+                  selectedCardIds.includes(c.instanceId),
+                );
                 const targetTapped = !firstCard?.isTapped;
                 selectedCardIds.forEach(id => {
                   onAction('TAP_CARD', { cardInstanceId: id, isTapped: targetTapped });
@@ -943,7 +963,9 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
               title="Fijar objetivo desde todas las cartas seleccionadas (A)"
             >
               <Crosshair className="w-3.5 h-3.5 text-[#8BBB92]" />
-              <span>Fijar objetivo {selectedCardIds.length > 1 ? `(${selectedCardIds.length})` : ''}</span>
+              <span>
+                Fijar objetivo {selectedCardIds.length > 1 ? `(${selectedCardIds.length})` : ''}
+              </span>
             </button>
 
             {/* Send all to Graveyard */}

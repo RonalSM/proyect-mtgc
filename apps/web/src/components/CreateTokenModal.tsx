@@ -365,7 +365,10 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
                                 <div className="flex items-center space-x-2.5 min-w-0 pr-2">
                                   {getCardImageUrl(token, { size: 'small', lang: language }) ? (
                                     <img
-                                      src={getCardImageUrl(token, { size: 'small', lang: language })}
+                                      src={getCardImageUrl(token, {
+                                        size: 'small',
+                                        lang: language,
+                                      })}
                                       alt={display.name}
                                       className="w-10 h-14 object-cover rounded shadow flex-shrink-0"
                                     />

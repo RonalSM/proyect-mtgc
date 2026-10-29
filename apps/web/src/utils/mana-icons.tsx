@@ -104,7 +104,10 @@ export const MtgKeywordIcon: React.FC<{
   className?: string;
   title?: string;
 }> = ({ keyword, className = '', title }) => {
-  const norm = keyword.toLowerCase().trim().replace(/[\s-]+/g, '_');
+  const norm = keyword
+    .toLowerCase()
+    .trim()
+    .replace(/[\s-]+/g, '_');
   const cls =
     KEYWORD_ICON_CLASSES[norm] ||
     KEYWORD_ICON_CLASSES[keyword.toLowerCase().trim()] ||

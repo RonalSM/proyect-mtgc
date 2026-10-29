@@ -509,7 +509,9 @@ export class WebSocketHandler {
                   card.typeLine === 'Card // Card' ||
                   card.scryfallId === '6894b688-4966-4277-8e11-d3c91042180c' ||
                   (card.imageUrlNormal && card.imageUrlNormal.includes('/art_crop/')) ||
-                  (!card.oracleText && !card.typeLine?.includes('Land') && !card.typeLine?.includes('Card')))
+                  (!card.oracleText &&
+                    !card.typeLine?.includes('Land') &&
+                    !card.typeLine?.includes('Card')))
               ) {
                 try {
                   const resolved = await cardSearchService.resolveSingleCard(card.name, 'en');

@@ -195,7 +195,9 @@ export const TableGrid: React.FC<TableGridProps> = ({
       {isChatDrawerOpen && (
         <div className="fixed top-14 right-4 z-50 w-80 max-w-[90vw] h-[75dvh] bg-[#092328]/95 backdrop-blur-xl border border-[#12544F] rounded-2xl shadow-2xl flex flex-col overflow-hidden ring-1 ring-white/5 animate-in fade-in zoom-in-95">
           <div className="bg-[#040d0f]/90 px-4 py-2.5 border-b border-[#12544F] flex items-center justify-between">
-            <span className="font-sans font-bold text-xs text-[#8BBB92] tracking-wide">Registro y Chat</span>
+            <span className="font-sans font-bold text-xs text-[#8BBB92] tracking-wide">
+              Registro y Chat
+            </span>
             <button
               onClick={() => setIsChatDrawerOpen(false)}
               className="text-zinc-400 hover:text-white font-bold text-sm cursor-pointer"

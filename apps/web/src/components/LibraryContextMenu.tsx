@@ -140,7 +140,12 @@ export const LibraryContextMenu: React.FC<LibraryContextMenuProps> = ({
 
   const handleSendTopCardTo = (
     toZone: 'hand' | 'graveyard' | 'battlefield' | 'exile' | 'library',
-    options?: { destinationIndex?: number; isRandom?: boolean; isTapped?: boolean; isFaceDown?: boolean },
+    options?: {
+      destinationIndex?: number;
+      isRandom?: boolean;
+      isTapped?: boolean;
+      isFaceDown?: boolean;
+    },
   ) => {
     if (!topCard) return;
     onAction('MOVE_CARD', {
@@ -720,7 +725,9 @@ export const LibraryContextMenu: React.FC<LibraryContextMenuProps> = ({
                     <button
                       type="button"
                       data-testid="lib-to-bottom"
-                      onClick={() => handleSendTopCardTo('library', { destinationIndex: libraryCards.length })}
+                      onClick={() =>
+                        handleSendTopCardTo('library', { destinationIndex: libraryCards.length })
+                      }
                       className="w-full text-left px-2 py-0.5 hover:bg-[#12544F] rounded text-[11px] text-zinc-300 hover:text-[#8BBB92] cursor-pointer"
                     >
                       Abajo (Fondo)

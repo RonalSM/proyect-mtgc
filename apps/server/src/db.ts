@@ -215,7 +215,9 @@ export async function connectDatabase(): Promise<void> {
 
   if (!isAvailable) {
     try {
-      console.log('🔄 PostgreSQL no detectado en puerto 5432. Iniciando PGlite persistente embebido...');
+      console.log(
+        '🔄 PostgreSQL no detectado en puerto 5432. Iniciando PGlite persistente embebido...',
+      );
       const { PGlite } = await import('@electric-sql/pglite');
       const { PGLiteSocketServer } = await import('@electric-sql/pglite-socket');
 
@@ -233,7 +235,9 @@ export async function connectDatabase(): Promise<void> {
       if (process.env.NODE_ENV === 'test' && (pgliteServerInstance as any).server?.unref) {
         (pgliteServerInstance as any).server.unref();
       }
-      console.log(`✅ Servidor PostgreSQL (PGlite) activo en puerto ${port} (datos en ${dataDir}).`);
+      console.log(
+        `✅ Servidor PostgreSQL (PGlite) activo en puerto ${port} (datos en ${dataDir}).`,
+      );
     } catch (err: any) {
       console.warn('⚠️ No se pudo iniciar el servidor PGlite embebido:', err?.message || err);
     }

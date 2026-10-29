@@ -21,6 +21,7 @@ Este documento contiene los avisos legales, licencias y atribuciones de componen
 - **Licencia de Código y Hojas de Estilo CSS/LESS:** MIT License
 
 ### Texto de la Licencia MIT (Mana Font CSS/Code):
+
 ```text
 The MIT License (MIT)
 
@@ -46,6 +47,7 @@ THE SOFTWARE.
 ```
 
 ### Texto de la Licencia SIL Open Font License 1.1 (Mana Font Files):
+
 ```text
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
 
@@ -58,7 +60,7 @@ with others.
 
 The OFL allows the licensed fonts to be used, studied, modified and
 redistributed freely as long as they are not sold by themselves. The
-fonts, including any derivative works, can be bundled, embedded, 
+fonts, including any derivative works, can be bundled, embedded,
 redistributed and/or sold with any software provided that any reserved
 names are not used by derivative works. The fonts and derivatives,
 however, cannot be released under any other type of license. The
@@ -141,7 +143,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 - **Repositorio:** [https://github.com/andrewgioia/keyrune](https://github.com/andrewgioia/keyrune)
 - **Licencia de Fuentes:** SIL Open Font License, Version 1.1 (SIL OFL 1.1)
 - **Uso en MTGC:** Para evitar arrastrar obligaciones copyleft de la GPL 3.0 asociadas al código y hojas de estilo de Keyrune (`keyrune.css`), **este proyecto utiliza exclusivamente los archivos de fuente compilados de Keyrune (`.woff2`, `.woff`, `.ttf`) bajo la licencia permisiva SIL OFL 1.1**. La aplicación utiliza una hoja de estilos propia (`apps/web/src/styles/keyrune-custom.css`) con licencia MIT que mapea los códigos de set a sus glifos Unicode correspondientes. **No se distribuye, enlaza ni incluye ningún archivo de código ni CSS bajo GPL 3.0.**
-- **Licencia Original de Glifos SVG y Código upstream:** GNU General Public License v3.0 (GPL 3.0) — *No utilizada en este proyecto*.
+- **Licencia Original de Glifos SVG y Código upstream:** GNU General Public License v3.0 (GPL 3.0) — _No utilizada en este proyecto_.
 
 Los símbolos que representan estas fuentes identifican productos y colecciones de Wizards of the Coast conforme a la política de materiales del Wizards Play Network.
 
@@ -154,6 +156,7 @@ Los símbolos que representan estas fuentes identifican productos y colecciones 
 - **Uso en MTGC:** Reservado exclusivamente como respaldo de vectores de símbolos de set o marcas de agua que pudiesen faltar en Keyrune. No se emplea para palabras clave ni para contadores. Los archivos y marcas se conservan sin modificaciones bajo su respectiva licencia MPL-2.0.
 
 ### Resumen de Términos MPL-2.0:
+
 El código fuente y vectores cubiertos bajo MPL-2.0 están disponibles bajo los términos de la Mozilla Public License, v. 2.0. Una copia íntegra de la licencia puede consultarse en [https://www.mozilla.org/MPL/2.0/](https://www.mozilla.org/MPL/2.0/).
 
 ---

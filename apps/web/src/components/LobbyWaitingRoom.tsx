@@ -97,7 +97,8 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
         localStorage.getItem('token') ||
         localStorage.getItem('mtgc_access_token') ||
         localStorage.getItem('mtgc_auth_token');
-      const hasAuthCookie = typeof document !== 'undefined' && document.cookie.includes('mtgc_access_token');
+      const hasAuthCookie =
+        typeof document !== 'undefined' && document.cookie.includes('mtgc_access_token');
 
       // Si no hay indicio de sesión autenticada, los usuarios son invitados y NO se debe llamar a /api/decks
       if (!token && !hasAuthCookie) {
@@ -778,7 +779,9 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                           {/* Deck Info & Actions */}
                           <div className="p-3 flex-1 flex flex-col justify-between space-y-3">
                             <div className="flex items-center justify-between text-xs text-slate-400">
-                              <span className="font-mono text-[#8BBB92]">100 cartas &bull; EDH</span>
+                              <span className="font-mono text-[#8BBB92]">
+                                100 cartas &bull; EDH
+                              </span>
                               <div className="flex items-center space-x-2">
                                 <button
                                   type="button"
@@ -946,9 +949,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
                   </div>
                 ) : (
                   <div className="text-center py-8 space-y-3">
-                    <p className="text-zinc-400 text-sm">
-                      No tienes mazos guardados en tu cuenta.
-                    </p>
+                    <p className="text-zinc-400 text-sm">No tienes mazos guardados en tu cuenta.</p>
                     <button
                       onClick={() => setImportTab('import')}
                       className="bg-[#2A835F] hover:bg-[#349e73] text-white px-4 py-2 rounded-xl font-bold text-xs shadow"

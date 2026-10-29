@@ -155,7 +155,11 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
       } else {
         const parsed = parseDecklist(deckText);
         const commanderCards: any[] = parsed.commanderEntries.map(c => ({
-          card: { scryfallId: `cmd_${c.cardName}`, name: c.cardName, typeLine: 'Legendary Creature' },
+          card: {
+            scryfallId: `cmd_${c.cardName}`,
+            name: c.cardName,
+            typeLine: 'Legendary Creature',
+          },
           quantity: c.quantity,
           isCommander: true,
         }));
@@ -291,7 +295,8 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
               <div className="text-xs text-zinc-400 py-10 text-center space-y-2">
                 <Layers className="w-8 h-8 text-zinc-600 mx-auto" />
                 <p>
-                  Presiona "Validar y Cargar Mazo" para analizar total de cartas, singleton e identidad de color.
+                  Presiona "Validar y Cargar Mazo" para analizar total de cartas, singleton e
+                  identidad de color.
                 </p>
               </div>
             ) : (
@@ -310,7 +315,9 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
                   )}
                   <div>
                     <h4 className="font-bold text-xs uppercase tracking-wide">
-                      {validationResult.isValid ? 'Mazo Legal en Commander' : 'Errores de Validación'}
+                      {validationResult.isValid
+                        ? 'Mazo Legal en Commander'
+                        : 'Errores de Validación'}
                     </h4>
                     <p className="text-[11px] text-zinc-300 mt-0.5">
                       Total: {validationResult.totalCards}/100 cartas &bull; Comandante:{' '}
@@ -346,7 +353,10 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
                     </span>
                     <ul className="text-xs space-y-1 text-rose-300">
                       {validationResult.errors.map((err: string, i: number) => (
-                        <li key={i} className="bg-rose-950/30 p-2 rounded-lg border border-rose-900/40 text-[11px]">
+                        <li
+                          key={i}
+                          className="bg-rose-950/30 p-2 rounded-lg border border-rose-900/40 text-[11px]"
+                        >
                           &bull; {err}
                         </li>
                       ))}
@@ -363,7 +373,10 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
                     </span>
                     <ul className="text-xs space-y-1 text-amber-200">
                       {validationResult.warnings.map((warn: string, i: number) => (
-                        <li key={i} className="bg-amber-950/30 p-2 rounded-lg border border-amber-900/40 text-[11px]">
+                        <li
+                          key={i}
+                          className="bg-amber-950/30 p-2 rounded-lg border border-amber-900/40 text-[11px]"
+                        >
                           &bull; {warn}
                         </li>
                       ))}

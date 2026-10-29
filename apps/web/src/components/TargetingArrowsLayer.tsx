@@ -19,7 +19,9 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
   targetingMousePos,
   onClearArrow,
 }) => {
-  const [elementPositions, setElementPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [elementPositions, setElementPositions] = useState<
+    Record<string, { x: number; y: number }>
+  >({});
   const animFrameRef = useRef<number | null>(null);
 
   // Continuously or reactively compute screen coordinates of cards and player headers
@@ -85,11 +87,12 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
   };
 
   // Normalize source IDs from either activeTargetingSourceIds array or activeTargetingSourceId string
-  const sourceIds = (activeTargetingSourceIds && activeTargetingSourceIds.length > 0)
-    ? activeTargetingSourceIds
-    : activeTargetingSourceId
-    ? [activeTargetingSourceId]
-    : [];
+  const sourceIds =
+    activeTargetingSourceIds && activeTargetingSourceIds.length > 0
+      ? activeTargetingSourceIds
+      : activeTargetingSourceId
+        ? [activeTargetingSourceId]
+        : [];
 
   return (
     <svg
@@ -166,7 +169,11 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
         const markerId = isAttack ? 'url(#arrowhead-attack)' : 'url(#arrowhead-target)';
 
         return (
-          <g key={arrow.id} data-targeting-arrow={arrow.id} className="transition-opacity duration-300">
+          <g
+            key={arrow.id}
+            data-targeting-arrow={arrow.id}
+            className="transition-opacity duration-300"
+          >
             {/* Outer halo path */}
             <path
               d={`M ${p1.x} ${p1.y} Q ${midX} ${midY} ${p2.x} ${p2.y}`}

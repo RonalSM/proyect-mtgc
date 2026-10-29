@@ -355,7 +355,9 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
     if (onSelectCard) {
       onSelectCard(card.instanceId, e.shiftKey || e.ctrlKey || e.metaKey);
     } else {
-      setInternalSelectedCardId(internalSelectedCardId === card.instanceId ? null : card.instanceId);
+      setInternalSelectedCardId(
+        internalSelectedCardId === card.instanceId ? null : card.instanceId,
+      );
     }
   };
 

@@ -40,8 +40,10 @@ export default {
         },
       },
       backgroundImage: {
-        'radial-glow': 'radial-gradient(circle at 50% 0%, rgba(42, 131, 95, 0.12), transparent 70%)',
-        'subtle-grid': 'linear-gradient(to right, rgba(139, 187, 146, 0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(139, 187, 146, 0.04) 1px, transparent 1px)',
+        'radial-glow':
+          'radial-gradient(circle at 50% 0%, rgba(42, 131, 95, 0.12), transparent 70%)',
+        'subtle-grid':
+          'linear-gradient(to right, rgba(139, 187, 146, 0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(139, 187, 146, 0.04) 1px, transparent 1px)',
       },
     },
   },

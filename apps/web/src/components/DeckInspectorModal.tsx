@@ -191,9 +191,7 @@ export const DeckInspectorModal: React.FC<DeckInspectorModalProps> = ({
                 </h2>
                 <div className="flex items-center space-x-1 shrink-0">
                   {deck.colorIdentity && deck.colorIdentity.length > 0 ? (
-                    deck.colorIdentity.map(c => (
-                      <MtgSymbolIcon key={c} symbol={c} size="sm" />
-                    ))
+                    deck.colorIdentity.map(c => <MtgSymbolIcon key={c} symbol={c} size="sm" />)
                   ) : (
                     <MtgSymbolIcon symbol="c" size="sm" />
                   )}
@@ -446,7 +444,9 @@ export const DeckInspectorModal: React.FC<DeckInspectorModalProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {cards.map((card, idx) => (
                         <div
-                          key={card.scryfallId ? `${card.scryfallId}-${idx}` : `${card.name}-${idx}`}
+                          key={
+                            card.scryfallId ? `${card.scryfallId}-${idx}` : `${card.name}-${idx}`
+                          }
                           onMouseEnter={e => showPreview(card, e)}
                           onMouseLeave={hidePreview}
                           onClick={() => openCardDetails(card)}

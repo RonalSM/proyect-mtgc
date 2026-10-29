@@ -199,9 +199,7 @@ export class DeckService {
       await tokenService.getTokensForCard(meta.commander).catch(() => {});
 
       const commanderRealImg =
-        commanderCards[0]?.imageUrlArtCrop ||
-        commanderCards[0]?.imageUrlNormal ||
-        meta.imageUrl;
+        commanderCards[0]?.imageUrlArtCrop || commanderCards[0]?.imageUrlNormal || meta.imageUrl;
 
       const deckItem: SavedDeck = {
         id: meta.id,

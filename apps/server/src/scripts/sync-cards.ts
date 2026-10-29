@@ -3,7 +3,9 @@ import { bulkSyncService } from '../services/bulk-sync.service.js';
 import { processAllCardsLocales } from './process-all-cards-locales.js';
 
 async function main() {
-  console.log('🚀 [sync:cards] Iniciando sincronización integral de cartas Scryfall en base local...');
+  console.log(
+    '🚀 [sync:cards] Iniciando sincronización integral de cartas Scryfall en base local...',
+  );
   await connectDatabase();
 
   const args = process.argv.slice(2);
@@ -14,12 +16,16 @@ async function main() {
   // 1. Sincronizar Oracle Cards (decenas de miles de cartas reales)
   console.log('\n--- 1. Sincronización de Oracle Cards ---');
   const oracleResult = await bulkSyncService.syncOracleCards();
-  console.log(`✅ Oracle Cards: ${oracleResult.syncedCount} cartas sincronizadas en ${oracleResult.durationMs}ms.`);
+  console.log(
+    `✅ Oracle Cards: ${oracleResult.syncedCount} cartas sincronizadas en ${oracleResult.durationMs}ms.`,
+  );
 
   // 2. Sincronizar Rulings (79,000+ dictámenes oficiales)
   console.log('\n--- 2. Sincronización de Rulings ---');
   const rulingsResult = await bulkSyncService.syncRulings();
-  console.log(`✅ Rulings: ${rulingsResult.syncedCount} dictámenes indexados en ${rulingsResult.durationMs}ms.`);
+  console.log(
+    `✅ Rulings: ${rulingsResult.syncedCount} dictámenes indexados en ${rulingsResult.durationMs}ms.`,
+  );
 
   // 3. Sincronizar CardLocale (Español)
   if (!skipLocales) {
@@ -35,10 +41,7 @@ async function main() {
   const finalCards = await prisma.card.count();
   const finalTokens = await prisma.card.count({
     where: {
-      OR: [
-        { layout: 'token' },
-        { typeLine: { contains: 'Token', mode: 'insensitive' } },
-      ],
+      OR: [{ layout: 'token' }, { typeLine: { contains: 'Token', mode: 'insensitive' } }],
     },
   });
   const finalRulings = await prisma.ruling.count();

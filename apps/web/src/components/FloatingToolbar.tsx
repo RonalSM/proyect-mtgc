@@ -403,7 +403,9 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               {/* Visuals / Playmats */}
               <label className="flex items-center justify-between cursor-pointer p-2.5 rounded-xl bg-[#040d0f] border border-[#12544F] hover:border-[#2A835F] transition-colors">
                 <div>
-                  <div className="text-xs font-semibold text-zinc-200">Reducir fondos (Playmats)</div>
+                  <div className="text-xs font-semibold text-zinc-200">
+                    Reducir fondos (Playmats)
+                  </div>
                   <div className="text-[11px] text-zinc-400">
                     Sustituye el arte de playmats por color liso oscuro (REQ-22.15).
                   </div>
@@ -463,21 +465,29 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
 
             <div className="text-xs text-zinc-300 space-y-2.5">
               <div className="p-2.5 rounded-xl bg-[#040d0f] border border-[#12544F]">
-                <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">🎮 Arrastrar y Soltar (DND):</strong>
+                <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">
+                  🎮 Arrastrar y Soltar (DND):
+                </strong>
                 Arrastra cartas desde tu mano al campo de batalla. También puedes moverlas
                 libremente entre zonas (cementerio, exilio, comando).
               </div>
               <div className="p-2.5 rounded-xl bg-[#040d0f] border border-[#12544F]">
-                <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">💖 Vidas y Contadores:</strong>
+                <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">
+                  💖 Vidas y Contadores:
+                </strong>
                 Haz clic en la pastilla de vida de tu esquina interior para modificar vidas (+1, −1,
                 daño recibido, vida ganada) o gestionar daño de comandante y veneno.
               </div>
               <div className="p-2.5 rounded-xl bg-[#040d0f] border border-[#12544F]">
-                <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">🔍 Zoom de Cartas:</strong>
+                <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">
+                  🔍 Zoom de Cartas:
+                </strong>
                 Pasa el cursor sobre cualquier carta para ampliar su arte y texto Oracle.
               </div>
               <div className="p-2.5 rounded-xl bg-[#040d0f] border border-[#12544F]">
-                <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">🖼️ Ampliar Celda:</strong>
+                <strong className="text-[#8BBB92] block mb-0.5 font-sans font-bold">
+                  🖼️ Ampliar Celda:
+                </strong>
                 Pulsa el botón de maximizar en la etiqueta de nombre de una celda para verla en
                 pantalla completa.
               </div>

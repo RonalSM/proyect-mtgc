@@ -550,7 +550,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    - THE sistema SHALL eliminar por completo cualquier catálogo simulado en memoria (`PRESEEDED_SPANISH_LOCALES` en `card-locale.service.ts` y `card-search.service.ts`), origen raíz de las URLs con sufijos de timestamp incrementales en múltiplos de 100 (`...jpg?1789755201` a `...jpg?1789755501`) e identificadores ficticios (`5b492372-8820-410a-b363-d1f855263641`).
    - Toda información de cartas, textos localizados y URLs de imagen (`small`, `normal`, `large`, `art_crop`) SHALL originarse únicamente en `cards` y `card_locales` pobladas desde los volcados masivos oficiales de Scryfall.
 3. **Validación de Identidad y Re-Siembra Exitosa:**
-   - Cada uno de los 8 mazos listos SHALL cumplir al 100% las reglas de construcción de Commander (100 cartas singleton incluyendo comandantes válidos, con identidad de color legal; sustituyendo *Quartzwood Crasher* [RG] por *Thorn Mammoth* [G] en el mazo mono-verde de Goreclaw).
+   - Cada uno de los 8 mazos listos SHALL cumplir al 100% las reglas de construcción de Commander (100 cartas singleton incluyendo comandantes válidos, con identidad de color legal; sustituyendo _Quartzwood Crasher_ [RG] por _Thorn Mammoth_ [G] en el mazo mono-verde de Goreclaw).
    - La ejecución de `npm run seed:presets` SHALL certificar los 8 mazos listos con 100/100 cartas encontradas y resueltas exitosamente en la base de datos local.
 4. **Verificación Automatizada:**
    - Pruebas unitarias en `apps/server/test/preset-resolution.test.ts` (3/3 aprobadas) certificando que `loadPresetDecks` carga los 8 mazos sin IDs sintéticos (`cmdr_`, `main_`, `id_`) ni sufijos de timestamp falsos (`178975`), y que `resolveCardFromDb` resuelve correctamente cartas regulares y DFC/Aventuras (`Sol Ring`, `Lovestruck Beast`) devolviendo `null` ante nombres inexistentes.
@@ -631,10 +631,10 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 2. **Extracción Estricta desde Datos Reales de la Base:**
    - El P/T base SHALL originarse en los valores impresos reales de la tabla `cards` en PostgreSQL local (`definition.power`, `definition.toughness` o `faces[activeFaceIndex]`).
    - Se certifica con datos reales de los mazos listos:
-     - *Krenko, Mob Boss*: P/T impreso `3/3`.
-     - *Krenko, Tin Street Kingpin*: P/T impreso `1/2`.
-     - *Goreclaw, Terror of Qal Sisma*: P/T impreso `4/3`.
-     - *Mountain*: `null` (sin indicador).
+     - _Krenko, Mob Boss_: P/T impreso `3/3`.
+     - _Krenko, Tin Street Kingpin_: P/T impreso `1/2`.
+     - _Goreclaw, Terror of Qal Sisma_: P/T impreso `4/3`.
+     - _Mountain_: `null` (sin indicador).
 3. **Ubicación Geométrica Exterior e Invarianza de Rotación:**
    - El indicador SHALL posicionarse en la esquina inferior izquierda de la ranura de la carta (`card-slot-container`), anclado por fuera del borde delimitador de la imagen (`absolute -bottom-2.5 -left-1`, equivalente a `bottom: -10px, left: -4px`).
    - WHEN la permanente es girada (`isTapped: true`), la imagen gira $90^\circ$ dentro de su contenedor de rotación, pero el indicador `CardPTBadge` permanece 100% erguido y anclado en la esquina inferior izquierda sin rotar con la carta.
@@ -657,7 +657,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 
 1. **Filtrado Canónico por Tipo en Inglés:**
    - Los botones de filtro de tipo de la biblioteca (`Criaturas`, `Instantáneos`, `Conjuros`, `Artefactos`, `Encantamientos`, `Tierras`, `Planeswalkers`) SHALL evaluar exclusivamente el campo canónico `typeLine` en inglés (`creature`, `instant`, `sorcery`, `artifact`, `enchantment`, `land`, `planeswalker`).
-   - Las cartas multitipo (p. ej. *Artifact Creature*) SHALL mostrarse al seleccionar cualquiera de los tipos que le corresponden.
+   - Las cartas multitipo (p. ej. _Artifact Creature_) SHALL mostrarse al seleccionar cualquiera de los tipos que le corresponden.
 2. **Búsqueda Bilingüe de Cartas:**
    - La entrada de texto del buscador de biblioteca SHALL evaluar coincidencias simultáneamente sobre el nombre canónico en inglés (`definition.name`) y sobre el nombre impreso localizado en español (`locales.es.printedName`).
 3. **Presentación de Títulos en Español:**
@@ -831,35 +831,35 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
      - _Verificación de cartas DFC y marco de respaldo:_ Comprobados al 100% en vivo.
        3.9. **Atribución de artista y copyright en el selector de playmat (Punto 7):** - WHILE se use una ilustración `art_crop` de Scryfall como fondo de playmat (sea por defecto el comandante del mazo o una URL directa), THE modal de personalización de playmat SHALL mostrar de forma destacada el nombre del artista («Ilustrado por [artista]») y el copyright oficial de Wizards («™ & © Wizards of the Coast»). - THE modal SHALL incluir un botón interactivo «Ver carta» (`data-testid="playmat-view-card-btn"`) que abre el panel de inspección detallada de la carta con sus dictámenes oficiales, además de permitir restablecer en un clic al arte del comandante asignado.
        3.10. **Adaptación fluida y visibilidad en modo expandido / Vista Ampliada (Punto 1 de Correcciones del Cliente - A.1):** - **Botón de expandir de cada jugador:** Cada celda de jugador cuenta con un botón de expandir (`data-expand-cell-btn={player.id}`). Al activarlo, la división de ese jugador (propia o de un rival) se amplía hasta ocupar el 100% de la ventana sin pantallas azules, renderizando el playmat a sangre (`playmatRect`), el dock inferior flotante (`dockRect`), la mano y las cartas de la mesa con cálculo dinámico de dimensiones y encuadre coordinado (`viewFraming`) manteniendo plena interactividad. El resto de las divisiones se ocultan temporalmente. El cierre se realiza de manera accesible mediante el botón interactivo «Cerrar (Esc)» (`data-testid="close-expanded-view"`) o pulsando la tecla `Escape`. - **Pantalla completa nativa del navegador:** La pantalla completa general del navegador se delega íntegramente a la tecla nativa `F11` del usuario, habiéndose retirado el botón redundante de pantalla completa del navegador y el código de `requestFullscreen()`. - **Resets y contención CSS:** Resets explícitos para `html`, `body`, `#root` y `#mesa-total` con fondo `#000000`, dimensiones del 100% y `overflow: hidden`, previniendo fondos planos de color azul pizarra (`bg-slate-950`), desfases con `100dvh` o márgenes desalineados. - **Certificación visual automatizada:** Suite de pruebas Playwright en [`apps/web/e2e/fullscreen-visual.spec.ts`](apps/web/e2e/fullscreen-visual.spec.ts) certificando en pods de 2, 4 y 6 jugadores a resoluciones 1920x1080 y 1366x768 que el playmat (`naturalWidth > 0`), las cartas, el dock y la mano son 100% visibles, las capturas presentan una alta varianza de píxeles ($> 5400$ en modo expandido) descartando pantallas azules o vacías, y se registran cero errores de consola de React o del navegador.
-      3.11. **Diagnóstico y Telemetría de Errores de Carga de Cartas (Punto 5 de Correcciones del Cliente - D.5):**
-    - **Reproducción del flujo de cliente integral:** Ejecución automatizada con 4 jugadores en pantalla simultánea (`apps/web/e2e/card-loading-reproduction.spec.ts`): sala de espera -> selección de mazo predefinido -> inicio de partida -> resolución de iniciativa D20 -> ventana de mulligan turn-by-turn -> inspección de biblioteca -> inspección de cementerio y exilio -> menú contextual de carta en mano («Ver carta») -> creación de ficha desde espacio vacío -> vista ampliada.
-    - **Peticiones fallidas agrupadas por dominio y código HTTP:**
-      - `cards.scryfall.io`: 16 peticiones HTTP 404 y 28 peticiones bloqueadas por Chromium ORB (`net::ERR_BLOCKED_BY_ORB`) por impresiones en español inexistentes en CDN.
-      - `localhost`: 2 peticiones HTTP 401 (`/api/decks` para invitados no autenticados, manejado por fallback a presets) y 11 peticiones HTTP 404 (`/api/cards/search?name=...&lang=es` para cartas sin registro en la tabla `CardLocale`, ej. *Muxus, Goblin Grandee*, *Lightning Greaves*, *Massive Raid*).
-      - `api.scryfall.com`: 0 errores HTTP 429 (Too Many Requests).
-    - **Aislamiento de seguridad y almacenamiento:** 0 violaciones de CSP (`fontSrc`, `styleSrc`, `imgSrc`), 0 errores de Cache API (`QuotaExceededError`) y 0 acciones de WebSocket rechazadas por el motor autoritativo.
-    - **Causa raíz identificada para Punto 6:** Ausencia de cadena de reintento progresiva $\text{Español} \to \text{Inglés} \to \text{Marco de texto}$ en `CardDisplay.tsx` cuando la imagen en español retorna 404, provocando que se renderice directamente marco vacío en lugar de intentar la imagen en inglés disponible.
-      3.12. **Cadena de Respaldo Progresiva y Resolución de Fichas sin 429 (Punto 6 de Correcciones del Cliente - D.6):**
-    - **Cadena de Respaldo Obligatoria en `CardDisplay`:** Implementación de la máquina de estados progresiva $\text{Español} \longrightarrow \text{Inglés} \longrightarrow \text{Marco de texto estilizado}$. Si la imagen en español arroja 404 o error en CDN, el componente conmuta automáticamente a la versión en inglés de la carta (`card.imageUrlNormal` o cara activa). Solo si ambas imágenes fallan o no existen se presenta el marco de texto estructurado de MTG con botón de reintento. Prohibición estricta de mostrar iconos de imagen rota en pantalla.
-    - **Resolución Multi-Nivel de Fichas en `TokenService`:** Consulta en primer nivel al catálogo estático `COMMON_TOKENS`, segundo nivel en PostgreSQL local (`prisma.card`) y tercer nivel a Scryfall con limitador de tasa y respaldo automático a arte temático o reverso estándar, previniendo ráfagas síncronas que originen HTTP 429.
-    - **Autorización CSP en `connect-src`:** Inclusión de `'https://cards.scryfall.io'` y `'https://*.scryfall.io'` en la directiva `connectSrc` de Fastify Helmet (`apps/server/src/index.ts`), permitiendo a `PersistentImageCache` ejecutar `fetch()` local hacia la Cache API sin bloqueos de seguridad.
-    - **Fallback Bilingüe en `cardImageResolver`:** Reintento automático con `lang=en` si la consulta con `lang=es` devuelve 404, asegurando que cartas sin impresión en español obtengan arte inglés.
-    - **Certificación Automatizada:** Suite Playwright [`apps/web/e2e/card-fallback-chain.spec.ts`](apps/web/e2e/card-fallback-chain.spec.ts) certificando cero imágenes rotas (`brokenImages === 0`).
-      3.13. **Panel de Diagnóstico (?debug=1) y Registro de Errores en Servidor (Punto 7 de Correcciones del Cliente - D.7):**
-    - **Activación Condicional por URL:** El panel de diagnóstico se mantiene completamente oculto por defecto y se activa reactivamente mediante el parámetro de consulta `?debug=1` en el navegador (`[data-testid="diagnostic-panel-container"]`).
-    - **Telemetría y Lista de Fallos en Vivo:** Presenta de forma persistente y minimizable la lista de cargas fallidas con URL completa, código de estado HTTP o tipo de fallo, motivo descriptivo legible (ej. *«Impresión en español inexistente en CDN (fallback a inglés)»*), estampa de tiempo y botón de reintento individual.
-    - **Acciones Globales:** Botones para reintentar todas las descargas fallidas en cola y limpiar el registro local.
-    - **Registro en el Servidor Backend:** Endpoints `POST /api/diagnostics/card-errors` para persistencia en buffer circular de 150 eventos y registro en los logs del servidor con prefijo `[CARD-ERROR-DIAGNOSTIC]`, junto a `GET` y `DELETE` para consulta y limpieza.
-    - **Certificación Automatizada:** Suite Playwright [`apps/web/e2e/diagnostic-panel.spec.ts`](apps/web/e2e/diagnostic-panel.spec.ts) (captura archivada `audit-p7-diagnostic-panel.png`).
-      3.14. **Benchmark de Red @network con Mazos Listos en Español e Inglés (Punto 8 de Correcciones del Cliente - D.8):**
-    - **Ejecución E2E Real con 4 Jugadores:** Simulación automatizada contra `cards.scryfall.io` con 4 jugadores en pantalla simultánea utilizando mazos listos (Mono-R Krenko y Mono-G Goreclaw en español; W/U Brago y B/G Meren en inglés) mediante [`apps/web/e2e/network-preset-benchmark.spec.ts`](apps/web/e2e/network-preset-benchmark.spec.ts).
-    - **Cifras de Telemetría Registradas:**
-      - _Tiempo total de apertura en frío (4 bibliotecas simultáneas):_ **118 ms** (límite: 45,000 ms, superado con éxito).
-      - _Tiempo de segunda apertura (con Cache API persistente):_ **22 ms** (límite: 3,000 ms, superado con éxito).
-      - _Peticiones totales procesadas:_ **7**.
-      - _Número de reintentos ejecutados:_ **2**.
-      - _Códigos de respuesta HTTP:_ `{"404": 7}` correspondientes a impresiones inexistentes en Scryfall CDN que fueron resueltas limpiamente por la cadena de respaldo progresiva (Español -> Inglés -> Marco de texto).
-      - _Imágenes rotas en pantalla:_ **0** (interfaz 100% limpia sin errores visuales).
+       3.11. **Diagnóstico y Telemetría de Errores de Carga de Cartas (Punto 5 de Correcciones del Cliente - D.5):**
+   - **Reproducción del flujo de cliente integral:** Ejecución automatizada con 4 jugadores en pantalla simultánea (`apps/web/e2e/card-loading-reproduction.spec.ts`): sala de espera -> selección de mazo predefinido -> inicio de partida -> resolución de iniciativa D20 -> ventana de mulligan turn-by-turn -> inspección de biblioteca -> inspección de cementerio y exilio -> menú contextual de carta en mano («Ver carta») -> creación de ficha desde espacio vacío -> vista ampliada.
+   - **Peticiones fallidas agrupadas por dominio y código HTTP:**
+     - `cards.scryfall.io`: 16 peticiones HTTP 404 y 28 peticiones bloqueadas por Chromium ORB (`net::ERR_BLOCKED_BY_ORB`) por impresiones en español inexistentes en CDN.
+     - `localhost`: 2 peticiones HTTP 401 (`/api/decks` para invitados no autenticados, manejado por fallback a presets) y 11 peticiones HTTP 404 (`/api/cards/search?name=...&lang=es` para cartas sin registro en la tabla `CardLocale`, ej. _Muxus, Goblin Grandee_, _Lightning Greaves_, _Massive Raid_).
+     - `api.scryfall.com`: 0 errores HTTP 429 (Too Many Requests).
+   - **Aislamiento de seguridad y almacenamiento:** 0 violaciones de CSP (`fontSrc`, `styleSrc`, `imgSrc`), 0 errores de Cache API (`QuotaExceededError`) y 0 acciones de WebSocket rechazadas por el motor autoritativo.
+   - **Causa raíz identificada para Punto 6:** Ausencia de cadena de reintento progresiva $\text{Español} \to \text{Inglés} \to \text{Marco de texto}$ en `CardDisplay.tsx` cuando la imagen en español retorna 404, provocando que se renderice directamente marco vacío en lugar de intentar la imagen en inglés disponible.
+     3.12. **Cadena de Respaldo Progresiva y Resolución de Fichas sin 429 (Punto 6 de Correcciones del Cliente - D.6):**
+   - **Cadena de Respaldo Obligatoria en `CardDisplay`:** Implementación de la máquina de estados progresiva $\text{Español} \longrightarrow \text{Inglés} \longrightarrow \text{Marco de texto estilizado}$. Si la imagen en español arroja 404 o error en CDN, el componente conmuta automáticamente a la versión en inglés de la carta (`card.imageUrlNormal` o cara activa). Solo si ambas imágenes fallan o no existen se presenta el marco de texto estructurado de MTG con botón de reintento. Prohibición estricta de mostrar iconos de imagen rota en pantalla.
+   - **Resolución Multi-Nivel de Fichas en `TokenService`:** Consulta en primer nivel al catálogo estático `COMMON_TOKENS`, segundo nivel en PostgreSQL local (`prisma.card`) y tercer nivel a Scryfall con limitador de tasa y respaldo automático a arte temático o reverso estándar, previniendo ráfagas síncronas que originen HTTP 429.
+   - **Autorización CSP en `connect-src`:** Inclusión de `'https://cards.scryfall.io'` y `'https://*.scryfall.io'` en la directiva `connectSrc` de Fastify Helmet (`apps/server/src/index.ts`), permitiendo a `PersistentImageCache` ejecutar `fetch()` local hacia la Cache API sin bloqueos de seguridad.
+   - **Fallback Bilingüe en `cardImageResolver`:** Reintento automático con `lang=en` si la consulta con `lang=es` devuelve 404, asegurando que cartas sin impresión en español obtengan arte inglés.
+   - **Certificación Automatizada:** Suite Playwright [`apps/web/e2e/card-fallback-chain.spec.ts`](apps/web/e2e/card-fallback-chain.spec.ts) certificando cero imágenes rotas (`brokenImages === 0`).
+     3.13. **Panel de Diagnóstico (?debug=1) y Registro de Errores en Servidor (Punto 7 de Correcciones del Cliente - D.7):**
+   - **Activación Condicional por URL:** El panel de diagnóstico se mantiene completamente oculto por defecto y se activa reactivamente mediante el parámetro de consulta `?debug=1` en el navegador (`[data-testid="diagnostic-panel-container"]`).
+   - **Telemetría y Lista de Fallos en Vivo:** Presenta de forma persistente y minimizable la lista de cargas fallidas con URL completa, código de estado HTTP o tipo de fallo, motivo descriptivo legible (ej. _«Impresión en español inexistente en CDN (fallback a inglés)»_), estampa de tiempo y botón de reintento individual.
+   - **Acciones Globales:** Botones para reintentar todas las descargas fallidas en cola y limpiar el registro local.
+   - **Registro en el Servidor Backend:** Endpoints `POST /api/diagnostics/card-errors` para persistencia en buffer circular de 150 eventos y registro en los logs del servidor con prefijo `[CARD-ERROR-DIAGNOSTIC]`, junto a `GET` y `DELETE` para consulta y limpieza.
+   - **Certificación Automatizada:** Suite Playwright [`apps/web/e2e/diagnostic-panel.spec.ts`](apps/web/e2e/diagnostic-panel.spec.ts) (captura archivada `audit-p7-diagnostic-panel.png`).
+     3.14. **Benchmark de Red @network con Mazos Listos en Español e Inglés (Punto 8 de Correcciones del Cliente - D.8):**
+   - **Ejecución E2E Real con 4 Jugadores:** Simulación automatizada contra `cards.scryfall.io` con 4 jugadores en pantalla simultánea utilizando mazos listos (Mono-R Krenko y Mono-G Goreclaw en español; W/U Brago y B/G Meren en inglés) mediante [`apps/web/e2e/network-preset-benchmark.spec.ts`](apps/web/e2e/network-preset-benchmark.spec.ts).
+   - **Cifras de Telemetría Registradas:**
+     - _Tiempo total de apertura en frío (4 bibliotecas simultáneas):_ **118 ms** (límite: 45,000 ms, superado con éxito).
+     - _Tiempo de segunda apertura (con Cache API persistente):_ **22 ms** (límite: 3,000 ms, superado con éxito).
+     - _Peticiones totales procesadas:_ **7**.
+     - _Número de reintentos ejecutados:_ **2**.
+     - _Códigos de respuesta HTTP:_ `{"404": 7}` correspondientes a impresiones inexistentes en Scryfall CDN que fueron resueltas limpiamente por la cadena de respaldo progresiva (Español -> Inglés -> Marco de texto).
+     - _Imágenes rotas en pantalla:_ **0** (interfaz 100% limpia sin errores visuales).
 4. THE contenedor de nombre SHALL ubicarse centrado en el borde superior de cada división conteniendo únicamente el nombre del jugador y el botón de expandir celda (Punto 8):
    4.1. WHILE sea el turno de un jugador, THE sistema SHALL resaltar este contenedor con fondo ámbar y borde iluminado, además de resaltar el contorno de la división.
    4.2. THE orden de iniciativa (1.º, 2.º…), corona de anfitrión 👑, píldora 'Tú' y punto indicador de conexión se trasladan a la barra superior desplegable (FloatingToolbar), con dropdown interactivo de jugadores.

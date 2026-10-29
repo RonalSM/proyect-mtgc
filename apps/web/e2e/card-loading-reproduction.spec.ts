@@ -42,7 +42,11 @@ test.describe('Punto 5: Diagnóstico y Reproducción de Errores de Carga de Cart
       } else if (msg.type() === 'warning') {
         consoleWarnings.push(text);
       }
-      if (text.includes('REJECTED') || text.includes('rejected') || text.includes('Error in action')) {
+      if (
+        text.includes('REJECTED') ||
+        text.includes('rejected') ||
+        text.includes('Error in action')
+      ) {
         rejectedWsActions.push(text);
       }
       if (text.includes('Cache') || text.includes('QuotaExceededError')) {
@@ -169,7 +173,9 @@ test.describe('Punto 5: Diagnóstico y Reproducción de Errores de Carga de Cart
     const allPages = [hostPage, ...guestPages];
     const startTime = Date.now();
     while (Date.now() - startTime < 45000) {
-      const isMulliganVisible = await hostPage.locator('[data-testid="opening-hand-modal"]').isVisible();
+      const isMulliganVisible = await hostPage
+        .locator('[data-testid="opening-hand-modal"]')
+        .isVisible();
       if (!isMulliganVisible) {
         console.log('[Punto 5] Fase de mulligan completada exitosamente.');
         break;
@@ -187,7 +193,9 @@ test.describe('Punto 5: Diagnóstico y Reproducción de Errores de Carga de Cart
     }
 
     // Asegurar que la modal desapareció
-    await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeHidden({ timeout: 15000 });
+    await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeHidden({
+      timeout: 15000,
+    });
     await hostPage.waitForTimeout(2000);
 
     // Helper para cerrar modales de pila
@@ -285,7 +293,9 @@ test.describe('Punto 5: Diagnóstico y Reproducción de Errores de Carga de Cart
     }
 
     // Recoger violaciones de CSP
-    const clientCspViolations = await hostPage.evaluate(() => (window as any).__cspViolations || []);
+    const clientCspViolations = await hostPage.evaluate(
+      () => (window as any).__cspViolations || [],
+    );
 
     // Agrupar peticiones fallidas por dominio y código
     const domainSummary: Record<string, Record<string, number>> = {};
@@ -306,7 +316,9 @@ test.describe('Punto 5: Diagnóstico y Reproducción de Errores de Carga de Cart
       console.log('   - 0 peticiones fallidas');
     } else {
       for (const f of failedRequests.slice(0, 30)) {
-        console.log(`   - [${f.method}] ${f.status} ${f.domain} -> ${f.url} (${f.failureText || ''})`);
+        console.log(
+          `   - [${f.method}] ${f.status} ${f.domain} -> ${f.url} (${f.failureText || ''})`,
+        );
       }
     }
 

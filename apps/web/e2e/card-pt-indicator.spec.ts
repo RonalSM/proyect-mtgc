@@ -48,7 +48,9 @@ test.describe('Punto 7: Indicador P/T en Esquina Inferior Izquierda con Datos Re
     await page2.click('button:has-text("Entrar a la Mesa")');
 
     await page2.click('button:has-text("Seleccionar / Importar Mazo")');
-    const presetBtn2 = page2.locator('[data-testid="select-preset-deck-preset-goreclaw-terror-of-qal-sisma"]');
+    const presetBtn2 = page2.locator(
+      '[data-testid="select-preset-deck-preset-goreclaw-terror-of-qal-sisma"]',
+    );
     await expect(presetBtn2).toBeVisible({ timeout: 10000 });
     await presetBtn2.click();
     await page2.waitForTimeout(400);
@@ -60,11 +62,15 @@ test.describe('Punto 7: Indicador P/T en Esquina Inferior Izquierda con Datos Re
     await expect(startBtn).toBeEnabled({ timeout: 10000 });
     await startBtn.click();
 
-    await expect(page.locator('[data-testid="opening-hand-modal"]')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('[data-testid="opening-hand-modal"]')).toBeVisible({
+      timeout: 30000,
+    });
 
     const startTime = Date.now();
     while (Date.now() - startTime < 45000) {
-      const isMulliganVisible = await page.locator('[data-testid="opening-hand-modal"]').isVisible();
+      const isMulliganVisible = await page
+        .locator('[data-testid="opening-hand-modal"]')
+        .isVisible();
       if (!isMulliganVisible) break;
       for (const p of [page, page2]) {
         const keepBtn = p.locator('[data-testid="keep-btn"]:not([disabled])');
@@ -83,7 +89,9 @@ test.describe('Punto 7: Indicador P/T en Esquina Inferior Izquierda con Datos Re
     // 4. Mover Krenko, Mob Boss (Comandante, 3/3 real de la base de datos) al campo de batalla
     console.log('[Punto 7] Moviendo comandante Krenko, Mob Boss al campo...');
     await page.evaluate(() => {
-      const cmdEl = document.querySelector('[data-dock-zone="command"] [data-commander-card="true"]');
+      const cmdEl = document.querySelector(
+        '[data-dock-zone="command"] [data-commander-card="true"]',
+      );
       const cId = cmdEl?.getAttribute('data-card-instance-id');
       if (cId) {
         (window as any).__mtgcSendAction('MOVE_CARD', {
@@ -97,14 +105,18 @@ test.describe('Punto 7: Indicador P/T en Esquina Inferior Izquierda con Datos Re
     await page.waitForTimeout(1000);
 
     // 5. Verificar Krenko, Mob Boss en el campo con su P/T 3/3 en la esquina inferior izquierda
-    const krenkoBf = page.locator('[data-battlefield-card="true"][data-card-name*="Krenko, Mob Boss"]').first();
+    const krenkoBf = page
+      .locator('[data-battlefield-card="true"][data-card-name*="Krenko, Mob Boss"]')
+      .first();
     await expect(krenkoBf).toBeVisible({ timeout: 5000 });
 
     const krenkoPT = krenkoBf.locator('[data-testid="card-pt-indicator"]');
     await expect(krenkoPT).toBeVisible({ timeout: 5000 });
     const effectivePT = await krenkoPT.getAttribute('data-pt-effective');
     const basePT = await krenkoPT.getAttribute('data-base-pt');
-    console.log(`[Punto 7] Krenko, Mob Boss en mesa - P/T Efectivo: "${effectivePT}", Base: "${basePT}"`);
+    console.log(
+      `[Punto 7] Krenko, Mob Boss en mesa - P/T Efectivo: "${effectivePT}", Base: "${basePT}"`,
+    );
     expect(effectivePT).toBe('3/3');
     expect(basePT).toBe('3/3');
 
@@ -143,12 +155,16 @@ test.describe('Punto 7: Indicador P/T en Esquina Inferior Izquierda con Datos Re
     });
     await page.waitForTimeout(1000);
 
-    const kingpinBf = page.locator('[data-battlefield-card="true"][data-card-name*="Tin Street Kingpin"]').first();
+    const kingpinBf = page
+      .locator('[data-battlefield-card="true"][data-card-name*="Tin Street Kingpin"]')
+      .first();
     await expect(kingpinBf).toBeVisible({ timeout: 5000 });
     const kingpinPT = kingpinBf.locator('[data-testid="card-pt-indicator"]');
     await expect(kingpinPT).toBeVisible({ timeout: 5000 });
     const kingpinEffective = await kingpinPT.getAttribute('data-pt-effective');
-    console.log(`[Punto 7] Krenko, Tin Street Kingpin en mesa - P/T Efectivo: "${kingpinEffective}"`);
+    console.log(
+      `[Punto 7] Krenko, Tin Street Kingpin en mesa - P/T Efectivo: "${kingpinEffective}"`,
+    );
     expect(kingpinEffective).toBe('1/2');
 
     // 8. Mover una tierra (Montaña / Mountain) al campo y verificar que NO muestra indicador P/T
@@ -158,7 +174,9 @@ test.describe('Punto 7: Indicador P/T en Esquina Inferior Izquierda con Datos Re
       const myId = localStorage.getItem('mtgc_player_id');
       const lib = state?.playerZones?.[myId]?.library || [];
       const hand = state?.playerZones?.[myId]?.hand || [];
-      const land = [...hand, ...lib].find(c => c.definition.name.includes('Mountain') || c.definition.typeLine?.includes('Land'));
+      const land = [...hand, ...lib].find(
+        c => c.definition.name.includes('Mountain') || c.definition.typeLine?.includes('Land'),
+      );
       if (land) {
         const fromZone = hand.some(c => c.instanceId === land.instanceId) ? 'hand' : 'library';
         (window as any).__mtgcSendAction('MOVE_CARD', {
@@ -171,7 +189,9 @@ test.describe('Punto 7: Indicador P/T en Esquina Inferior Izquierda con Datos Re
     });
     await page.waitForTimeout(1000);
 
-    const landBf = page.locator('[data-battlefield-card="true"][data-card-name*="Mountain"]').first();
+    const landBf = page
+      .locator('[data-battlefield-card="true"][data-card-name*="Mountain"]')
+      .first();
     await expect(landBf).toBeVisible({ timeout: 5000 });
     const landPT = landBf.locator('[data-testid="card-pt-indicator"]');
     expect(await landPT.count()).toBe(0);

@@ -33,7 +33,8 @@ export const FontGlyphsAudit: React.FC<{ onClose?: () => void }> = ({ onClose })
               Auditoría de Glifos: Fuentes Mana &amp; Keyrune (Punto 4)
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Verificación de auto-alojamiento, CSP compliance y renderizado de glifos vectoriales sin CDN.
+              Verificación de auto-alojamiento, CSP compliance y renderizado de glifos vectoriales
+              sin CDN.
             </p>
           </div>
           {onClose && (
@@ -56,7 +57,9 @@ export const FontGlyphsAudit: React.FC<{ onClose?: () => void }> = ({ onClose })
                 : 'bg-rose-950/40 border-rose-500/50 text-rose-300'
             }`}
           >
-            <span className="font-semibold text-xs">Fuente &ldquo;Mana&rdquo; (document.fonts.check):</span>
+            <span className="font-semibold text-xs">
+              Fuente &ldquo;Mana&rdquo; (document.fonts.check):
+            </span>
             <span className="font-mono font-bold text-xs">
               {manaLoaded ? '✓ CARGADA (14px Mana)' : '✗ PENDIENTE'}
             </span>
@@ -70,7 +73,9 @@ export const FontGlyphsAudit: React.FC<{ onClose?: () => void }> = ({ onClose })
                 : 'bg-rose-950/40 border-rose-500/50 text-rose-300'
             }`}
           >
-            <span className="font-semibold text-xs">Fuente &ldquo;Keyrune&rdquo; (document.fonts.check):</span>
+            <span className="font-semibold text-xs">
+              Fuente &ldquo;Keyrune&rdquo; (document.fonts.check):
+            </span>
             <span className="font-mono font-bold text-xs">
               {keyruneLoaded ? '✓ CARGADA (14px Keyrune)' : '✗ PENDIENTE'}
             </span>
@@ -92,7 +97,10 @@ export const FontGlyphsAudit: React.FC<{ onClose?: () => void }> = ({ onClose })
                   className="bg-slate-950 border border-slate-800/80 rounded-xl p-2.5 flex items-center space-x-3"
                 >
                   <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center flex-shrink-0 text-amber-400">
-                    <span data-testid={`glyph-kw-${kw.id}`} className="inline-flex items-center justify-center">
+                    <span
+                      data-testid={`glyph-kw-${kw.id}`}
+                      className="inline-flex items-center justify-center"
+                    >
                       <MtgKeywordIcon keyword={kw.id} className="text-lg" />
                     </span>
                   </div>
@@ -122,7 +130,10 @@ export const FontGlyphsAudit: React.FC<{ onClose?: () => void }> = ({ onClose })
                   className="bg-slate-950 border border-slate-800/80 rounded-xl p-2.5 flex items-center space-x-3"
                 >
                   <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center flex-shrink-0 text-purple-300">
-                    <span data-testid={`glyph-counter-${c.id}`} className="inline-flex items-center justify-center">
+                    <span
+                      data-testid={`glyph-counter-${c.id}`}
+                      className="inline-flex items-center justify-center"
+                    >
                       <MtgCounterIcon counterType={c.id} className="text-lg" />
                     </span>
                   </div>
@@ -195,7 +206,9 @@ export const FontGlyphsAudit: React.FC<{ onClose?: () => void }> = ({ onClose })
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-bold text-white truncate">{s.name}</div>
-                  <div className="text-[10px] text-slate-400 font-mono">{s.code.toUpperCase()} &bull; {s.rarity}</div>
+                  <div className="text-[10px] text-slate-400 font-mono">
+                    {s.code.toUpperCase()} &bull; {s.rarity}
+                  </div>
                 </div>
               </div>
             ))}

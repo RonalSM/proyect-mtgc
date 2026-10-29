@@ -119,10 +119,7 @@ server.get('/api/health/cards', async () => {
     const cardCount = await prisma.card.count();
     const tokenCount = await prisma.card.count({
       where: {
-        OR: [
-          { layout: 'token' },
-          { typeLine: { contains: 'Token', mode: 'insensitive' } },
-        ],
+        OR: [{ layout: 'token' }, { typeLine: { contains: 'Token', mode: 'insensitive' } }],
       },
     });
     const rulingCount = await prisma.ruling.count();
@@ -998,7 +995,9 @@ try {
         await bulkSyncService.syncOracleCards();
       }
     } catch (initErr: any) {
-      server.log.warn(`⚠️ [StartupInit] Advertencia en inicialización: ${initErr?.message || initErr}`);
+      server.log.warn(
+        `⚠️ [StartupInit] Advertencia en inicialización: ${initErr?.message || initErr}`,
+      );
     }
   }
 

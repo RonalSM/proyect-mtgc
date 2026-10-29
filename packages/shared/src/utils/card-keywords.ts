@@ -24,8 +24,7 @@ export const MTG_KEYWORDS: KeywordDefinition[] = [
     nameEn: 'Deathtouch',
     label: 'Deathtouch',
     iconName: 'Skull',
-    reminderText:
-      'Any amount of damage this deals to a creature is enough to destroy it.',
+    reminderText: 'Any amount of damage this deals to a creature is enough to destroy it.',
   },
   {
     id: 'defender',
@@ -58,8 +57,7 @@ export const MTG_KEYWORDS: KeywordDefinition[] = [
     nameEn: 'First strike',
     label: 'First strike',
     iconName: 'Zap',
-    reminderText:
-      'This creature deals combat damage before creatures without first strike.',
+    reminderText: 'This creature deals combat damage before creatures without first strike.',
   },
   {
     id: 'flying',
@@ -67,8 +65,7 @@ export const MTG_KEYWORDS: KeywordDefinition[] = [
     nameEn: 'Flying',
     label: 'Flying',
     iconName: 'Feather',
-    reminderText:
-      'This creature cannot be blocked except by creatures with flying and/or reach.',
+    reminderText: 'This creature cannot be blocked except by creatures with flying and/or reach.',
   },
   {
     id: 'haste',
@@ -101,8 +98,7 @@ export const MTG_KEYWORDS: KeywordDefinition[] = [
     nameEn: 'Lifelink',
     label: 'Lifelink',
     iconName: 'Heart',
-    reminderText:
-      'Damage dealt by this permanent also causes you to gain that much life.',
+    reminderText: 'Damage dealt by this permanent also causes you to gain that much life.',
   },
   {
     id: 'menace',
@@ -178,8 +174,7 @@ export const MTG_COUNTERS: CounterDefinition[] = [
     nameEn: 'Lore',
     label: 'Lore',
     iconName: 'BookOpen',
-    reminderText:
-      'Counters that advance saga chapters in your precombat main phase.',
+    reminderText: 'Counters that advance saga chapters in your precombat main phase.',
   },
   {
     id: 'shield',

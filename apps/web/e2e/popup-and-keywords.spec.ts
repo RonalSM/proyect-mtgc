@@ -22,7 +22,9 @@ test('Verify scroll, deck validator popup, and clean keywords', async ({ page })
   await openImporterBtn.click();
 
   // Verify popup is open without changing main screen
-  await expect(page.locator('text=Validador e Importador de Mazos EDH')).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('text=Validador e Importador de Mazos EDH')).toBeVisible({
+    timeout: 5000,
+  });
   await page.screenshot({
     path: 'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa/audit-validator-popup.png',
   });

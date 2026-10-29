@@ -23,7 +23,10 @@ describe('Punto 3 (A.3) - Mazos Listos con Resolución Real contra DB', () => {
         assert.ok(!c.scryfallId.startsWith('id_'), `No debe tener ID sintético: ${c.scryfallId}`);
         assert.ok(c.scryfallId.length > 10, `Debe tener un scryfallId real: ${c.scryfallId}`);
         if (c.imageUrlNormal) {
-          assert.ok(!c.imageUrlNormal.includes('178975'), `No debe contener URLs fake con timestamp 178975`);
+          assert.ok(
+            !c.imageUrlNormal.includes('178975'),
+            `No debe contener URLs fake con timestamp 178975`,
+          );
         }
       }
 
@@ -32,7 +35,10 @@ describe('Punto 3 (A.3) - Mazos Listos con Resolución Real contra DB', () => {
         assert.ok(!c.scryfallId.startsWith('id_'), `No debe tener ID sintético: ${c.scryfallId}`);
         assert.ok(c.scryfallId.length > 10, `Debe tener un scryfallId real: ${c.scryfallId}`);
         if (c.imageUrlNormal) {
-          assert.ok(!c.imageUrlNormal.includes('178975'), `No debe contener URLs fake con timestamp 178975`);
+          assert.ok(
+            !c.imageUrlNormal.includes('178975'),
+            `No debe contener URLs fake con timestamp 178975`,
+          );
         }
       }
     }

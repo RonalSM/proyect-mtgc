@@ -71,7 +71,8 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
           }
           const status = res.status();
           const statusStr = String(status);
-          networkStats.statusCodeCounts[statusStr] = (networkStats.statusCodeCounts[statusStr] || 0) + 1;
+          networkStats.statusCodeCounts[statusStr] =
+            (networkStats.statusCodeCounts[statusStr] || 0) + 1;
 
           const count = (networkStats.seenUrls.get(url) || 0) + 1;
           networkStats.seenUrls.set(url, count);
@@ -114,7 +115,9 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
 
     // Seleccionar mazo predefinido para host
     await hostPage.click('button:has-text("Seleccionar / Importar Mazo")');
-    const hostPreset = hostPage.locator('[data-testid^="select-preset-deck-"]').nth(playerConfigs[0].deckIdx);
+    const hostPreset = hostPage
+      .locator('[data-testid^="select-preset-deck-"]')
+      .nth(playerConfigs[0].deckIdx);
     await expect(hostPreset).toBeVisible({ timeout: 10000 });
     await hostPreset.click();
     await hostPage.waitForTimeout(400);
@@ -134,7 +137,9 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
       await gPage.click('button:has-text("Entrar a la Mesa")');
 
       await gPage.click('button:has-text("Seleccionar / Importar Mazo")');
-      const gPreset = gPage.locator('[data-testid^="select-preset-deck-"]').nth(playerConfigs[i].deckIdx);
+      const gPreset = gPage
+        .locator('[data-testid^="select-preset-deck-"]')
+        .nth(playerConfigs[i].deckIdx);
       await expect(gPreset).toBeVisible({ timeout: 10000 });
       await gPreset.click();
       await gPage.waitForTimeout(400);
@@ -160,15 +165,24 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
       const p = pages[i];
       await p.waitForSelector('[data-testid="opening-hand-modal"]', { timeout: 10000 });
       // Esperar a que las imágenes carguen
-      await p.waitForFunction(() => {
-        const imgs = Array.from(document.querySelectorAll('[data-testid="opening-hand-modal"] img[data-image-size]')) as HTMLImageElement[];
-        return imgs.length > 0 && imgs.every(img => img.naturalWidth > 0 || img.complete);
-      }, { timeout: 15000 }).catch(() => {});
+      await p
+        .waitForFunction(
+          () => {
+            const imgs = Array.from(
+              document.querySelectorAll('[data-testid="opening-hand-modal"] img[data-image-size]'),
+            ) as HTMLImageElement[];
+            return imgs.length > 0 && imgs.every(img => img.naturalWidth > 0 || img.complete);
+          },
+          { timeout: 15000 },
+        )
+        .catch(() => {});
 
       const mulliganAudit = await p.evaluate(() => {
         const modal = document.querySelector('[data-testid="opening-hand-modal"]');
         if (!modal) return { totalCards: 0, realImages: 0, textFrames: 0, failures: [] };
-        const imgs = Array.from(modal.querySelectorAll('img[data-image-size]')) as HTMLImageElement[];
+        const imgs = Array.from(
+          modal.querySelectorAll('img[data-image-size]'),
+        ) as HTMLImageElement[];
         const textFrames = Array.from(modal.querySelectorAll('[data-card-text-frame="true"]'));
         const failures: { name: string; reason: string; src?: string }[] = [];
         let realImages = 0;
@@ -180,7 +194,12 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
           const name = tf.querySelector('.font-bold')?.textContent?.trim() || 'Desconocida';
           failures.push({ name, reason: 'Marco de texto de respaldo' });
         }
-        return { totalCards: imgs.length + textFrames.length, realImages, textFrames: textFrames.length, failures };
+        return {
+          totalCards: imgs.length + textFrames.length,
+          realImages,
+          textFrames: textFrames.length,
+          failures,
+        };
       });
 
       auditResults.push({
@@ -192,7 +211,9 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
     // Resolver el mulligan (todos hacen Keep)
     const startTime = Date.now();
     while (Date.now() - startTime < 45000) {
-      const isMulliganVisible = await hostPage.locator('[data-testid="opening-hand-modal"]').isVisible();
+      const isMulliganVisible = await hostPage
+        .locator('[data-testid="opening-hand-modal"]')
+        .isVisible();
       if (!isMulliganVisible) break;
       for (const p of pages) {
         const keepBtn = p.locator('[data-testid="keep-btn"]:not([disabled])');
@@ -205,7 +226,9 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
       await hostPage.waitForTimeout(300);
     }
 
-    await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeHidden({ timeout: 15000 });
+    await expect(hostPage.locator('[data-testid="opening-hand-modal"]')).toBeHidden({
+      timeout: 15000,
+    });
     await hostPage.waitForTimeout(2000);
 
     // 6. VISTA 2: MANO (HAND)
@@ -213,15 +236,24 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
     for (let i = 0; i < 4; i++) {
       const p = pages[i];
       // Esperar a que las imágenes de la mano carguen
-      await p.waitForFunction(() => {
-        const imgs = Array.from(document.querySelectorAll('[data-dock-zone="hand"] img[data-image-size]')) as HTMLImageElement[];
-        return imgs.length > 0 && imgs.every(img => img.naturalWidth > 0 || img.complete);
-      }, { timeout: 15000 }).catch(() => {});
+      await p
+        .waitForFunction(
+          () => {
+            const imgs = Array.from(
+              document.querySelectorAll('[data-dock-zone="hand"] img[data-image-size]'),
+            ) as HTMLImageElement[];
+            return imgs.length > 0 && imgs.every(img => img.naturalWidth > 0 || img.complete);
+          },
+          { timeout: 15000 },
+        )
+        .catch(() => {});
 
       const handAudit = await p.evaluate(() => {
         const zone = document.querySelector('[data-dock-zone="hand"]');
         if (!zone) return { totalCards: 0, realImages: 0, textFrames: 0, failures: [] };
-        const imgs = Array.from(zone.querySelectorAll('img[data-image-size]')) as HTMLImageElement[];
+        const imgs = Array.from(
+          zone.querySelectorAll('img[data-image-size]'),
+        ) as HTMLImageElement[];
         const textFrames = Array.from(zone.querySelectorAll('[data-card-text-frame="true"]'));
         const failures: { name: string; reason: string; src?: string }[] = [];
         let realImages = 0;
@@ -233,7 +265,12 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
           const name = tf.querySelector('.font-bold')?.textContent?.trim() || 'Desconocida';
           failures.push({ name, reason: 'Marco de texto de respaldo' });
         }
-        return { totalCards: imgs.length + textFrames.length, realImages, textFrames: textFrames.length, failures };
+        return {
+          totalCards: imgs.length + textFrames.length,
+          realImages,
+          textFrames: textFrames.length,
+          failures,
+        };
       });
 
       auditResults.push({
@@ -264,18 +301,29 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
 
     // Esperar a que las cartas en el campo aparezcan y carguen sus imágenes
     await hostPage.waitForSelector('[data-battlefield-card="true"]', { timeout: 10000 });
-    await hostPage.waitForFunction(() => {
-      const imgs = Array.from(document.querySelectorAll('[data-battlefield-card="true"] img[data-image-size]')) as HTMLImageElement[];
-      return imgs.length > 0 && imgs.every(img => img.naturalWidth > 0 || img.complete);
-    }, { timeout: 15000 }).catch(() => {});
+    await hostPage
+      .waitForFunction(
+        () => {
+          const imgs = Array.from(
+            document.querySelectorAll('[data-battlefield-card="true"] img[data-image-size]'),
+          ) as HTMLImageElement[];
+          return imgs.length > 0 && imgs.every(img => img.naturalWidth > 0 || img.complete);
+        },
+        { timeout: 15000 },
+      )
+      .catch(() => {});
 
     // Auditar cartas en el campo
     for (let i = 0; i < 4; i++) {
       const p = pages[i];
       const fieldAudit = await p.evaluate(() => {
         const fieldCards = Array.from(document.querySelectorAll('[data-battlefield-card="true"]'));
-        const imgs = Array.from(document.querySelectorAll('[data-battlefield-card="true"] img[data-image-size]')) as HTMLImageElement[];
-        const textFrames = Array.from(document.querySelectorAll('[data-battlefield-card="true"] [data-card-text-frame="true"]'));
+        const imgs = Array.from(
+          document.querySelectorAll('[data-battlefield-card="true"] img[data-image-size]'),
+        ) as HTMLImageElement[];
+        const textFrames = Array.from(
+          document.querySelectorAll('[data-battlefield-card="true"] [data-card-text-frame="true"]'),
+        );
         const failures: { name: string; reason: string; src?: string }[] = [];
         let realImages = 0;
         for (const img of imgs) {
@@ -286,7 +334,12 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
           const name = tf.querySelector('.font-bold')?.textContent?.trim() || 'Desconocida';
           failures.push({ name, reason: 'Marco de texto de respaldo' });
         }
-        return { totalCards: fieldCards.length, realImages, textFrames: textFrames.length, failures };
+        return {
+          totalCards: fieldCards.length,
+          realImages,
+          textFrames: textFrames.length,
+          failures,
+        };
       });
 
       auditResults.push({
@@ -304,8 +357,16 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
 
     const previewAudit = await hostPage.evaluate(() => {
       const preview = document.querySelector('[data-testid="card-preview-overlay"]');
-      if (!preview) return { totalCards: 0, realImages: 0, textFrames: 0, failures: [{ name: 'Preview', reason: 'Overlay not found' }] };
-      const imgs = Array.from(preview.querySelectorAll('img[data-image-size]')) as HTMLImageElement[];
+      if (!preview)
+        return {
+          totalCards: 0,
+          realImages: 0,
+          textFrames: 0,
+          failures: [{ name: 'Preview', reason: 'Overlay not found' }],
+        };
+      const imgs = Array.from(
+        preview.querySelectorAll('img[data-image-size]'),
+      ) as HTMLImageElement[];
       const textFrames = Array.from(preview.querySelectorAll('[data-card-text-frame="true"]'));
       const failures: { name: string; reason: string; src?: string }[] = [];
       let realImages = 0;
@@ -317,7 +378,12 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
         const name = tf.querySelector('.font-bold')?.textContent?.trim() || 'Desconocida';
         failures.push({ name, reason: 'Marco de texto de respaldo' });
       }
-      return { totalCards: imgs.length + textFrames.length, realImages, textFrames: textFrames.length, failures };
+      return {
+        totalCards: imgs.length + textFrames.length,
+        realImages,
+        textFrames: textFrames.length,
+        failures,
+      };
     });
 
     auditResults.push({
@@ -337,12 +403,21 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
     await expect(verCartaBtn).toBeVisible({ timeout: 5000 });
     await verCartaBtn.click();
 
-    await expect(hostPage.locator('[data-testid="card-details-modal"]')).toBeVisible({ timeout: 5000 });
+    await expect(hostPage.locator('[data-testid="card-details-modal"]')).toBeVisible({
+      timeout: 5000,
+    });
     // Esperar a que la imagen de detalles cargue
-    await hostPage.waitForFunction(() => {
-      const img = document.querySelector('[data-testid="card-details-image"]') as HTMLImageElement;
-      return img && (img.naturalWidth > 0 || img.complete);
-    }, { timeout: 15000 }).catch(() => {});
+    await hostPage
+      .waitForFunction(
+        () => {
+          const img = document.querySelector(
+            '[data-testid="card-details-image"]',
+          ) as HTMLImageElement;
+          return img && (img.naturalWidth > 0 || img.complete);
+        },
+        { timeout: 15000 },
+      )
+      .catch(() => {});
 
     const detailsAudit = await hostPage.evaluate(() => {
       const modal = document.querySelector('[data-testid="card-details-modal"]');
@@ -353,7 +428,11 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
       if (img && img.naturalWidth > 0) {
         realImages = 1;
       } else if (img) {
-        failures.push({ name: img.alt || 'Card Detail', reason: 'Image not rendered', src: img.src });
+        failures.push({
+          name: img.alt || 'Card Detail',
+          reason: 'Image not rendered',
+          src: img.src,
+        });
       }
       return { totalCards: 1, realImages, textFrames: 0, failures };
     });
@@ -386,17 +465,30 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
     // Abrir modal de cementerio
     const gydZone = hostPage.locator('[data-pile-zone="graveyard"]').first();
     await gydZone.click();
-    await expect(hostPage.locator('[data-testid="pile-viewer-modal"][data-active-pile="graveyard"]')).toBeVisible({ timeout: 5000 });
+    await expect(
+      hostPage.locator('[data-testid="pile-viewer-modal"][data-active-pile="graveyard"]'),
+    ).toBeVisible({ timeout: 5000 });
     // Esperar a que cargue la imagen en la modal de cementerio
-    await hostPage.waitForFunction(() => {
-      const modal = document.querySelector('[data-testid="pile-viewer-modal"][data-active-pile="graveyard"]');
-      if (!modal) return false;
-      const imgs = Array.from(modal.querySelectorAll('img[data-image-size]')) as HTMLImageElement[];
-      return imgs.length > 0 && imgs.every(img => img.naturalWidth > 0 || img.complete);
-    }, { timeout: 15000 }).catch(() => {});
+    await hostPage
+      .waitForFunction(
+        () => {
+          const modal = document.querySelector(
+            '[data-testid="pile-viewer-modal"][data-active-pile="graveyard"]',
+          );
+          if (!modal) return false;
+          const imgs = Array.from(
+            modal.querySelectorAll('img[data-image-size]'),
+          ) as HTMLImageElement[];
+          return imgs.length > 0 && imgs.every(img => img.naturalWidth > 0 || img.complete);
+        },
+        { timeout: 15000 },
+      )
+      .catch(() => {});
 
     const gydAudit = await hostPage.evaluate(() => {
-      const modal = document.querySelector('[data-testid="pile-viewer-modal"][data-active-pile="graveyard"]') || document;
+      const modal =
+        document.querySelector('[data-testid="pile-viewer-modal"][data-active-pile="graveyard"]') ||
+        document;
       const imgs = Array.from(modal.querySelectorAll('img[data-image-size]')) as HTMLImageElement[];
       const textFrames = Array.from(modal.querySelectorAll('[data-card-text-frame="true"]'));
       const failures: { name: string; reason: string; src?: string }[] = [];
@@ -409,7 +501,12 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
         const name = tf.querySelector('.font-bold')?.textContent?.trim() || 'Desconocida';
         failures.push({ name, reason: 'Marco de texto de respaldo' });
       }
-      return { totalCards: imgs.length + textFrames.length, realImages, textFrames: textFrames.length, failures };
+      return {
+        totalCards: imgs.length + textFrames.length,
+        realImages,
+        textFrames: textFrames.length,
+        failures,
+      };
     });
 
     auditResults.push({
@@ -439,17 +536,30 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
     // Abrir modal de exilio
     const exileZone = hostPage.locator('[data-pile-zone="exile"]').first();
     await exileZone.click();
-    await expect(hostPage.locator('[data-testid="pile-viewer-modal"][data-active-pile="exile"]')).toBeVisible({ timeout: 5000 });
+    await expect(
+      hostPage.locator('[data-testid="pile-viewer-modal"][data-active-pile="exile"]'),
+    ).toBeVisible({ timeout: 5000 });
     // Esperar a que cargue la imagen en la modal de exilio
-    await hostPage.waitForFunction(() => {
-      const modal = document.querySelector('[data-testid="pile-viewer-modal"][data-active-pile="exile"]');
-      if (!modal) return false;
-      const imgs = Array.from(modal.querySelectorAll('img[data-image-size]')) as HTMLImageElement[];
-      return imgs.length > 0 && imgs.every(img => img.naturalWidth > 0 || img.complete);
-    }, { timeout: 15000 }).catch(() => {});
+    await hostPage
+      .waitForFunction(
+        () => {
+          const modal = document.querySelector(
+            '[data-testid="pile-viewer-modal"][data-active-pile="exile"]',
+          );
+          if (!modal) return false;
+          const imgs = Array.from(
+            modal.querySelectorAll('img[data-image-size]'),
+          ) as HTMLImageElement[];
+          return imgs.length > 0 && imgs.every(img => img.naturalWidth > 0 || img.complete);
+        },
+        { timeout: 15000 },
+      )
+      .catch(() => {});
 
     const exileAudit = await hostPage.evaluate(() => {
-      const modal = document.querySelector('[data-testid="pile-viewer-modal"][data-active-pile="exile"]') || document;
+      const modal =
+        document.querySelector('[data-testid="pile-viewer-modal"][data-active-pile="exile"]') ||
+        document;
       const imgs = Array.from(modal.querySelectorAll('img[data-image-size]')) as HTMLImageElement[];
       const textFrames = Array.from(modal.querySelectorAll('[data-card-text-frame="true"]'));
       const failures: { name: string; reason: string; src?: string }[] = [];
@@ -462,7 +572,12 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
         const name = tf.querySelector('.font-bold')?.textContent?.trim() || 'Desconocida';
         failures.push({ name, reason: 'Marco de texto de respaldo' });
       }
-      return { totalCards: imgs.length + textFrames.length, realImages, textFrames: textFrames.length, failures };
+      return {
+        totalCards: imgs.length + textFrames.length,
+        realImages,
+        textFrames: textFrames.length,
+        failures,
+      };
     });
 
     auditResults.push({
@@ -534,14 +649,20 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
     );
 
     // Esperar a que TODAS las cartas de las 4 bibliotecas completen su carga de imagen
-    console.log('[Punto 6 @network] Esperando que TODAS las imágenes de las 4 bibliotecas carguen...');
+    console.log(
+      '[Punto 6 @network] Esperando que TODAS las imágenes de las 4 bibliotecas carguen...',
+    );
     await Promise.all(
       pages.map(async (p, idx) => {
         await p.waitForFunction(
           () => {
-            const modal = document.querySelector('[data-testid="pile-viewer-modal"][data-active-pile="library"]');
+            const modal = document.querySelector(
+              '[data-testid="pile-viewer-modal"][data-active-pile="library"]',
+            );
             if (!modal) return false;
-            const imgs = Array.from(modal.querySelectorAll('img[data-image-size]')) as HTMLImageElement[];
+            const imgs = Array.from(
+              modal.querySelectorAll('img[data-image-size]'),
+            ) as HTMLImageElement[];
             const frames = Array.from(modal.querySelectorAll('[data-card-text-frame="true"]'));
             const total = imgs.length + frames.length;
             // Se requiere que se hayan montado al menos 85 cartas del mazo completo y que todas hayan terminado de cargar
@@ -550,7 +671,9 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
           },
           { timeout: 90000 },
         );
-        console.log(`[Punto 6 @network] Jugador ${idx + 1} (${playerConfigs[idx].name}): biblioteca completamente cargada.`);
+        console.log(
+          `[Punto 6 @network] Jugador ${idx + 1} (${playerConfigs[idx].name}): biblioteca completamente cargada.`,
+        );
       }),
     );
 
@@ -560,8 +683,12 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
     for (let i = 0; i < 4; i++) {
       const p = pages[i];
       const libAudit = await p.evaluate(() => {
-        const modal = document.querySelector('[data-testid="pile-viewer-modal"][data-active-pile="library"]') || document;
-        const imgs = Array.from(modal.querySelectorAll('img[data-image-size]')) as HTMLImageElement[];
+        const modal =
+          document.querySelector('[data-testid="pile-viewer-modal"][data-active-pile="library"]') ||
+          document;
+        const imgs = Array.from(
+          modal.querySelectorAll('img[data-image-size]'),
+        ) as HTMLImageElement[];
         const textFrames = Array.from(modal.querySelectorAll('[data-card-text-frame="true"]'));
         const failures: { name: string; reason: string; src?: string }[] = [];
         let realImages = 0;
@@ -573,7 +700,12 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
           const name = tf.querySelector('.font-bold')?.textContent?.trim() || 'Desconocida';
           failures.push({ name, reason: 'Marco de texto de respaldo' });
         }
-        return { totalCards: imgs.length + textFrames.length, realImages, textFrames: textFrames.length, failures };
+        return {
+          totalCards: imgs.length + textFrames.length,
+          realImages,
+          textFrames: textFrames.length,
+          failures,
+        };
       });
 
       auditResults.push({
@@ -597,7 +729,8 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
       }
     }
 
-    const realImagePercentage = globalTotalCards > 0 ? (globalRealImages / globalTotalCards) * 100 : 0;
+    const realImagePercentage =
+      globalTotalCards > 0 ? (globalRealImages / globalTotalCards) * 100 : 0;
 
     console.log('\n========================================================================');
     console.log('REPORTE OFICIAL: AUDITORÍA DE 8 VISTAS CON MÉTRICA HONESTA (PUNTO 6)');
@@ -606,7 +739,9 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
     console.log('|---|---|---|---|---|');
     for (const r of auditResults) {
       const pct = r.totalCards > 0 ? ((r.realImages / r.totalCards) * 100).toFixed(1) : '100.0';
-      console.log(`| ${r.viewName} | ${r.totalCards} | ${r.realImages} | ${r.textFrames} | ${pct}% |`);
+      console.log(
+        `| ${r.viewName} | ${r.totalCards} | ${r.realImages} | ${r.textFrames} | ${pct}% |`,
+      );
     }
     console.log('------------------------------------------------------------------------');
     console.log(`TOTAL CONSOLIDADO: ${globalTotalCards} cartas evaluadas`);
@@ -615,7 +750,9 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
     console.log(`PORCENTAJE DE IMAGEN REAL: ${realImagePercentage.toFixed(2)}% (Criterio: >= 99%)`);
     console.log('------------------------------------------------------------------------');
     if (globalFailures.length === 0) {
-      console.log('LISTA DE FALLOS: 0 fallos detectados. Todas las cartas renderizaron imagen real.');
+      console.log(
+        'LISTA DE FALLOS: 0 fallos detectados. Todas las cartas renderizaron imagen real.',
+      );
     } else {
       console.log(`LISTA DE FALLOS (${globalFailures.length} detectados):`);
       for (const fail of globalFailures.slice(0, 10)) {
@@ -627,10 +764,19 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
     console.log('========================================================================');
     console.log('BENCHMARK DE RED @network CON CACHÉ TOTALMENTE VACÍO');
     console.log('========================================================================');
-    console.log(`1. Tiempo hasta que TODAS las imágenes de las 4 bibliotecas cargaron: ${coldLoadTime} ms`);
-    console.log(`2. Peticiones procesadas durante apertura de 4 bibliotecas: ${networkStats.libraryRequests}`);
-    console.log(`3. Peticiones totales acumuladas de la sesión: ${networkStats.cumulativeRequests}`);
-    console.log(`4. Distribución de códigos de estado HTTP:`, JSON.stringify(networkStats.statusCodeCounts, null, 2));
+    console.log(
+      `1. Tiempo hasta que TODAS las imágenes de las 4 bibliotecas cargaron: ${coldLoadTime} ms`,
+    );
+    console.log(
+      `2. Peticiones procesadas durante apertura de 4 bibliotecas: ${networkStats.libraryRequests}`,
+    );
+    console.log(
+      `3. Peticiones totales acumuladas de la sesión: ${networkStats.cumulativeRequests}`,
+    );
+    console.log(
+      `4. Distribución de códigos de estado HTTP:`,
+      JSON.stringify(networkStats.statusCodeCounts, null, 2),
+    );
     console.log(`5. Reintentos de red ejecutados: ${networkStats.retriesCount}`);
     console.log(`6. Fallos de red con su código:`);
     if (networkStats.failedUrlCodes.length === 0) {
@@ -642,16 +788,34 @@ test.describe('Punto 6: Métrica Honesta (8 Vistas) y Benchmark de Red @network 
     }
     console.log('------------------------------------------------------------------------');
     console.log('EXPLICACIÓN DEL RESULTADO ANTERIOR DE 118 ms (7 peticiones):');
-    console.log('  1) En la prueba anterior, VirtualizedCardGrid estaba activo, montando únicamente');
-    console.log('     las filas visibles en pantalla (~12 cartas por jugador), por lo que las ~88 cartas');
-    console.log('     restantes de cada mazo nunca fueron montadas en el DOM ni solicitadas al CDN.');
-    console.log('  2) El test anterior verificaba "Math.min(imgs.length, 12)", deteniendo la espera');
-    console.log('     tan pronto como las primeras 12 cartas respondían, sin esperar el mazo completo.');
-    console.log('  3) Solo se ejecutaba "caches.delete()" (Service Worker Cache API), sin vaciar la caché');
-    console.log('     HTTP de disco/memoria del navegador Chrome a nivel de red (CDP Network.clearBrowserCache)');
+    console.log(
+      '  1) En la prueba anterior, VirtualizedCardGrid estaba activo, montando únicamente',
+    );
+    console.log(
+      '     las filas visibles en pantalla (~12 cartas por jugador), por lo que las ~88 cartas',
+    );
+    console.log(
+      '     restantes de cada mazo nunca fueron montadas en el DOM ni solicitadas al CDN.',
+    );
+    console.log(
+      '  2) El test anterior verificaba "Math.min(imgs.length, 12)", deteniendo la espera',
+    );
+    console.log(
+      '     tan pronto como las primeras 12 cartas respondían, sin esperar el mazo completo.',
+    );
+    console.log(
+      '  3) Solo se ejecutaba "caches.delete()" (Service Worker Cache API), sin vaciar la caché',
+    );
+    console.log(
+      '     HTTP de disco/memoria del navegador Chrome a nivel de red (CDP Network.clearBrowserCache)',
+    );
     console.log('     ni limpiar los mapas en memoria de blob URLs.');
-    console.log('  4) Al desactivar la virtualización (__disableVirtualization = true) y limpiar la caché');
-    console.log('     CDP de red y memoria, las 4 bibliotecas montan simultáneamente casi 400 cartas, generando');
+    console.log(
+      '  4) Al desactivar la virtualización (__disableVirtualization = true) y limpiar la caché',
+    );
+    console.log(
+      '     CDP de red y memoria, las 4 bibliotecas montan simultáneamente casi 400 cartas, generando',
+    );
     console.log('     cientos de peticiones HTTP directas a Scryfall.');
     console.log('========================================================================\n');
 

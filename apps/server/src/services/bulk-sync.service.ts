@@ -167,7 +167,9 @@ export class BulkSyncService {
         throw new Error('No se encontró el archivo bulk "oracle_cards" en Scryfall.');
       }
 
-      console.log(`⬇️ [BulkSync] Descargando y procesando Oracle Cards por streaming desde: ${downloadUri}`);
+      console.log(
+        `⬇️ [BulkSync] Descargando y procesando Oracle Cards por streaming desde: ${downloadUri}`,
+      );
       const cardsResponse = await fetch(downloadUri, {
         headers: { 'User-Agent': userAgent },
       });

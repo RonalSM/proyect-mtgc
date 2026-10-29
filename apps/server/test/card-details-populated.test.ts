@@ -28,7 +28,10 @@ describe('Punto 8 (B.8) - Ver Carta Completo con Datos Reales y 10 Cartas al Aza
     setTimeout(() => process.exit(0), 100).unref();
   });
 
-  async function resolveBatch(names: string[], lang = 'es'): Promise<{ count: number; byQuery: Record<string, CardDefinition | null> }> {
+  async function resolveBatch(
+    names: string[],
+    lang = 'es',
+  ): Promise<{ count: number; byQuery: Record<string, CardDefinition | null> }> {
     if (useHttp) {
       const res = await fetch('http://localhost:3001/api/cards/resolve', {
         method: 'POST',
@@ -45,7 +48,10 @@ describe('Punto 8 (B.8) - Ver Carta Completo con Datos Reales y 10 Cartas al Aza
       ? path.resolve('prisma/seed/preset-decks')
       : path.resolve('apps/server/prisma/seed/preset-decks');
 
-    const files = fs.readdirSync(presetDir).filter(f => f.endsWith('.txt')).sort();
+    const files = fs
+      .readdirSync(presetDir)
+      .filter(f => f.endsWith('.txt'))
+      .sort();
     assert.equal(files.length, 8, 'Deben existir los 8 archivos de mazos listos');
 
     const totalEvaluatedCards: Array<{ deck: string; card: CardDefinition }> = [];
@@ -54,7 +60,9 @@ describe('Punto 8 (B.8) - Ver Carta Completo con Datos Reales y 10 Cartas al Aza
       const content = fs.readFileSync(path.join(presetDir, file), 'utf-8');
       const parsed = parseDecklist(content);
       const uniqueNames = Array.from(
-        new Set([...parsed.commanderEntries, ...parsed.maindeckEntries].map(e => e.cardName.trim())),
+        new Set(
+          [...parsed.commanderEntries, ...parsed.maindeckEntries].map(e => e.cardName.trim()),
+        ),
       );
 
       assert.ok(uniqueNames.length >= 10, `El mazo ${file} debe tener al menos 10 cartas únicas`);
@@ -70,7 +78,10 @@ describe('Punto 8 (B.8) - Ver Carta Completo con Datos Reales y 10 Cartas al Aza
 
       for (const name of selectedNames) {
         const card = resolution.byQuery[name];
-        assert.ok(card, `La carta "${name}" del mazo "${file}" debe resolverse desde la base local`);
+        assert.ok(
+          card,
+          `La carta "${name}" del mazo "${file}" debe resolverse desde la base local`,
+        );
         totalEvaluatedCards.push({ deck: file, card });
 
         // 1. Nombre
@@ -86,7 +97,10 @@ describe('Punto 8 (B.8) - Ver Carta Completo con Datos Reales y 10 Cartas al Aza
         }
 
         // 3. Tipo (canónico en inglés)
-        assert.ok(card.typeLine && card.typeLine.length > 0, `[${name}] Debe tener typeLine no vacío`);
+        assert.ok(
+          card.typeLine && card.typeLine.length > 0,
+          `[${name}] Debe tener typeLine no vacío`,
+        );
 
         // 4. Texto Oracle
         const isBasicLand = /^(Plains|Island|Swamp|Mountain|Forest)$/i.test(card.name);
@@ -146,7 +160,10 @@ describe('Punto 8 (B.8) - Ver Carta Completo con Datos Reales y 10 Cartas al Aza
           card.copyright !== undefined && card.copyright !== null,
           `[${name}] Debe tener copyright poblado`,
         );
-        assert.ok(card.copyright.includes('Wizards of the Coast'), `[${name}] Debe tener copyright de WotC`);
+        assert.ok(
+          card.copyright.includes('Wizards of the Coast'),
+          `[${name}] Debe tener copyright de WotC`,
+        );
 
         // 10. Legalidad (Commander)
         assert.ok(card.legalities, `[${name}] Debe tener mapa de legalities`);
@@ -161,8 +178,14 @@ describe('Punto 8 (B.8) - Ver Carta Completo con Datos Reales y 10 Cartas al Aza
       }
     }
 
-    assert.equal(totalEvaluatedCards.length, 80, 'Deben haberse evaluado exactamente 80 cartas (10 por cada uno de los 8 mazos)');
-    console.log(`✅ [Test Punto 8] 80 cartas evaluadas con éxito en los 8 mazos listos. Todos los 11 campos verificados.`);
+    assert.equal(
+      totalEvaluatedCards.length,
+      80,
+      'Deben haberse evaluado exactamente 80 cartas (10 por cada uno de los 8 mazos)',
+    );
+    console.log(
+      `✅ [Test Punto 8] 80 cartas evaluadas con éxito en los 8 mazos listos. Todos los 11 campos verificados.`,
+    );
   });
 
   it('2. Si una carta no está en la base local, resolveCards devuelve null y no inventa datos', async () => {
@@ -173,7 +196,10 @@ describe('Punto 8 (B.8) - Ver Carta Completo con Datos Reales y 10 Cartas al Aza
   });
 
   it('3. Las cartas con traducción al español tienen texto y nombre en español disponibles', async () => {
-    const res = await resolveBatch(['Krenko, Mob Boss', 'Sol Ring', 'Goreclaw, Terror of Qal Sisma'], 'es');
+    const res = await resolveBatch(
+      ['Krenko, Mob Boss', 'Sol Ring', 'Goreclaw, Terror of Qal Sisma'],
+      'es',
+    );
 
     const krenko = res.byQuery['Krenko, Mob Boss']!;
     assert.ok(krenko.locales?.es, 'Krenko debe tener traducción al español');

@@ -90,7 +90,9 @@ test.describe('Punto 4: Fuentes Mana y Keyrune auto-alojadas y glifos renderizad
       'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa/audit-p4-font-glyphs-list.png';
     await page.screenshot({ path: artifactPath, fullPage: true });
 
-    const localScreenshotPath = path.resolve('apps/web/e2e/screenshots/audit-p4-font-glyphs-list.png');
+    const localScreenshotPath = path.resolve(
+      'apps/web/e2e/screenshots/audit-p4-font-glyphs-list.png',
+    );
     await page.screenshot({ path: localScreenshotPath, fullPage: true });
 
     console.log(`[Punto 4 Test] Captura guardada en: ${artifactPath}`);

@@ -25,7 +25,11 @@ export const LibraryRevealModal: React.FC<LibraryRevealModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const handleMoveCard = (card: CardInstance, toZone: 'hand' | 'graveyard' | 'battlefield' | 'exile' | 'library', destinationIndex?: number) => {
+  const handleMoveCard = (
+    card: CardInstance,
+    toZone: 'hand' | 'graveyard' | 'battlefield' | 'exile' | 'library',
+    destinationIndex?: number,
+  ) => {
     onAction('MOVE_CARD', {
       cardInstanceId: card.instanceId,
       fromZone: 'library',

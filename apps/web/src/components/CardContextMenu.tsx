@@ -30,10 +30,7 @@ import {
   Crosshair,
 } from 'lucide-react';
 import { MTG_KEYWORDS, MTG_COUNTERS } from '@mtgc/shared';
-import {
-  MtgKeywordIcon,
-  MtgCounterIcon,
-} from '../utils/mana-icons';
+import { MtgKeywordIcon, MtgCounterIcon } from '../utils/mana-icons';
 import { getPlayerBattlefieldCascadePosition } from '../utils/table-framing';
 import { useCardPreview } from '../context/CardPreviewContext';
 
@@ -518,7 +515,11 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
               type="button"
               data-testid="context-target-btn"
               onClick={() => {
-                if (selectedCardIds && selectedCardIds.includes(card.instanceId) && selectedCardIds.length > 1) {
+                if (
+                  selectedCardIds &&
+                  selectedCardIds.includes(card.instanceId) &&
+                  selectedCardIds.length > 1
+                ) {
                   onStartTargeting?.(selectedCardIds);
                 } else {
                   onStartTargeting?.(card.instanceId);
@@ -529,7 +530,9 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             >
               <Crosshair className="w-4 h-4 text-[#8BBB92] flex-shrink-0" />
               <span>
-                {selectedCardIds && selectedCardIds.includes(card.instanceId) && selectedCardIds.length > 1
+                {selectedCardIds &&
+                selectedCardIds.includes(card.instanceId) &&
+                selectedCardIds.length > 1
                   ? `Fijar objetivo (${selectedCardIds.length} cartas) / Atacar`
                   : 'Fijar objetivo / Atacar'}
               </span>
@@ -699,7 +702,9 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                             data-testid="counter-toggle-finality"
                             onClick={() => handleSetCounter(c.id, isActive ? 0 : 1)}
                             className={`w-7 h-4 flex items-center rounded-full p-0.5 transition-colors cursor-pointer ${
-                              isActive ? 'bg-[#2A835F] justify-end' : 'bg-[#092328] border border-[#12544F] justify-start'
+                              isActive
+                                ? 'bg-[#2A835F] justify-end'
+                                : 'bg-[#092328] border border-[#12544F] justify-start'
                             }`}
                           >
                             <div className="w-3 h-3 rounded-full bg-white shadow-md" />
@@ -880,7 +885,9 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                           data-testid={`keyword-toggle-${kw.id}`}
                           onClick={() => handleToggleKeyword(kw.id)}
                           className={`w-7 h-4 flex items-center rounded-full p-0.5 transition-colors cursor-pointer ${
-                            isActive ? 'bg-[#2A835F] justify-end' : 'bg-[#092328] border border-[#12544F] justify-start'
+                            isActive
+                              ? 'bg-[#2A835F] justify-end'
+                              : 'bg-[#092328] border border-[#12544F] justify-start'
                           }`}
                         >
                           <div className="w-3 h-3 rounded-full bg-white shadow-sm" />
@@ -985,7 +992,8 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
 
           {/* (7) Voltear: sólo visible para cartas de doble cara o que se transforman (Punto 12 y 15) */}
           {fromZone === 'battlefield' &&
-            (card.definition.isTwoFaced || (card.definition.faces && card.definition.faces.length > 1)) && (
+            (card.definition.isTwoFaced ||
+              (card.definition.faces && card.definition.faces.length > 1)) && (
               <button
                 type="button"
                 data-testid="context-transform-btn"
@@ -1046,7 +1054,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   className="w-full flex items-center justify-between px-2 py-1 hover:bg-[#12544F] rounded-lg text-zinc-200 hover:text-white cursor-pointer transition-colors text-[14px]"
                 >
                   <div className="flex items-center space-x-2 truncate">
-                    <i className="ms ms-token text-[#8BBB92] text-xs flex-shrink-0" aria-hidden="true" />
+                    <i
+                      className="ms ms-token text-[#8BBB92] text-xs flex-shrink-0"
+                      aria-hidden="true"
+                    />
                     <span className="font-medium text-[14px] truncate">{token.name}</span>
                     {(token.power !== undefined || token.toughness !== undefined) && (
                       <span className="text-[10px] font-mono text-[#8BBB92]">

@@ -880,7 +880,9 @@ export class GameStateSession {
       // Limpiar flechas dirigidas o que partan de esta carta si sale del campo de batalla
       if (this.state.targetingArrows) {
         this.state.targetingArrows = this.state.targetingArrows.filter(
-          a => a.sourceCardInstanceId !== card.instanceId && (a.targetType !== 'card' || a.targetId !== card.instanceId),
+          a =>
+            a.sourceCardInstanceId !== card.instanceId &&
+            (a.targetType !== 'card' || a.targetId !== card.instanceId),
         );
       }
       // Fuera del campo de batalla siempre regresa a zonas del propietario original (salvo donación explícita)
@@ -1095,7 +1097,8 @@ export class GameStateSession {
       this.state.targetingArrows = [];
     }
 
-    const arrowId = payload.arrowId || `arrow_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const arrowId =
+      payload.arrowId || `arrow_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     const newArrow: TargetingArrow = {
       id: arrowId,
       sourceCardInstanceId: payload.sourceCardInstanceId,
@@ -1162,12 +1165,8 @@ export class GameStateSession {
     if (payload.transformFace) {
       const facesCount = card.definition.faces?.length || 2;
       card.activeFaceIndex = ((card.activeFaceIndex || 0) + 1) % facesCount;
-      const faceName =
-        card.definition.faces?.[card.activeFaceIndex]?.name || card.definition.name;
-      this.addLog(
-        playerId,
-        `volteó "${card.definition.name}" (cara activa: "${faceName}")`,
-      );
+      const faceName = card.definition.faces?.[card.activeFaceIndex]?.name || card.definition.name;
+      this.addLog(playerId, `volteó "${card.definition.name}" (cara activa: "${faceName}")`);
     } else if (payload.isFaceDown !== undefined) {
       card.isFaceDown = payload.isFaceDown;
       this.addLog(
@@ -1193,8 +1192,7 @@ export class GameStateSession {
     const createdInstances: CardInstance[] = [];
 
     const targetZones =
-      this.state.playerZones[sourceCard.holderId || playerId] ||
-      this.state.playerZones[playerId];
+      this.state.playerZones[sourceCard.holderId || playerId] || this.state.playerZones[playerId];
 
     const baseP =
       sourceCard.definition.power !== undefined
@@ -1535,10 +1533,7 @@ export class GameStateSession {
         `pasó el turno a ${activePlayer?.name || 'siguiente jugador'} (Comienza el Turno #${this.state.turnNumber})`,
       );
     } else {
-      this.addLog(
-        playerId,
-        `pasó el turno a ${activePlayer?.name || 'siguiente jugador'}`,
-      );
+      this.addLog(playerId, `pasó el turno a ${activePlayer?.name || 'siguiente jugador'}`);
     }
 
     this.incrementVersion();

@@ -21,10 +21,7 @@ test.describe('Punto 20 (E.20) - Suite Integral E2E de Correcciones del Cliente 
 
     // 2. Punto 18: Verificar carga de fuentes SIL OFL 1.1 sin keyrune.css GPL
     await page.evaluate(async () => {
-      await Promise.all([
-        document.fonts.load('14px Mana'),
-        document.fonts.load('14px Keyrune'),
-      ]);
+      await Promise.all([document.fonts.load('14px Mana'), document.fonts.load('14px Keyrune')]);
     });
     const fontsStatus = await page.evaluate(() => ({
       mana: document.fonts.check('14px Mana'),
@@ -77,6 +74,8 @@ test.describe('Punto 20 (E.20) - Suite Integral E2E de Correcciones del Cliente 
     // Punto 19: Certificar rama main
     console.log('[Punto 19] Verificado: rama activa es main');
 
-    console.log('[Punto 20] Suite Playwright ejecutada con éxito con 100% aprobadas y métricas capturadas');
+    console.log(
+      '[Punto 20] Suite Playwright ejecutada con éxito con 100% aprobadas y métricas capturadas',
+    );
   });
 });

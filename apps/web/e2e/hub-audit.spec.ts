@@ -5,8 +5,12 @@ test('Game Hub / Launcher page audit screenshots', async ({ page }) => {
   await page.waitForLoadState('networkidle');
 
   // Verify hub title and clean sans font header
-  await expect(page.locator('text=Centro de Operaciones y Mesas Virtuales')).toBeVisible({ timeout: 10000 });
-  await expect(page.locator('text=Mazos de Commander Listos para la Mesa')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('text=Centro de Operaciones y Mesas Virtuales')).toBeVisible({
+    timeout: 10000,
+  });
+  await expect(page.locator('text=Mazos de Commander Listos para la Mesa')).toBeVisible({
+    timeout: 10000,
+  });
 
   // Screenshot 1: Hub home view
   await page.screenshot({

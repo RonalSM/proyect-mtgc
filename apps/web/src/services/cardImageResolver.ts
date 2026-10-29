@@ -139,8 +139,16 @@ class CardImageResolver {
         const faceFront = cardDef.faces?.[0];
         targetUrl =
           item.size === 'small'
-            ? cardDef.imageUrlSmall || cardDef.imageUrlNormal || faceFront?.imageUrlSmall || faceFront?.imageUrlNormal || null
-            : cardDef.imageUrlNormal || cardDef.imageUrlSmall || faceFront?.imageUrlNormal || faceFront?.imageUrlSmall || null;
+            ? cardDef.imageUrlSmall ||
+              cardDef.imageUrlNormal ||
+              faceFront?.imageUrlSmall ||
+              faceFront?.imageUrlNormal ||
+              null
+            : cardDef.imageUrlNormal ||
+              cardDef.imageUrlSmall ||
+              faceFront?.imageUrlNormal ||
+              faceFront?.imageUrlSmall ||
+              null;
       }
 
       const key = `${lower}_${item.size}_${lang}`;

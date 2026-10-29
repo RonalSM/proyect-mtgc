@@ -137,7 +137,11 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
                 <span>{p?.name || pid}</span>
                 {isLocal && <span className="text-[9px] opacity-80">(Tú)</span>}
                 {hasKept && <Check className="w-3.5 h-3.5 text-[#8BBB92]" />}
-                {isCurrent && <span className="text-[9px] font-black uppercase text-white ml-0.5">Decidiendo</span>}
+                {isCurrent && (
+                  <span className="text-[9px] font-black uppercase text-white ml-0.5">
+                    Decidiendo
+                  </span>
+                )}
               </div>
             );
           })}
@@ -244,9 +248,10 @@ export const OpeningHandModal: React.FC<OpeningHandModalProps> = ({
               <div className="bg-[#0c2d32] border border-[#8BBB92] text-zinc-200 text-xs px-4 py-2 rounded-xl flex items-center space-x-2 shadow-lg">
                 <ShieldAlert className="w-4 h-4 text-[#8BBB92] flex-shrink-0" />
                 <span>
-                  Debes seleccionar exactamente <strong className="text-white">{cardsToBottomCount} carta(s)</strong> para
-                  poner en el fondo de la biblioteca ({selectedBottomCardIds.length}/
-                  {cardsToBottomCount} seleccionadas).
+                  Debes seleccionar exactamente{' '}
+                  <strong className="text-white">{cardsToBottomCount} carta(s)</strong> para poner
+                  en el fondo de la biblioteca ({selectedBottomCardIds.length}/{cardsToBottomCount}{' '}
+                  seleccionadas).
                 </span>
               </div>
             )}

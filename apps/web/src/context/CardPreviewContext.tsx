@@ -4,10 +4,7 @@ import { getKeywordDefinition, getCounterDefinition } from '@mtgc/shared';
 import { CardDisplay } from '../components/CardDisplay';
 import { CardDetailsModal } from '../components/CardDetailsModal';
 import { Portal } from '../components/Portal';
-import {
-  MtgKeywordIcon,
-  MtgCounterIcon,
-} from '../utils/mana-icons';
+import { MtgKeywordIcon, MtgCounterIcon } from '../utils/mana-icons';
 
 interface CardPreviewContextType {
   showPreview: (

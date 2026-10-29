@@ -21,18 +21,18 @@ test.describe('Punto 8 (B.8) - Ver Carta con Datos Reales y Aviso de Carta Fuera
     // 2. Verificar todos los campos en Krenko (criatura con P/T)
     const krenko = resolvedData.cards.find((c: any) => c.name.includes('Krenko, Mob Boss'));
     expect(krenko).toBeTruthy();
-    expect(krenko.set).toBeTruthy();          // Código de edición
-    expect(krenko.setName).toBeTruthy();       // Nombre de edición
-    expect(krenko.rarity).toBeTruthy();        // Rareza
-    expect(krenko.artist).toBeTruthy();        // Artista
+    expect(krenko.set).toBeTruthy(); // Código de edición
+    expect(krenko.setName).toBeTruthy(); // Nombre de edición
+    expect(krenko.rarity).toBeTruthy(); // Rareza
+    expect(krenko.artist).toBeTruthy(); // Artista
     expect(krenko.artist).not.toBe('Unknown Artist');
     expect(krenko.collectorNumber).toBeTruthy(); // Número de coleccionista
     expect(krenko.copyright).toContain('Wizards of the Coast'); // Copyright
-    expect(krenko.power).toBe('3');            // Poder
-    expect(krenko.toughness).toBe('3');        // Resistencia
-    expect(krenko.manaCost).toBeTruthy();      // Coste de maná
+    expect(krenko.power).toBe('3'); // Poder
+    expect(krenko.toughness).toBe('3'); // Resistencia
+    expect(krenko.manaCost).toBeTruthy(); // Coste de maná
     expect(krenko.typeLine).toContain('Creature'); // Tipo canónico
-    expect(krenko.oracleText).toBeTruthy();    // Texto Oracle
+    expect(krenko.oracleText).toBeTruthy(); // Texto Oracle
     expect(krenko.legalities?.commander).toBe('legal'); // Legalidad Commander
     expect(Array.isArray(krenko.rulings)).toBeTruthy(); // Dictámenes
     expect(krenko.locales?.es?.printedName).toBe('Krenko, jefe de turba'); // Español
@@ -75,7 +75,7 @@ test.describe('Punto 8 (B.8) - Ver Carta con Datos Reales y Aviso de Carta Fuera
     await page.click('button:has-text("Marcarme Listo")');
 
     // 7. Abrir CardDetailsModal programáticamente con datos de Krenko
-    await page.evaluate((cardData) => {
+    await page.evaluate(cardData => {
       const ctx = (window as any).__mtgc_preview_context;
       if (ctx?.openCardDetails) {
         ctx.openCardDetails(cardData);
@@ -107,7 +107,9 @@ test.describe('Punto 8 (B.8) - Ver Carta con Datos Reales y Aviso de Carta Fuera
       expect(artistText).not.toContain('Unknown Artist');
 
       // Verificar copyright
-      const copyrightText = await page.locator('[data-testid="card-details-copyright"]').innerText();
+      const copyrightText = await page
+        .locator('[data-testid="card-details-copyright"]')
+        .innerText();
       expect(copyrightText).toContain('Wizards of the Coast');
 
       // Verificar P/T para Krenko 3/3
@@ -125,7 +127,9 @@ test.describe('Punto 8 (B.8) - Ver Carta con Datos Reales y Aviso de Carta Fuera
       await expect(modal).not.toBeVisible({ timeout: 5000 });
     } else {
       // El modal no está disponible (lobby 2 jugadores), pero el test de la API ya valida
-      console.log('ℹ️ Modal no abierto en lobby (requiere 2 jugadores para iniciar), pero API validada');
+      console.log(
+        'ℹ️ Modal no abierto en lobby (requiere 2 jugadores para iniciar), pero API validada',
+      );
       await page.screenshot({
         path: path.join(SCREENSHOT_DIR, 'audit-p8-lobby-waiting-room.png'),
       });
@@ -147,12 +151,16 @@ test.describe('Punto 8 (B.8) - Ver Carta con Datos Reales y Aviso de Carta Fuera
       } else {
         // Si el servidor devolvió un error HTTP (ej: 500 por timeout de Scryfall), lo registramos
         // pero no fallamos el test — la validación principal es la API de cartas reales (tests 1-7)
-        console.warn(`⚠️ [Punto 8] Carta inexistente devolvió status ${missingRes.status()} — aceptable si Scryfall no está disponible`);
+        console.warn(
+          `⚠️ [Punto 8] Carta inexistente devolvió status ${missingRes.status()} — aceptable si Scryfall no está disponible`,
+        );
       }
     } catch (e) {
       console.warn('⚠️ [Punto 8] Timeout al probar carta inexistente — aceptable en CI sin red');
     }
 
-    console.log('✅ [Test E2E Punto 8] API validada: todos los 11 campos reales, carta inexistente devuelve null.');
+    console.log(
+      '✅ [Test E2E Punto 8] API validada: todos los 11 campos reales, carta inexistente devuelve null.',
+    );
   });
 });

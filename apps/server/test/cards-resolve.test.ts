@@ -31,13 +31,19 @@ describe('Punto 4 (A.4) - Resolvedor por Lotes POST /api/cards/resolve', () => {
     assert.ok(solRing.oracleText?.includes('Add {C}{C}'), 'oracleText oficial');
     assert.equal(solRing.cmc, 1);
     assert.ok(solRing.imageUrlNormal, 'imageUrlNormal real de Scryfall');
-    assert.ok(!solRing.imageUrlNormal.includes('178975'), 'No debe contener URLs falsas con sufijo 178975');
+    assert.ok(
+      !solRing.imageUrlNormal.includes('178975'),
+      'No debe contener URLs falsas con sufijo 178975',
+    );
     // Krenko (P/T para criaturas y rulings oficiales)
     const krenko = res.byQuery['Krenko, Mob Boss']!;
     assert.equal(krenko.power, '3');
     assert.equal(krenko.toughness, '3');
     assert.ok(krenko.typeLine.includes('Goblin'));
-    assert.ok(krenko.rulings && krenko.rulings.length > 0, 'Debe incluir rulings oficiales de Scryfall');
+    assert.ok(
+      krenko.rulings && krenko.rulings.length > 0,
+      'Debe incluir rulings oficiales de Scryfall',
+    );
     assert.ok(krenko.rulings[0].comment.includes('Goblin'));
   });
 
@@ -71,7 +77,10 @@ describe('Punto 4 (A.4) - Resolvedor por Lotes POST /api/cards/resolve', () => {
 
     const solRing = res.byQuery['Sol Ring']!;
     assert.equal(solRing.name, 'Sol Ring');
-    assert.ok(solRing.imageUrlNormal?.includes('cards.scryfall.io'), 'URL de imagen de Scryfall real');
+    assert.ok(
+      solRing.imageUrlNormal?.includes('cards.scryfall.io'),
+      'URL de imagen de Scryfall real',
+    );
 
     assert.equal(
       res.byQuery['UniqueCardWithNoSpanishPrintingEver12345'],

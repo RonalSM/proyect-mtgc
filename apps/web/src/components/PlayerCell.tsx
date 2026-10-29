@@ -204,9 +204,7 @@ const DraggablePileCard: React.FC<{
         >
           {isGraveyard ? 'CEMENTERIO' : 'EXILIO'}
         </span>
-        <span
-          className="text-[11px] font-mono font-black leading-none drop-shadow text-[#8BBB92]"
-        >
+        <span className="text-[11px] font-mono font-black leading-none drop-shadow text-[#8BBB92]">
           {count}
         </span>
       </div>
@@ -333,7 +331,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const [showLifeControls, setShowLifeControls] = useState(false);
   const [damageInput, setDamageInput] = useState('');
   const [healInput, setHealInput] = useState('');
-  const [libraryContextMenuPos, setLibraryContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+  const [libraryContextMenuPos, setLibraryContextMenuPos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [isTopRevealedToMe, setIsTopRevealedToMe] = useState(false);
   const [revealModalState, setRevealModalState] = useState<{
     isOpen: boolean;
@@ -741,10 +742,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           activeTargetingSourceId
             ? 'ring-2 ring-[#8BBB92] bg-[#2A835F] text-white animate-pulse cursor-crosshair shadow-[0_0_15px_rgba(139,187,146,0.6)]'
             : isActiveTurn
-            ? 'bg-[#2A835F] text-white border-[#8BBB92] shadow-lg shadow-[#2A835F]/40 ring-2 ring-[#8BBB92]/50 tracking-wide'
-            : isLocalPlayer
-            ? 'bg-[#092328]/95 text-[#8BBB92] border-[#12544F] ring-1 ring-[#2A835F]/30'
-            : 'bg-[#092328]/95 text-zinc-200 border-[#12544F]/80 hover:border-[#12544F]'
+              ? 'bg-[#2A835F] text-white border-[#8BBB92] shadow-lg shadow-[#2A835F]/40 ring-2 ring-[#8BBB92]/50 tracking-wide'
+              : isLocalPlayer
+                ? 'bg-[#092328]/95 text-[#8BBB92] border-[#12544F] ring-1 ring-[#2A835F]/30'
+                : 'bg-[#092328]/95 text-zinc-200 border-[#12544F]/80 hover:border-[#12544F]'
         }`}
       >
         <span
@@ -827,7 +828,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             >
               <Heart
                 className={`w-4 h-4 ${
-                  player.life <= 10 ? 'text-rose-500 fill-rose-500 animate-pulse' : 'text-rose-400 fill-rose-400/20'
+                  player.life <= 10
+                    ? 'text-rose-500 fill-rose-500 animate-pulse'
+                    : 'text-rose-400 fill-rose-400/20'
                 }`}
               />
               <span className="text-xl sm:text-2xl font-black font-mono tracking-tight leading-none tabular-nums">

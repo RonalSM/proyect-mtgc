@@ -82,7 +82,9 @@ export const GameLogAndChat: React.FC<GameLogAndChatProps> = ({ logs, onAction, 
       {/* Scrollable Logs / Chat Feed */}
       <div className="flex-1 p-3 overflow-y-auto space-y-2 text-xs font-sans dark-custom-scrollbar">
         {filteredLogs.length === 0 ? (
-          <div className="text-center py-8 text-zinc-500 text-xs italic">Sin actividad reciente</div>
+          <div className="text-center py-8 text-zinc-500 text-xs italic">
+            Sin actividad reciente
+          </div>
         ) : (
           filteredLogs.map(log => {
             const timeStr = new Date(log.timestamp).toLocaleTimeString([], {

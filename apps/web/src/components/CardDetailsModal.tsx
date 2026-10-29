@@ -91,7 +91,10 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
   // Enriquecer dinámicamente si falta set o artista, o si la definición es obsoleta/art_series
   useEffect(() => {
     setEnrichedCard(card);
-    if ((!card.set && !card.artist && card.name && !isNotInDb) || (isObsoleteOrArtSeries && card.name)) {
+    if (
+      (!card.set && !card.artist && card.name && !isNotInDb) ||
+      (isObsoleteOrArtSeries && card.name)
+    ) {
       fetch('/api/cards/resolve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -124,8 +127,12 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
   }, [isNotInDb, card.name, card.scryfallId, card.oracleId]);
 
   const currentCard = enrichedCard;
-  const hasMultipleFaces = !!(currentCard.isTwoFaced || (currentCard.faces && currentCard.faces.length > 1));
-  const activeFace = hasMultipleFaces && currentCard.faces ? currentCard.faces[activeFaceIndex] : null;
+  const hasMultipleFaces = !!(
+    currentCard.isTwoFaced ||
+    (currentCard.faces && currentCard.faces.length > 1)
+  );
+  const activeFace =
+    hasMultipleFaces && currentCard.faces ? currentCard.faces[activeFaceIndex] : null;
 
   // Escuchar tecla Escape para cerrar
   useEffect(() => {
@@ -179,7 +186,8 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
   const displayPower = activeFace?.power !== undefined ? activeFace.power : currentCard.power;
   const displayToughness =
     activeFace?.toughness !== undefined ? activeFace.toughness : currentCard.toughness;
-  const displayLoyalty = activeFace?.loyalty !== undefined ? activeFace.loyalty : currentCard.loyalty;
+  const displayLoyalty =
+    activeFace?.loyalty !== undefined ? activeFace.loyalty : currentCard.loyalty;
   const displayArtist = activeFace?.artist || currentCard.artist || 'Unknown Artist';
   const displayImage =
     getCardImageUrl(currentCard, { size: 'large', lang: 'en', faceIndex: activeFaceIndex }) ||
@@ -264,8 +272,13 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
             >
               <AlertTriangle className="w-5 h-5 text-[#8BBB92] shrink-0" />
               <div className="text-xs">
-                <strong className="block font-bold text-white">Aviso: Carta no encontrada en la base local</strong>
-                <span>Esta carta no se encuentra en la base de datos local de Scryfall. Se muestran los datos disponibles y el fallo se ha registrado en el panel de diagnóstico.</span>
+                <strong className="block font-bold text-white">
+                  Aviso: Carta no encontrada en la base local
+                </strong>
+                <span>
+                  Esta carta no se encuentra en la base de datos local de Scryfall. Se muestran los
+                  datos disponibles y el fallo se ha registrado en el panel de diagnóstico.
+                </span>
               </div>
             </div>
           )}
@@ -335,7 +348,10 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                     <span>{`${displayPower}/${displayToughness ?? '?'}`}</span>
                   ) : (
                     <>
-                      <i className="ms ms-counter-loyalty text-xs text-[#8BBB92] mr-1" aria-hidden="true" />
+                      <i
+                        className="ms ms-counter-loyalty text-xs text-[#8BBB92] mr-1"
+                        aria-hidden="true"
+                      />
                       <span>{`Lealtad: ${displayLoyalty}`}</span>
                     </>
                   )}
@@ -370,7 +386,9 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
                     rarity={currentCard.rarity}
                     className="text-sm text-[#8BBB92]"
                   />
-                  <span className="truncate">{currentCard.setName || currentCard.set?.toUpperCase() || 'Commander'}</span>
+                  <span className="truncate">
+                    {currentCard.setName || currentCard.set?.toUpperCase() || 'Commander'}
+                  </span>
                 </span>
               </div>
 

@@ -19,7 +19,9 @@ test.describe('Punto 6: Cadena de Respaldo de Imagen (Español -> Inglés -> Mar
     await page.selectOption('select', '2');
     await page.click('button:has-text("Crear Mesa y Obtener Código")');
 
-    await expect(page.locator('button:has-text("Código:")').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('button:has-text("Código:")').first()).toBeVisible({
+      timeout: 15000,
+    });
 
     // Seleccionar mazo predefinido
     await page.click('button:has-text("Seleccionar / Importar Mazo")');
@@ -30,7 +32,8 @@ test.describe('Punto 6: Cadena de Respaldo de Imagen (Español -> Inglés -> Mar
     // Comprobar que en la lista de cartas o en la mesa no hay imágenes rotas
     const brokenImages = await page.evaluate(() => {
       const imgs = Array.from(document.querySelectorAll('img'));
-      return imgs.filter(img => img.naturalWidth === 0 && !img.complete && img.getAttribute('src')).length;
+      return imgs.filter(img => img.naturalWidth === 0 && !img.complete && img.getAttribute('src'))
+        .length;
     });
 
     expect(brokenImages).toBe(0);

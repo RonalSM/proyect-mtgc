@@ -161,21 +161,18 @@ export default function App() {
           <OpeningHandModal roomState={roomState} localPlayerId={playerId} onAction={sendAction} />
         )}
         {/* Deck Importer Modal Popup */}
-      {isImporterOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 animate-in fade-in duration-150"
-          onClick={() => setIsImporterOpen(false)}
-        >
+        {isImporterOpen && (
           <div
-            className="w-full max-w-5xl"
-            onClick={e => e.stopPropagation()}
+            className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 animate-in fade-in duration-150"
+            onClick={() => setIsImporterOpen(false)}
           >
-            <DeckImporter onClose={() => setIsImporterOpen(false)} />
+            <div className="w-full max-w-5xl" onClick={e => e.stopPropagation()}>
+              <DeckImporter onClose={() => setIsImporterOpen(false)} />
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {revealedCard && (
+        {revealedCard && (
           <RevealedCardModal
             revealed={revealedCard}
             localPlayerId={playerId}
@@ -210,7 +207,9 @@ export default function App() {
                   EDH
                 </span>
               </div>
-              <p className="text-[11px] text-[#8BBB92]/80 font-medium">Mesa Multijugador Sincronizada</p>
+              <p className="text-[11px] text-[#8BBB92]/80 font-medium">
+                Mesa Multijugador Sincronizada
+              </p>
             </div>
           </div>
 
@@ -333,10 +332,7 @@ export default function App() {
           className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 animate-in fade-in duration-150"
           onClick={() => setIsImporterOpen(false)}
         >
-          <div
-            className="w-full max-w-5xl"
-            onClick={e => e.stopPropagation()}
-          >
+          <div className="w-full max-w-5xl" onClick={e => e.stopPropagation()}>
             <DeckImporter onClose={() => setIsImporterOpen(false)} />
           </div>
         </div>

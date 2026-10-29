@@ -4,7 +4,9 @@ import { connectDatabase, disconnectDatabase, prisma } from '../db.js';
 import { parseDecklist } from '@mtgc/shared';
 
 async function main() {
-  console.log('🚀 [enrich-preset-cards] Iniciando enriquecimiento de metadatos reales de Scryfall...');
+  console.log(
+    '🚀 [enrich-preset-cards] Iniciando enriquecimiento de metadatos reales de Scryfall...',
+  );
   await connectDatabase();
 
   const presetDir = fs.existsSync(path.resolve('prisma/seed/preset-decks'))
@@ -101,7 +103,9 @@ async function main() {
     }
   }
 
-  console.log(`\n🎉 Enriquecimiento completado: ${updatedCount} cartas actualizadas con metadatos reales.`);
+  console.log(
+    `\n🎉 Enriquecimiento completado: ${updatedCount} cartas actualizadas con metadatos reales.`,
+  );
   await disconnectDatabase(true);
 }
 

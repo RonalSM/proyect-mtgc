@@ -41,12 +41,16 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
 
   // Form states
   const [roomName, setRoomName] = useState('Pod de Commander');
-  const [hostName, setHostName] = useState(() => localStorage.getItem('mtgc_player_name') || 'Planeswalker');
+  const [hostName, setHostName] = useState(
+    () => localStorage.getItem('mtgc_player_name') || 'Planeswalker',
+  );
   const [maxPlayers, setMaxPlayers] = useState(4);
   const [startingLife, setStartingLife] = useState(40);
 
   const [joinCode, setJoinCode] = useState('');
-  const [joinPlayerName, setJoinPlayerName] = useState(() => localStorage.getItem('mtgc_player_name') || 'Planeswalker');
+  const [joinPlayerName, setJoinPlayerName] = useState(
+    () => localStorage.getItem('mtgc_player_name') || 'Planeswalker',
+  );
   const [isSpectator, setIsSpectator] = useState(false);
 
   const { openCardDetails } = useCardPreview();
@@ -126,7 +130,8 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               Centro de Operaciones y Mesas Virtuales
             </h1>
             <p className="text-sm sm:text-base text-zinc-300 leading-relaxed">
-              Juega Commander en tiempo real con datos canónicos de Scryfall. Sincronización completa de biblioteca, mano, cementerio, comandante, contadores e iniciativa.
+              Juega Commander en tiempo real con datos canónicos de Scryfall. Sincronización
+              completa de biblioteca, mano, cementerio, comandante, contadores e iniciativa.
             </p>
           </div>
 
@@ -204,9 +209,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                       </span>
                       <div className="flex items-center space-x-1">
                         {colors.length > 0 ? (
-                          colors.map(c => (
-                            <MtgSymbolIcon key={c} symbol={c} size="sm" />
-                          ))
+                          colors.map(c => <MtgSymbolIcon key={c} symbol={c} size="sm" />)
                         ) : (
                           <MtgSymbolIcon symbol="c" size="sm" />
                         )}
@@ -221,7 +224,9 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   <div className="relative z-10 pt-2 border-t border-[#12544F] flex items-center justify-between text-xs">
                     <div className="flex items-center space-x-2 min-w-0">
                       <Crown className="w-3.5 h-3.5 text-[#8BBB92] shrink-0" />
-                      <span className="text-zinc-300 font-medium truncate">{deck.commanderName}</span>
+                      <span className="text-zinc-300 font-medium truncate">
+                        {deck.commanderName}
+                      </span>
                     </div>
 
                     <button
@@ -423,10 +428,18 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                 <span>Atajos Esenciales de la Mesa</span>
               </div>
               <ul className="text-[11px] text-zinc-400 space-y-1 font-mono">
-                <li><strong className="text-zinc-200">Doble clic</strong>: Girar / Enderezar carta</li>
-                <li><strong className="text-zinc-200">Clic derecho</strong>: Menú contextual completo</li>
-                <li><strong className="text-zinc-200">Espacio</strong>: Pasar el turno activo</li>
-                <li><strong className="text-zinc-200">D</strong>: Robar una carta de biblioteca</li>
+                <li>
+                  <strong className="text-zinc-200">Doble clic</strong>: Girar / Enderezar carta
+                </li>
+                <li>
+                  <strong className="text-zinc-200">Clic derecho</strong>: Menú contextual completo
+                </li>
+                <li>
+                  <strong className="text-zinc-200">Espacio</strong>: Pasar el turno activo
+                </li>
+                <li>
+                  <strong className="text-zinc-200">D</strong>: Robar una carta de biblioteca
+                </li>
               </ul>
             </div>
           </div>
@@ -446,7 +459,9 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
             <div className="flex items-center justify-between border-b border-[#12544F] pb-3">
               <div>
                 <h3 className="text-lg font-bold text-white">Crear Mesa de Commander</h3>
-                <p className="text-xs text-zinc-400">Configura la partida para ti y tus compañeros</p>
+                <p className="text-xs text-zinc-400">
+                  Configura la partida para ti y tus compañeros
+                </p>
               </div>
               <button
                 type="button"

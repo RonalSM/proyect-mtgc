@@ -719,7 +719,9 @@ export async function runGenerator() {
     if (!valResult.isValid) {
       throw new Error(`Deck ${d.name} failed validation: ${valResult.errors.join(', ')}`);
     }
-    console.log(`Validated with real DB cards: ${d.name} (${total} cards, commander: ${d.commander}) - OK`);
+    console.log(
+      `Validated with real DB cards: ${d.name} (${total} cards, commander: ${d.commander}) - OK`,
+    );
   }
 
   // Cargar y persistir mazos en base de datos
