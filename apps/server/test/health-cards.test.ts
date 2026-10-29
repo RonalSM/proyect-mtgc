@@ -5,7 +5,7 @@ import { prisma, connectDatabase, disconnectDatabase } from '../src/db.js';
 
 describe('Punto 1 (A.1) - Diagnóstico y Telemetría GET /api/health/cards', () => {
   after(async () => {
-    await disconnectDatabase();
+    await disconnectDatabase(true);
   });
   it('1. connectDatabase asegura esquemas y permite consultas a cards, rulings y cardLocales', async () => {
     await connectDatabase();

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import net from 'node:net';
+import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -248,12 +249,90 @@ export async function connectDatabase(): Promise<void> {
     await ensureTablesExist();
     await prisma.$connect();
     console.log('✅ Base de datos PostgreSQL conectada y esquemas verificados.');
+    await seedPresetFixtureIfEmpty();
   } catch (error: any) {
     console.warn(
       '⚠️ Error conectando a PostgreSQL:',
       error?.message || error,
       '. Operando en modo Scryfall directo / memoria.',
     );
+  }
+}
+
+export async function seedPresetFixtureIfEmpty(): Promise<void> {
+  try {
+    const cardCount = await prisma.card.count();
+    if (cardCount > 0) return;
+
+    let fixtureFile = '';
+    const possiblePaths = [
+      path.resolve(process.cwd(), 'apps/server/prisma/seed/preset-cards-fixture.json'),
+      path.resolve(process.cwd(), 'prisma/seed/preset-cards-fixture.json'),
+    ];
+
+    try {
+      const __dirname = path.dirname(fileURLToPath(import.meta.url));
+      possiblePaths.push(path.resolve(__dirname, '../prisma/seed/preset-cards-fixture.json'));
+      possiblePaths.push(path.resolve(__dirname, '../../prisma/seed/preset-cards-fixture.json'));
+    } catch {}
+
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        fixtureFile = p;
+        break;
+      }
+    }
+
+    if (!fixtureFile) {
+      return;
+    }
+
+    console.log('🌱 Base de datos vacía detectada. Sembrando fixture de mazos listos...');
+    const raw = fs.readFileSync(fixtureFile, 'utf-8');
+    const data = JSON.parse(raw);
+
+    if (Array.isArray(data.cards) && data.cards.length > 0) {
+      const cards = data.cards.map((c: any) => ({
+        ...c,
+        createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
+        updatedAt: c.updatedAt ? new Date(c.updatedAt) : new Date(),
+      }));
+      await prisma.card.createMany({
+        data: cards,
+        skipDuplicates: true,
+      });
+    }
+
+    if (Array.isArray(data.rulings) && data.rulings.length > 0) {
+      const rulings = data.rulings.map((r: any) => ({
+        ...r,
+        publishedAt: new Date(r.publishedAt),
+        createdAt: r.createdAt ? new Date(r.createdAt) : new Date(),
+        updatedAt: r.updatedAt ? new Date(r.updatedAt) : new Date(),
+      }));
+      await (prisma as any).ruling?.createMany({
+        data: rulings,
+        skipDuplicates: true,
+      });
+    }
+
+    if (Array.isArray(data.locales) && data.locales.length > 0) {
+      const locales = data.locales.map((l: any) => ({
+        ...l,
+        releasedAt: l.releasedAt ? new Date(l.releasedAt) : null,
+        createdAt: l.createdAt ? new Date(l.createdAt) : new Date(),
+      }));
+      await (prisma as any).cardLocale?.createMany({
+        data: locales,
+        skipDuplicates: true,
+      });
+    }
+
+    console.log(
+      `✅ Fixture sembrada: ${data.cards?.length || 0} cartas, ${data.rulings?.length || 0} dictámenes, ${data.locales?.length || 0} traducciones.`,
+    );
+  } catch (err: any) {
+    console.warn('⚠️ No se pudo sembrar el fixture de cartas inicial:', err?.message || err);
   }
 }
 

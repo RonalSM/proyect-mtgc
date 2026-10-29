@@ -1,0 +1,123 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_spec_conformance_audit_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L1",
+      "frontmatter": {
+        "name": "spec-conformance-audit",
+        "description": "Audita el c\u00f3digo contra requirements.md, design.md y tasks.md y produce una matriz de conformidad honesta. \u00dasala SIEMPRE que el usuario pida revisar el avance, comparar c\u00f3digo con el plan, actualizar tasks.md, marcar tareas como hechas o cerrar una fase, y antes de escribir [x] en cualquier tarea. \u00dasala tambi\u00e9n cuando una implementaci\u00f3n difiera del dise\u00f1o original."
+      }
+    },
+    {
+      "id": "$graphify-root$_agents_skills_spec_conformance_audit_skill_auditor\u00eda_de_conformidad_con_la_especificaci\u00f3n",
+      "label": "Auditor\u00eda de conformidad con la especificaci\u00f3n",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_spec_conformance_audit_skill_reglas_de_oro",
+      "label": "Reglas de oro",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_spec_conformance_audit_skill_procedimiento",
+      "label": "Procedimiento",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_spec_conformance_audit_skill_plantilla_de_matriz",
+      "label": "Plantilla de matriz",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L27"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_spec_conformance_audit_skill_anti_patrones_que_debes_evitar",
+      "label": "Anti-patrones que debes evitar",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L33"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_spec_conformance_audit_skill_informe_final",
+      "label": "Informe final",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L41"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_spec_conformance_audit_skill_md",
+      "target": "$graphify-root$_agents_skills_spec_conformance_audit_skill_auditor\u00eda_de_conformidad_con_la_especificaci\u00f3n",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_spec_conformance_audit_skill_auditor\u00eda_de_conformidad_con_la_especificaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_spec_conformance_audit_skill_reglas_de_oro",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_spec_conformance_audit_skill_auditor\u00eda_de_conformidad_con_la_especificaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_spec_conformance_audit_skill_procedimiento",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_spec_conformance_audit_skill_auditor\u00eda_de_conformidad_con_la_especificaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_spec_conformance_audit_skill_plantilla_de_matriz",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_spec_conformance_audit_skill_auditor\u00eda_de_conformidad_con_la_especificaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_spec_conformance_audit_skill_anti_patrones_que_debes_evitar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_spec_conformance_audit_skill_auditor\u00eda_de_conformidad_con_la_especificaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_spec_conformance_audit_skill_informe_final",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/spec-conformance-audit/SKILL.md",
+      "source_location": "L41",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

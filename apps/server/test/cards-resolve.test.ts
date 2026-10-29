@@ -1,7 +1,7 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { cardSearchService } from '../src/services/card-search.service.js';
-import { connectDatabase } from '../src/db.js';
+import { connectDatabase, disconnectDatabase } from '../src/db.js';
 
 describe('Punto 4 (A.4) - Resolvedor por Lotes POST /api/cards/resolve', () => {
   before(async () => {
@@ -9,7 +9,7 @@ describe('Punto 4 (A.4) - Resolvedor por Lotes POST /api/cards/resolve', () => {
   });
 
   after(async () => {
-    setTimeout(() => process.exit(0), 100).unref();
+    await disconnectDatabase(true);
   });
 
   it('1. resolveCards resuelve lote de cartas por nombres en inglés y español con tipos canónicos', async () => {

@@ -1,0 +1,258 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_multiplayer_testing_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L1",
+      "frontmatter": {
+        "name": "multiplayer-testing",
+        "description": "Estrategia de pruebas para la mesa multijugador: unitarias (parser de mazos, validador, d20, barajado), integraci\u00f3n, E2E con 4 clientes en Playwright, pruebas de fuga de informaci\u00f3n oculta, latencia de extremo a extremo y carga. \u00dasala al escribir o ejecutar pruebas, al validar una fase y antes de marcar como completa cualquier tarea de pruebas o de rendimiento."
+      }
+    },
+    {
+      "id": "$graphify-root$_agents_skills_multiplayer_testing_skill_pruebas_de_la_mesa_multijugador",
+      "label": "Pruebas de la mesa multijugador",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_multiplayer_testing_skill_pir\u00e1mide",
+      "label": "Pir\u00e1mide",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_multiplayer_testing_skill_e2e_con_4_clientes",
+      "label": "E2E con 4 clientes",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_multiplayer_testing_skill_fuga_de_informaci\u00f3n_oculta",
+      "label": "Fuga de informaci\u00f3n oculta",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L39"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_multiplayer_testing_skill_latencia_de_extremo_a_extremo",
+      "label": "Latencia de extremo a extremo",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L43"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_multiplayer_testing_skill_pruebas_de_aleatoriedad_y_casos_forzados",
+      "label": "Pruebas de aleatoriedad y casos forzados",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L49"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_multiplayer_testing_skill_carga",
+      "label": "Carga",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L55"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_multiplayer_testing_skill_qu\u00e9_guardar_como_evidencia",
+      "label": "Qu\u00e9 guardar como evidencia",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L59"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_multiplayer_testing_skill_md",
+      "target": "$graphify-root$_agents_skills_multiplayer_testing_skill_pruebas_de_la_mesa_multijugador",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_multiplayer_testing_skill_pruebas_de_la_mesa_multijugador",
+      "target": "$graphify-root$_agents_skills_multiplayer_testing_skill_pir\u00e1mide",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_multiplayer_testing_skill_pruebas_de_la_mesa_multijugador",
+      "target": "$graphify-root$_agents_skills_multiplayer_testing_skill_e2e_con_4_clientes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_multiplayer_testing_skill_pruebas_de_la_mesa_multijugador",
+      "target": "$graphify-root$_agents_skills_multiplayer_testing_skill_fuga_de_informaci\u00f3n_oculta",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_multiplayer_testing_skill_pruebas_de_la_mesa_multijugador",
+      "target": "$graphify-root$_agents_skills_multiplayer_testing_skill_latencia_de_extremo_a_extremo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_multiplayer_testing_skill_pruebas_de_la_mesa_multijugador",
+      "target": "$graphify-root$_agents_skills_multiplayer_testing_skill_pruebas_de_aleatoriedad_y_casos_forzados",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_multiplayer_testing_skill_pruebas_de_la_mesa_multijugador",
+      "target": "$graphify-root$_agents_skills_multiplayer_testing_skill_carga",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L55",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_multiplayer_testing_skill_pruebas_de_la_mesa_multijugador",
+      "target": "$graphify-root$_agents_skills_multiplayer_testing_skill_qu\u00e9_guardar_como_evidencia",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L59",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "$graphify-root$_agents_skills_multiplayer_testing_skill_pir\u00e1mide",
+      "callee": "DeckParser",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "DeckParser",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L12"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_multiplayer_testing_skill_pir\u00e1mide",
+      "callee": "CommanderValidator",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "CommanderValidator",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L12"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_multiplayer_testing_skill_pir\u00e1mide",
+      "callee": "VisibilityFilter",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "VisibilityFilter",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L12"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_multiplayer_testing_skill_pir\u00e1mide",
+      "callee": "applyAction",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "applyAction",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L12"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_multiplayer_testing_skill_pir\u00e1mide",
+      "callee": "Shuffler",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "Shuffler",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L12"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_multiplayer_testing_skill_pir\u00e1mide",
+      "callee": "resolveOrder",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "resolveOrder",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L12"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_multiplayer_testing_skill_e2e_con_4_clientes",
+      "callee": "TouchSensor",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "TouchSensor",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L37"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_multiplayer_testing_skill_fuga_de_informaci\u00f3n_oculta",
+      "callee": "framereceived",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "framereceived",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L41"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_multiplayer_testing_skill_fuga_de_informaci\u00f3n_oculta",
+      "callee": "cardId",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "cardId",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L41"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_multiplayer_testing_skill_latencia_de_extremo_a_extremo",
+      "callee": "now",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "performance.now()",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L45",
+      "qualifiers": ["performance"]
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_multiplayer_testing_skill_carga",
+      "callee": "ws",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "ws",
+      "source_file": ".agents/skills/multiplayer-testing/SKILL.md",
+      "source_location": "L57"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

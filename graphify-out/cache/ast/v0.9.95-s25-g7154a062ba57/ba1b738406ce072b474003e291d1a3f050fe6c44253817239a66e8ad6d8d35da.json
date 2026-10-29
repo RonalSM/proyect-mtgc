@@ -1,0 +1,393 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L1",
+      "frontmatter": {
+        "name": "mtg-scryfall-integration",
+        "description": "C\u00f3mo integrar la API de Scryfall: l\u00edmites de uso, cabeceras, bulk data, cach\u00e9, importaci\u00f3n de listas de mazo, im\u00e1genes y playmats (art_crop) y atribuci\u00f3n legal. \u00dasala siempre que busques cartas, importes o valides mazos, muestres im\u00e1genes de cartas, sincronices la base de cartas o uses arte de cartas como fondo."
+      }
+    },
+    {
+      "id": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_integraci\u00f3n_con_scryfall",
+      "label": "Integraci\u00f3n con Scryfall",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_reglas_de_uso_verifica_en_la_documentaci\u00f3n_vigente",
+      "label": "Reglas de uso (verifica en la documentaci\u00f3n vigente)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_endpoints_\u00fatiles",
+      "label": "Endpoints \u00fatiles",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L19"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "label": "Campos de carta que usar\u00e1s",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L30"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_importaci\u00f3n_de_listas",
+      "label": "Importaci\u00f3n de listas",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L34"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_im\u00e1genes_y_playmats",
+      "label": "Im\u00e1genes y playmats",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L44"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_esqueleto_de_cola_con_l\u00edmite_de_tasa",
+      "label": "Esqueleto de cola con l\u00edmite de tasa",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L50"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_md",
+      "target": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_integraci\u00f3n_con_scryfall",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_integraci\u00f3n_con_scryfall",
+      "target": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_reglas_de_uso_verifica_en_la_documentaci\u00f3n_vigente",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_integraci\u00f3n_con_scryfall",
+      "target": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_endpoints_\u00fatiles",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_integraci\u00f3n_con_scryfall",
+      "target": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_integraci\u00f3n_con_scryfall",
+      "target": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_importaci\u00f3n_de_listas",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_integraci\u00f3n_con_scryfall",
+      "target": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_im\u00e1genes_y_playmats",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_integraci\u00f3n_con_scryfall",
+      "target": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_esqueleto_de_cola_con_l\u00edmite_de_tasa",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L50",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_reglas_de_uso_verifica_en_la_documentaci\u00f3n_vigente",
+      "callee": "Accept",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "Accept",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L12"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_reglas_de_uso_verifica_en_la_documentaci\u00f3n_vigente",
+      "callee": "art_crop",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "art_crop",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L16"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_reglas_de_uso_verifica_en_la_documentaci\u00f3n_vigente",
+      "callee": "border_crop",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "border_crop",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L16"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_reglas_de_uso_verifica_en_la_documentaci\u00f3n_vigente",
+      "callee": "normal",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "normal",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L16"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_reglas_de_uso_verifica_en_la_documentaci\u00f3n_vigente",
+      "callee": "large",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "large",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L16"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_endpoints_\u00fatiles",
+      "callee": "oracle_cards",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "oracle_cards",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L26"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "id",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "id",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "oracle_id",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "oracle_id",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "name",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "name",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "mana_cost",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "mana_cost",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "type_line",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "type_line",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "oracle_text",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "oracle_text",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "color_identity",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "color_identity",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "legalities",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "legalities",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "layout",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "layout",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "image_uris",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "image_uris",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "small",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "small",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "normal",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "normal",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "large",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "large",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "art_crop",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "art_crop",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "border_crop",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "border_crop",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_campos_de_carta_que_usar\u00e1s",
+      "callee": "card_faces",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "card_faces",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_importaci\u00f3n_de_listas",
+      "callee": "Commander",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "Commander",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L39"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_importaci\u00f3n_de_listas",
+      "callee": "Deck",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "Deck",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L39"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_importaci\u00f3n_de_listas",
+      "callee": "Sideboard",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "Sideboard",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L39"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_importaci\u00f3n_de_listas",
+      "callee": "not_found",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "not_found",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L42"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_importaci\u00f3n_de_listas",
+      "callee": "fuzzy",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "fuzzy",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L42"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_scryfall_integration_skill_im\u00e1genes_y_playmats",
+      "callee": "art_crop",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "art_crop",
+      "source_file": ".agents/skills/mtg-scryfall-integration/SKILL.md",
+      "source_location": "L46"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,347 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_realtime_game_server_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L1",
+      "frontmatter": {
+        "name": "realtime-game-server",
+        "description": "Patrones para el servidor de juego en tiempo real por WebSocket: estado autoritativo, validaci\u00f3n de acciones, versionado de eventos, filtrado de informaci\u00f3n oculta (manos y bibliotecas), reconexi\u00f3n, deshacer y aleatoriedad segura. \u00dasala al tocar apps/server, los mensajes de packages/shared, las salas, el estado de la mesa, el barajado, la sincronizaci\u00f3n o la reconexi\u00f3n."
+      }
+    },
+    {
+      "id": "$graphify-root$_agents_skills_realtime_game_server_skill_servidor_de_juego_en_tiempo_real",
+      "label": "Servidor de juego en tiempo real",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_realtime_game_server_skill_principios",
+      "label": "Principios",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L8"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_realtime_game_server_skill_ciclo_de_una_acci\u00f3n",
+      "label": "Ciclo de una acci\u00f3n",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_realtime_game_server_skill_permisos",
+      "label": "Permisos",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L26"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_realtime_game_server_skill_versionado_y_reconexi\u00f3n",
+      "label": "Versionado y reconexi\u00f3n",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_realtime_game_server_skill_optimismo_en_el_cliente",
+      "label": "Optimismo en el cliente",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L40"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_realtime_game_server_skill_aleatoriedad",
+      "label": "Aleatoriedad",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L44"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_realtime_game_server_skill_deshacer",
+      "label": "Deshacer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L60"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_realtime_game_server_skill_l\u00edmites_y_abuso",
+      "label": "L\u00edmites y abuso",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L64"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_realtime_game_server_skill_medici\u00f3n_de_latencia",
+      "label": "Medici\u00f3n de latencia",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L70"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_realtime_game_server_skill_md",
+      "target": "$graphify-root$_agents_skills_realtime_game_server_skill_servidor_de_juego_en_tiempo_real",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_realtime_game_server_skill_servidor_de_juego_en_tiempo_real",
+      "target": "$graphify-root$_agents_skills_realtime_game_server_skill_principios",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_realtime_game_server_skill_servidor_de_juego_en_tiempo_real",
+      "target": "$graphify-root$_agents_skills_realtime_game_server_skill_ciclo_de_una_acci\u00f3n",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_realtime_game_server_skill_servidor_de_juego_en_tiempo_real",
+      "target": "$graphify-root$_agents_skills_realtime_game_server_skill_permisos",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_realtime_game_server_skill_servidor_de_juego_en_tiempo_real",
+      "target": "$graphify-root$_agents_skills_realtime_game_server_skill_versionado_y_reconexi\u00f3n",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_realtime_game_server_skill_servidor_de_juego_en_tiempo_real",
+      "target": "$graphify-root$_agents_skills_realtime_game_server_skill_optimismo_en_el_cliente",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_realtime_game_server_skill_servidor_de_juego_en_tiempo_real",
+      "target": "$graphify-root$_agents_skills_realtime_game_server_skill_aleatoriedad",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_realtime_game_server_skill_servidor_de_juego_en_tiempo_real",
+      "target": "$graphify-root$_agents_skills_realtime_game_server_skill_deshacer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_realtime_game_server_skill_servidor_de_juego_en_tiempo_real",
+      "target": "$graphify-root$_agents_skills_realtime_game_server_skill_l\u00edmites_y_abuso",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_realtime_game_server_skill_servidor_de_juego_en_tiempo_real",
+      "target": "$graphify-root$_agents_skills_realtime_game_server_skill_medici\u00f3n_de_latencia",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L70",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_principios",
+      "callee": "MOVE_CARD",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "MOVE_CARD",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L10"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_principios",
+      "callee": "ADJUST_LIFE",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "ADJUST_LIFE",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L10"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_principios",
+      "callee": "cardId",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "cardId",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L11"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_principios",
+      "callee": "type",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "type",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L13"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_ciclo_de_una_acci\u00f3n",
+      "callee": "applyAction",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "applyAction",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L24"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_permisos",
+      "callee": "START_GAME",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "START_GAME",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L29"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_permisos",
+      "callee": "KICK_PLAYER",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "KICK_PLAYER",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L29"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_permisos",
+      "callee": "TRANSFER_HOST",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "TRANSFER_HOST",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L29"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_versionado_y_reconexi\u00f3n",
+      "callee": "version",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "version",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L34"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_versionado_y_reconexi\u00f3n",
+      "callee": "lastVersion",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "lastVersion",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L35"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_optimismo_en_el_cliente",
+      "callee": "clientActionId",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "clientActionId",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L42"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_optimismo_en_el_cliente",
+      "callee": "ack",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "ack",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L42"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_optimismo_en_el_cliente",
+      "callee": "reject",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "reject",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L42"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_aleatoriedad",
+      "callee": "randomInt",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "crypto.randomInt",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L46",
+      "qualifiers": ["crypto"]
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_aleatoriedad",
+      "callee": "random",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "Math.random",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L46",
+      "qualifiers": ["Math"]
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_deshacer",
+      "callee": "UNDO_LAST",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "UNDO_LAST",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L62"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_realtime_game_server_skill_l\u00edmites_y_abuso",
+      "callee": "Origin",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "Origin",
+      "source_file": ".agents/skills/realtime-game-server/SKILL.md",
+      "source_location": "L67"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

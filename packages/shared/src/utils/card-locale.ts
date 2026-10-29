@@ -20,11 +20,49 @@ export interface CardDisplayData {
  */
 export function getCardDisplayData(
   card: CardDefinition,
-  _lang: SupportedLanguage = 'en',
+  lang: SupportedLanguage = 'en',
   faceIndex = 0,
 ): CardDisplayData {
   const hasFace = !!(card.faces && card.faces[faceIndex]);
   const face: CardFace | undefined = hasFace ? card.faces![faceIndex] : undefined;
+
+  // Si se solicita español y la carta tiene datos traducidos en locales.es
+  if (lang === 'es' && card.locales?.es) {
+    const es = card.locales.es;
+    return {
+      name: (faceIndex === 0 ? es.printedName : face?.name) || es.printedName || card.name,
+      typeLine:
+        (faceIndex === 0 ? es.printedTypeLine : face?.typeLine) ||
+        es.printedTypeLine ||
+        card.typeLine,
+      oracleText:
+        (faceIndex === 0 ? es.printedText : face?.oracleText) ||
+        es.printedText ||
+        card.oracleText ||
+        '',
+      imageUrlNormal:
+        (faceIndex === 0 ? es.imageUrlNormal : face?.imageUrlNormal) ||
+        es.imageUrlNormal ||
+        card.imageUrlNormal ||
+        face?.imageUrlNormal,
+      imageUrlSmall:
+        (faceIndex === 0 ? es.imageUrlSmall : face?.imageUrlSmall) ||
+        es.imageUrlSmall ||
+        card.imageUrlSmall ||
+        face?.imageUrlSmall,
+      imageUrlLarge:
+        (faceIndex === 0 ? es.imageUrlLarge : face?.imageUrlLarge) ||
+        es.imageUrlLarge ||
+        card.imageUrlLarge ||
+        face?.imageUrlLarge,
+      imageUrlArtCrop:
+        (faceIndex === 0 ? es.imageUrlArtCrop : face?.imageUrlArtCrop) ||
+        es.imageUrlArtCrop ||
+        card.imageUrlArtCrop ||
+        face?.imageUrlArtCrop,
+      isSpanish: true,
+    };
+  }
 
   // Carta de dos caras o con caras múltiples en inglés canónico
   if (hasFace && face) {

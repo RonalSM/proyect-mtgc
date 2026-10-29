@@ -1,0 +1,752 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L1",
+      "frontmatter": {
+        "name": "project-planner",
+        "description": "Comprehensive project planning and documentation generator for software projects. Creates structured requirements documents, system design documents, and task breakdown plans with implementation tracking. Use when starting a new project, defining specifications, creating technical designs, or breaking down complex systems into implementable tasks. Supports user story format, acceptance criteria, component design, API specifications, and hierarchical task decomposition with requirement traceability."
+      }
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_project_planner_skill",
+      "label": "Project Planner Skill",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_quick_start",
+      "label": "Quick Start",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_why_explicit_architectural_planning_works",
+      "label": "Why Explicit Architectural Planning Works",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L18"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_benefits_of_upfront_definition",
+      "label": "Benefits of Upfront Definition",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L22"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_the_architect_mindset",
+      "label": "The Architect Mindset",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L30"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_document_generation_workflow",
+      "label": "Document Generation Workflow",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L40"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_1_project_architect_role_definition",
+      "label": "1. Project Architect Role Definition",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L42"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_2_initial_project_understanding",
+      "label": "2. Initial Project Understanding",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L55"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_3_deliverable_definition_set_upfront",
+      "label": "3. Deliverable Definition (Set Upfront)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L76"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_4_generate_requirements_document",
+      "label": "4. Generate Requirements Document",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L108"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_5_generate_design_document",
+      "label": "5. Generate Design Document",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L131"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_6_generate_implementation_plan",
+      "label": "6. Generate Implementation Plan",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L198"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_requirements_document_template",
+      "label": "Requirements Document Template",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L233"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_requirements_best_practices",
+      "label": "Requirements Best Practices",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L264"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_acceptance_criteria_patterns",
+      "label": "Acceptance Criteria Patterns",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L273"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_design_document_template",
+      "label": "Design Document Template",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L296"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_essential_service_definitions_only",
+      "label": "Essential service definitions only",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L452"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_design_best_practices",
+      "label": "Design Best Practices",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L475"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_implementation_plan_template",
+      "label": "Implementation Plan Template",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L484"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_task_planning_best_practices",
+      "label": "Task Planning Best Practices",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L511"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_common_implementation_phases",
+      "label": "Common Implementation Phases",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L520"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_document_patterns_by_project_type",
+      "label": "Document Patterns by Project Type",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L573"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_web_application_full_stack",
+      "label": "Web Application (Full-Stack)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L575"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_microservices_system",
+      "label": "Microservices System",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L600"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_data_pipeline_etl",
+      "label": "Data Pipeline/ETL",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L626"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_cli_tool_library",
+      "label": "CLI Tool/Library",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L652"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_generating_documents_for_specific_domains",
+      "label": "Generating Documents for Specific Domains",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L678"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_trading_financial_systems",
+      "label": "Trading/Financial Systems",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L680"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_real_time_systems_chat_gaming_iot",
+      "label": "Real-time Systems (Chat, Gaming, IoT)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L698"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_machine_learning_systems",
+      "label": "Machine Learning Systems",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L716"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_quality_checklist",
+      "label": "Quality Checklist",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L734"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_requirements_document",
+      "label": "Requirements Document",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L738"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_design_document",
+      "label": "Design Document",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L746"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_implementation_plan",
+      "label": "Implementation Plan",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L755"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_example_usage_patterns",
+      "label": "Example Usage Patterns",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L763"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_starting_a_new_project_with_explicit_architecture_focus",
+      "label": "Starting a New Project (With Explicit Architecture Focus)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L765"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_starting_a_new_project_simple_approach",
+      "label": "Starting a New Project (Simple Approach)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L807"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_expanding_existing_requirements",
+      "label": "Expanding Existing Requirements",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L825"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_common_pitfalls_to_avoid",
+      "label": "Common Pitfalls to Avoid",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L842"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_planning_pitfalls",
+      "label": "Planning Pitfalls",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L844"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_requirements_pitfalls",
+      "label": "Requirements Pitfalls",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L852"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_design_pitfalls",
+      "label": "Design Pitfalls",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L859"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_project_planner_skill_output_format",
+      "label": "Output Format",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L867"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_md",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_project_planner_skill",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_project_planner_skill",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_quick_start",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_project_planner_skill",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_why_explicit_architectural_planning_works",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_why_explicit_architectural_planning_works",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_benefits_of_upfront_definition",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_why_explicit_architectural_planning_works",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_the_architect_mindset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_project_planner_skill",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_document_generation_workflow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_document_generation_workflow",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_1_project_architect_role_definition",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_document_generation_workflow",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_2_initial_project_understanding",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L55",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_document_generation_workflow",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_3_deliverable_definition_set_upfront",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_document_generation_workflow",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_4_generate_requirements_document",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L108",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_document_generation_workflow",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_5_generate_design_document",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L131",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_document_generation_workflow",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_6_generate_implementation_plan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L198",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_project_planner_skill",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_requirements_document_template",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L233",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_requirements_document_template",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_requirements_best_practices",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L264",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_requirements_document_template",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_acceptance_criteria_patterns",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L273",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_project_planner_skill",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_design_document_template",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L296",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_md",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_essential_service_definitions_only",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L452",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_essential_service_definitions_only",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_design_best_practices",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L475",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_essential_service_definitions_only",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_implementation_plan_template",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L484",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_implementation_plan_template",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_task_planning_best_practices",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L511",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_implementation_plan_template",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_common_implementation_phases",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L520",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_essential_service_definitions_only",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_document_patterns_by_project_type",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L573",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_document_patterns_by_project_type",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_web_application_full_stack",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L575",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_document_patterns_by_project_type",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_microservices_system",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L600",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_document_patterns_by_project_type",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_data_pipeline_etl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L626",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_document_patterns_by_project_type",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_cli_tool_library",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L652",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_essential_service_definitions_only",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_generating_documents_for_specific_domains",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L678",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_generating_documents_for_specific_domains",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_trading_financial_systems",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L680",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_generating_documents_for_specific_domains",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_real_time_systems_chat_gaming_iot",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L698",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_generating_documents_for_specific_domains",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_machine_learning_systems",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L716",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_essential_service_definitions_only",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_quality_checklist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L734",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_quality_checklist",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_requirements_document",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L738",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_quality_checklist",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_design_document",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L746",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_quality_checklist",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_implementation_plan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L755",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_essential_service_definitions_only",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_example_usage_patterns",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L763",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_example_usage_patterns",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_starting_a_new_project_with_explicit_architecture_focus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L765",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_example_usage_patterns",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_starting_a_new_project_simple_approach",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L807",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_example_usage_patterns",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_expanding_existing_requirements",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L825",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_essential_service_definitions_only",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_common_pitfalls_to_avoid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L842",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_common_pitfalls_to_avoid",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_planning_pitfalls",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L844",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_common_pitfalls_to_avoid",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_requirements_pitfalls",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L852",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_common_pitfalls_to_avoid",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_design_pitfalls",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L859",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_project_planner_skill_essential_service_definitions_only",
+      "target": "$graphify-root$_agents_skills_project_planner_skill_output_format",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/project-planner/SKILL.md",
+      "source_location": "L867",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

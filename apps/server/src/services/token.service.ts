@@ -161,6 +161,38 @@ export class TokenService {
       },
     ]);
     this.cardTokensCache.set('sol ring', []);
+    this.cardTokensCache.set('krenko, mob boss', [
+      {
+        scryfallId: 'token-goblin-1-1',
+        name: 'Goblin',
+        cmc: 0,
+        typeLine: 'Token Creature — Goblin',
+        oracleText: '',
+        power: '1',
+        toughness: '1',
+        colors: ['R'],
+        colorIdentity: ['R'],
+      },
+    ]);
+    this.cardTokensCache.set('alela, artful provocateur', [
+      {
+        scryfallId: 'token-faerie-1-1-flying',
+        name: 'Faerie',
+        cmc: 0,
+        typeLine: 'Token Creature — Faerie',
+        oracleText: 'Flying',
+        power: '1',
+        toughness: '1',
+        colors: ['U', 'B'],
+        colorIdentity: ['U', 'B'],
+      },
+    ]);
+    this.cardTokensCache.set('goreclaw, terror of qal sisma', []);
+    this.cardTokensCache.set('brago, king eternal', []);
+    this.cardTokensCache.set('meren of clan nel toth', []);
+    this.cardTokensCache.set('wyleth, soul of steel', []);
+    this.cardTokensCache.set('niv-mizzet, parun', []);
+    this.cardTokensCache.set('kozilek, the great distortion', []);
   }
 
   public getCommonTokens(): CardDefinition[] {

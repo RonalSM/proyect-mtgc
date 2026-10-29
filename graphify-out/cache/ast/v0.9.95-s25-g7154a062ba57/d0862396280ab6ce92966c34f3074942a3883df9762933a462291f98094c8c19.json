@@ -1,0 +1,181 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_third_party_notices_md",
+      "label": "THIRD_PARTY_NOTICES.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_third_party_notices_avisos_de_terceros_y_licencias_de_software_third_party_notices",
+      "label": "Avisos de Terceros y Licencias de Software (Third-Party Notices)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "$graphify-root$_third_party_notices_1_aviso_de_no_afiliaci\u00f3n_con_wizards_of_the_coast",
+      "label": "1. Aviso de No Afiliaci\u00f3n con Wizards of the Coast",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "$graphify-root$_third_party_notices_2_mana_font",
+      "label": "2. Mana Font",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "$graphify-root$_third_party_notices_texto_de_la_licencia_mit_mana_font_css_code",
+      "label": "Texto de la Licencia MIT (Mana Font CSS/Code):",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L23"
+    },
+    {
+      "id": "$graphify-root$_third_party_notices_texto_de_la_licencia_sil_open_font_license_1_1_mana_font_files",
+      "label": "Texto de la Licencia SIL Open Font License 1.1 (Mana Font Files):",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L48"
+    },
+    {
+      "id": "$graphify-root$_third_party_notices_3_keyrune_font",
+      "label": "3. Keyrune Font",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L138"
+    },
+    {
+      "id": "$graphify-root$_third_party_notices_4_mtg_vectors_investigamer",
+      "label": "4. MTG Vectors (Investigamer)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L150"
+    },
+    {
+      "id": "$graphify-root$_third_party_notices_resumen_de_t\u00e9rminos_mpl_2_0",
+      "label": "Resumen de T\u00e9rminos MPL-2.0:",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L156"
+    },
+    {
+      "id": "$graphify-root$_third_party_notices_5_scryfall_api",
+      "label": "5. Scryfall API",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L161"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_third_party_notices_md",
+      "target": "$graphify-root$_third_party_notices_avisos_de_terceros_y_licencias_de_software_third_party_notices",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_third_party_notices_avisos_de_terceros_y_licencias_de_software_third_party_notices",
+      "target": "$graphify-root$_third_party_notices_1_aviso_de_no_afiliaci\u00f3n_con_wizards_of_the_coast",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_third_party_notices_avisos_de_terceros_y_licencias_de_software_third_party_notices",
+      "target": "$graphify-root$_third_party_notices_2_mana_font",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_third_party_notices_2_mana_font",
+      "target": "$graphify-root$_third_party_notices_texto_de_la_licencia_mit_mana_font_css_code",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_third_party_notices_2_mana_font",
+      "target": "$graphify-root$_third_party_notices_texto_de_la_licencia_sil_open_font_license_1_1_mana_font_files",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_third_party_notices_avisos_de_terceros_y_licencias_de_software_third_party_notices",
+      "target": "$graphify-root$_third_party_notices_3_keyrune_font",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L138",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_third_party_notices_avisos_de_terceros_y_licencias_de_software_third_party_notices",
+      "target": "$graphify-root$_third_party_notices_4_mtg_vectors_investigamer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L150",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_third_party_notices_4_mtg_vectors_investigamer",
+      "target": "$graphify-root$_third_party_notices_resumen_de_t\u00e9rminos_mpl_2_0",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L156",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_third_party_notices_avisos_de_terceros_y_licencias_de_software_third_party_notices",
+      "target": "$graphify-root$_third_party_notices_5_scryfall_api",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L161",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "$graphify-root$_third_party_notices_3_keyrune_font",
+      "callee": "css",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "keyrune.css",
+      "source_file": "THIRD_PARTY_NOTICES.md",
+      "source_location": "L143",
+      "qualifiers": ["keyrune"]
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

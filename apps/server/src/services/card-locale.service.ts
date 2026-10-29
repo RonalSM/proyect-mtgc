@@ -46,14 +46,21 @@ export class CardLocaleService {
 
     try {
       // 1. Check PostgreSQL Prisma CardLocale table
-      const dbLocale = await (prisma as any).cardLocale?.findUnique({
-        where: {
-          oracleId_lang: {
+      const dbLocale =
+        (await (prisma as any).cardLocale?.findUnique({
+          where: {
+            oracleId_lang: {
+              oracleId,
+              lang,
+            },
+          },
+        })) ||
+        (await (prisma as any).cardLocale?.findFirst({
+          where: {
             oracleId,
             lang,
           },
-        },
-      });
+        }));
 
       if (dbLocale) {
         const record: CardLocaleRecord = {

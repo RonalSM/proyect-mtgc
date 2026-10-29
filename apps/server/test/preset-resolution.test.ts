@@ -1,11 +1,15 @@
-import { describe, it, before } from 'node:test';
+import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { deckService } from '../src/services/deck.service.js';
-import { prisma, connectDatabase } from '../src/db.js';
+import { prisma, connectDatabase, disconnectDatabase } from '../src/db.js';
 
 describe('Punto 3 (A.3) - Mazos Listos con Resolución Real contra DB', () => {
   before(async () => {
     await connectDatabase();
+  });
+
+  after(async () => {
+    await disconnectDatabase(true);
   });
 
   it('1. loadPresetDecks carga los 8 mazos listos con cartas reales de la base de datos', async () => {

@@ -1,12 +1,16 @@
-import { describe, it, before } from 'node:test';
+import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { getCardDisplayData, CardDefinition } from '@mtgc/shared';
 import { cardLocaleService } from '../src/services/card-locale.service.js';
-import { connectDatabase } from '../src/db.js';
+import { connectDatabase, disconnectDatabase } from '../src/db.js';
 
 describe('Punto 5 (C.5) - Idioma Español Prioritario y Fallback en Inglés', () => {
   before(async () => {
     await connectDatabase();
+  });
+
+  after(async () => {
+    await disconnectDatabase(true);
   });
   const sampleCardWithSpanish: CardDefinition = {
     scryfallId: '17726514-6296-4171-b6a3-2287f394c86b',

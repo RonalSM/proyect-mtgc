@@ -1,0 +1,297 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_mtg_commander_domain_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L1",
+      "frontmatter": {
+        "name": "mtg-commander-domain",
+        "description": "Reglas y vocabulario del formato Commander (EDH) de Magic: The Gathering para modelar mazos, zonas, vida, da\u00f1o de comandante, impuesto, identidad de color y validaci\u00f3n de mazos. \u00dasala cuando trabajes con mazos, validaci\u00f3n, zonas de juego, contadores, comandante, mulligan, orden de turnos o cualquier l\u00f3gica del juego, aunque el usuario no mencione las reglas expl\u00edcitamente."
+      }
+    },
+    {
+      "id": "$graphify-root$_agents_skills_mtg_commander_domain_skill_dominio_magic_the_gathering_formato_commander",
+      "label": "Dominio: Magic: The Gathering, formato Commander",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_mtg_commander_domain_skill_reglas_del_formato",
+      "label": "Reglas del formato",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "label": "Validaci\u00f3n de mazo (informativa, nunca bloquea)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_mtg_commander_domain_skill_modelo_de_datos_sugerido",
+      "label": "Modelo de datos sugerido",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_mtg_commander_domain_skill_qu\u00e9_no_hacer",
+      "label": "Qu\u00e9 NO hacer",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L38"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_mtg_commander_domain_skill_md",
+      "target": "$graphify-root$_agents_skills_mtg_commander_domain_skill_dominio_magic_the_gathering_formato_commander",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_mtg_commander_domain_skill_dominio_magic_the_gathering_formato_commander",
+      "target": "$graphify-root$_agents_skills_mtg_commander_domain_skill_reglas_del_formato",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_mtg_commander_domain_skill_dominio_magic_the_gathering_formato_commander",
+      "target": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_mtg_commander_domain_skill_dominio_magic_the_gathering_formato_commander",
+      "target": "$graphify-root$_agents_skills_mtg_commander_domain_skill_modelo_de_datos_sugerido",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_mtg_commander_domain_skill_dominio_magic_the_gathering_formato_commander",
+      "target": "$graphify-root$_agents_skills_mtg_commander_domain_skill_qu\u00e9_no_hacer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L38",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_reglas_del_formato",
+      "callee": "color_identity",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "color_identity",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L16"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_reglas_del_formato",
+      "callee": "commanderCardIds",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "commanderCardIds",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L17"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "commander",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "legalities.commander",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L26",
+      "qualifiers": ["legalities"]
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "legal",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "legal",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L26"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "not_legal",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "not_legal",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L26"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "banned",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "banned",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L26"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "restricted",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "restricted",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L26"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "WRONG_SIZE",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "WRONG_SIZE",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L28"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "DUPLICATE_CARD",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "DUPLICATE_CARD",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L28"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "COLOR_IDENTITY",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "COLOR_IDENTITY",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L28"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "BANNED_CARD",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "BANNED_CARD",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L28"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "NOT_LEGAL",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "NOT_LEGAL",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L28"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "INVALID_COMMANDER",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "INVALID_COMMANDER",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L28"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "UNKNOWN_CARD",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "UNKNOWN_CARD",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L28"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_validaci\u00f3n_de_mazo_informativa_nunca_bloquea",
+      "callee": "card_faces",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "card_faces",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L30"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_modelo_de_datos_sugerido",
+      "callee": "commanderDamage",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "commanderDamage",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L34"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_modelo_de_datos_sugerido",
+      "callee": "commanderTax",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "commanderTax",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L35"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_modelo_de_datos_sugerido",
+      "callee": "commanderCardId",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "commanderCardId",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L35"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_modelo_de_datos_sugerido",
+      "callee": "CardInstance",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "CardInstance",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L36"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_modelo_de_datos_sugerido",
+      "callee": "instanceId",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "instanceId",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L36"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_mtg_commander_domain_skill_modelo_de_datos_sugerido",
+      "callee": "cardId",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "cardId",
+      "source_file": ".agents/skills/mtg-commander-domain/SKILL.md",
+      "source_location": "L36"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

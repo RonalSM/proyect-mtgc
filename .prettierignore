@@ -7,3 +7,4 @@ package-lock.json
 *.min.css
 graphify-out/
 .agents/
+apps/server/prisma/seed/*.json

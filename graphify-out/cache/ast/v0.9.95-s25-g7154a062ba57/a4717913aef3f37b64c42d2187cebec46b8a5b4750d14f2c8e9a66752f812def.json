@@ -1,0 +1,241 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L1",
+      "frontmatter": {
+        "name": "lobby-initiative-flow",
+        "description": "Flujo de sala de espera: selecci\u00f3n o importaci\u00f3n de mazos, estado &#x27;Listo&#x27;, inicio de partida, reparto inicial y tirada de d20 para decidir el orden de turnos con manejo de empates. \u00dasala al implementar o modificar el lobby, el estado de la mesa (lobby, initiative, playing, finished), la iniciativa, el d20, los empates o el orden de turnos."
+      }
+    },
+    {
+      "id": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_sala_de_espera_e_iniciativa_req_20_y_req_21",
+      "label": "Sala de espera e iniciativa (REQ-20 y REQ-21)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_estados_de_la_mesa",
+      "label": "Estados de la mesa",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L8"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_sala_de_espera",
+      "label": "Sala de espera",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_secuencia_al_iniciar",
+      "label": "Secuencia al iniciar",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_iniciativa_con_d20",
+      "label": "Iniciativa con d20",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L32"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_despu\u00e9s_de_la_iniciativa",
+      "label": "Despu\u00e9s de la iniciativa",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L56"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_casos_l\u00edmite_que_debes_cubrir",
+      "label": "Casos l\u00edmite que debes cubrir",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L62"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_md",
+      "target": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_sala_de_espera_e_iniciativa_req_20_y_req_21",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_sala_de_espera_e_iniciativa_req_20_y_req_21",
+      "target": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_estados_de_la_mesa",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_sala_de_espera_e_iniciativa_req_20_y_req_21",
+      "target": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_sala_de_espera",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_sala_de_espera_e_iniciativa_req_20_y_req_21",
+      "target": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_secuencia_al_iniciar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_sala_de_espera_e_iniciativa_req_20_y_req_21",
+      "target": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_iniciativa_con_d20",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_sala_de_espera_e_iniciativa_req_20_y_req_21",
+      "target": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_despu\u00e9s_de_la_iniciativa",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_sala_de_espera_e_iniciativa_req_20_y_req_21",
+      "target": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_casos_l\u00edmite_que_debes_cubrir",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L62",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_estados_de_la_mesa",
+      "callee": "lobby",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "lobby",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L14"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_sala_de_espera",
+      "callee": "ownerId",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "ownerId",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L20"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_secuencia_al_iniciar",
+      "callee": "CardInstance",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "CardInstance",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L26"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_secuencia_al_iniciar",
+      "callee": "randomInt",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "crypto.randomInt",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L27",
+      "qualifiers": ["crypto"]
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_secuencia_al_iniciar",
+      "callee": "initiative",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "initiative",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L30"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_secuencia_al_iniciar",
+      "callee": "INITIATIVE_STARTED",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "INITIATIVE_STARTED",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L30"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_iniciativa_con_d20",
+      "callee": "ROLL_D20",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "ROLL_D20",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L34"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_iniciativa_con_d20",
+      "callee": "D20_ROLLED",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "D20_ROLLED",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L54"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_iniciativa_con_d20",
+      "callee": "INITIATIVE_TIE",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "INITIATIVE_TIE",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L54"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_despu\u00e9s_de_la_iniciativa",
+      "callee": "turnOrder",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "turnOrder",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L58"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_lobby_initiative_flow_skill_despu\u00e9s_de_la_iniciativa",
+      "callee": "PASS_TURN",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "PASS_TURN",
+      "source_file": ".agents/skills/lobby-initiative-flow/SKILL.md",
+      "source_location": "L58"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

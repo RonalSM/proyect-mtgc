@@ -302,14 +302,14 @@ export class CardSearchService {
       }
     }
 
-    return {
+    const result: CardDefinition = {
       scryfallId: dbCard.scryfallId,
       oracleId: dbCard.oracleId || undefined,
       name: dbCard.name,
       manaCost: dbCard.manaCost || faces?.[0]?.manaCost || undefined,
       cmc: dbCard.cmc,
       typeLine: dbCard.typeLine,
-      oracleText: dbCard.oracleText || undefined,
+      oracleText: dbCard.oracleText || faces?.[0]?.oracleText || undefined,
       colors: (dbCard.colors || []) as any,
       colorIdentity: (dbCard.colorIdentity || []) as any,
       power: dbCard.power || faces?.[0]?.power || undefined,
@@ -335,6 +335,12 @@ export class CardSearchService {
         comment: r.comment,
       })),
     };
+
+    if (result.oracleId) {
+      return await cardLocaleService.enrichCardWithLocale(result, 'es');
+    }
+
+    return result;
   }
 
   /**

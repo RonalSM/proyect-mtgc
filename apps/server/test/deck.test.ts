@@ -1,7 +1,16 @@
-import test from 'node:test';
+import test, { before, after } from 'node:test';
 import assert from 'node:assert';
 import { deckService } from '../src/services/deck.service.js';
+import { connectDatabase, disconnectDatabase } from '../src/db.js';
 import { CardDefinition } from '@mtgc/shared';
+
+before(async () => {
+  await connectDatabase();
+});
+
+after(async () => {
+  await disconnectDatabase(true);
+});
 
 const mockCommander: CardDefinition = {
   scryfallId: 'cmd_1',

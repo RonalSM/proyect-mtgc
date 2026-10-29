@@ -1,0 +1,346 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L1",
+      "frontmatter": {
+        "name": "tabletop-grid-ui",
+        "description": "Dise\u00f1o e implementaci\u00f3n de la pantalla de partida estilo playgroup.gg: cuadr\u00edcula de 2 filas y hasta 3 columnas a sangre, playmat de fondo por jugador, pastilla de vida en la esquina interior, mano y pilas en el borde inferior, barra flotante y drag &amp; drop con dnd-kit con posiciones normalizadas. \u00dasala al construir o modificar apps/web, la mesa, las celdas de jugador, las cartas, las zonas o los estilos de la partida."
+      }
+    },
+    {
+      "id": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_pantalla_de_partida_cuadr\u00edcula_a_sangre",
+      "label": "Pantalla de partida: cuadr\u00edcula a sangre",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_estructura",
+      "label": "Estructura",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_capas_de_una_celda_de_atr\u00e1s_hacia_delante",
+      "label": "Capas de una celda (de atr\u00e1s hacia delante)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_esquina_de_la_pastilla_de_vida",
+      "label": "Esquina de la pastilla de vida",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L27"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_posiciones_normalizadas",
+      "label": "Posiciones normalizadas",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L37"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_drag_drop_dnd_kit",
+      "label": "Drag & drop (dnd-kit)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L41"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_informaci\u00f3n_oculta_en_pantalla",
+      "label": "Informaci\u00f3n oculta en pantalla",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L49"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_rendimiento",
+      "label": "Rendimiento",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L53"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_accesibilidad",
+      "label": "Accesibilidad",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L57"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_estilo",
+      "label": "Estilo",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L61"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_md",
+      "target": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_pantalla_de_partida_cuadr\u00edcula_a_sangre",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_pantalla_de_partida_cuadr\u00edcula_a_sangre",
+      "target": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_estructura",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_pantalla_de_partida_cuadr\u00edcula_a_sangre",
+      "target": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_capas_de_una_celda_de_atr\u00e1s_hacia_delante",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_pantalla_de_partida_cuadr\u00edcula_a_sangre",
+      "target": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_esquina_de_la_pastilla_de_vida",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_pantalla_de_partida_cuadr\u00edcula_a_sangre",
+      "target": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_posiciones_normalizadas",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_pantalla_de_partida_cuadr\u00edcula_a_sangre",
+      "target": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_drag_drop_dnd_kit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_pantalla_de_partida_cuadr\u00edcula_a_sangre",
+      "target": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_informaci\u00f3n_oculta_en_pantalla",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_pantalla_de_partida_cuadr\u00edcula_a_sangre",
+      "target": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_rendimiento",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_pantalla_de_partida_cuadr\u00edcula_a_sangre",
+      "target": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_accesibilidad",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_pantalla_de_partida_cuadr\u00edcula_a_sangre",
+      "target": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_estilo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L61",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_estructura",
+      "callee": "PlayerCell",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "PlayerCell",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L14"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_capas_de_una_celda_de_atr\u00e1s_hacia_delante",
+      "callee": "PlaymatBackground",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "PlaymatBackground",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L19"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_capas_de_una_celda_de_atr\u00e1s_hacia_delante",
+      "callee": "art_crop",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "art_crop",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L19"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_capas_de_una_celda_de_atr\u00e1s_hacia_delante",
+      "callee": "BattlefieldCanvas",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "BattlefieldCanvas",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L20"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_capas_de_una_celda_de_atr\u00e1s_hacia_delante",
+      "callee": "PileSlots",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "PileSlots",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L21"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_capas_de_una_celda_de_atr\u00e1s_hacia_delante",
+      "callee": "HandFan",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "HandFan",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L21"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_capas_de_una_celda_de_atr\u00e1s_hacia_delante",
+      "callee": "NameTag",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "NameTag",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L22"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_capas_de_una_celda_de_atr\u00e1s_hacia_delante",
+      "callee": "LifePill",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "LifePill",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L22"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_capas_de_una_celda_de_atr\u00e1s_hacia_delante",
+      "callee": "FloatingToolbar",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "FloatingToolbar",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L25"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_posiciones_normalizadas",
+      "callee": "x",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "x",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L39"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_posiciones_normalizadas",
+      "callee": "y",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "y",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L39"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_posiciones_normalizadas",
+      "callee": "z",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "z",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L39"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_drag_drop_dnd_kit",
+      "callee": "PointerSensor",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "PointerSensor",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L43"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_drag_drop_dnd_kit",
+      "callee": "TouchSensor",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "TouchSensor",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L43"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_drag_drop_dnd_kit",
+      "callee": "KeyboardSensor",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "KeyboardSensor",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L43"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_drag_drop_dnd_kit",
+      "callee": "transform",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "transform",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L44"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_tabletop_grid_ui_skill_rendimiento",
+      "callee": "memo",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "React.memo",
+      "source_file": ".agents/skills/tabletop-grid-ui/SKILL.md",
+      "source_location": "L55",
+      "qualifiers": ["React"]
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

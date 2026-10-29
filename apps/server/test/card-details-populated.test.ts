@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { cardSearchService } from '../src/services/card-search.service.js';
-import { connectDatabase } from '../src/db.js';
+import { connectDatabase, disconnectDatabase } from '../src/db.js';
 import { parseDecklist, type CardDefinition } from '@mtgc/shared';
 
 describe('Punto 8 (B.8) - Ver Carta Completo con Datos Reales y 10 Cartas al Azar por Mazo Listo', () => {
@@ -25,7 +25,9 @@ describe('Punto 8 (B.8) - Ver Carta Completo con Datos Reales y 10 Cartas al Aza
   });
 
   after(async () => {
-    setTimeout(() => process.exit(0), 100).unref();
+    if (!useHttp) {
+      await disconnectDatabase(true);
+    }
   });
 
   async function resolveBatch(

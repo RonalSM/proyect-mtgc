@@ -1,0 +1,248 @@
+{
+  "nodes": [
+    {
+      "id": "$graphify-root$_agents_skills_secure_web_app_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L1",
+      "frontmatter": {
+        "name": "secure-web-app",
+        "description": "Lista de verificaci\u00f3n de seguridad para la app web multijugador: autenticaci\u00f3n, contrase\u00f1as, sesiones y cookies, CSP, rate limiting, validaci\u00f3n de entradas, WebSocket, secretos, dependencias y protecci\u00f3n de datos personales (Ley 1581 de 2012 de Colombia). \u00dasala al tocar registro, login, tokens, cookies, chat, nombres de usuario, entradas del usuario, despliegue, Docker, o cuando se pida una revisi\u00f3n de seguridad."
+      }
+    },
+    {
+      "id": "$graphify-root$_agents_skills_secure_web_app_skill_seguridad_de_la_aplicaci\u00f3n",
+      "label": "Seguridad de la aplicaci\u00f3n",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_secure_web_app_skill_cuentas_y_contrase\u00f1as_req_1",
+      "label": "Cuentas y contrase\u00f1as (REQ-1)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_secure_web_app_skill_sesiones_y_cookies",
+      "label": "Sesiones y cookies",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_secure_web_app_skill_entradas_del_usuario",
+      "label": "Entradas del usuario",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_secure_web_app_skill_cabeceras_y_red",
+      "label": "Cabeceras y red",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L30"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_secure_web_app_skill_informaci\u00f3n_oculta_del_juego",
+      "label": "Informaci\u00f3n oculta del juego",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L36"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_secure_web_app_skill_secretos_dependencias_y_contenedores",
+      "label": "Secretos, dependencias y contenedores",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L41"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_secure_web_app_skill_protecci\u00f3n_de_datos_personales_colombia_ley_1581_de_2012",
+      "label": "Protecci\u00f3n de datos personales (Colombia, Ley 1581 de 2012)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L48"
+    },
+    {
+      "id": "$graphify-root$_agents_skills_secure_web_app_skill_formato_del_informe",
+      "label": "Formato del informe",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L55"
+    }
+  ],
+  "edges": [
+    {
+      "source": "$graphify-root$_agents_skills_secure_web_app_skill_md",
+      "target": "$graphify-root$_agents_skills_secure_web_app_skill_seguridad_de_la_aplicaci\u00f3n",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_secure_web_app_skill_seguridad_de_la_aplicaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_secure_web_app_skill_cuentas_y_contrase\u00f1as_req_1",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_secure_web_app_skill_seguridad_de_la_aplicaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_secure_web_app_skill_sesiones_y_cookies",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_secure_web_app_skill_seguridad_de_la_aplicaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_secure_web_app_skill_entradas_del_usuario",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_secure_web_app_skill_seguridad_de_la_aplicaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_secure_web_app_skill_cabeceras_y_red",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_secure_web_app_skill_seguridad_de_la_aplicaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_secure_web_app_skill_informaci\u00f3n_oculta_del_juego",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_secure_web_app_skill_seguridad_de_la_aplicaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_secure_web_app_skill_secretos_dependencias_y_contenedores",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_secure_web_app_skill_seguridad_de_la_aplicaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_secure_web_app_skill_protecci\u00f3n_de_datos_personales_colombia_ley_1581_de_2012",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "$graphify-root$_agents_skills_secure_web_app_skill_seguridad_de_la_aplicaci\u00f3n",
+      "target": "$graphify-root$_agents_skills_secure_web_app_skill_formato_del_informe",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L55",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "$graphify-root$_agents_skills_secure_web_app_skill_cuentas_y_contrase\u00f1as_req_1",
+      "callee": "scrypt",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "scrypt",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L12"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_secure_web_app_skill_sesiones_y_cookies",
+      "callee": "HttpOnly",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "HttpOnly",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L19"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_secure_web_app_skill_sesiones_y_cookies",
+      "callee": "Secure",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "Secure",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L19"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_secure_web_app_skill_sesiones_y_cookies",
+      "callee": "Strict",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "Strict",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L19"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_secure_web_app_skill_entradas_del_usuario",
+      "callee": "dangerouslySetInnerHTML",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "dangerouslySetInnerHTML",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L27"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_secure_web_app_skill_cabeceras_y_red",
+      "callee": "io",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "cards.scryfall.io",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L32",
+      "qualifiers": ["cards", "scryfall"]
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_secure_web_app_skill_cabeceras_y_red",
+      "callee": "Origin",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "Origin",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L33"
+    },
+    {
+      "caller_nid": "$graphify-root$_agents_skills_secure_web_app_skill_informaci\u00f3n_oculta_del_juego",
+      "callee": "crypto",
+      "is_member_call": false,
+      "language": "markdown",
+      "context": "crypto",
+      "source_file": ".agents/skills/secure-web-app/SKILL.md",
+      "source_location": "L39"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
