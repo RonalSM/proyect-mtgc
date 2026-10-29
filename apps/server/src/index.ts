@@ -981,28 +981,31 @@ try {
   await connectDatabase();
   await roomManager.restoreFromSnapshots();
 
+  // Escuchar en el puerto de inmediato para evitar el timeout de 60s en plataformas como Heroku
+  await server.listen({ port: PORT, host: HOST });
+  server.log.info(`🚀 Servidor MTGC activo en http://${HOST}:${PORT}`);
+
   if (process.env.NODE_ENV !== 'test') {
     bulkSyncService.startNightlyCron();
-    // Cargar mazos listos y verificar dictámenes antes de escuchar peticiones (Punto 2 & Punto 3)
-    try {
-      await deckService.loadPresetDecks();
-      await bulkSyncService.syncRulingsIfEmpty();
-      const cardCount = await prisma.card.count();
-      if (cardCount < 10000) {
-        server.log.info(
-          `🔄 [BulkSync] Tabla 'cards' con ${cardCount} registros (esperado > 10,000). Lanzando sincronización automática de Oracle Cards...`,
+    // Cargar mazos listos y verificar dictámenes de forma asíncrona en segundo plano
+    (async () => {
+      try {
+        await deckService.loadPresetDecks();
+        await bulkSyncService.syncRulingsIfEmpty();
+        const cardCount = await prisma.card.count();
+        if (cardCount < 10000) {
+          server.log.info(
+            `🔄 [BulkSync] Tabla 'cards' con ${cardCount} registros (esperado > 10,000). Lanzando sincronización automática de Oracle Cards...`,
+          );
+          await bulkSyncService.syncOracleCards();
+        }
+      } catch (initErr: any) {
+        server.log.warn(
+          `⚠️ [StartupInit] Advertencia en inicialización: ${initErr?.message || initErr}`,
         );
-        await bulkSyncService.syncOracleCards();
       }
-    } catch (initErr: any) {
-      server.log.warn(
-        `⚠️ [StartupInit] Advertencia en inicialización: ${initErr?.message || initErr}`,
-      );
-    }
+    })();
   }
-
-  await server.listen({ port: PORT, host: HOST });
-  server.log.info(`🚀 Servidor MTGC activo en http://localhost:${PORT}`);
 } catch (err) {
   server.log.error(err);
   process.exit(1);
