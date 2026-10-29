@@ -46,11 +46,16 @@ export function useGameSocket({
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const remoteDragTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
   const pendingActionsRef = useRef<{ type: GameActionType; payload: unknown }[]>([]);
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const connect = useCallback(() => {
     if (!enabled || !roomCode || !playerId) return;
 
     // Close any previous connection cleanly
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
+      heartbeatIntervalRef.current = null;
+    }
     if (socketRef.current) {
       socketRef.current.close();
       socketRef.current = null;
@@ -89,6 +94,16 @@ export function useGameSocket({
       ws.onopen = () => {
         setStatus('connected');
         reconnectAttemptsRef.current = 0;
+        // Keep connection active through cloud routers like Heroku (55s H15 idle timeout)
+        if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = setInterval(() => {
+          if (socketRef.current?.readyState === WebSocket.OPEN) {
+            try {
+              socketRef.current.send(JSON.stringify({ type: 'PING' }));
+            } catch {}
+          }
+        }, 25000);
+
         if (pendingActionsRef.current.length > 0) {
           pendingActionsRef.current.forEach(({ type, payload }) => {
             try {
@@ -194,6 +209,10 @@ export function useGameSocket({
 
       ws.onclose = () => {
         setStatus('disconnected');
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current);
+          heartbeatIntervalRef.current = null;
+        }
         // Limpiar timeouts y cartas en arrastre remoto al desconectar
         Object.values(remoteDragTimeoutsRef.current).forEach(t => clearTimeout(t));
         remoteDragTimeoutsRef.current = {};
@@ -230,6 +249,10 @@ export function useGameSocket({
     connect();
 
     return () => {
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = null;
+      }
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }

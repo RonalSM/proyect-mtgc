@@ -51,6 +51,25 @@ export class WebSocketHandler {
   private roomClients = new Map<string, Set<ClientConnection>>();
   // playerId -> message timestamps in sliding window (REQ-12.4, REQ-16.4)
   private messageRateLimits = new Map<string, number[]>();
+  private heartbeatTimer: NodeJS.Timeout | null = null;
+
+  constructor() {
+    // Ping all open sockets every 25 seconds to prevent cloud router idle disconnects (Heroku H15)
+    this.heartbeatTimer = setInterval(() => {
+      for (const clients of this.roomClients.values()) {
+        for (const c of clients) {
+          if (c.socket.readyState === WebSocket.OPEN) {
+            try {
+              c.socket.ping();
+            } catch {}
+          }
+        }
+      }
+    }, 25000);
+    if (this.heartbeatTimer.unref) {
+      this.heartbeatTimer.unref();
+    }
+  }
 
   /**
    * Checks sliding window rate limit (max 5 messages per 10 seconds)
@@ -147,21 +166,9 @@ export class WebSocketHandler {
     const session = roomManager.getSession(client.roomCode);
     if (!session) return;
 
-    let envelope;
+    let parsedJson: any;
     try {
-      const parsedJson = JSON.parse(rawMessage);
-      const parseResult = ActionEnvelopeSchema.safeParse(parsedJson);
-      if (!parseResult.success) {
-        client.socket.send(
-          JSON.stringify({
-            type: 'ACTION_REJECTED',
-            error: 'Formato de acción inválido',
-            details: parseResult.error.flatten(),
-          }),
-        );
-        return;
-      }
-      envelope = parseResult.data;
+      parsedJson = JSON.parse(rawMessage);
     } catch {
       client.socket.send(
         JSON.stringify({
@@ -171,6 +178,27 @@ export class WebSocketHandler {
       );
       return;
     }
+
+    // Heartbeat / Keepalive for cloud proxies (e.g. Heroku router 55s H15 idle timeout)
+    if (parsedJson?.type === 'PING') {
+      try {
+        client.socket.send(JSON.stringify({ type: 'PONG', timestamp: Date.now() }));
+      } catch {}
+      return;
+    }
+
+    const parseResult = ActionEnvelopeSchema.safeParse(parsedJson);
+    if (!parseResult.success) {
+      client.socket.send(
+        JSON.stringify({
+          type: 'ACTION_REJECTED',
+          error: 'Formato de acción inválido',
+          details: parseResult.error.flatten(),
+        }),
+      );
+      return;
+    }
+    const envelope = parseResult.data;
 
     const { type, payload } = envelope;
 
