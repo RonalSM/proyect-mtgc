@@ -59,12 +59,26 @@ export function useGameSocket({
     setStatus(reconnectAttemptsRef.current > 0 ? 'reconnecting' : 'connecting');
     setErrorMessage(null);
 
-    // Build WebSocket URL (using relative protocol for dev proxy compatibility)
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // If in development with Vite proxy on port 3000, ws to localhost:3001
-    const host =
-      window.location.port === '3000' ? `${window.location.hostname}:3001` : window.location.host;
-    const wsUrl = `${protocol}//${host}/ws/table/${roomCode.toUpperCase()}?playerId=${encodeURIComponent(
+    // Build WebSocket URL: allow override via VITE_WS_URL (e.g. wss://proyect-mtg-backend.onrender.com)
+    let wsBase: string;
+    const envWs = import.meta.env.VITE_WS_URL;
+    if (envWs && typeof envWs === 'string') {
+      const cleanEnv = envWs.trim().replace(/\/$/, '');
+      if (cleanEnv.startsWith('ws://') || cleanEnv.startsWith('wss://')) {
+        wsBase = cleanEnv;
+      } else {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsBase = `${protocol}//${cleanEnv}`;
+      }
+    } else {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      // If in development with Vite proxy on port 3000, ws to localhost:3001
+      const host =
+        window.location.port === '3000' ? `${window.location.hostname}:3001` : window.location.host;
+      wsBase = `${protocol}//${host}`;
+    }
+
+    const wsUrl = `${wsBase}/ws/table/${roomCode.toUpperCase()}?playerId=${encodeURIComponent(
       playerId,
     )}&playerName=${encodeURIComponent(playerName)}&spectator=${isSpectator ? 'true' : 'false'}`;
 

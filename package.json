@@ -11,6 +11,7 @@
     "start": "node apps/server/dist/index.js",
     "prisma:generate": "prisma generate --schema=apps/server/prisma/schema.prisma",
     "build:shared": "npm run --workspace=@mtgc/shared build",
+    "build:web": "npm run build:shared && npm run --workspace=@mtgc/web build",
     "postinstall": "npm run prisma:generate && npm run build:shared",
     "build": "npm run prisma:generate && npm run --workspaces --if-present build",
     "dev": "concurrently -k -n \"shared,server,web\" -c \"cyan,green,magenta\" \"npm run --workspace=@mtgc/shared dev\" \"npm run --workspace=@mtgc/server dev\" \"npm run --workspace=@mtgc/web dev\"",
