@@ -6,16 +6,27 @@ import pg from 'pg';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-const connectionString =
+const rawConnectionString =
   process.env.DATABASE_URL ||
   'postgresql://postgres:postgres@127.0.0.1:5432/postgres?schema=public&sslmode=disable';
+
+const connectionString = rawConnectionString.startsWith('postgres://')
+  ? rawConnectionString.replace(/^postgres:\/\//, 'postgresql://')
+  : rawConnectionString;
+
+const isLocalDb = connectionString.includes('127.0.0.1') || connectionString.includes('localhost');
+const isProduction = process.env.NODE_ENV === 'production';
+const requiresSsl =
+  connectionString.includes('sslmode=require') ||
+  connectionString.includes('amazonaws.com') ||
+  (!isLocalDb && isProduction);
 
 let pgliteServerInstance: any = null;
 let pgliteDbInstance: any = null;
 
 export const pool = new pg.Pool({
   connectionString,
-  ssl: false,
+  ssl: requiresSsl ? { rejectUnauthorized: false } : false,
   max: 2,
 });
 
@@ -211,36 +222,38 @@ function getRootDataDir(): string {
 }
 
 export async function connectDatabase(): Promise<void> {
-  const port = 5432;
-  const isAvailable = await isPortOpen(port);
+  if (isLocalDb) {
+    const port = 5432;
+    const isAvailable = await isPortOpen(port);
 
-  if (!isAvailable) {
-    try {
-      console.log(
-        '🔄 PostgreSQL no detectado en puerto 5432. Iniciando PGlite persistente embebido...',
-      );
-      const { PGlite } = await import('@electric-sql/pglite');
-      const { PGLiteSocketServer } = await import('@electric-sql/pglite-socket');
+    if (!isAvailable) {
+      try {
+        console.log(
+          '🔄 PostgreSQL no detectado en puerto 5432. Iniciando PGlite persistente embebido...',
+        );
+        const { PGlite } = await import('@electric-sql/pglite');
+        const { PGLiteSocketServer } = await import('@electric-sql/pglite-socket');
 
-      const dataDir = getRootDataDir();
-      fs.mkdirSync(dataDir, { recursive: true });
+        const dataDir = getRootDataDir();
+        fs.mkdirSync(dataDir, { recursive: true });
 
-      pgliteDbInstance = await PGlite.create({ dataDir });
-      pgliteServerInstance = new PGLiteSocketServer({
-        db: pgliteDbInstance,
-        port,
-        host: '127.0.0.1',
-      });
+        pgliteDbInstance = await PGlite.create({ dataDir });
+        pgliteServerInstance = new PGLiteSocketServer({
+          db: pgliteDbInstance,
+          port,
+          host: '127.0.0.1',
+        });
 
-      await pgliteServerInstance.start();
-      if (process.env.NODE_ENV === 'test' && (pgliteServerInstance as any).server?.unref) {
-        (pgliteServerInstance as any).server.unref();
+        await pgliteServerInstance.start();
+        if (process.env.NODE_ENV === 'test' && (pgliteServerInstance as any).server?.unref) {
+          (pgliteServerInstance as any).server.unref();
+        }
+        console.log(
+          `✅ Servidor PostgreSQL (PGlite) activo en puerto ${port} (datos en ${dataDir}).`,
+        );
+      } catch (err: any) {
+        console.warn('⚠️ No se pudo iniciar el servidor PGlite embebido:', err?.message || err);
       }
-      console.log(
-        `✅ Servidor PostgreSQL (PGlite) activo en puerto ${port} (datos en ${dataDir}).`,
-      );
-    } catch (err: any) {
-      console.warn('⚠️ No se pudo iniciar el servidor PGlite embebido:', err?.message || err);
     }
   }
 
