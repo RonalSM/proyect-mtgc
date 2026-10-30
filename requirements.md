@@ -239,6 +239,38 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 12. THE sala de espera SHALL permitir al anfitrión expulsar jugadores y transferir el rol de anfitrión (REQ-13) y mostrar el código y enlace de invitación (REQ-2).
 13. THE sala de espera SHALL actualizar los cambios de otros jugadores (mazo elegido, listo, entradas y salidas) en menos de 300 ms.
 
+### REQ-20.F1 Inventario exhaustivo de funciones de sala y estados (Punto F1)
+
+| # | Función / Estado de Sala | Comportamiento Actual | Comportamiento Esperado | Prueba Automática | Severidad |
+|---|--------------------------|-----------------------|-------------------------|-------------------|-----------|
+| 1 | **Crear sala** | `POST /api/rooms` genera código alfanumérico de 6 caracteres y sesión en memoria/PostgreSQL. | Idéntico. Valida nombre, hostId y maxPlayers (2-6). | `scripts/test-a44-full-recovery.ts` | Baja |
+| 2 | **Código y enlace de unión** | Código alfanumérico único. Enlace `/?join=CODE` precarga código en formulario. | Idéntico. Si código no existe, mensaje claro de error. | E2E Playwright `smoke-prod.ts` | Baja |
+| 3 | **Unirse por código** | `roomManager.joinRoom` asigna asiento libre y conecta por WebSocket. | Conexión atómica con motivo estructurado en rechazos. | `scripts/test-f2-concurrent-joins.ts` | Media |
+| 4 | **Asignación de asiento** | Búsqueda del primer entero libre (0 a maxPlayers - 1). | Asignación secuencial atómica sin asientos duplicados. | `scripts/test-f2-concurrent-joins.ts` (100 rondas) | Alta |
+| 5 | **Máximo de asientos** | Límite configurable de 2 a 6 jugadores. | Si excede maxPlayers, rechazo limpio con código 1008 y motivo `room_full`. | `test-f2-concurrent-joins.ts` | Alta |
+| 6 | **Uniones simultáneas** | Event loop de Node.js procesa uniones síncronas. | Soporte de 4, 5 y 6 uniones simultáneas sin colisión de asientos. | `test-f2-concurrent-joins.ts` | Alta |
+| 7 | **Espectadores** | `isSpectator: true`, `seatNumber: -1`, restringidos a chat y tirada de dados. | No ocupan asiento de jugador y no influyen en condiciones de inicio. | Unit tests `ws-handler.test.ts` | Media |
+| 8 | **Mismo jugador en dos pestañas** | Antes colisionaba por `localStorage`; corregido a `sessionStorage` para aislar identidad. | Cada pestaña genera y conserva su propio `playerId` independiente. | E2E multinavegador | Crítica |
+| 9 | **Reconexión** | Reserva de asiento por 10 minutos al desconectarse. | Reconexión restaura asiento, vida, cartas y estado exacto. | `smoke-prod.ts`, `test-a44-full-recovery.ts` | Alta |
+| 10 | **Salir de la sala** | Cierre de socket o `LEAVE_ROOM`. | Libera asiento de inmediato si la partida está en lobby. | `room-manager.test.ts` | Media |
+| 11 | **Expulsar jugador** | Antes reconectaba en bucle; corregido con código 4001, sin auto-reconexión. | Cierre con código 4001, borrado de sesión, aviso "Fuiste expulsado" y redirección a `/`. | E2E `test-kick-player.ts` | Crítica |
+| 12 | **Transferir anfitrión** | `TRANSFER_HOST` actualiza `hostId` en el estado de la mesa. | Solo el anfitrión actual puede transferir; actualiza privilegios en todos los clientes. | `room-manager.test.ts` | Media |
+| 13 | **Anfitrión desconectado** | Reserva de 10 minutos; si expira, anfitrión reasignado al siguiente asiento. | Reasignación ordenada al siguiente jugador conectado para no congelar la mesa. | `room-manager.ts` | Media |
+| 14 | **Cierre y expiración de sala** | Cierre automático tras inactividad o explícito por el anfitrión. | Limpieza en memoria, eliminación de snapshots en PostgreSQL y Redis. | `redis-snapshot.test.ts` | Media |
+| 15 | **Elegir mazo** | `SELECT_DECK` registra mazo en el servidor y oculta lista a rivales. | Ocultamiento estricto de listas ajenas (REQ-20.9). | `lobby-manager.test.ts` | Media |
+| 16 | **Cambiar mazo** | `SELECT_DECK` reemplaza la selección previa antes de iniciar. | Permite cambiar tantas veces como se desee mientras el estado no sea "Listo". | `lobby-manager.ts` | Media |
+| 17 | **Dejar de usar mazo** | Acción `DESELECT_DECK` para desmarcar mazo y cancelar "Listo". | Permite desmarcar mazo previo con botón visible sin recargar la página. | `lobby-manager.test.ts` | Alta |
+| 18 | **Importar mazo en sala** | Parseo y validación de texto de mazo; antes requería F5 para actualizar. | Actualización reactiva instantánea en la interfaz sin necesidad de F5. | E2E `test-deck-import.ts` | Alta |
+| 19 | **Mazos listos** | Indicador visual de mazo cargado (`deckLoaded`) en cada celda. | Estado visible sincronizado en menos de 100 ms para todos los clientes. | `smoke-prod.ts` | Baja |
+| 20 | **Estado listo** | Toggle `SET_READY` validado en servidor (requiere mazo seleccionado). | No permite marcarse Listo sin mazo; desmarca automáticamente al cambiar mazo. | `lobby-manager.test.ts` | Media |
+| 21 | **Condiciones para iniciar** | Requiere anfitrión, >= 2 jugadores sentados y todos en estado Listo. | Botón "Iniciar Partida" habilitado solo cuando se cumplen las tres condiciones. | `lobby-manager.test.ts` | Alta |
+| 22 | **Iniciativa (d20)** | Tirada CSPRNG en servidor de 1 a 20 con hasta 5 rondas de desempate automático. | Orden horario de turnos según tirada; asignación circular de asientos. | `initiative-service.test.ts` | Alta |
+| 23 | **Mulligan de Londres** | Decisión secuencial según orden de iniciativa; k-1 cartas devueltas al fondo. | Manos privadas hasta concluir fase; si desconectado, opción de avance forzado. | `mulligan-service.test.ts` | Alta |
+| 24 | **Jugador desconectado en fase** | Temporizador de inactividad de 15 segundos por turno o fase. | Si no responde en el tiempo límite, el servidor fuerza la decisión o avanza turno. | `ws-handler.ts` | Alta |
+| 25 | **Pasar turno con desconexión** | Temporizador de turno permite paso forzado tras expiración. | El siguiente jugador o el anfitrión puede pasar el turno si el activo no responde. | `ws-handler.ts` | Media |
+| 26 | **Fin de partida y regreso a lobby**| `END_GAME` restablece el estado de la mesa a `lobby` conservando jugadores. | Permite jugar una revancha sin tener que crear una sala nueva ni repartir enlaces. | `game-state.test.ts` | Media |
+| 27 | **Mensajes de error estructurados** | Respuestas tipadas `{ type: 'ERROR', message, reason }`. | Usuario recibe diagnóstico claro: `room_full`, `rate_limit_exceeded`, `origin_rejected`, `auth_failed`, `room_not_found`, `player_kicked`. | `ws-handler.test.ts` | Alta |
+
 ### REQ-21 Iniciativa con D20 y orden de turnos (Actualizado Punto 4)
 
 **Historia:** Como jugador, quiero que el orden de turnos se decida con un dado de 20 caras de forma 100% automática por el servidor, para que sea justo, visible y sin demoras.
