@@ -61,6 +61,33 @@ export class WebSocketHandler {
   // playerId -> message timestamps in sliding window (REQ-12.4, REQ-16.4)
   private messageRateLimits = new Map<string, number[]>();
   private heartbeatTimer: NodeJS.Timeout | null = null;
+  private snapshotThrottleTimers = new Map<string, { lastSaved: number; timer?: NodeJS.Timeout }>();
+
+  /**
+   * Persiste la instantánea en PostgreSQL con throttling (máx 1/s por sala, inmediato en cambios de turno) (Punto A4.4)
+   */
+  private queueSnapshotSave(roomCode: string, state: any, immediate: boolean = false): void {
+    const code = roomCode.toUpperCase();
+    const now = Date.now();
+    const entry = this.snapshotThrottleTimers.get(code) || { lastSaved: 0 };
+
+    const doSave = () => {
+      entry.lastSaved = Date.now();
+      if (entry.timer) {
+        clearTimeout(entry.timer);
+        entry.timer = undefined;
+      }
+      this.snapshotThrottleTimers.set(code, entry);
+      redisSnapshotService.save(code, state).catch(() => {});
+    };
+
+    if (immediate || now - entry.lastSaved >= 1000) {
+      doSave();
+    } else if (!entry.timer) {
+      entry.timer = setTimeout(doSave, 1000 - (now - entry.lastSaved));
+      this.snapshotThrottleTimers.set(code, entry);
+    }
+  }
 
   constructor() {
     // Ping all open sockets every 25 seconds to prevent cloud router idle disconnects (Heroku H15)
@@ -648,8 +675,9 @@ export class WebSocketHandler {
           return;
       }
 
-      // Broadcast updated room state to all clients
-      this.broadcastRoomState(client.roomCode);
+      // Broadcast updated room state to all clients (inmediato para transiciones de turno y fase)
+      const isCriticalTransition = type === 'PASS_TURN' || type === 'START_GAME' || type === 'SET_READY';
+      this.broadcastRoomState(client.roomCode, isCriticalTransition);
     } catch (err: any) {
       console.error(`[WS] Error al procesar acción ${type}:`, err);
       client.socket.send(
@@ -665,13 +693,13 @@ export class WebSocketHandler {
   /**
    * Broadcasts tailored state to each client, filtering hidden information
    */
-  public broadcastRoomState(roomCode: string): void {
+  public broadcastRoomState(roomCode: string, immediateSnapshot: boolean = false): void {
     const clients = this.roomClients.get(roomCode);
     const session = roomManager.getSession(roomCode);
     if (!clients || !session) return;
 
-    // Persistir instantánea duradera en PostgreSQL en cada mutación de estado transmitida (Punto A3.4)
-    redisSnapshotService.save(roomCode, session.state).catch(() => {});
+    // Persistir instantánea duradera en PostgreSQL de manera no bloqueante y agrupada (Punto A4.4)
+    this.queueSnapshotSave(roomCode, session.state, immediateSnapshot);
 
     for (const client of clients) {
       if (client.socket.readyState === WebSocket.OPEN) {
