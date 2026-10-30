@@ -1,4 +1,5 @@
-import zlib from 'node:zlib';
+import fs from 'node:fs';
+import path from 'node:path';
 import { prisma } from '../db.js';
 import { scryfallService } from './scryfall.service.js';
 
@@ -42,7 +43,52 @@ export class BulkSyncService {
   private lastCardsUpdatedAt: string | null = null;
   private lastRulingsUpdatedAt: string | null = null;
   private lastRulingsSyncTime: Date | null = null;
+  // Caché acotada en memoria LRU para no superar los 512 MB de RAM del Dyno
   private rulingsByOracleId: Map<string, RulingItem[]> = new Map();
+  private readonly MAX_IN_MEMORY_RULINGS = 500;
+  private readonly metaFilePath = path.resolve(process.cwd(), 'data/sync-metadata.json');
+
+  constructor() {
+    this.loadMetadata();
+  }
+
+  private loadMetadata(): void {
+    try {
+      if (fs.existsSync(this.metaFilePath)) {
+        const raw = fs.readFileSync(this.metaFilePath, 'utf-8');
+        const parsed = JSON.parse(raw);
+        if (parsed.lastCardsUpdatedAt) this.lastCardsUpdatedAt = parsed.lastCardsUpdatedAt;
+        if (parsed.lastRulingsUpdatedAt) this.lastRulingsUpdatedAt = parsed.lastRulingsUpdatedAt;
+        if (parsed.lastSyncTime) this.lastSyncTime = new Date(parsed.lastSyncTime);
+        if (parsed.lastRulingsSyncTime) this.lastRulingsSyncTime = new Date(parsed.lastRulingsSyncTime);
+      }
+    } catch {
+      // Ignorar fallo al leer metadatos iniciales
+    }
+  }
+
+  private saveMetadata(): void {
+    try {
+      const dir = path.dirname(this.metaFilePath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(
+        this.metaFilePath,
+        JSON.stringify(
+          {
+            lastCardsUpdatedAt: this.lastCardsUpdatedAt,
+            lastRulingsUpdatedAt: this.lastRulingsUpdatedAt,
+            lastSyncTime: this.lastSyncTime?.toISOString() || null,
+            lastRulingsSyncTime: this.lastRulingsSyncTime?.toISOString() || null,
+          },
+          null,
+          2,
+        ),
+        'utf-8',
+      );
+    } catch {
+      // Ignorar fallo al persistir metadatos
+    }
+  }
 
   public getLastRulingsUpdatedAt(): string | null {
     return this.lastRulingsUpdatedAt;
@@ -50,6 +96,7 @@ export class BulkSyncService {
 
   public setLastRulingsUpdatedAt(val: string | null): void {
     this.lastRulingsUpdatedAt = val;
+    this.saveMetadata();
   }
 
   public getRulingsCount(): number {
@@ -57,6 +104,10 @@ export class BulkSyncService {
   }
 
   public setRulingsForOracleId(oracleId: string, rulings: RulingItem[]): void {
+    if (this.rulingsByOracleId.size >= this.MAX_IN_MEMORY_RULINGS) {
+      const firstKey = this.rulingsByOracleId.keys().next().value;
+      if (firstKey) this.rulingsByOracleId.delete(firstKey);
+    }
     this.rulingsByOracleId.set(oracleId, rulings);
   }
 
@@ -135,7 +186,7 @@ export class BulkSyncService {
    */
   public async syncOracleCards(
     limit?: number,
-  ): Promise<{ syncedCount: number; durationMs: number }> {
+  ): Promise<{ syncedCount: number; durationMs: number; peakMemRssMb?: number }> {
     if (this.isSyncing) {
       throw new Error('La sincronización de bulk data ya está en curso.');
     }
@@ -209,6 +260,7 @@ export class BulkSyncService {
 
       const batchSize = 1000;
       let batch: any[] = [];
+      let peakMemRssMb = Math.round(process.memoryUsage().rss / 1024 / 1024);
 
       for await (const line of rl) {
         const trimmed = line.trim();
@@ -253,6 +305,10 @@ export class BulkSyncService {
             });
             syncedCount += batch.length;
             batch = [];
+
+            const currentRss = Math.round(process.memoryUsage().rss / 1024 / 1024);
+            if (currentRss > peakMemRssMb) peakMemRssMb = currentRss;
+
             if (limit && syncedCount >= limit) break;
           }
         } catch {
@@ -270,11 +326,12 @@ export class BulkSyncService {
 
       this.lastCardsUpdatedAt = oracleDataInfo.updated_at;
       this.lastSyncTime = new Date();
+      this.saveMetadata();
       const durationMs = Date.now() - startTime;
       console.log(
-        `✅ [BulkSync] Sincronización completada: ${syncedCount} cartas indexadas en ${durationMs}ms`,
+        `✅ [BulkSync] Sincronización completada: ${syncedCount} cartas indexadas en ${durationMs}ms (Pico RSS: ${peakMemRssMb}MB)`,
       );
-      return { syncedCount, durationMs };
+      return { syncedCount, durationMs, peakMemRssMb };
     } finally {
       this.isSyncing = false;
     }
@@ -282,9 +339,9 @@ export class BulkSyncService {
 
   /**
    * Starts the automated nightly cron synchronization job (COMP-6 / REQ-18 / Paso 2A.5)
-   * Runs daily at the specified UTC hour (default: 03:00 UTC).
+   * Runs daily at the specified UTC hour (default: 09:00 UTC = 04:00 AM Colombia).
    */
-  public startNightlyCron(targetHourUtc: number = 3): void {
+  public startNightlyCron(targetHourUtc: number = 9): void {
     if (this.isNightlyCronActive) return;
 
     this.isNightlyCronActive = true;
@@ -330,13 +387,13 @@ export class BulkSyncService {
   }
 
   /**
-   * Sincronización oficial del archivo bulk de dictámenes (Rulings) de Scryfall (Punto 5 / 6 / REQ-7.28)
-   * Compara fecha updated_at para evitar descargas innecesarias y almacena en base de datos local / memoria.
-   * Omite descarga ÚNICAMENTE si existen filas/datos locales y la fecha coincide con el catálogo.
+   * Sincronización oficial del archivo bulk de dictámenes (Rulings) de Scryfall por STREAMING
+   * Compara fecha updated_at persistente para evitar descargas innecesarias y almacena en base de datos local.
+   * Procesa línea a línea sin cargar el JSON completo en memoria para no exceder los 512 MB del Dyno.
    */
   public async syncRulings(
     limit?: number,
-  ): Promise<{ syncedCount: number; durationMs: number; skipped?: boolean; reason?: string }> {
+  ): Promise<{ syncedCount: number; durationMs: number; skipped?: boolean; reason?: string; peakMemRssMb?: number }> {
     if (this.isSyncingRulings) {
       return { syncedCount: 0, durationMs: 0, skipped: true, reason: 'already_in_progress' };
     }
@@ -344,6 +401,7 @@ export class BulkSyncService {
     this.isSyncingRulings = true;
     const startTime = Date.now();
     let syncedCount = 0;
+    let peakMemRssMb = Math.round(process.memoryUsage().rss / 1024 / 1024);
 
     try {
       console.log('🔄 [BulkSync] Consultando catálogo de bulk data para dictámenes (rulings)...');
@@ -363,20 +421,20 @@ export class BulkSyncService {
 
       const bulkMeta = (await response.json()) as BulkDataResponse;
       const rulingsDataInfo = bulkMeta.data.find(item => item.type === 'rulings');
-      const downloadUri = rulingsDataInfo?.download_uri || rulingsDataInfo?.jsonl_download_uri;
+      const downloadUri = rulingsDataInfo?.jsonl_download_uri || rulingsDataInfo?.download_uri;
 
       if (!rulingsDataInfo || !downloadUri) {
         throw new Error('No se encontró el archivo bulk "rulings" en Scryfall.');
       }
 
-      // Comprobación de omisión: SOLO si hay filas/datos locales y la fecha coincide (Punto 6)
+      // Comprobación de omisión persistente
       let dbCount = 0;
       try {
         const count = await (prisma as any).ruling?.count();
         if (typeof count === 'number') dbCount = count;
       } catch {}
 
-      const hasRows = dbCount > 0 || this.rulingsByOracleId.size > 0;
+      const hasRows = dbCount > 0;
 
       if (
         hasRows &&
@@ -384,7 +442,7 @@ export class BulkSyncService {
         this.lastRulingsUpdatedAt === rulingsDataInfo.updated_at
       ) {
         console.log(
-          `⏭️ [BulkSync] El archivo bulk "rulings" no ha cambiado (${this.lastRulingsUpdatedAt}) y existen datos locales (${dbCount} en DB, ${this.rulingsByOracleId.size} en memoria). Omitiendo descarga innecesaria.`,
+          `⏭️ [BulkSync] El archivo bulk "rulings" no ha cambiado (${this.lastRulingsUpdatedAt}) y existen datos locales (${dbCount} en DB). Omitiendo descarga innecesaria.`,
         );
         return {
           syncedCount: 0,
@@ -394,83 +452,67 @@ export class BulkSyncService {
         };
       }
 
-      console.log(`⬇️ [BulkSync] Descargando Rulings desde: ${downloadUri}`);
+      console.log(`⬇️ [BulkSync] Descargando y procesando Rulings por streaming desde: ${downloadUri}`);
       const rulingsResponse = await fetch(downloadUri, {
         headers: {
           'User-Agent': userAgent,
-          Accept: 'application/json',
         },
       });
 
-      if (!rulingsResponse.ok) {
+      if (!rulingsResponse.ok || !rulingsResponse.body) {
         throw new Error(`Error al descargar archivo bulk rulings: ${rulingsResponse.statusText}`);
       }
 
-      const arrayBuf = await rulingsResponse.arrayBuffer();
-      const buf = Buffer.from(arrayBuf);
-      let text: string;
-      if (buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b) {
-        text = zlib.gunzipSync(buf).toString('utf-8');
-      } else {
-        text = buf.toString('utf-8');
+      const { Readable } = await import('node:stream');
+      const readline = await import('node:readline');
+      const zlibMod = await import('node:zlib');
+
+      const isGzip = downloadUri.endsWith('.gz') || rulingsResponse.headers.get('content-encoding') === 'gzip';
+      let stream: any = Readable.fromWeb(rulingsResponse.body as any);
+      if (isGzip) {
+        stream = stream.pipe(zlibMod.createGunzip());
       }
 
-      let rawRulings: any[] = [];
-      const trimmedText = text.trim();
-      if (trimmedText.startsWith('[')) {
-        rawRulings = JSON.parse(trimmedText);
-      } else {
-        const lines = trimmedText.split('\n');
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed) {
-            try {
-              rawRulings.push(JSON.parse(trimmed));
-            } catch {
-              // omitir línea malformada
-            }
-          }
-        }
-      }
+      const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
 
-      const totalToProcess = limit ? Math.min(rawRulings.length, limit) : rawRulings.length;
-      console.log(`📦 [BulkSync] Procesando ${totalToProcess} dictámenes oficiales de Scryfall...`);
-
-      const batchSize = 2000;
+      const batchSize = 1000;
       let rulingBatch: any[] = [];
 
-      for (let i = 0; i < totalToProcess; i++) {
-        const r = rawRulings[i];
-        if (!r.oracle_id || !r.comment) continue;
+      for await (const line of rl) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed === '[' || trimmed === ']') continue;
+        const cleanLine = trimmed.endsWith(',') ? trimmed.slice(0, -1) : trimmed;
 
-        const pubDate = r.published_at ? new Date(r.published_at) : new Date();
+        try {
+          const r = JSON.parse(cleanLine);
+          if (!r.oracle_id || !r.comment) continue;
 
-        rulingBatch.push({
-          oracleId: r.oracle_id,
-          source: r.source || 'wotc',
-          publishedAt: pubDate,
-          comment: r.comment,
-        });
+          const pubDate = r.published_at ? new Date(r.published_at) : new Date();
 
-        const rulingItem: RulingItem = {
-          publishedAt: r.published_at || new Date().toISOString().slice(0, 10),
-          source: r.source || 'wotc',
-          comment: r.comment,
-        };
+          rulingBatch.push({
+            oracleId: r.oracle_id,
+            source: r.source || 'wotc',
+            publishedAt: pubDate,
+            comment: r.comment,
+          });
 
-        const existing = this.rulingsByOracleId.get(r.oracle_id) || [];
-        existing.push(rulingItem);
-        this.rulingsByOracleId.set(r.oracle_id, existing);
-        syncedCount++;
+          if (rulingBatch.length >= batchSize) {
+            try {
+              await (prisma as any).ruling?.createMany({
+                data: rulingBatch,
+                skipDuplicates: true,
+              });
+            } catch {}
+            syncedCount += rulingBatch.length;
+            rulingBatch = [];
 
-        if (rulingBatch.length >= batchSize) {
-          try {
-            await (prisma as any).ruling?.createMany({
-              data: rulingBatch,
-              skipDuplicates: true,
-            });
-          } catch {}
-          rulingBatch = [];
+            const currentRss = Math.round(process.memoryUsage().rss / 1024 / 1024);
+            if (currentRss > peakMemRssMb) peakMemRssMb = currentRss;
+
+            if (limit && syncedCount >= limit) break;
+          }
+        } catch {
+          // Ignorar líneas malformadas
         }
       }
 
@@ -480,6 +522,7 @@ export class BulkSyncService {
             data: rulingBatch,
             skipDuplicates: true,
           });
+          syncedCount += rulingBatch.length;
         } catch {}
       }
 
@@ -489,20 +532,18 @@ export class BulkSyncService {
         'b320d044-301b-4395-a841-be80e0c03d52',
       ];
       for (const solOracleId of solRingOracleIds) {
-        const existingSol = this.rulingsByOracleId.get(solOracleId) || [];
-        if (existingSol.length === 0) {
-          this.rulingsByOracleId.set(solOracleId, [...OFFICIAL_SOL_RING_RULINGS]);
-        }
+        this.rulingsByOracleId.set(solOracleId, [...OFFICIAL_SOL_RING_RULINGS]);
       }
 
       this.lastRulingsUpdatedAt = rulingsDataInfo.updated_at;
       this.lastRulingsSyncTime = new Date();
+      this.saveMetadata();
       const durationMs = Date.now() - startTime;
       console.log(
-        `✅ [BulkSync] Sincronización de dictámenes completada: ${syncedCount} dictámenes indexados en ${durationMs}ms`,
+        `✅ [BulkSync] Sincronización de dictámenes completada: ${syncedCount} dictámenes indexados en ${durationMs}ms (Pico RSS: ${peakMemRssMb}MB)`,
       );
 
-      return { syncedCount, durationMs, skipped: false };
+      return { syncedCount, durationMs, skipped: false, peakMemRssMb };
     } finally {
       this.isSyncingRulings = false;
     }
