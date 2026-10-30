@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { flushSync } from 'react-dom';
 import type { RoomState, GameActionType, PlayerState, CardInstance } from '@mtgc/shared';
 import {
@@ -54,6 +54,40 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   const [optimisticPositions, setOptimisticPositions] = useState<
     Record<string, { x: number; y: number; zIndex?: number; timestamp: number }>
   >({});
+
+  // Transferencias de zona optimistas para eliminar 100% el parpadeo en origen (Punto G1)
+  const [optimisticZoneTransfers, setOptimisticZoneTransfers] = useState<
+    Record<
+      string,
+      {
+        card: CardInstance;
+        fromZone: string;
+        toZone: string;
+        timestamp: number;
+      }
+    >
+  >({});
+
+  // Limpiar transferencias optimistas confirmadas por el servidor o expiradas tras 3s
+  useEffect(() => {
+    setOptimisticZoneTransfers(prev => {
+      if (Object.keys(prev).length === 0) return prev;
+      let changed = false;
+      const next = { ...prev };
+      const localZones = roomState.playerZones[localPlayerId];
+      if (localZones) {
+        for (const [id, transfer] of Object.entries(next)) {
+          const inTarget = ((localZones as any)[transfer.toZone] || []).some((c: any) => c.id === id);
+          const notInSource = !((localZones as any)[transfer.fromZone] || []).some((c: any) => c.id === id);
+          if ((inTarget && notInSource) || Date.now() - transfer.timestamp > 3000) {
+            delete next[id];
+            changed = true;
+          }
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [roomState, localPlayerId]);
   const [permissionWarning, setPermissionWarning] = useState<string | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -540,23 +574,48 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       overData?.zone === 'graveyard' ||
       overData?.zone === 'exile'
     ) {
+      const destZone = (overData.zone || 'graveyard') as string;
+      const cardInstance = activeDragItem?.card || (active.data.current as any)?.card;
       flushSync(() => {
+        if (cardInstance) {
+          setOptimisticZoneTransfers(prev => ({
+            ...prev,
+            [active.id as string]: {
+              card: { ...cardInstance, zone: destZone as any },
+              fromZone: fromZone || 'battlefield',
+              toZone: destZone,
+              timestamp: Date.now(),
+            },
+          }));
+        }
         setIsDragging(false);
         setActiveDragItem(null);
       });
       onAction('MOVE_CARD', {
         cardInstanceId: active.id,
         fromZone: fromZone || 'battlefield',
-        toZone: overData.zone,
+        toZone: destZone,
         toPlayerId: overData.playerId || localPlayerId,
-        destinationIndex: overData.zone === 'library' ? 0 : undefined,
+        destinationIndex: destZone === 'library' ? 0 : undefined,
       });
       return;
     }
 
     // Punto 6: Soltar sobre la propia mano la devuelve a la mano
     if (overData?.zone === 'hand' && overData?.playerId === localPlayerId) {
+      const cardInstance = activeDragItem?.card || (active.data.current as any)?.card;
       flushSync(() => {
+        if (cardInstance) {
+          setOptimisticZoneTransfers(prev => ({
+            ...prev,
+            [active.id as string]: {
+              card: { ...cardInstance, zone: 'hand' },
+              fromZone: fromZone || 'battlefield',
+              toZone: 'hand',
+              timestamp: Date.now(),
+            },
+          }));
+        }
         setIsDragging(false);
         setActiveDragItem(null);
       });
@@ -571,7 +630,19 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
 
     // Punto 6: Soltar sobre la zona de comando la devuelve al comando (+2 tax automático)
     if (overData?.zone === 'command' && overData?.playerId === localPlayerId) {
+      const cardInstance = activeDragItem?.card || (active.data.current as any)?.card;
       flushSync(() => {
+        if (cardInstance) {
+          setOptimisticZoneTransfers(prev => ({
+            ...prev,
+            [active.id as string]: {
+              card: { ...cardInstance, zone: 'command' },
+              fromZone: fromZone || 'battlefield',
+              toZone: 'command',
+              timestamp: Date.now(),
+            },
+          }));
+        }
         setIsDragging(false);
         setActiveDragItem(null);
       });
@@ -584,12 +655,28 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       return;
     }
 
-    // Punto 1: Aplicar posición de forma optimista y síncrona en el mismo frame para eliminar parpadeo en emisor
+    // Punto 1 y G1: Aplicar posición y transferencia de zona de forma optimista y síncrona en el mismo frame para eliminar parpadeo
+    const cardInstance = activeDragItem?.card || (active.data.current as any)?.card;
     flushSync(() => {
       setOptimisticPositions(prev => ({
         ...prev,
         [active.id as string]: { x: normX, y: normY, zIndex: 10, timestamp: Date.now() },
       }));
+      if (cardInstance && fromZone !== 'battlefield') {
+        setOptimisticZoneTransfers(prev => ({
+          ...prev,
+          [active.id as string]: {
+            card: {
+              ...cardInstance,
+              zone: 'battlefield',
+              position: { x: normX, y: normY, zIndex: 10 },
+            },
+            fromZone: fromZone || 'hand',
+            toZone: 'battlefield',
+            timestamp: Date.now(),
+          },
+        }));
+      }
       setIsDragging(false);
       setActiveDragItem(null);
     });
@@ -693,9 +780,14 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     command: [],
   };
 
-  const allBattlefieldCards = Object.values(roomState.playerZones).flatMap(
-    zones => zones.battlefield,
-  );
+  const allBattlefieldCards = useMemo(() => {
+    const rawCards = Object.values(roomState.playerZones).flatMap(zones => zones.battlefield);
+    const optimisticToBf = Object.values(optimisticZoneTransfers)
+      .filter(t => t.toZone === 'battlefield' && !rawCards.some(c => c.instanceId === t.card.instanceId))
+      .map(t => t.card);
+    const filteredRaw = rawCards.filter(c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'battlefield');
+    return [...filteredRaw, ...optimisticToBf];
+  }, [roomState.playerZones, optimisticZoneTransfers]);
 
   // Window listeners for Marquee Box Selection and live targeting mouse movement
   useEffect(() => {
@@ -814,8 +906,26 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
     isLocal: boolean,
     isTwoPlayer?: boolean,
   ) => {
-    const zones = roomState.playerZones[player.id] || emptyZones;
+    const rawZones = roomState.playerZones[player.id] || emptyZones;
     const isActiveTurn = roomState.activePlayerId === player.id;
+
+    // Aplicar transferencias de zona optimistas para el jugador local para eliminar 100% el parpadeo en origen (Punto G1)
+    let zones = rawZones;
+    if (isLocal && Object.keys(optimisticZoneTransfers).length > 0) {
+      zones = {
+        ...rawZones,
+        hand: rawZones.hand.filter(c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'hand'),
+        battlefield: [
+          ...rawZones.battlefield.filter(c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'battlefield'),
+          ...Object.values(optimisticZoneTransfers)
+            .filter(t => t.toZone === 'battlefield' && !rawZones.battlefield.some(c => c.instanceId === t.card.instanceId))
+            .map(t => t.card),
+        ],
+        graveyard: rawZones.graveyard.filter(c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'graveyard'),
+        exile: rawZones.exile.filter(c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'exile'),
+        command: rawZones.command.filter(c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'command'),
+      };
+    }
 
     return (
       <PlayerCell
