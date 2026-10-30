@@ -40,6 +40,7 @@ export type GameActionType =
   | 'UPDATE_ROOM_SETTINGS'
   // Lobby & Preparation (REQ-20)
   | 'SELECT_DECK'
+  | 'DESELECT_DECK'
   | 'SET_READY'
   | 'START_GAME'
   // Initiative (REQ-21)

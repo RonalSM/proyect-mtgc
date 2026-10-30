@@ -124,6 +124,15 @@ export class GameStateSession {
   }
 
   /**
+   * Deselects the current deck for a player in the lobby (Punto F5.a)
+   */
+  public deselectDeck(playerId: string): void {
+    this.lobbyManager.deselectDeck(playerId);
+    this.addLog(playerId, 'dejó de usar su mazo actual');
+    this.incrementVersion();
+  }
+
+  /**
    * Toggles ready state in the lobby (REQ-20.8)
    */
   public setReady(playerId: string, payload: SetReadyPayload): void {

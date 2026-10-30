@@ -186,6 +186,8 @@ export const SelectDeckSchema = z.object({
   warnings: z.array(z.string()).optional(),
 });
 
+export const DeselectDeckSchema = z.object({}).passthrough();
+
 export const SetReadySchema = z.object({
   isReady: z.boolean(),
 });
@@ -266,6 +268,7 @@ export const ActionEnvelopeSchema = z.object({
     'TRANSFER_HOST',
     'UPDATE_ROOM_SETTINGS',
     'SELECT_DECK',
+    'DESELECT_DECK',
     'SET_READY',
     'START_GAME',
     'ROLL_D20_INITIATIVE',

@@ -665,6 +665,11 @@ export class WebSocketHandler {
           break;
         }
 
+        case 'DESELECT_DECK': {
+          session.deselectDeck(client.playerId);
+          break;
+        }
+
         case 'SET_READY': {
           const valid = SetReadySchema.parse(payload);
           session.setReady(client.playerId, valid);

@@ -81,6 +81,25 @@ export class LobbyManager {
   }
 
   /**
+   * Deselects the current deck for a player (Punto F5.a).
+   * Resets deckLoaded, isReady, and clears pending deck from server memory.
+   */
+  public deselectDeck(playerId: string): void {
+    const player = this.roomState.players[playerId];
+    if (!player) {
+      throw new Error('Jugador no encontrado en la sala.');
+    }
+    if (this.roomState.status !== 'lobby') {
+      throw new Error('No se pueden modificar mazos una vez iniciada la partida.');
+    }
+
+    this.pendingDecks.delete(playerId);
+    player.selectedDeck = undefined;
+    player.deckLoaded = false;
+    player.isReady = false;
+  }
+
+  /**
    * Toggles player Ready status (REQ-20.8).
    * Only allowed if a deck is selected.
    */

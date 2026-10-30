@@ -25,6 +25,7 @@ import {
   ChevronDown,
   ChevronUp,
   BookOpen,
+  Trash2,
 } from 'lucide-react';
 import { MtgSymbolIcon } from '../utils/mana-icons';
 import { DeckInspectorModal } from './DeckInspectorModal';
@@ -88,11 +89,32 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
     fetchPresets();
   }, []);
 
-  // Load user saved decks from /api/decks (silent for guests/unauthenticated, Punto 17)
+  // Clave de almacenamiento local para mazos importados por invitados (Punto F5.c)
+  const GUEST_DECKS_STORAGE_KEY = 'mtgc_guest_saved_decks';
+
+  const getLocalGuestDecks = (): any[] => {
+    try {
+      const raw = localStorage.getItem(GUEST_DECKS_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const saveLocalGuestDeck = (deck: any): void => {
+    try {
+      const existing = getLocalGuestDecks();
+      const filtered = existing.filter((d: any) => d.id !== deck.id && d.name !== deck.name);
+      filtered.unshift(deck);
+      localStorage.setItem(GUEST_DECKS_STORAGE_KEY, JSON.stringify(filtered.slice(0, 50)));
+    } catch {}
+  };
+
+  // Load user saved decks: combina mazos locales de invitados y de cuenta registrada (Puntos 17 y F5.c)
   useEffect(() => {
     const fetchDecks = async () => {
-      // D.17: "GET /api/decks da 401 a los invitados en cada carga: no lo llames sin sesión o gestiónalo en silencio, sin errores en consola."
-      // Comprobar si hay sesión explícita en localStorage o cookie de sesión
+      const localGuestDecks = getLocalGuestDecks();
+
       const token =
         localStorage.getItem('token') ||
         localStorage.getItem('mtgc_access_token') ||
@@ -100,9 +122,9 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
       const hasAuthCookie =
         typeof document !== 'undefined' && document.cookie.includes('mtgc_access_token');
 
-      // Si no hay indicio de sesión autenticada, los usuarios son invitados y NO se debe llamar a /api/decks
+      // Si no hay indicio de sesión autenticada, los usuarios son invitados: cargar sus mazos guardados localmente
       if (!token && !hasAuthCookie) {
-        setSavedDecks([]);
+        setSavedDecks(localGuestDecks);
         setIsLoadingDecks(false);
         return;
       }
@@ -111,17 +133,27 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
       try {
         const res = await fetch('/api/decks', { credentials: 'include' });
         if (res.status === 401) {
-          // Usuario no autenticado / invitado: silenciar sin registrar error en consola
-          setSavedDecks([]);
+          // Usuario no autenticado / invitado: mostrar mazos locales sin registrar error
+          setSavedDecks(localGuestDecks);
           return;
         }
         if (res.ok) {
           const data = await res.json();
-          setSavedDecks(data.decks || []);
+          const serverDecks = data.decks || [];
+          // Unir mazos locales con mazos del servidor evitando duplicados
+          const combined = [...localGuestDecks];
+          for (const sd of serverDecks) {
+            if (!combined.some(d => d.name === sd.name)) {
+              combined.push(sd);
+            }
+          }
+          setSavedDecks(combined);
+        } else {
+          setSavedDecks(localGuestDecks);
         }
       } catch {
         // Fallback silencioso ante errores de red
-        setSavedDecks([]);
+        setSavedDecks(localGuestDecks);
       } finally {
         setIsLoadingDecks(false);
       }
@@ -399,7 +431,22 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
       // Ignore quota error
     }
 
+    // Persistencia local reactiva para invitados (Puntos F5.b y F5.c)
+    saveLocalGuestDeck(deck);
+    setSavedDecks(prev => {
+      const filtered = prev.filter(d => d.id !== deck.id && d.name !== deck.name);
+      return [deck, ...filtered];
+    });
+
     setIsDeckModalOpen(false);
+  };
+
+  const handleDeselectDeck = () => {
+    try {
+      localStorage.removeItem('mtgc_last_selected_deck');
+    } catch {}
+    hasAutoSelectedRef.current = false;
+    onAction('DESELECT_DECK', {});
   };
 
   // Generate slots for maxPlayers
@@ -590,6 +637,19 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
               {localPlayer?.selectedDeck ? 'Cambiar Mazo' : 'Seleccionar / Importar Mazo'}
             </span>
           </button>
+
+          {/* Botón para Dejar de usar mazo (Punto F5.a) */}
+          {localPlayer?.selectedDeck && (
+            <button
+              data-testid="deselect-deck-btn"
+              onClick={handleDeselectDeck}
+              className="flex items-center space-x-1.5 bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-200 px-3.5 py-2.5 rounded-xl font-medium text-xs transition-all cursor-pointer shadow-sm"
+              title="Quitar el mazo actual y volver al estado sin mazo"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-300" />
+              <span>Dejar de usar mazo</span>
+            </button>
+          )}
 
           <button
             onClick={handleToggleReady}
