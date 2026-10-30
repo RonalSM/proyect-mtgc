@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { prisma } from '../db.js';
+import { prisma, getAppMetadata, setAppMetadata } from '../db.js';
 import { scryfallService } from './scryfall.service.js';
 
 interface BulkDataResponse {
@@ -49,10 +49,29 @@ export class BulkSyncService {
   private readonly metaFilePath = path.resolve(process.cwd(), 'data/sync-metadata.json');
 
   constructor() {
-    this.loadMetadata();
+    this.loadMetadata().catch(() => {});
   }
 
-  private loadMetadata(): void {
+  public async loadMetadata(): Promise<void> {
+    try {
+      const meta = await getAppMetadata<{
+        lastCardsUpdatedAt?: string;
+        lastRulingsUpdatedAt?: string;
+        lastSyncTime?: string;
+        lastRulingsSyncTime?: string;
+      }>('bulk_sync');
+
+      if (meta) {
+        if (meta.lastCardsUpdatedAt) this.lastCardsUpdatedAt = meta.lastCardsUpdatedAt;
+        if (meta.lastRulingsUpdatedAt) this.lastRulingsUpdatedAt = meta.lastRulingsUpdatedAt;
+        if (meta.lastSyncTime) this.lastSyncTime = new Date(meta.lastSyncTime);
+        if (meta.lastRulingsSyncTime) this.lastRulingsSyncTime = new Date(meta.lastRulingsSyncTime);
+        return;
+      }
+    } catch {
+      // Ignorar fallo al leer metadatos de Postgres
+    }
+
     try {
       if (fs.existsSync(this.metaFilePath)) {
         const raw = fs.readFileSync(this.metaFilePath, 'utf-8');
@@ -67,24 +86,24 @@ export class BulkSyncService {
     }
   }
 
-  private saveMetadata(): void {
+  public async saveMetadata(): Promise<void> {
+    const payload = {
+      lastCardsUpdatedAt: this.lastCardsUpdatedAt,
+      lastRulingsUpdatedAt: this.lastRulingsUpdatedAt,
+      lastSyncTime: this.lastSyncTime?.toISOString() || null,
+      lastRulingsSyncTime: this.lastRulingsSyncTime?.toISOString() || null,
+    };
+
+    try {
+      await setAppMetadata('bulk_sync', payload);
+    } catch {
+      // Fallback
+    }
+
     try {
       const dir = path.dirname(this.metaFilePath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(
-        this.metaFilePath,
-        JSON.stringify(
-          {
-            lastCardsUpdatedAt: this.lastCardsUpdatedAt,
-            lastRulingsUpdatedAt: this.lastRulingsUpdatedAt,
-            lastSyncTime: this.lastSyncTime?.toISOString() || null,
-            lastRulingsSyncTime: this.lastRulingsSyncTime?.toISOString() || null,
-          },
-          null,
-          2,
-        ),
-        'utf-8',
-      );
+      fs.writeFileSync(this.metaFilePath, JSON.stringify(payload, null, 2), 'utf-8');
     } catch {
       // Ignorar fallo al persistir metadatos
     }
@@ -96,7 +115,7 @@ export class BulkSyncService {
 
   public setLastRulingsUpdatedAt(val: string | null): void {
     this.lastRulingsUpdatedAt = val;
-    this.saveMetadata();
+    this.saveMetadata().catch(() => {});
   }
 
   public getRulingsCount(): number {
@@ -224,6 +243,10 @@ export class BulkSyncService {
         dbCardCount = await prisma.card.count();
       } catch {}
 
+      if (!this.lastCardsUpdatedAt) {
+        await this.loadMetadata();
+      }
+
       if (
         dbCardCount >= 10000 &&
         this.lastCardsUpdatedAt &&
@@ -326,7 +349,7 @@ export class BulkSyncService {
 
       this.lastCardsUpdatedAt = oracleDataInfo.updated_at;
       this.lastSyncTime = new Date();
-      this.saveMetadata();
+      await this.saveMetadata();
       const durationMs = Date.now() - startTime;
       console.log(
         `✅ [BulkSync] Sincronización completada: ${syncedCount} cartas indexadas en ${durationMs}ms (Pico RSS: ${peakMemRssMb}MB)`,
@@ -436,6 +459,10 @@ export class BulkSyncService {
 
       const hasRows = dbCount > 0;
 
+      if (!this.lastRulingsUpdatedAt) {
+        await this.loadMetadata();
+      }
+
       if (
         hasRows &&
         this.lastRulingsUpdatedAt &&
@@ -537,7 +564,7 @@ export class BulkSyncService {
 
       this.lastRulingsUpdatedAt = rulingsDataInfo.updated_at;
       this.lastRulingsSyncTime = new Date();
-      this.saveMetadata();
+      await this.saveMetadata();
       const durationMs = Date.now() - startTime;
       console.log(
         `✅ [BulkSync] Sincronización de dictámenes completada: ${syncedCount} dictámenes indexados en ${durationMs}ms (Pico RSS: ${peakMemRssMb}MB)`,

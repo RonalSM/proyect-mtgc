@@ -1101,6 +1101,7 @@ try {
     // Cargar mazos listos y verificar dictámenes de forma asíncrona en segundo plano
     (async () => {
       try {
+        await bulkSyncService.loadMetadata();
         await deckService.loadPresetDecks();
         await bulkSyncService.syncRulingsIfEmpty();
         const cardCount = await prisma.card.count();

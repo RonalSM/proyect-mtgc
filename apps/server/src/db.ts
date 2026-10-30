@@ -197,9 +197,43 @@ export async function ensureTablesExist(): Promise<void> {
       "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     CREATE INDEX IF NOT EXISTS "action_log_entries_tableId_sequenceNumber_idx" ON "action_log_entries"("tableId", "sequenceNumber");
+
+    CREATE TABLE IF NOT EXISTS "app_metadata" (
+      "key" TEXT PRIMARY KEY,
+      "value" JSONB NOT NULL,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS "room_snapshots" (
+      "roomCode" TEXT PRIMARY KEY,
+      "state" JSONB NOT NULL,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
   `;
 
   await pool.query(ddl);
+}
+
+export async function getAppMetadata<T = any>(key: string): Promise<T | null> {
+  try {
+    const res = await pool.query('SELECT value FROM "app_metadata" WHERE "key" = $1', [key]);
+    return (res.rows[0]?.value as T) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function setAppMetadata(key: string, value: any): Promise<void> {
+  try {
+    await pool.query(
+      `INSERT INTO "app_metadata" ("key", "value", "updatedAt")
+       VALUES ($1, $2, CURRENT_TIMESTAMP)
+       ON CONFLICT ("key") DO UPDATE SET "value" = $2, "updatedAt" = CURRENT_TIMESTAMP`,
+      [key, JSON.stringify(value)],
+    );
+  } catch (err) {
+    console.warn(`[DB] Error guardando app_metadata [${key}]:`, err);
+  }
 }
 
 function getRootDataDir(): string {
