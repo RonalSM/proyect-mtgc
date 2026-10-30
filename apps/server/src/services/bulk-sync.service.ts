@@ -297,7 +297,7 @@ export class BulkSyncService {
 
       const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
 
-      const batchSize = 1000;
+      const batchSize = 250;
       let batch: any[] = [];
       peakMemRssMb = Math.round(process.memoryUsage().rss / 1024 / 1024);
 
@@ -338,12 +338,19 @@ export class BulkSyncService {
           });
 
           if (batch.length >= batchSize) {
+            rl.pause();
+            if (stream && typeof stream.pause === 'function') stream.pause();
             await (prisma as any).card.createMany({
               data: batch,
               skipDuplicates: true,
             });
             syncedCount += batch.length;
             batch = [];
+            
+            // Pausa breve en el bucle de eventos para permitir recolección de basura
+            await new Promise(resolve => setImmediate(resolve));
+            rl.resume();
+            if (stream && typeof stream.resume === 'function') stream.resume();
 
             const currentRss = Math.round(process.memoryUsage().rss / 1024 / 1024);
             if (currentRss > peakMemRssMb) peakMemRssMb = currentRss;
