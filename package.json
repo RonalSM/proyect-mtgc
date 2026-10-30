@@ -23,7 +23,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "sync:cards": "npm run --workspace=@mtgc/server sync:cards",
-    "seed:presets": "npm run --workspace=@mtgc/server seed:presets"
+    "seed:presets": "npm run --workspace=@mtgc/server seed:presets",
+    "smoke:prod": "tsx scripts/smoke-prod.ts"
   },
   "dependencies": {
     "prisma": "^7.10.0"
