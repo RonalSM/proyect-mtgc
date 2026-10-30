@@ -24,7 +24,8 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "sync:cards": "npm run --workspace=@mtgc/server sync:cards",
     "seed:presets": "npm run --workspace=@mtgc/server seed:presets",
-    "smoke:prod": "tsx scripts/smoke-prod.ts"
+    "smoke:prod": "tsx scripts/smoke-prod.ts",
+    "smoke:multibrowser": "playwright test apps/web/e2e/smoke-multibrowser.spec.ts --config apps/web/playwright.config.ts"
   },
   "dependencies": {
     "prisma": "^7.10.0"

@@ -213,32 +213,45 @@ async function runSmokeProd() {
   console.log(`   - p95: ${p95} ms`);
   console.log(`   - Máximo: ${max} ms`);
 
-  // 7. Verificación de Heartbeat contra desconexión H15 de Heroku
-  console.log('\n💓 7. Verificando ciclo de Heartbeat (Ping/Pong de 25s):');
-  let pongCount = 0;
-  const pingPromise = new Promise<void>(resolve => {
-    sockets[0].on('message', (data: WebSocket.RawData) => {
+  // 7. Verificación de Heartbeat e Inactividad (Confirmar prevención de Heroku H15 > 55s)
+  const is30m = process.argv.includes('--idle-30m');
+  const customSecArg = process.argv.find(a => a.startsWith('--idle-duration='));
+  const idleDurationSec = is30m ? 1800 : customSecArg ? parseInt(customSecArg.split('=')[1], 10) : 65;
+
+  console.log(`\n💓 7. Verificando prevención de H15 con Keepalive (${idleDurationSec}s de inactividad, timeout de Heroku es 55s):`);
+  let pongsReceived = 0;
+  sockets.forEach((s, idx) => {
+    s.on('message', (data: WebSocket.RawData) => {
       try {
         const msg = JSON.parse(data.toString());
-        if (msg.type === 'PONG') {
-          pongCount++;
-          resolve();
-        }
+        if (msg.type === 'PONG') pongsReceived++;
       } catch {}
     });
-    sockets[0].send(JSON.stringify({ type: 'PING', timestamp: Date.now() }));
   });
 
-  await Promise.race([
-    pingPromise,
-    new Promise(r => setTimeout(r, 4000)),
-  ]);
+  const heartbeatTimer = setInterval(() => {
+    sockets.forEach(s => {
+      if (s.readyState === WebSocket.OPEN) {
+        s.send(JSON.stringify({ type: 'PING', timestamp: Date.now() }));
+      }
+    });
+  }, 20000); // Enviar cada 20s (holgura sobre los 55s del router)
 
-  if (pongCount > 0) {
-    console.log('   ✅ Heartbeat PING/PONG respondido correctamente por el servidor');
-  } else {
-    console.log('   ℹ️ PONG automático no configurado en formato JSON pero la conexión WebSocket permanece abierta');
+  const startTime = Date.now();
+  let elapsed = 0;
+  while (elapsed < idleDurationSec) {
+    const sleepChunk = Math.min(10, idleDurationSec - elapsed);
+    await new Promise(r => setTimeout(r, sleepChunk * 1000));
+    elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const allAlive = sockets.every(s => s.readyState === WebSocket.OPEN);
+    console.log(`   ⏱️ Inactividad transcurrida: ${elapsed}s / ${idleDurationSec}s | Sockets activos: ${sockets.filter(s => s.readyState === WebSocket.OPEN).length}/4 | PONGs recibidos: ${pongsReceived}`);
+    if (!allAlive) {
+      clearInterval(heartbeatTimer);
+      throw new Error(`¡Un socket se cerró por inactividad a los ${elapsed}s! Posible error H15.`);
+    }
   }
+  clearInterval(heartbeatTimer);
+  console.log(`   ✅ Sockets sobrevivieron ${idleDurationSec}s de inactividad superando los 55s del router de Heroku sin error H15.`);
 
   // 8. Cerrar conexiones limpiamente
   for (const ws of sockets) {
