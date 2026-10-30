@@ -26,6 +26,37 @@ const isDev = process.env.NODE_ENV !== 'production';
 const cookieSameSite = (isDev ? 'lax' : 'none') as 'lax' | 'none';
 const cookieSecure = !isDev;
 
+// Verificación estricta de variables críticas en producción
+if (!isDev) {
+  if (!process.env.SESSION_SECRET) {
+    throw new Error('CRITICAL: SESSION_SECRET is required in production environment');
+  }
+  if (!process.env.JWT_SECRET) {
+    throw new Error('CRITICAL: JWT_SECRET is required in production environment');
+  }
+}
+
+// Orígenes autorizados para CORS y WebSockets
+const ALLOWED_ORIGINS = [
+  'https://proyect-mtgc.netlify.app',
+  process.env.FRONTEND_URL,
+].filter(Boolean) as string[];
+
+/**
+ * Valida la cabecera x-admin-key contra ADMIN_SECRET
+ */
+function verifyAdmin(request: any, reply: any): boolean {
+  const adminKey = request.headers['x-admin-key'];
+  const expectedKey = process.env.ADMIN_SECRET;
+  if (!expectedKey || !adminKey || adminKey !== expectedKey) {
+    reply.status(403).send({
+      error: 'Acceso denegado: se requiere clave de administrador válida',
+    });
+    return false;
+  }
+  return true;
+}
+
 const server = fastify({
   logger: isDev
     ? {
@@ -70,7 +101,23 @@ await server.register(helmet, {
 });
 
 await server.register(cors, {
-  origin: true,
+  origin: (origin, cb) => {
+    // Permitir peticiones sin origen (curl, server-to-server) o en entorno de desarrollo local
+    if (!origin || isDev) {
+      cb(null, true);
+      return;
+    }
+    const isAllowed =
+      ALLOWED_ORIGINS.includes(origin) ||
+      /^https:\/\/[a-z0-9-]+--proyect-mtgc\.netlify\.app$/.test(origin) ||
+      origin === 'https://proyect-mtgc.netlify.app';
+
+    if (isAllowed) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Origen no permitido por CORS: ${origin}`), false);
+    }
+  },
   credentials: true,
 });
 
@@ -116,62 +163,87 @@ server.get('/api/health', async () => {
 });
 
 // Health check para cartas, fichas, dictamenes y mazos listos en la BD local (Punto 1)
-server.get('/api/health/cards', async () => {
-  try {
-    const cardCount = await prisma.card.count();
-    const tokenCount = await prisma.card.count({
-      where: {
-        OR: [{ layout: 'token' }, { typeLine: { contains: 'Token', mode: 'insensitive' } }],
+server.get(
+  '/api/health/cards',
+  {
+    config: {
+      rateLimit: {
+        max: 60,
+        timeWindow: '1 minute',
       },
-    });
-    const rulingCount = await prisma.ruling.count();
-    const localeCount = await prisma.cardLocale.count();
-    const presetDecks = await deckService.getPresetDecksDbStats();
+    },
+  },
+  async () => {
+    try {
+      const cardCount = await prisma.card.count();
+      const tokenCount = await prisma.card.count({
+        where: {
+          OR: [{ layout: 'token' }, { typeLine: { contains: 'Token', mode: 'insensitive' } }],
+        },
+      });
+      const rulingCount = await prisma.ruling.count();
+      const localeCount = await prisma.cardLocale.count();
+      const presetDecks = await deckService.getPresetDecksDbStats();
 
-    return {
-      status: 'ok',
-      counts: {
-        cards: cardCount,
-        tokens: tokenCount,
-        rulings: rulingCount,
-        cardLocales: localeCount,
-      },
-      presetDecks,
-      timestamp: new Date().toISOString(),
-    };
-  } catch (error: any) {
-    return {
-      status: 'error',
-      message: error?.message || 'Error consultando telemetria de cartas',
-      counts: {
-        cards: 0,
-        tokens: 0,
-        rulings: 0,
-        cardLocales: 0,
-      },
-      presetDecks: [],
-      timestamp: new Date().toISOString(),
-    };
-  }
-});
+      return {
+        status: 'ok',
+        counts: {
+          cards: cardCount,
+          tokens: tokenCount,
+          rulings: rulingCount,
+          cardLocales: localeCount,
+        },
+        presetDecks,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error: any) {
+      return {
+        status: 'error',
+        message: error?.message || 'Error consultando telemetria de cartas',
+        counts: {
+          cards: 0,
+          tokens: 0,
+          rulings: 0,
+          cardLocales: 0,
+        },
+        presetDecks: [],
+        timestamp: new Date().toISOString(),
+      };
+    }
+  },
+);
 
 // Metrics and Observability (Fase 7.2)
-server.get('/api/metrics', async () => {
-  const mem = process.memoryUsage();
-  return {
-    uptimeSeconds: Math.floor(process.uptime()),
-    activeRooms: roomManager.getActiveRoomsCount(),
-    activePlayers: roomManager.getActivePlayersCount(),
-    memory: {
-      rssMb: Math.round(mem.rss / 1024 / 1024),
-      heapTotalMb: Math.round(mem.heapTotal / 1024 / 1024),
-      heapUsedMb: Math.round(mem.heapUsed / 1024 / 1024),
+server.get(
+  '/api/metrics',
+  {
+    config: {
+      rateLimit: {
+        max: 30,
+        timeWindow: '1 minute',
+      },
     },
-    nodeVersion: process.version,
-    platform: process.platform,
-    timestamp: new Date().toISOString(),
-  };
-});
+  },
+  async (request, reply) => {
+    if (!isDev && !verifyAdmin(request, reply)) {
+      return;
+    }
+    const mem = process.memoryUsage();
+    return {
+      uptimeSeconds: Math.floor(process.uptime()),
+      activeRooms: roomManager.getActiveRoomsCount(),
+      activePlayers: roomManager.getActivePlayersCount(),
+      memory: {
+        rssMb: Math.round(mem.rss / 1024 / 1024),
+        heapTotalMb: Math.round(mem.heapTotal / 1024 / 1024),
+        heapUsedMb: Math.round(mem.heapUsed / 1024 / 1024),
+      },
+      nodeVersion: process.version,
+      platform: process.platform,
+      timestamp: new Date().toISOString(),
+    };
+  },
+);
 
 // --- Authentication & User Accounts (Fase 5.1) ---
 
@@ -534,6 +606,9 @@ server.post('/api/cards/locales', async (request, reply) => {
 
 // Seed test rulings in memory for local test/verification (Punto 5 / 8)
 server.post('/api/cards/seed-test-rulings', async (request, reply) => {
+  if (!isDev && !verifyAdmin(request, reply)) {
+    return;
+  }
   const body = request.body as {
     oracleId?: string;
     rulings?: Array<{ publishedAt: string; source: string; comment: string }>;
@@ -810,13 +885,8 @@ server.delete('/api/decks/:id', async (request, reply) => {
 
 // Trigger bulk sync (Admin only - REQ-18 / Paso 2A.5)
 server.post('/api/cards/sync-bulk', async (request, reply) => {
-  const adminKey = request.headers['x-admin-key'];
-  const expectedKey = process.env.ADMIN_SECRET || 'mtgc_admin_secret_key';
-
-  if (!adminKey || adminKey !== expectedKey) {
-    return reply.status(403).send({
-      error: 'Acceso denegado: solo administradores pueden ejecutar la sincronización manual',
-    });
+  if (!verifyAdmin(request, reply)) {
+    return;
   }
 
   const limit = (request.body as { limit?: number })?.limit;
@@ -826,13 +896,8 @@ server.post('/api/cards/sync-bulk', async (request, reply) => {
 
 // Trigger bulk rulings sync (Admin only - Punto 5 / REQ-7.28)
 server.post('/api/cards/sync-rulings', async (request, reply) => {
-  const adminKey = request.headers['x-admin-key'];
-  const expectedKey = process.env.ADMIN_SECRET || 'mtgc_admin_secret_key';
-
-  if (!adminKey || adminKey !== expectedKey) {
-    return reply.status(403).send({
-      error: 'Acceso denegado: solo administradores pueden ejecutar la sincronización manual',
-    });
+  if (!verifyAdmin(request, reply)) {
+    return;
   }
 
   const limit = (request.body as { limit?: number })?.limit;
@@ -859,38 +924,67 @@ interface CardErrorLogEntry {
 const recentCardErrors: CardErrorLogEntry[] = [];
 const MAX_CARD_ERRORS = 150;
 
-server.post('/api/diagnostics/card-errors', async (request, reply) => {
-  const body = (request.body || {}) as Partial<CardErrorLogEntry>;
-  const entry: CardErrorLogEntry = {
-    id: `err_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-    cardName: body.cardName || 'Desconocida',
-    url: body.url || '',
-    status: body.status || 'ERROR',
-    reason: body.reason || 'Fallo de carga desconocido',
-    lang: body.lang || 'es',
-    timestamp: body.timestamp || Date.now(),
-  };
+server.post(
+  '/api/diagnostics/card-errors',
+  {
+    bodyLimit: 10240, // Límite estricto de 10 KB para prevenir abusos
+    config: {
+      rateLimit: {
+        max: 30,
+        timeWindow: '1 minute',
+      },
+    },
+  },
+  async (request, reply) => {
+    const body = (request.body || {}) as Partial<CardErrorLogEntry>;
+    const entry: CardErrorLogEntry = {
+      id: `err_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      cardName: String(body.cardName || 'Desconocida').slice(0, 100),
+      url: String(body.url || '').slice(0, 500),
+      status: typeof body.status === 'number' || typeof body.status === 'string' ? String(body.status).slice(0, 20) : 'ERROR',
+      reason: String(body.reason || 'Fallo de carga desconocido').slice(0, 300),
+      lang: String(body.lang || 'es').slice(0, 10),
+      timestamp: typeof body.timestamp === 'number' ? body.timestamp : Date.now(),
+    };
 
-  server.log.warn(
-    `[CARD-ERROR-DIAGNOSTIC] Card: "${entry.cardName}" | URL: "${entry.url}" | Status: ${entry.status} | Reason: "${entry.reason}" | Lang: ${entry.lang}`,
-  );
+    server.log.warn(
+      `[CARD-ERROR-DIAGNOSTIC] Card: "${entry.cardName}" | URL: "${entry.url}" | Status: ${entry.status} | Reason: "${entry.reason}" | Lang: ${entry.lang}`,
+    );
 
-  recentCardErrors.unshift(entry);
-  if (recentCardErrors.length > MAX_CARD_ERRORS) {
-    recentCardErrors.pop();
+    recentCardErrors.unshift(entry);
+    if (recentCardErrors.length > MAX_CARD_ERRORS) {
+      recentCardErrors.pop();
+    }
+
+    return reply.status(201).send({ ok: true, entry });
+  },
+);
+
+server.get(
+  '/api/diagnostics/card-errors',
+  {
+    config: {
+      rateLimit: {
+        max: 30,
+        timeWindow: '1 minute',
+      },
+    },
+  },
+  async (request, reply) => {
+    if (!isDev && !verifyAdmin(request, reply)) {
+      return;
+    }
+    return reply.send({
+      total: recentCardErrors.length,
+      errors: recentCardErrors,
+    });
+  },
+);
+
+server.delete('/api/diagnostics/card-errors', async (request, reply) => {
+  if (!verifyAdmin(request, reply)) {
+    return;
   }
-
-  return reply.status(201).send({ ok: true, entry });
-});
-
-server.get('/api/diagnostics/card-errors', async (_request, reply) => {
-  return reply.send({
-    total: recentCardErrors.length,
-    errors: recentCardErrors,
-  });
-});
-
-server.delete('/api/diagnostics/card-errors', async (_request, reply) => {
   recentCardErrors.length = 0;
   return reply.send({ ok: true, cleared: true });
 });
@@ -937,6 +1031,21 @@ server.get('/api/rooms/:code', async (request, reply) => {
 // WebSocket game route
 server.register(async function (fastifyInstance) {
   fastifyInstance.get('/ws/table/:roomCode', { websocket: true }, (socket, req) => {
+    // Verificación de origen en producción
+    const origin = (req.headers.origin as string) || '';
+    if (!isDev && origin) {
+      const isAllowed =
+        ALLOWED_ORIGINS.includes(origin) ||
+        /^https:\/\/[a-z0-9-]+--proyect-mtgc\.netlify\.app$/.test(origin) ||
+        origin === 'https://proyect-mtgc.netlify.app';
+
+      if (!isAllowed) {
+        server.log.warn(`[WS] Conexión rechazada por origen no autorizado: ${origin}`);
+        socket.close(1008, 'Origin not allowed');
+        return;
+      }
+    }
+
     const params = req.params as { roomCode?: string };
     const query = req.query as { playerId?: string; playerName?: string; spectator?: string };
 
