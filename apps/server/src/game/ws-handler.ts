@@ -44,11 +44,18 @@ interface ClientConnection {
   playerId: string;
   playerName: string;
   isSpectator: boolean;
+  clientIp?: string;
 }
 
 export class WebSocketHandler {
   // roomCode -> Set of ClientConnections
   private roomClients = new Map<string, Set<ClientConnection>>();
+  // clientIp -> Set of ClientConnections
+  private ipConnections = new Map<string, Set<ClientConnection>>();
+  // Topes de conexiones concurrentes para mitigar ataques y abusos de recursos (Punto A2.2)
+  public readonly MAX_CONNECTIONS_PER_IP = 8;
+  public readonly MAX_CONNECTIONS_PER_TABLE = 12;
+
   // playerId -> message timestamps in sliding window (REQ-12.4, REQ-16.4)
   private messageRateLimits = new Map<string, number[]>();
   private heartbeatTimer: NodeJS.Timeout | null = null;
@@ -113,18 +120,62 @@ export class WebSocketHandler {
     socket: WebSocket,
     roomCode: string,
     playerInfo: { playerId: string; playerName: string; isSpectator?: boolean },
+    clientIp?: string,
   ): void {
     const code = roomCode.toUpperCase();
+    const cleanIp = clientIp || 'unknown';
+
+    // 1. Tope de conexiones concurrentes por IP (Punto A2.2)
+    if (cleanIp !== 'unknown') {
+      const ipConns = this.ipConnections.get(cleanIp);
+      if (ipConns && ipConns.size >= this.MAX_CONNECTIONS_PER_IP) {
+        console.warn(
+          `[WS_REJECTED] IP ${cleanIp} alcanzó el tope de conexiones WebSocket (${this.MAX_CONNECTIONS_PER_IP})`,
+        );
+        socket.send(
+          JSON.stringify({
+            type: 'ERROR',
+            message: 'Demasiadas conexiones activas desde tu dirección IP.',
+            reason: 'ip_connection_cap',
+          }),
+        );
+        socket.close(1008, 'IP connection cap exceeded');
+        return;
+      }
+    }
+
     let session = roomManager.getSession(code);
 
+    // 2. Verificar existencia de la mesa con motivo estructurado (Punto A2.2 / F3)
     if (!session) {
+      console.warn(
+        `[WS_REJECTED] Mesa "${code}" no encontrada o expirada (solicitada por ${playerInfo.playerName} desde IP ${cleanIp})`,
+      );
       socket.send(
         JSON.stringify({
           type: 'ERROR',
           message: `La mesa "${code}" no existe o ha expirado.`,
+          reason: 'room_not_found',
         }),
       );
-      socket.close();
+      socket.close(1008, 'Room not found');
+      return;
+    }
+
+    // 3. Tope de conexiones concurrentes por mesa (Punto A2.2)
+    const existingTableClients = this.roomClients.get(code);
+    if (existingTableClients && existingTableClients.size >= this.MAX_CONNECTIONS_PER_TABLE) {
+      console.warn(
+        `[WS_REJECTED] Mesa "${code}" alcanzó el tope de conexiones simultáneas (${this.MAX_CONNECTIONS_PER_TABLE})`,
+      );
+      socket.send(
+        JSON.stringify({
+          type: 'ERROR',
+          message: 'La mesa ha alcanzado el límite máximo de conexiones permitidas.',
+          reason: 'table_connection_cap',
+        }),
+      );
+      socket.close(1008, 'Table connection cap exceeded');
       return;
     }
 
@@ -137,6 +188,7 @@ export class WebSocketHandler {
       playerId: player.id,
       playerName: player.name,
       isSpectator: player.isSpectator,
+      clientIp: cleanIp,
     };
 
     if (!this.roomClients.has(code)) {
@@ -144,7 +196,14 @@ export class WebSocketHandler {
     }
     this.roomClients.get(code)!.add(client);
 
-    console.log(`[WS] ${player.name} (${player.id}) conectado a mesa ${code}`);
+    if (cleanIp !== 'unknown') {
+      if (!this.ipConnections.has(cleanIp)) {
+        this.ipConnections.set(cleanIp, new Set());
+      }
+      this.ipConnections.get(cleanIp)!.add(client);
+    }
+
+    console.log(`[WS] ${player.name} (${player.id}) conectado a mesa ${code} [IP: ${cleanIp}]`);
 
     // Broadcast updated state to all clients in this room (with visibility filters)
     this.broadcastRoomState(code);
@@ -638,6 +697,16 @@ export class WebSocketHandler {
       clients.delete(client);
       if (clients.size === 0) {
         this.roomClients.delete(client.roomCode);
+      }
+    }
+
+    if (client.clientIp && client.clientIp !== 'unknown') {
+      const ipConns = this.ipConnections.get(client.clientIp);
+      if (ipConns) {
+        ipConns.delete(client);
+        if (ipConns.size === 0) {
+          this.ipConnections.delete(client.clientIp);
+        }
       }
     }
 

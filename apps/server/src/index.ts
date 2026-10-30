@@ -58,6 +58,7 @@ function verifyAdmin(request: any, reply: any): boolean {
 }
 
 const server = fastify({
+  trustProxy: true, // Lee la IP real del cliente detrás del proxy/router de Heroku (Punto A2.2)
   logger: isDev
     ? {
         transport: {
@@ -133,6 +134,14 @@ await server.register(jwt, {
   },
 });
 
+export interface RateLimit429Entry {
+  ip: string;
+  url: string;
+  count: number;
+  lastTimestamp: number;
+}
+export const rateLimit429Log = new Map<string, RateLimit429Entry>();
+
 await server.register(rateLimit, {
   max: 150,
   timeWindow: '1 minute',
@@ -140,6 +149,14 @@ await server.register(rateLimit, {
     // Las conexiones y reconexiones legítimas a WebSocket no deben agotar el rate limit HTTP
     const url = req.url || '';
     return url.startsWith('/ws/');
+  },
+  onExceeded: (req: any) => {
+    const ip = req.ip || 'unknown';
+    const entry = rateLimit429Log.get(ip) || { ip, url: req.url, count: 0, lastTimestamp: Date.now() };
+    entry.count++;
+    entry.lastTimestamp = Date.now();
+    rateLimit429Log.set(ip, entry);
+    server.log.warn(`[RATE_LIMIT_429] IP: ${ip} excedió el límite de tasa en ${req.url} (Total 429 para esta IP: ${entry.count})`);
   },
 });
 
@@ -989,42 +1006,109 @@ server.delete('/api/diagnostics/card-errors', async (request, reply) => {
   return reply.send({ ok: true, cleared: true });
 });
 
-// Create Room REST endpoint
-server.post('/api/rooms', async (request, reply) => {
-  const parseResult = CreateRoomInputSchema.safeParse(request.body);
-  if (!parseResult.success) {
-    return reply.status(400).send({
-      error: 'Configuración de mesa inválida',
-      details: parseResult.error.flatten(),
+// Diagnóstico de respuestas 429 registradas por IP (Punto A2.2)
+server.get(
+  '/api/diagnostics/rate-limits',
+  {
+    config: {
+      rateLimit: {
+        max: 30,
+        timeWindow: '1 minute',
+      },
+    },
+  },
+  async (request, reply) => {
+    if (!isDev && !verifyAdmin(request, reply)) {
+      return;
+    }
+    return reply.send({
+      total429Count: Array.from(rateLimit429Log.values()).reduce((sum, e) => sum + e.count, 0),
+      entries: Array.from(rateLimit429Log.values()),
+    });
+  },
+);
+
+// Límite y tope de creación de mesas (Punto A2.2)
+const MAX_TOTAL_ROOMS = 100;
+
+// Create Room REST endpoint con límite estricto de tasa y capacidad total
+server.post(
+  '/api/rooms',
+  {
+    config: {
+      rateLimit: {
+        max: 10,
+        timeWindow: '10 minutes',
+      },
+    },
+  },
+  async (request, reply) => {
+    if (roomManager.getActiveRoomsCount() >= MAX_TOTAL_ROOMS) {
+      server.log.warn(`[ROOM_CREATION_REJECTED] Servidor alcanzó el tope de ${MAX_TOTAL_ROOMS} mesas activas`);
+      return reply.status(503).send({
+        error: `Capacidad máxima de mesas activas alcanzada en el servidor (máximo ${MAX_TOTAL_ROOMS} mesas).`,
+        reason: 'server_capacity_exceeded',
+      });
+    }
+
+    const parseResult = CreateRoomInputSchema.safeParse(request.body);
+    if (!parseResult.success) {
+      return reply.status(400).send({
+        error: 'Configuración de mesa inválida',
+        details: parseResult.error.flatten(),
+      });
+    }
+
+    const hostId = (request.body as { hostId?: string }).hostId || `host_${Date.now()}`;
+    const session = roomManager.createRoom({
+      name: parseResult.data.name,
+      hostName: parseResult.data.hostName,
+      hostId,
+      maxPlayers: parseResult.data.maxPlayers,
+      startingLife: parseResult.data.startingLife,
+      allowSpectators: parseResult.data.allowSpectators,
+    });
+
+    return reply.status(201).send({
+      roomId: session.state.id,
+      code: session.state.code,
+      name: session.state.name,
+      hostId,
+      state: session.state,
+    });
+  },
+);
+
+// Rastreo de intentos fallidos de unión por código para mitigar ataques de fuerza bruta (Punto A2.2)
+const failedCodeAttempts = new Map<string, { count: number; lastAttempt: number }>();
+
+// Get Room Info con protección contra fuerza bruta de códigos de 6 caracteres
+server.get('/api/rooms/:code', async (request, reply) => {
+  const ip = request.ip || 'unknown';
+  const tracker = failedCodeAttempts.get(ip) || { count: 0, lastAttempt: Date.now() };
+
+  if (Date.now() - tracker.lastAttempt > 5 * 60 * 1000) {
+    tracker.count = 0;
+  }
+
+  if (tracker.count >= 15) {
+    server.log.warn(`[ROOM_JOIN_BLOCKED] IP ${ip} bloqueada temporalmente por exceso de códigos erróneos`);
+    return reply.status(429).send({
+      error: 'Demasiados intentos fallidos con códigos de mesa. Por favor espera 5 minutos.',
+      reason: 'too_many_failed_attempts',
     });
   }
 
-  const hostId = (request.body as { hostId?: string }).hostId || `host_${Date.now()}`;
-  const session = roomManager.createRoom({
-    name: parseResult.data.name,
-    hostName: parseResult.data.hostName,
-    hostId,
-    maxPlayers: parseResult.data.maxPlayers,
-    startingLife: parseResult.data.startingLife,
-    allowSpectators: parseResult.data.allowSpectators,
-  });
-
-  return reply.status(201).send({
-    roomId: session.state.id,
-    code: session.state.code,
-    name: session.state.name,
-    hostId,
-    state: session.state,
-  });
-});
-
-// Get Room Info
-server.get('/api/rooms/:code', async (request, reply) => {
   const code = (request.params as { code?: string }).code || '';
   const session = roomManager.getSession(code);
   if (!session) {
-    return reply.status(404).send({ error: 'Mesa no encontrada' });
+    tracker.count++;
+    tracker.lastAttempt = Date.now();
+    failedCodeAttempts.set(ip, tracker);
+    server.log.warn(`[ROOM_NOT_FOUND] Código "${code}" no encontrado desde IP ${ip} (Fallo ${tracker.count}/15)`);
+    return reply.status(404).send({ error: 'Mesa no encontrada', reason: 'room_not_found' });
   }
+
   return reply.send(session.state);
 });
 
@@ -1054,11 +1138,16 @@ server.register(async function (fastifyInstance) {
     const playerName = query.playerName || 'Planeswalker';
     const isSpectator = query.spectator === 'true';
 
-    wsHandler.handleConnection(socket, roomCode, {
-      playerId,
-      playerName,
-      isSpectator,
-    });
+    wsHandler.handleConnection(
+      socket,
+      roomCode,
+      {
+        playerId,
+        playerName,
+        isSpectator,
+      },
+      req.ip,
+    );
   });
 });
 
