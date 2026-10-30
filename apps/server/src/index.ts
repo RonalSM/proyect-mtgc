@@ -143,24 +143,64 @@ export interface RateLimit429Entry {
 }
 export const rateLimit429Log = new Map<string, RateLimit429Entry>();
 
+// Tope global absoluto por IP para proteger contra ataques de rotación de tokens (Punto A4.3)
+const ipGlobalRequestCounts = new Map<string, { count: number; windowStart: number }>();
+const MAX_GLOBAL_REQ_PER_IP_MINUTE = 400;
+
+server.addHook('onRequest', async (req: any, reply: any) => {
+  const url = req.url || '';
+  if (url.startsWith('/ws/')) return;
+
+  const ip = req.ip || 'unknown';
+  const now = Date.now();
+  let ipEntry = ipGlobalRequestCounts.get(ip);
+  if (!ipEntry || now - ipEntry.windowStart > 60000) {
+    ipEntry = { count: 1, windowStart: now };
+    ipGlobalRequestCounts.set(ip, ipEntry);
+  } else {
+    ipEntry.count++;
+  }
+
+  if (ipEntry.count > MAX_GLOBAL_REQ_PER_IP_MINUTE) {
+    const entry = rateLimit429Log.get(ip) || { ip, url: req.url, count: 0, lastTimestamp: Date.now() };
+    entry.count++;
+    entry.lastTimestamp = Date.now();
+    rateLimit429Log.set(ip, entry);
+    server.log.warn(`[RATE_LIMIT_IP_CEILING_429] IP ${ip} superó el tope global absoluto de ${MAX_GLOBAL_REQ_PER_IP_MINUTE} req/min`);
+    return reply.status(429).send({
+      error: 'Límite global de peticiones por dirección IP excedido',
+      reason: 'ip_ceiling_exceeded',
+    });
+  }
+});
+
 await server.register(rateLimit, {
   max: 150,
   timeWindow: '1 minute',
   keyGenerator: (req: any) => {
-    // Si existe token de autorización o token de invitado, usarlo como clave individual para redes compartidas / CGNAT (Punto A3.3)
+    // Si existe token, VERIFICAR CRIPTOGRÁFICAMENTE su firma antes de usarlo como clave (Punto A4.3)
+    let candidateToken: string | null = null;
     const authHeader = req.headers?.authorization;
     if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-      return `auth_${authHeader.slice(7).trim()}`;
+      candidateToken = authHeader.slice(7).trim();
+    } else if (req.headers?.['x-guest-token'] && typeof req.headers['x-guest-token'] === 'string') {
+      candidateToken = req.headers['x-guest-token'].trim();
+    } else if (req.cookies?.token && typeof req.cookies.token === 'string') {
+      candidateToken = req.cookies.token.trim();
     }
-    const guestToken = req.headers?.['x-guest-token'];
-    if (guestToken && typeof guestToken === 'string') {
-      return `guest_${guestToken}`;
+
+    if (candidateToken) {
+      try {
+        const decoded: any = server.jwt.verify(candidateToken);
+        if (decoded?.id) {
+          return `user_${decoded.id}`;
+        }
+      } catch {
+        // Token inválido, expirado o manipulado: no se le otorga clave separada y cae a la IP
+      }
     }
-    const cookieToken = req.cookies?.token;
-    if (cookieToken && typeof cookieToken === 'string') {
-      return `token_${cookieToken}`;
-    }
-    // Fallback a IP si no hay token (ej. peticiones anónimas previas a login/guest)
+
+    // Fallback estricto a IP
     return req.ip || 'unknown';
   },
   allowList: (req: any) => {
@@ -169,7 +209,7 @@ await server.register(rateLimit, {
     return url.startsWith('/ws/');
   },
   onExceeded: (req: any) => {
-    const key = (req.headers?.authorization ? `auth_${req.headers.authorization.slice(7, 15)}...` : req.ip) || 'unknown';
+    const key = req.ip || 'unknown';
     const entry = rateLimit429Log.get(key) || { ip: key, url: req.url, count: 0, lastTimestamp: Date.now() };
     entry.count++;
     entry.lastTimestamp = Date.now();
@@ -928,14 +968,14 @@ server.post('/api/cards/sync-bulk', async (request, reply) => {
   return reply.send(result);
 });
 
-// Trigger bulk rulings sync (Admin only - Punto 5 / REQ-7.28)
+// Trigger bulk rulings sync (Admin only - Punto 5 / REQ-7.28 / Punto A4.1)
 server.post('/api/cards/sync-rulings', async (request, reply) => {
   if (!verifyAdmin(request, reply)) {
     return;
   }
 
-  const limit = (request.body as { limit?: number })?.limit;
-  const result = await bulkSyncService.syncRulings(limit);
+  const body = (request.body as { limit?: number; force?: boolean }) || {};
+  const result = await bulkSyncService.syncRulings(body.limit, body.force);
   return reply.send(result);
 });
 
