@@ -7,6 +7,7 @@ import { CardContextMenu } from './CardContextMenu';
 import { CardBadges } from './CardBadges';
 import { useCardPreview } from '../context/CardPreviewContext';
 import type { RemoteDragState } from '../hooks/useGameSocket';
+import { ErrorBoundary } from './ErrorBoundary';
 
 export const CardPTBadge: React.FC<{ card: CardInstance }> = ({ card }) => {
   const pt = computeCardPT(card);
@@ -181,20 +182,39 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     }
   };
 
-  // Punto 1 / Punto 3: Coordenadas optimistas y transformación inversa/directa para mesa expandida
-  const rawX = optimisticPosition ? optimisticPosition.x : (card.position?.x ?? 0.5);
-  const rawY = optimisticPosition ? optimisticPosition.y : (card.position?.y ?? 0.5);
+  // Punto 1 / Punto 3 / G2: Coordenadas optimistas y transformación segura para vista normal y ampliada
+  const rawX = Number.isFinite(optimisticPosition?.x)
+    ? optimisticPosition!.x
+    : Number.isFinite(card.position?.x)
+      ? card.position!.x
+      : 0.5;
+  const rawY = Number.isFinite(optimisticPosition?.y)
+    ? optimisticPosition!.y
+    : Number.isFinite(card.position?.y)
+      ? card.position!.y
+      : 0.5;
 
   let screenNormX = rawX;
   let screenNormY = rawY;
 
-  if (viewFraming?.isExpanded) {
+  if (viewFraming?.isExpanded && viewFraming.width > 0 && viewFraming.height > 0) {
     screenNormX = (rawX - viewFraming.xMin) / viewFraming.width;
     screenNormY = (rawY - viewFraming.yMin) / viewFraming.height;
-    if (screenNormX < -0.15 || screenNormX > 1.15 || screenNormY < -0.15 || screenNormY > 1.15) {
+    if (
+      !Number.isFinite(screenNormX) ||
+      !Number.isFinite(screenNormY) ||
+      screenNormX < -0.15 ||
+      screenNormX > 1.15 ||
+      screenNormY < -0.15 ||
+      screenNormY > 1.15
+    ) {
       return null;
     }
   }
+
+  // Acotamiento numérico estricto para evitar NaN o desbordes visuales (Punto G2)
+  screenNormX = Number.isFinite(screenNormX) ? Math.max(0.01, Math.min(0.99, screenNormX)) : 0.5;
+  screenNormY = Number.isFinite(screenNormY) ? Math.max(0.01, Math.min(0.99, screenNormY)) : 0.5;
 
   const isTapped = !!card.isTapped;
   const [isAnimatingTap, setIsAnimatingTap] = useState(false);
@@ -231,11 +251,15 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   const orientedH = isTapped ? cardWNum : cardHNum;
 
   // Convención única (Punto 2): la posición normalizada (x, y) es el centro de la carta.
-  // El límite al viewport utiliza las dimensiones orientadas actuales (w x h o h x w).
+  // El límite al viewport utiliza las dimensiones orientadas actuales (w x h o h x w) con protecciones numéricas.
   const rawCenterX = screenNormX * winW;
   const rawCenterY = screenNormY * winH;
-  const clampedCenterX = Math.max(orientedW / 2, Math.min(winW - orientedW / 2, rawCenterX));
-  const clampedCenterY = Math.max(orientedH / 2, Math.min(winH - orientedH / 2, rawCenterY));
+  const clampedCenterX = Number.isFinite(rawCenterX)
+    ? Math.max(orientedW / 2, Math.min(winW - orientedW / 2, rawCenterX))
+    : winW / 2;
+  const clampedCenterY = Number.isFinite(rawCenterY)
+    ? Math.max(orientedH / 2, Math.min(winH - orientedH / 2, rawCenterY))
+    : winH / 2;
 
   // Redondeo del centro de la carta a píxeles enteros exactos para eliminar subpíxeles y carta borrosa (Punto 1)
   const centerPixelX = Math.round(clampedCenterX);
@@ -400,13 +424,14 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   };
 
   return (
-    <div
-      id="battlefield-canvas-global"
-      data-battlefield-canvas="true"
-      className="fixed inset-0 w-screen h-[100dvh] pointer-events-none z-10 overflow-hidden"
-    >
-      {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas */}
-      {cards.map(card => {
+    <ErrorBoundary fallbackTitle="Error al renderizar el campo de batalla">
+      <div
+        id="battlefield-canvas-global"
+        data-battlefield-canvas="true"
+        className="fixed inset-0 w-screen h-[100dvh] pointer-events-none z-10 overflow-hidden"
+      >
+        {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas */}
+        {cards.map(card => {
         const remoteItem = remoteDraggingCards && remoteDraggingCards[card.instanceId];
         const isRemoteDragging = !!(
           remoteItem &&
@@ -451,10 +476,12 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
           if ((!item.isDragging && !(item as any).pendingSync) || !item.position) return null;
           let screenNormX = item.position.x;
           let screenNormY = item.position.y;
-          if (viewFraming?.isExpanded) {
+          if (viewFraming?.isExpanded && viewFraming.width > 0 && viewFraming.height > 0) {
             screenNormX = (screenNormX - viewFraming.xMin) / viewFraming.width;
             screenNormY = (screenNormY - viewFraming.yMin) / viewFraming.height;
             if (
+              !Number.isFinite(screenNormX) ||
+              !Number.isFinite(screenNormY) ||
               screenNormX < -0.15 ||
               screenNormX > 1.15 ||
               screenNormY < -0.15 ||
@@ -463,6 +490,8 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
               return null;
             }
           }
+          screenNormX = Number.isFinite(screenNormX) ? Math.max(0.01, Math.min(0.99, screenNormX)) : 0.5;
+          screenNormY = Number.isFinite(screenNormY) ? Math.max(0.01, Math.min(0.99, screenNormY)) : 0.5;
           const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
           const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
           const cardWNum = cardPixelWidth || 96;
@@ -529,6 +558,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
             </div>
           );
         })}
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 };
