@@ -67,6 +67,13 @@ export default function App() {
     checkHealth();
   }, []);
 
+  const handleKicked = useCallback(() => {
+    setRoomCode(null);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('mtgc_room_code');
+    }
+  }, []);
+
   // Connect WebSocket when inside a room
   const {
     status,
@@ -82,6 +89,7 @@ export default function App() {
     playerName,
     isSpectator,
     enabled: !!roomCode,
+    onKicked: handleKicked,
   });
 
   useEffect(() => {

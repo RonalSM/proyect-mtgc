@@ -18,6 +18,7 @@ interface UseGameSocketOptions {
   playerName: string;
   isSpectator?: boolean;
   enabled?: boolean;
+  onKicked?: () => void;
 }
 
 export function useGameSocket({
@@ -26,6 +27,7 @@ export function useGameSocket({
   playerName,
   isSpectator = false,
   enabled = true,
+  onKicked,
 }: UseGameSocketOptions) {
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
   const [roomState, setRoomState] = useState<RoomState | null>(null);
@@ -213,6 +215,14 @@ export function useGameSocket({
             setRevealedCard(data.payload);
           } else if (data.type === 'ACTION_REJECTED' || data.type === 'RATE_LIMIT_EXCEEDED') {
             console.warn('[WS Rejected Action]:', data.error || data.message, data.reason);
+          } else if (data.type === 'PLAYER_KICKED') {
+            const msg = data.message || 'Has sido expulsado de la mesa por el anfitrión.';
+            setErrorMessage(msg);
+            reconnectAttemptsRef.current = 999;
+            if (typeof window !== 'undefined') {
+              sessionStorage.removeItem('mtgc_room_code');
+            }
+            if (onKicked) onKicked();
           } else if (data.type === 'ERROR') {
             const msg = data.message || 'Error en la conexión a la sala';
             setErrorMessage(msg);
@@ -244,9 +254,19 @@ export function useGameSocket({
         setRemoteDraggingCards({});
         socketRef.current = null;
 
-        // Punto F3 y F4: Si el cierre fue por motivo permanente (expulsión 4001, sala llena 4003, origen 4008), suprimir reintentos
+        // Punto F4: Al ser expulsado (código 4001), suprimir reconexión, limpiar sesión y notificar
+        if (event.code === 4001) {
+          setErrorMessage('Has sido expulsado de la mesa por el anfitrión.');
+          reconnectAttemptsRef.current = 999;
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('mtgc_room_code');
+          }
+          if (onKicked) onKicked();
+          return;
+        }
+
+        // Punto F3 y F4: Si el cierre fue por motivo permanente (sala llena 4003, origen 4008), suprimir reintentos
         const isPermanentClose =
-          event.code === 4001 ||
           event.code === 4003 ||
           event.code === 4008 ||
           reconnectAttemptsRef.current >= 999;
