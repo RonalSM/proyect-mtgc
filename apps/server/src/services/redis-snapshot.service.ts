@@ -181,6 +181,27 @@ export class RedisSnapshotService implements SnapshotStorage {
   }
 
   /**
+   * Cleans snapshots of closed rooms or rooms older than N hours (Punto A3.4)
+   */
+  public async cleanExpiredSnapshots(maxAgeHours: number = 24): Promise<number> {
+    let deletedCount = 0;
+    try {
+      const res = await pool.query(
+        `DELETE FROM "room_snapshots" 
+         WHERE "updatedAt" < NOW() - ($1 || ' hours')::interval`,
+        [maxAgeHours.toString()],
+      );
+      deletedCount = res.rowCount || 0;
+      if (deletedCount > 0) {
+        console.log(`🧹 [Snapshots] ${deletedCount} instantáneas expiradas (> ${maxAgeHours}h) eliminadas de PostgreSQL.`);
+      }
+    } catch (err) {
+      console.error('[Snapshots] Error al limpiar instantáneas expiradas:', err);
+    }
+    return deletedCount;
+  }
+
+  /**
    * Lists all active room codes stored in snapshots
    */
   public async listActiveCodes(): Promise<string[]> {

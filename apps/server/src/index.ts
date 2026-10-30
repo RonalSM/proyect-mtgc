@@ -21,6 +21,7 @@ import { authService } from './services/auth.service.js';
 import { deckService } from './services/deck.service.js';
 import { tokenService } from './services/token.service.js';
 import { cardLocaleService } from './services/card-locale.service.js';
+import { redisSnapshotService } from './services/redis-snapshot.service.js';
 
 const isDev = process.env.NODE_ENV !== 'production';
 const cookieSameSite = (isDev ? 'lax' : 'none') as 'lax' | 'none';
@@ -1196,6 +1197,12 @@ const HOST = process.env.HOST || '0.0.0.0';
 try {
   await connectDatabase();
   await roomManager.restoreFromSnapshots();
+  // Limpieza periódica de instantáneas expiradas (> 24h) en PostgreSQL (Punto A3.4)
+  await redisSnapshotService.cleanExpiredSnapshots(24);
+  const snapshotCleanupInterval = setInterval(() => {
+    redisSnapshotService.cleanExpiredSnapshots(24).catch(() => {});
+  }, 6 * 60 * 60 * 1000);
+  if (snapshotCleanupInterval.unref) snapshotCleanupInterval.unref();
 
   // Escuchar en el puerto de inmediato para evitar el timeout de 60s en plataformas como Heroku
   await server.listen({ port: PORT, host: HOST });

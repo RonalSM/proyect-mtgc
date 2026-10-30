@@ -37,6 +37,7 @@ import {
 } from '@mtgc/shared';
 import { roomManager } from './room-manager.js';
 import { filterRoomStateForPlayer } from './visibility-filter.js';
+import { redisSnapshotService } from '../services/redis-snapshot.service.js';
 
 interface ClientConnection {
   socket: WebSocket;
@@ -668,6 +669,9 @@ export class WebSocketHandler {
     const clients = this.roomClients.get(roomCode);
     const session = roomManager.getSession(roomCode);
     if (!clients || !session) return;
+
+    // Persistir instantánea duradera en PostgreSQL en cada mutación de estado transmitida (Punto A3.4)
+    redisSnapshotService.save(roomCode, session.state).catch(() => {});
 
     for (const client of clients) {
       if (client.socket.readyState === WebSocket.OPEN) {
