@@ -145,18 +145,35 @@ export const rateLimit429Log = new Map<string, RateLimit429Entry>();
 await server.register(rateLimit, {
   max: 150,
   timeWindow: '1 minute',
+  keyGenerator: (req: any) => {
+    // Si existe token de autorización o token de invitado, usarlo como clave individual para redes compartidas / CGNAT (Punto A3.3)
+    const authHeader = req.headers?.authorization;
+    if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+      return `auth_${authHeader.slice(7).trim()}`;
+    }
+    const guestToken = req.headers?.['x-guest-token'];
+    if (guestToken && typeof guestToken === 'string') {
+      return `guest_${guestToken}`;
+    }
+    const cookieToken = req.cookies?.token;
+    if (cookieToken && typeof cookieToken === 'string') {
+      return `token_${cookieToken}`;
+    }
+    // Fallback a IP si no hay token (ej. peticiones anónimas previas a login/guest)
+    return req.ip || 'unknown';
+  },
   allowList: (req: any) => {
     // Las conexiones y reconexiones legítimas a WebSocket no deben agotar el rate limit HTTP
     const url = req.url || '';
     return url.startsWith('/ws/');
   },
   onExceeded: (req: any) => {
-    const ip = req.ip || 'unknown';
-    const entry = rateLimit429Log.get(ip) || { ip, url: req.url, count: 0, lastTimestamp: Date.now() };
+    const key = (req.headers?.authorization ? `auth_${req.headers.authorization.slice(7, 15)}...` : req.ip) || 'unknown';
+    const entry = rateLimit429Log.get(key) || { ip: key, url: req.url, count: 0, lastTimestamp: Date.now() };
     entry.count++;
     entry.lastTimestamp = Date.now();
-    rateLimit429Log.set(ip, entry);
-    server.log.warn(`[RATE_LIMIT_429] IP: ${ip} excedió el límite de tasa en ${req.url} (Total 429 para esta IP: ${entry.count})`);
+    rateLimit429Log.set(key, entry);
+    server.log.warn(`[RATE_LIMIT_429] Clave: ${key} excedió el límite de tasa en ${req.url} (Total 429: ${entry.count})`);
   },
 });
 

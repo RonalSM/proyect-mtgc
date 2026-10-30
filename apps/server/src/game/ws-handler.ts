@@ -52,8 +52,9 @@ export class WebSocketHandler {
   private roomClients = new Map<string, Set<ClientConnection>>();
   // clientIp -> Set of ClientConnections
   private ipConnections = new Map<string, Set<ClientConnection>>();
-  // Topes de conexiones concurrentes para mitigar ataques y abusos de recursos (Punto A2.2)
-  public readonly MAX_CONNECTIONS_PER_IP = 8;
+  // Topes de conexiones concurrentes para mitigar ataques y abusos de recursos (Puntos A2.2 y A3.3)
+  // Se eleva a 30 por IP para permitir redes locales / hogares compartidos y CGNAT con hasta 6 jugadores legítimos
+  public readonly MAX_CONNECTIONS_PER_IP = 30;
   public readonly MAX_CONNECTIONS_PER_TABLE = 12;
 
   // playerId -> message timestamps in sliding window (REQ-12.4, REQ-16.4)
