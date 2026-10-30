@@ -264,6 +264,7 @@ export class RoomManager {
       isUndoable: false,
     });
     session.state.version++;
+    redisSnapshotService.save(code, session.state).catch(() => {});
 
     return { session, player: newPlayer };
   }

@@ -1,5 +1,6 @@
 import { Redis } from 'ioredis';
 import { RoomState, getCardDimensions } from '@mtgc/shared';
+import { pool } from '../db.js';
 
 export interface SnapshotStorage {
   save(roomCode: string, state: RoomState): Promise<void>;
@@ -52,13 +53,26 @@ export class RedisSnapshotService implements SnapshotStorage {
   }
 
   /**
-   * Saves a snapshot of room state with a 24-hour expiration
+   * Saves a snapshot of room state with a 24-hour expiration in Redis and PostgreSQL (Punto A2.4)
    */
   public async save(roomCode: string, state: RoomState): Promise<void> {
     const code = roomCode.toUpperCase();
     (state as any).positionConvention = 'center';
     const serialized = JSON.stringify(state);
 
+    // 1. Guardar en PostgreSQL (persistencia duradera entre reinicios de Dyno)
+    try {
+      await pool.query(
+        `INSERT INTO "room_snapshots" ("roomCode", "state", "updatedAt")
+         VALUES ($1, $2, CURRENT_TIMESTAMP)
+         ON CONFLICT ("roomCode") DO UPDATE SET "state" = $2, "updatedAt" = CURRENT_TIMESTAMP`,
+        [code, serialized],
+      );
+    } catch {
+      // Ignorar si la tabla no está creada aún en tests unitarios en memoria
+    }
+
+    // 2. Guardar en Redis si está disponible
     if (this.redis && this.isConnected) {
       try {
         const pipeline = this.redis.pipeline();
@@ -75,7 +89,7 @@ export class RedisSnapshotService implements SnapshotStorage {
   }
 
   /**
-   * Loads a snapshot by room code and migrates/validates center position convention (Punto 2)
+   * Loads a snapshot by room code and migrates/validates center position convention (Punto 2 / A2.4)
    */
   public async load(roomCode: string): Promise<RoomState | null> {
     const code = roomCode.toUpperCase();
@@ -109,8 +123,24 @@ export class RedisSnapshotService implements SnapshotStorage {
           return migrateState(parsed);
         }
       } catch {
-        // Fall back to memory
+        // Fall back
       }
+    }
+
+    // Consultar PostgreSQL si Redis no tiene la sala
+    try {
+      const res = await pool.query(
+        'SELECT "state" FROM "room_snapshots" WHERE "roomCode" = $1',
+        [code],
+      );
+      if (res.rows.length > 0) {
+        const rowState = res.rows[0].state;
+        const parsed = (typeof rowState === 'string' ? JSON.parse(rowState) : rowState) as RoomState;
+        this.fallbackMemory.set(code, JSON.stringify(parsed));
+        return migrateState(parsed);
+      }
+    } catch {
+      // Fall back to memory
     }
 
     const memoryData = this.fallbackMemory.get(code);
@@ -132,6 +162,10 @@ export class RedisSnapshotService implements SnapshotStorage {
   public async delete(roomCode: string): Promise<void> {
     const code = roomCode.toUpperCase();
 
+    try {
+      await pool.query('DELETE FROM "room_snapshots" WHERE "roomCode" = $1', [code]);
+    } catch {}
+
     if (this.redis && this.isConnected) {
       try {
         const pipeline = this.redis.pipeline();
@@ -150,18 +184,32 @@ export class RedisSnapshotService implements SnapshotStorage {
    * Lists all active room codes stored in snapshots
    */
   public async listActiveCodes(): Promise<string[]> {
+    const active = new Set<string>();
+
+    // 1. Obtener de PostgreSQL
+    try {
+      const res = await pool.query('SELECT "roomCode" FROM "room_snapshots"');
+      for (const row of res.rows) {
+        if (row.roomCode) active.add(row.roomCode.toUpperCase());
+      }
+    } catch {}
+
+    // 2. Obtener de Redis
     if (this.redis && this.isConnected) {
       try {
         const members = await this.redis.smembers('mtgc:active_tables');
         if (members && members.length > 0) {
-          return members.map(m => m.toUpperCase());
+          for (const m of members) active.add(m.toUpperCase());
         }
-      } catch {
-        // Fall back to memory
-      }
+      } catch {}
     }
 
-    return Array.from(this.fallbackMemory.keys());
+    // 3. Fallback memoria
+    for (const k of this.fallbackMemory.keys()) {
+      active.add(k.toUpperCase());
+    }
+
+    return Array.from(active);
   }
 
   /**
