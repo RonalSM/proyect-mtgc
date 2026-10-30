@@ -205,7 +205,8 @@ export class BulkSyncService {
    */
   public async syncOracleCards(
     limit?: number,
-  ): Promise<{ syncedCount: number; durationMs: number; peakMemRssMb?: number }> {
+    force?: boolean,
+  ): Promise<{ syncedCount: number; durationMs: number; peakMemRssMb?: number; memorySamples?: number[] }> {
     if (this.isSyncing) {
       throw new Error('La sincronización de bulk data ya está en curso.');
     }
@@ -213,11 +214,25 @@ export class BulkSyncService {
     this.isSyncing = true;
     const startTime = Date.now();
     let syncedCount = 0;
+    let memInterval: NodeJS.Timeout | null = null;
+    const memorySamples: number[] = [];
+    let peakMemRssMb = Math.round(process.memoryUsage().rss / 1024 / 1024);
 
     try {
       console.log('🔄 [BulkSync] Consultando catálogo de bulk data de Scryfall...');
       const userAgent =
         process.env.SCRYFALL_USER_AGENT || 'MTGCommanderVirtualTable/1.0.0 (admin@mtgc.local)';
+
+      // Registro de memoria segundo a segundo (Punto A3.1)
+      memInterval = setInterval(() => {
+        const mem = process.memoryUsage();
+        const rss = Math.round(mem.rss / 1024 / 1024);
+        const heap = Math.round(mem.heapUsed / 1024 / 1024);
+        memorySamples.push(rss);
+        if (rss > peakMemRssMb) peakMemRssMb = rss;
+        console.log(`[BulkSync Memory] RSS: ${rss} MB | Heap: ${heap} MB | Cartas: ${syncedCount}`);
+      }, 1000);
+      if (memInterval.unref) memInterval.unref();
 
       const response = await fetch('https://api.scryfall.com/bulk-data', {
         headers: {
@@ -248,6 +263,7 @@ export class BulkSyncService {
       }
 
       if (
+        !force &&
         dbCardCount >= 10000 &&
         this.lastCardsUpdatedAt &&
         this.lastCardsUpdatedAt === oracleDataInfo.updated_at
@@ -255,7 +271,7 @@ export class BulkSyncService {
         console.log(
           `⏭️ [BulkSync] El archivo bulk "oracle_cards" no ha cambiado (${this.lastCardsUpdatedAt}) y la base contiene ${dbCardCount} cartas. Omitiendo descarga innecesaria.`,
         );
-        return { syncedCount: 0, durationMs: Date.now() - startTime };
+        return { syncedCount: 0, durationMs: Date.now() - startTime, peakMemRssMb, memorySamples };
       }
 
       console.log(
@@ -283,7 +299,7 @@ export class BulkSyncService {
 
       const batchSize = 1000;
       let batch: any[] = [];
-      let peakMemRssMb = Math.round(process.memoryUsage().rss / 1024 / 1024);
+      peakMemRssMb = Math.round(process.memoryUsage().rss / 1024 / 1024);
 
       for await (const line of rl) {
         const trimmed = line.trim();
@@ -354,8 +370,9 @@ export class BulkSyncService {
       console.log(
         `✅ [BulkSync] Sincronización completada: ${syncedCount} cartas indexadas en ${durationMs}ms (Pico RSS: ${peakMemRssMb}MB)`,
       );
-      return { syncedCount, durationMs, peakMemRssMb };
+      return { syncedCount, durationMs, peakMemRssMb, memorySamples };
     } finally {
+      if (memInterval) clearInterval(memInterval);
       this.isSyncing = false;
     }
   }

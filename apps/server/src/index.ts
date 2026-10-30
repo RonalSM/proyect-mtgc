@@ -905,8 +905,8 @@ server.post('/api/cards/sync-bulk', async (request, reply) => {
     return;
   }
 
-  const limit = (request.body as { limit?: number })?.limit;
-  const result = await bulkSyncService.syncOracleCards(limit);
+  const body = (request.body as { limit?: number; force?: boolean }) || {};
+  const result = await bulkSyncService.syncOracleCards(body.limit, body.force);
   return reply.send(result);
 });
 
