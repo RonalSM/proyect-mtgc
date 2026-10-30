@@ -1181,8 +1181,17 @@ server.register(async function (fastifyInstance) {
         origin === 'https://proyect-mtgc.netlify.app';
 
       if (!isAllowed) {
-        server.log.warn(`[WS] Conexión rechazada por origen no autorizado: ${origin}`);
-        socket.close(1008, 'Origin not allowed');
+        server.log.warn(`[WS_REJECTED] Conexión rechazada por origen no autorizado: ${origin} [reason: origin_rejected]`);
+        try {
+          socket.send(
+            JSON.stringify({
+              type: 'ERROR',
+              message: 'Conexión rechazada: origen no autorizado.',
+              reason: 'origin_rejected',
+            }),
+          );
+        } catch {}
+        socket.close(4008, 'Origin not allowed');
         return;
       }
     }

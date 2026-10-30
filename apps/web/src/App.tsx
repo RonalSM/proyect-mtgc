@@ -68,14 +68,21 @@ export default function App() {
   }, []);
 
   // Connect WebSocket when inside a room
-  const { status, roomState, sendAction, remoteDraggingCards, revealedCard, dismissRevealedCard } =
-    useGameSocket({
-      roomCode: roomCode || '',
-      playerId,
-      playerName,
-      isSpectator,
-      enabled: !!roomCode,
-    });
+  const {
+    status,
+    roomState,
+    sendAction,
+    remoteDraggingCards,
+    revealedCard,
+    dismissRevealedCard,
+    errorMessage,
+  } = useGameSocket({
+    roomCode: roomCode || '',
+    playerId,
+    playerName,
+    isSpectator,
+    enabled: !!roomCode,
+  });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -272,6 +279,26 @@ export default function App() {
         >
           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
           <span>Reconectando a la sala de juego...</span>
+        </div>
+      )}
+
+      {/* Banner de Rechazo / Error de Conexión de Sala (Punto F3 / F4) */}
+      {errorMessage && (
+        <div
+          data-testid="ws-error-banner"
+          className="fixed top-3 left-1/2 -translate-x-1/2 z-[250] bg-rose-950/95 border-2 border-rose-500 text-rose-100 px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-4 text-sm max-w-lg backdrop-blur-md animate-in fade-in"
+        >
+          <div className="flex-1">
+            <p className="font-semibold text-rose-200">Aviso de la sala</p>
+            <p className="text-xs text-rose-300 mt-0.5">{errorMessage}</p>
+          </div>
+          <button
+            onClick={() => handleLeaveRoom()}
+            data-testid="ws-error-dismiss-btn"
+            className="px-3 py-1.5 bg-rose-800 hover:bg-rose-700 active:scale-95 text-white rounded text-xs font-semibold cursor-pointer transition-all"
+          >
+            Volver al inicio
+          </button>
         </div>
       )}
 

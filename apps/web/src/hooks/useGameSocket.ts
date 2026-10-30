@@ -211,17 +211,28 @@ export function useGameSocket({
             }, 1000);
           } else if (data.type === 'CARD_REVEALED') {
             setRevealedCard(data.payload);
-          } else if (data.type === 'ACTION_REJECTED') {
-            console.warn('[WS Rejected Action]:', data.error);
+          } else if (data.type === 'ACTION_REJECTED' || data.type === 'RATE_LIMIT_EXCEEDED') {
+            console.warn('[WS Rejected Action]:', data.error || data.message, data.reason);
           } else if (data.type === 'ERROR') {
-            setErrorMessage(data.message || 'Error en la conexión a la sala');
+            const msg = data.message || 'Error en la conexión a la sala';
+            setErrorMessage(msg);
+            const isPermanent =
+              data.reason === 'room_full' ||
+              data.reason === 'room_not_found' ||
+              data.reason === 'ip_connection_cap' ||
+              data.reason === 'table_connection_cap' ||
+              data.reason === 'origin_rejected' ||
+              data.reason === 'join_rejected';
+            if (isPermanent) {
+              reconnectAttemptsRef.current = 999;
+            }
           }
         } catch (err) {
           console.error('[WS Parse Error]:', err);
         }
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event: CloseEvent) => {
         setStatus('disconnected');
         if (heartbeatIntervalRef.current) {
           clearInterval(heartbeatIntervalRef.current);
@@ -232,6 +243,18 @@ export function useGameSocket({
         remoteDragTimeoutsRef.current = {};
         setRemoteDraggingCards({});
         socketRef.current = null;
+
+        // Punto F3 y F4: Si el cierre fue por motivo permanente (expulsión 4001, sala llena 4003, origen 4008), suprimir reintentos
+        const isPermanentClose =
+          event.code === 4001 ||
+          event.code === 4003 ||
+          event.code === 4008 ||
+          reconnectAttemptsRef.current >= 999;
+
+        if (isPermanentClose) {
+          reconnectAttemptsRef.current = 999;
+          return;
+        }
 
         // Auto-reconnect with exponential backoff and jitter (Punto 16)
         if (enabled && reconnectAttemptsRef.current < 8) {

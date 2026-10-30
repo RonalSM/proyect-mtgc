@@ -208,8 +208,27 @@ export class WebSocketHandler {
       return;
     }
 
-    // Join room or reconnect
-    const { player } = roomManager.joinRoom(code, playerInfo);
+    // Join room or reconnect with structured rejection handling (Punto F3)
+    let player: any;
+    try {
+      const joinResult = roomManager.joinRoom(code, playerInfo);
+      player = joinResult.player;
+    } catch (err: any) {
+      const errMsg = err?.message || 'Error al unirse a la sala';
+      const reason = errMsg.toLowerCase().includes('llena') ? 'room_full' : 'join_rejected';
+      console.warn(
+        `[WS_REJECTED] ${playerInfo.playerName} no pudo unirse a ${code}: ${errMsg} [reason: ${reason}]`,
+      );
+      socket.send(
+        JSON.stringify({
+          type: 'ERROR',
+          message: errMsg,
+          reason,
+        }),
+      );
+      socket.close(4003, reason);
+      return;
+    }
 
     const client: ClientConnection = {
       socket,
@@ -295,6 +314,7 @@ export class WebSocketHandler {
       client.socket.send(
         JSON.stringify({
           type: 'ACTION_REJECTED',
+          reason: 'spectator_action_forbidden',
           error: 'Los espectadores solo pueden enviar mensajes o tirar dados.',
         }),
       );
@@ -562,6 +582,7 @@ export class WebSocketHandler {
             client.socket.send(
               JSON.stringify({
                 type: 'RATE_LIMIT_EXCEEDED',
+                reason: 'rate_limit_exceeded',
                 error: 'Límite de chat excedido: máximo 5 mensajes cada 10 segundos.',
               }),
             );
