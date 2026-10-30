@@ -23,6 +23,8 @@ import { tokenService } from './services/token.service.js';
 import { cardLocaleService } from './services/card-locale.service.js';
 
 const isDev = process.env.NODE_ENV !== 'production';
+const cookieSameSite = (isDev ? 'lax' : 'none') as 'lax' | 'none';
+const cookieSecure = !isDev;
 
 const server = fastify({
   logger: isDev
@@ -211,24 +213,24 @@ server.post('/api/auth/register', async (request, reply) => {
     reply.setCookie('token', accessToken, {
       path: '/',
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: cookieSecure,
+      sameSite: cookieSameSite,
       maxAge: 15 * 60, // 15 minutes
     });
 
     reply.setCookie('mtgc_access_token', accessToken, {
       path: '/',
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: cookieSecure,
+      sameSite: cookieSameSite,
       maxAge: 15 * 60,
     });
 
     reply.setCookie('mtgc_refresh_token', `${user.id}:${refreshToken}`, {
       path: '/api/auth',
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: cookieSecure,
+      sameSite: cookieSameSite,
       maxAge: 7 * 24 * 60 * 60, // 7 days
     });
 
@@ -288,24 +290,24 @@ server.post('/api/auth/login', async (request, reply) => {
     reply.setCookie('token', accessToken, {
       path: '/',
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: cookieSecure,
+      sameSite: cookieSameSite,
       maxAge: 15 * 60,
     });
 
     reply.setCookie('mtgc_access_token', accessToken, {
       path: '/',
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: cookieSecure,
+      sameSite: cookieSameSite,
       maxAge: 15 * 60,
     });
 
     reply.setCookie('mtgc_refresh_token', `${user.id}:${refreshToken}`, {
       path: '/api/auth',
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: cookieSecure,
+      sameSite: cookieSameSite,
       maxAge: 7 * 24 * 60 * 60,
     });
 
@@ -338,24 +340,24 @@ server.post('/api/auth/refresh', async (request, reply) => {
   reply.setCookie('token', newAccessToken, {
     path: '/',
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: cookieSecure,
+    sameSite: cookieSameSite,
     maxAge: 15 * 60,
   });
 
   reply.setCookie('mtgc_access_token', newAccessToken, {
     path: '/',
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: cookieSecure,
+    sameSite: cookieSameSite,
     maxAge: 15 * 60,
   });
 
   reply.setCookie('mtgc_refresh_token', `${userId}:${newRefreshToken}`, {
     path: '/api/auth',
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: cookieSecure,
+    sameSite: cookieSameSite,
     maxAge: 7 * 24 * 60 * 60,
   });
 
@@ -371,16 +373,16 @@ server.post('/api/auth/guest', async (request, reply) => {
   reply.setCookie('token', token, {
     path: '/',
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: cookieSecure,
+    sameSite: cookieSameSite,
     maxAge: 24 * 60 * 60, // 24 hours
   });
 
   reply.setCookie('mtgc_access_token', token, {
     path: '/',
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: cookieSecure,
+    sameSite: cookieSameSite,
     maxAge: 24 * 60 * 60,
   });
 

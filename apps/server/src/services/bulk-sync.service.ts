@@ -39,6 +39,7 @@ export class BulkSyncService {
   private lastSyncTime: Date | null = null;
   private cronTimer: NodeJS.Timeout | null = null;
   private isNightlyCronActive = false;
+  private lastCardsUpdatedAt: string | null = null;
   private lastRulingsUpdatedAt: string | null = null;
   private lastRulingsSyncTime: Date | null = null;
   private rulingsByOracleId: Map<string, RulingItem[]> = new Map();
@@ -167,6 +168,22 @@ export class BulkSyncService {
         throw new Error('No se encontró el archivo bulk "oracle_cards" en Scryfall.');
       }
 
+      let dbCardCount = 0;
+      try {
+        dbCardCount = await prisma.card.count();
+      } catch {}
+
+      if (
+        dbCardCount >= 10000 &&
+        this.lastCardsUpdatedAt &&
+        this.lastCardsUpdatedAt === oracleDataInfo.updated_at
+      ) {
+        console.log(
+          `⏭️ [BulkSync] El archivo bulk "oracle_cards" no ha cambiado (${this.lastCardsUpdatedAt}) y la base contiene ${dbCardCount} cartas. Omitiendo descarga innecesaria.`,
+        );
+        return { syncedCount: 0, durationMs: Date.now() - startTime };
+      }
+
       console.log(
         `⬇️ [BulkSync] Descargando y procesando Oracle Cards por streaming desde: ${downloadUri}`,
       );
@@ -251,6 +268,7 @@ export class BulkSyncService {
         syncedCount += batch.length;
       }
 
+      this.lastCardsUpdatedAt = oracleDataInfo.updated_at;
       this.lastSyncTime = new Date();
       const durationMs = Date.now() - startTime;
       console.log(
