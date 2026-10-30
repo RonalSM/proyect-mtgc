@@ -540,6 +540,13 @@ A continuación se detalla cómo quedó implementada y verificada cada fase del 
 
 ### 7. Despliegue y Observabilidad (Fase 7 — REQ-19)
 
+- **Auditoría de Infraestructura en Producción y Persistencia (Punto A3)**:
+  - **Plan de Cómputo (Dyno)**: Heroku Basic Dyno ($5.00 USD/mes). Mantiene el servidor activo 24/7 sin hibernación en frío (cold start de ~330 ms para el primer handshake). Heroku ejecuta reinicios automáticos cada 24 horas (*daily dyno cycling*).
+  - **Plan de Base de Datos**: Heroku Postgres Essential 0 ($5.00 USD/mes). Límite de 10.000.000 filas y 1 GB de almacenamiento (actualmente ocupando < 30 MB con 32.130 cartas).
+  - **Redis en Producción**: No aprovisionado ($0 USD).
+  - **Costo Mensual Total**: $10.00 USD/mes (cubierto íntegramente por los $13.00 USD/mes de créditos de GitHub Student Pack).
+  - **Impacto de Reinicio en Partidas**: Al no haber Redis activo y residir el estado de salas en la memoria RAM del proceso Fastify, un reinicio del dyno provoca la pérdida de la partida activa. Los clientes reciben desconexión y al reintentar encuentran que la sala no existe.
+  - **Propuesta de Persistencia Económica ($0 USD extra)**: Persistir instantáneas de `RoomState` periódicamente (al pasar turno o cada 5 segundos) en la tabla `tables` de PostgreSQL (`settings` JSONB o tabla `room_snapshots`). Al reiniciar el dyno, `restoreFromSnapshots()` recarga las mesas desde PostgreSQL sin incurrir en costos adicionales de infraestructura.
 - **Docker Multi-Stage**:
   - `apps/server/Dockerfile`: Construcción optimizada con TypeScript y ejecución productiva con variables de entorno parametrizadas.
   - `apps/web/Dockerfile`: Build estático con Vite empaquetado sobre imagen Nginx Alpine ultra-liviana.
