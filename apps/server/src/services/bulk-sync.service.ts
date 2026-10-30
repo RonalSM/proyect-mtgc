@@ -297,7 +297,7 @@ export class BulkSyncService {
 
       const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
 
-      const batchSize = 250;
+      const batchSize = 100;
       let batch: any[] = [];
       peakMemRssMb = Math.round(process.memoryUsage().rss / 1024 / 1024);
 
@@ -309,6 +309,8 @@ export class BulkSyncService {
         try {
           const rawCard = JSON.parse(cleanLine);
           const def = scryfallService.toCardDefinition(rawCard);
+          const legalitiesCopy = rawCard.legalities ? { ...rawCard.legalities } : null;
+          const layoutStr = rawCard.layout ? String(rawCard.layout) : null;
           batch.push({
             scryfallId: def.scryfallId,
             oracleId: def.oracleId || null,
@@ -330,8 +332,8 @@ export class BulkSyncService {
             imageUrlSmall: def.imageUrlSmall || null,
             imageUrlNormal: def.imageUrlNormal || null,
             imageUrlArtCrop: def.imageUrlArtCrop || null,
-            layout: rawCard.layout || null,
-            legalities: rawCard.legalities || null,
+            layout: layoutStr,
+            legalities: legalitiesCopy,
             isCommander:
               def.typeLine.includes('Legendary') &&
               (def.typeLine.includes('Creature') || def.typeLine.includes('Planeswalker')),
@@ -347,8 +349,8 @@ export class BulkSyncService {
             syncedCount += batch.length;
             batch = [];
             
-            // Pausa breve en el bucle de eventos para permitir recolección de basura
-            await new Promise(resolve => setImmediate(resolve));
+            // Pausa breve con contrapresión en el bucle de eventos para recolección de basura (Punto A4.1)
+            await new Promise(resolve => setTimeout(resolve, 8));
             rl.resume();
             if (stream && typeof stream.resume === 'function') stream.resume();
 
@@ -440,7 +442,8 @@ export class BulkSyncService {
    */
   public async syncRulings(
     limit?: number,
-  ): Promise<{ syncedCount: number; durationMs: number; skipped?: boolean; reason?: string; peakMemRssMb?: number }> {
+    force?: boolean,
+  ): Promise<{ syncedCount: number; durationMs: number; skipped?: boolean; reason?: string; peakMemRssMb?: number; memorySamples?: number[] }> {
     if (this.isSyncingRulings) {
       return { syncedCount: 0, durationMs: 0, skipped: true, reason: 'already_in_progress' };
     }
@@ -449,11 +452,23 @@ export class BulkSyncService {
     const startTime = Date.now();
     let syncedCount = 0;
     let peakMemRssMb = Math.round(process.memoryUsage().rss / 1024 / 1024);
+    let memInterval: NodeJS.Timeout | null = null;
+    const memorySamples: number[] = [];
 
     try {
       console.log('🔄 [BulkSync] Consultando catálogo de bulk data para dictámenes (rulings)...');
       const userAgent =
         process.env.SCRYFALL_USER_AGENT || 'MTGCommanderVirtualTable/1.0.0 (admin@mtgc.local)';
+
+      memInterval = setInterval(() => {
+        const mem = process.memoryUsage();
+        const rss = Math.round(mem.rss / 1024 / 1024);
+        const heap = Math.round(mem.heapUsed / 1024 / 1024);
+        memorySamples.push(rss);
+        if (rss > peakMemRssMb) peakMemRssMb = rss;
+        console.log(`[RulingsSync Memory] RSS: ${rss} MB | Heap: ${heap} MB | Rulings: ${syncedCount}`);
+      }, 1000);
+      if (memInterval.unref) memInterval.unref();
 
       const response = await fetch('https://api.scryfall.com/bulk-data', {
         headers: {
@@ -488,6 +503,7 @@ export class BulkSyncService {
       }
 
       if (
+        !force &&
         hasRows &&
         this.lastRulingsUpdatedAt &&
         this.lastRulingsUpdatedAt === rulingsDataInfo.updated_at
@@ -495,11 +511,14 @@ export class BulkSyncService {
         console.log(
           `⏭️ [BulkSync] El archivo bulk "rulings" no ha cambiado (${this.lastRulingsUpdatedAt}) y existen datos locales (${dbCount} en DB). Omitiendo descarga innecesaria.`,
         );
+        if (memInterval) clearInterval(memInterval);
         return {
           syncedCount: 0,
           durationMs: Date.now() - startTime,
           skipped: true,
           reason: 'not_modified',
+          peakMemRssMb,
+          memorySamples,
         };
       }
 
@@ -526,7 +545,7 @@ export class BulkSyncService {
 
       const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
 
-      const batchSize = 1000;
+      const batchSize = 250;
       let rulingBatch: any[] = [];
 
       for await (const line of rl) {
@@ -548,6 +567,8 @@ export class BulkSyncService {
           });
 
           if (rulingBatch.length >= batchSize) {
+            rl.pause();
+            if (stream && typeof stream.pause === 'function') stream.pause();
             try {
               await (prisma as any).ruling?.createMany({
                 data: rulingBatch,
@@ -556,6 +577,11 @@ export class BulkSyncService {
             } catch {}
             syncedCount += rulingBatch.length;
             rulingBatch = [];
+
+            // Pausa breve con contrapresión para recolección de basura (Punto A4.1)
+            await new Promise(resolve => setTimeout(resolve, 8));
+            rl.resume();
+            if (stream && typeof stream.resume === 'function') stream.resume();
 
             const currentRss = Math.round(process.memoryUsage().rss / 1024 / 1024);
             if (currentRss > peakMemRssMb) peakMemRssMb = currentRss;
@@ -594,8 +620,9 @@ export class BulkSyncService {
         `✅ [BulkSync] Sincronización de dictámenes completada: ${syncedCount} dictámenes indexados en ${durationMs}ms (Pico RSS: ${peakMemRssMb}MB)`,
       );
 
-      return { syncedCount, durationMs, skipped: false, peakMemRssMb };
+      return { syncedCount, durationMs, skipped: false, peakMemRssMb, memorySamples };
     } finally {
+      if (memInterval) clearInterval(memInterval);
       this.isSyncingRulings = false;
     }
   }
