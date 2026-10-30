@@ -214,9 +214,10 @@ async function runSmokeProd() {
   console.log(`   - Máximo: ${max} ms`);
 
   // 7. Verificación de Heartbeat e Inactividad (Confirmar prevención de Heroku H15 > 55s)
+  const is15m = process.argv.includes('--idle-15m');
   const is30m = process.argv.includes('--idle-30m');
   const customSecArg = process.argv.find(a => a.startsWith('--idle-duration='));
-  const idleDurationSec = is30m ? 1800 : customSecArg ? parseInt(customSecArg.split('=')[1], 10) : 65;
+  const idleDurationSec = is15m ? 900 : is30m ? 1800 : customSecArg ? parseInt(customSecArg.split('=')[1], 10) : 65;
 
   console.log(`\n💓 7. Verificando prevención de H15 con Keepalive (${idleDurationSec}s de inactividad, timeout de Heroku es 55s):`);
   let pongsReceived = 0;
