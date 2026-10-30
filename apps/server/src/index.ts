@@ -621,21 +621,20 @@ server.post('/api/cards/locales', async (request, reply) => {
   return reply.send({ lang, locales: results });
 });
 
-// Seed test rulings in memory for local test/verification (Punto 5 / 8)
-server.post('/api/cards/seed-test-rulings', async (request, reply) => {
-  if (!isDev && !verifyAdmin(request, reply)) {
-    return;
-  }
-  const body = request.body as {
-    oracleId?: string;
-    rulings?: Array<{ publishedAt: string; source: string; comment: string }>;
-  };
-  if (body.oracleId && body.rulings) {
-    bulkSyncService.setRulingsForOracleId(body.oracleId, body.rulings);
-    return reply.send({ success: true, oracleId: body.oracleId, count: body.rulings.length });
-  }
-  return reply.status(400).send({ error: 'Falta oracleId o rulings' });
-});
+// Seed test rulings in memory for local test/verification (solo compilado y montado en desarrollo - Punto A2.3)
+if (isDev) {
+  server.post('/api/cards/seed-test-rulings', async (request, reply) => {
+    const body = request.body as {
+      oracleId?: string;
+      rulings?: Array<{ publishedAt: string; source: string; comment: string }>;
+    };
+    if (body.oracleId && body.rulings) {
+      bulkSyncService.setRulingsForOracleId(body.oracleId, body.rulings);
+      return reply.send({ success: true, oracleId: body.oracleId, count: body.rulings.length });
+    }
+    return reply.status(400).send({ error: 'Falta oracleId o rulings' });
+  });
+}
 
 // Common tokens (Punto 4)
 server.get('/api/tokens/common', async () => {
