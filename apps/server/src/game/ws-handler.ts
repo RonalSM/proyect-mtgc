@@ -148,7 +148,7 @@ export class WebSocketHandler {
   public handleConnection(
     socket: WebSocket,
     roomCode: string,
-    playerInfo: { playerId: string; playerName: string; isSpectator?: boolean },
+    playerInfo: { playerId: string; playerName: string; isSpectator?: boolean; token?: string },
     clientIp?: string,
   ): void {
     const code = roomCode.toUpperCase();

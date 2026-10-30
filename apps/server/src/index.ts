@@ -1188,7 +1188,7 @@ server.register(async function (fastifyInstance) {
     }
 
     const params = req.params as { roomCode?: string };
-    const query = req.query as { playerId?: string; playerName?: string; spectator?: string };
+    const query = req.query as { playerId?: string; playerName?: string; spectator?: string; token?: string };
 
     const roomCode = params.roomCode?.toUpperCase() || '';
     const playerId = query.playerId || `p_${Date.now()}`;
@@ -1202,6 +1202,7 @@ server.register(async function (fastifyInstance) {
         playerId,
         playerName,
         isSpectator,
+        token: query.token,
       },
       req.ip,
     );

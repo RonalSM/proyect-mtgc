@@ -39,12 +39,12 @@ export default function App() {
     return false;
   });
 
-  // Initialize or restore player ID
+  // Initialize or restore player ID isolated per tab/window (Punto F2.d)
   useEffect(() => {
-    let storedId = localStorage.getItem('mtgc_player_id');
+    let storedId = sessionStorage.getItem('mtgc_player_id');
     if (!storedId) {
       storedId = `p_${Math.random().toString(36).substring(2, 9)}`;
-      localStorage.setItem('mtgc_player_id', storedId);
+      sessionStorage.setItem('mtgc_player_id', storedId);
     }
     setPlayerId(storedId);
 

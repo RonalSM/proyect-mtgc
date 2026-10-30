@@ -83,9 +83,23 @@ export function useGameSocket({
       wsBase = `${protocol}//${host}`;
     }
 
+    // Punto F2(c): Obtener token de autenticación o de invitado para pasarlo por query param
+    // evitando depender de cookies de terceros que son bloqueadas por defecto en Safari/iOS y modos incógnito
+    const storedToken =
+      typeof window !== 'undefined'
+        ? sessionStorage.getItem('token') ||
+          sessionStorage.getItem('mtgc_access_token') ||
+          sessionStorage.getItem('mtgc_guest_token') ||
+          localStorage.getItem('token') ||
+          localStorage.getItem('mtgc_access_token') ||
+          localStorage.getItem('mtgc_auth_token') ||
+          ''
+        : '';
+    const tokenQuery = storedToken ? `&token=${encodeURIComponent(storedToken)}` : '';
+
     const wsUrl = `${wsBase}/ws/table/${roomCode.toUpperCase()}?playerId=${encodeURIComponent(
       playerId,
-    )}&playerName=${encodeURIComponent(playerName)}&spectator=${isSpectator ? 'true' : 'false'}`;
+    )}&playerName=${encodeURIComponent(playerName)}&spectator=${isSpectator ? 'true' : 'false'}${tokenQuery}`;
 
     try {
       const ws = new WebSocket(wsUrl);
