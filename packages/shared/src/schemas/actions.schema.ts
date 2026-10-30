@@ -12,26 +12,26 @@ export const ZoneTypeSchema = z.enum([
 
 export const AdjustLifeSchema = z.object({
   playerId: z.string().min(1).optional(),
-  delta: z.number().int(),
+  delta: z.number().int().min(-10000).max(10000),
 });
 
 export const CommanderDamageSchema = z.object({
   targetPlayerId: z.string().min(1),
   sourceCommanderInstanceId: z.string().min(1),
-  delta: z.number().int(),
+  delta: z.number().int().min(-999).max(999),
 });
 
 export const SetPlayerCounterSchema = z.object({
   playerId: z.string().min(1).optional(),
   counterType: z.string().min(1),
-  delta: z.number().int(),
+  delta: z.number().int().min(-999).max(999),
 });
 
 export const SetCardCounterSchema = z.object({
   cardInstanceId: z.string().min(1),
   counterType: z.string().min(1),
-  delta: z.number().int().optional(),
-  count: z.number().int().min(0).optional(),
+  delta: z.number().int().min(-999).max(999).optional(),
+  count: z.number().int().min(0).max(999).optional(),
 });
 
 export const ToggleCardKeywordSchema = z.object({
@@ -42,10 +42,10 @@ export const ToggleCardKeywordSchema = z.object({
 
 export const SetCardPTSchema = z.object({
   cardInstanceId: z.string().min(1),
-  basePower: z.number().int().optional().nullable(),
-  baseToughness: z.number().int().optional().nullable(),
-  plusCounters: z.number().int().min(0).optional(),
-  minusCounters: z.number().int().min(0).optional(),
+  basePower: z.number().int().min(-999).max(999).optional().nullable(),
+  baseToughness: z.number().int().min(-999).max(999).optional().nullable(),
+  plusCounters: z.number().int().min(0).max(999).optional(),
+  minusCounters: z.number().int().min(0).max(999).optional(),
 });
 
 export const MoveCardSchema = z.object({
@@ -95,7 +95,7 @@ export const FlipCardSchema = z.object({
 
 export const CloneTokenSchema = z.object({
   cardInstanceId: z.string().min(1),
-  count: z.number().int().positive().default(1),
+  count: z.number().int().min(1).max(20).default(1),
 });
 
 export const CreateTokenSchema = z.object({
@@ -153,7 +153,7 @@ export const TransferHostSchema = z.object({
 
 export const SetLifeSchema = z.object({
   playerId: z.string().min(1).optional(),
-  life: z.number().int(),
+  life: z.number().int().min(-10000).max(10000),
 });
 
 export const SetPlayerStatusSchema = z.object({

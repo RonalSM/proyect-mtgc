@@ -705,11 +705,13 @@ export class WebSocketHandler {
       const isCriticalTransition = type === 'PASS_TURN' || type === 'START_GAME' || type === 'SET_READY';
       this.broadcastRoomState(client.roomCode, isCriticalTransition);
     } catch (err: any) {
-      console.error(`[WS] Error al procesar acción ${type}:`, err);
+      console.warn(`[WS REJECT] Acción rechazada ${type} de jugador ${client.playerId}:`, err?.message || err);
       client.socket.send(
         JSON.stringify({
           type: 'ACTION_REJECTED',
+          reason: 'validation_error',
           error: err.message || 'Error en validación de acción',
+          details: err?.errors || undefined,
         }),
       );
       this.broadcastRoomState(client.roomCode);

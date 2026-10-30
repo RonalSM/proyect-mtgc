@@ -616,8 +616,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   // Punto 7: Daño recibido resta a la vida actual y limpia el input
   const handleDamageSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const val = parseInt(damageInput, 10);
-    if (!isNaN(val) && val > 0) {
+    const rawVal = parseInt(damageInput, 10);
+    if (!isNaN(rawVal) && rawVal > 0) {
+      const val = Math.min(10000, rawVal);
       adjustLife(-val);
       setDamageInput('');
     }
@@ -626,8 +627,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   // Punto 7: Vida ganada suma a la vida actual y limpia el input
   const handleHealSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const val = parseInt(healInput, 10);
-    if (!isNaN(val) && val > 0) {
+    const rawVal = parseInt(healInput, 10);
+    if (!isNaN(rawVal) && rawVal > 0) {
+      const val = Math.min(10000, rawVal);
       adjustLife(val);
       setHealInput('');
     }
@@ -880,12 +882,14 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                         <input
                           type="number"
                           min="1"
+                          max="10000"
+                          maxLength={5}
                           step="1"
                           placeholder="Ej: 7"
                           value={damageInput}
                           aria-label="Daño recibido"
                           data-testid="damage-received-input"
-                          onChange={e => setDamageInput(e.target.value.replace(/[^0-9]/g, ''))}
+                          onChange={e => setDamageInput(e.target.value.replace(/[^0-9]/g, '').slice(0, 5))}
                           onKeyDown={e => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
@@ -912,12 +916,14 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                         <input
                           type="number"
                           min="1"
+                          max="10000"
+                          maxLength={5}
                           step="1"
                           placeholder="Ej: 3"
                           value={healInput}
                           aria-label="Vida ganada"
                           data-testid="life-gained-input"
-                          onChange={e => setHealInput(e.target.value.replace(/[^0-9]/g, ''))}
+                          onChange={e => setHealInput(e.target.value.replace(/[^0-9]/g, '').slice(0, 5))}
                           onKeyDown={e => {
                             if (e.key === 'Enter') {
                               e.preventDefault();

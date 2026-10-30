@@ -185,7 +185,7 @@ export class GameStateSession {
     const previousLife = player.life;
     const previousIsAtRisk = player.isAtRisk;
     const previousRiskReason = player.riskReason;
-    player.life += payload.delta;
+    player.life = Math.max(-10000, Math.min(10000, player.life + payload.delta));
 
     if (player.life <= 0) {
       player.isAtRisk = true;
@@ -223,7 +223,7 @@ export class GameStateSession {
     const previousIsAtRisk = player.isAtRisk;
     const previousRiskReason = player.riskReason;
 
-    player.life = payload.life;
+    player.life = Math.max(-10000, Math.min(10000, payload.life));
     if (player.life <= 0) {
       player.isAtRisk = true;
       player.riskReason = 'life';
@@ -260,7 +260,7 @@ export class GameStateSession {
     const previousIsAtRisk = target.isAtRisk;
     const previousRiskReason = target.riskReason;
 
-    const newDamage = Math.max(0, current + payload.delta);
+    const newDamage = Math.max(0, Math.min(999, current + payload.delta));
     target.commanderDamage[payload.sourceCommanderInstanceId] = newDamage;
 
     if (newDamage >= 21) {
@@ -350,7 +350,7 @@ export class GameStateSession {
       const prev = player.counters.poison;
       const prevIsAtRisk = player.isAtRisk;
       const prevRiskReason = player.riskReason;
-      player.counters.poison = Math.max(0, player.counters.poison + payload.delta);
+      player.counters.poison = Math.max(0, Math.min(99, player.counters.poison + payload.delta));
 
       if (player.counters.poison >= 10) {
         player.isAtRisk = true;
@@ -372,7 +372,7 @@ export class GameStateSession {
       });
     } else if (cType === 'energy' || cType === 'experience' || cType === 'commanderTax') {
       const prev = player.counters[cType];
-      player.counters[cType] = Math.max(0, player.counters[cType] + payload.delta);
+      player.counters[cType] = Math.max(0, Math.min(999, player.counters[cType] + payload.delta));
       this.undoStack.push({
         playerId: payload.playerId,
         description: `Revertir contador ${cType}`,
@@ -386,7 +386,7 @@ export class GameStateSession {
         player.counters.custom = {};
       }
       const prev = player.counters.custom[payload.counterType] ?? 0;
-      const next = Math.max(0, prev + payload.delta);
+      const next = Math.max(0, Math.min(999, prev + payload.delta));
       if (next === 0) {
         delete player.counters.custom[payload.counterType];
       } else {
@@ -1197,7 +1197,7 @@ export class GameStateSession {
     if (!found) return;
 
     const sourceCard = found.card;
-    const count = Math.max(1, payload.count || 1);
+    const count = Math.max(1, Math.min(20, payload.count || 1));
     const createdInstances: CardInstance[] = [];
 
     const targetZones =
@@ -1387,7 +1387,7 @@ export class GameStateSession {
     }
 
     if (payload.count !== undefined) {
-      const next = Math.max(0, payload.count);
+      const next = Math.max(0, Math.min(999, payload.count));
       if (next === 0) {
         delete card.counters[payload.counterType];
       } else {
@@ -1399,7 +1399,7 @@ export class GameStateSession {
       );
     } else if (payload.delta !== undefined) {
       const current = card.counters[payload.counterType] || 0;
-      const next = Math.max(0, current + payload.delta);
+      const next = Math.max(0, Math.min(999, current + payload.delta));
       if (next === 0) {
         delete card.counters[payload.counterType];
       } else {
@@ -1458,11 +1458,16 @@ export class GameStateSession {
       throw new Error('No se puede modificar el poder y resistencia de una carta boca abajo.');
     }
 
+    const prevBaseP = card.basePower;
+    const prevBaseT = card.baseToughness;
+    const prevPlus = card.counters['+1/+1'];
+    const prevMinus = card.counters['−1/−1'] ?? card.counters['-1/-1'];
+
     if (payload.basePower !== undefined) {
       if (payload.basePower === null) {
         delete card.basePower;
       } else {
-        card.basePower = payload.basePower;
+        card.basePower = Math.max(-999, Math.min(999, payload.basePower));
       }
     }
 
@@ -1470,7 +1475,7 @@ export class GameStateSession {
       if (payload.baseToughness === null) {
         delete card.baseToughness;
       } else {
-        card.baseToughness = payload.baseToughness;
+        card.baseToughness = Math.max(-999, Math.min(999, payload.baseToughness));
       }
     }
 
@@ -1478,7 +1483,7 @@ export class GameStateSession {
       if (payload.plusCounters === 0) {
         delete card.counters['+1/+1'];
       } else {
-        card.counters['+1/+1'] = payload.plusCounters;
+        card.counters['+1/+1'] = Math.max(0, Math.min(999, payload.plusCounters));
       }
     }
 
@@ -1488,12 +1493,23 @@ export class GameStateSession {
         delete card.counters['−1/−1'];
       } else {
         delete card.counters['-1/-1'];
-        card.counters['−1/−1'] = payload.minusCounters;
+        card.counters['−1/−1'] = Math.max(0, Math.min(999, payload.minusCounters));
       }
     }
 
     const ptInfo = computeCardPT(card);
     const ptText = ptInfo ? ptInfo.text : 'N/A';
+
+    this.undoStack.push({
+      playerId,
+      description: `Revertir P/T de ${card.definition.name}`,
+      revert: () => {
+        if (prevBaseP !== undefined) card.basePower = prevBaseP; else delete card.basePower;
+        if (prevBaseT !== undefined) card.baseToughness = prevBaseT; else delete card.baseToughness;
+        if (prevPlus !== undefined) card.counters['+1/+1'] = prevPlus; else delete card.counters['+1/+1'];
+        if (prevMinus !== undefined) card.counters['−1/−1'] = prevMinus; else { delete card.counters['−1/−1']; delete card.counters['-1/-1']; }
+      },
+    });
 
     this.addLog(
       playerId,

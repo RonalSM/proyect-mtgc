@@ -146,18 +146,26 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
               e.preventDefault();
               const val = parseInt(customLife, 10);
               if (!isNaN(val)) {
-                onAction('SET_LIFE', { playerId: player.id, life: val });
+                const clamped = Math.max(-10000, Math.min(10000, val));
+                onAction('SET_LIFE', { playerId: player.id, life: clamped });
               }
               setIsEditingLife(false);
             }}
             className="flex items-center space-x-1 my-1"
           >
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
               value={customLife}
-              onChange={e => setCustomLife(e.target.value)}
+              onChange={e => {
+                const cleaned = e.target.value.replace(/[^0-9-]/g, '');
+                if (/^-?[0-9]{0,5}$/.test(cleaned)) {
+                  setCustomLife(cleaned);
+                }
+              }}
               autoFocus
-              className="w-20 px-2 py-1 text-2xl font-black text-center bg-slate-900 border border-amber-400 rounded text-white focus:outline-none"
+              className="w-24 px-2 py-1 text-2xl font-black text-center bg-slate-900 border border-amber-400 rounded text-white focus:outline-none"
             />
             <button
               type="submit"

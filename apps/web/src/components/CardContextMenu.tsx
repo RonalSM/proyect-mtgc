@@ -183,7 +183,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
     onAction('SET_CARD_COUNTER', {
       cardInstanceId: card.instanceId,
       counterType: type,
-      count: Math.max(0, count),
+      count: Math.max(0, Math.min(999, count)),
     });
   };
 
@@ -565,13 +565,16 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   </span>
                 </div>
                 <input
-                  type="number"
-                  step="1"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={4}
                   data-testid="pt-input-base-power"
                   value={inputBaseP}
                   placeholder={card.definition?.power ?? ''}
                   onChange={e => {
-                    const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
+                    const cleaned = e.target.value.replace(/[^0-9-]/g, '');
+                    const raw = cleaned === '' || cleaned === '-' ? '' : parseInt(cleaned, 10);
+                    const val = typeof raw === 'number' ? Math.max(-999, Math.min(999, raw)) : raw;
                     inputBasePRef.current = val;
                     setInputBaseP(val);
                     emitPT(val, inputBaseTRef.current, inputPlus, inputMinus);
@@ -584,7 +587,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                       typeof inputBasePRef.current === 'number'
                         ? inputBasePRef.current
                         : (printedPower ?? 0);
-                    const next = current + step;
+                    const next = Math.max(-999, Math.min(999, current + step));
                     inputBasePRef.current = next;
                     setInputBaseP(next);
                     emitPT(next, inputBaseTRef.current, inputPlus, inputMinus);
@@ -613,13 +616,16 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   </span>
                 </div>
                 <input
-                  type="number"
-                  step="1"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={4}
                   data-testid="pt-input-base-toughness"
                   value={inputBaseT}
                   placeholder={card.definition?.toughness ?? ''}
                   onChange={e => {
-                    const val = e.target.value === '' ? '' : parseInt(e.target.value, 10);
+                    const cleaned = e.target.value.replace(/[^0-9-]/g, '');
+                    const raw = cleaned === '' || cleaned === '-' ? '' : parseInt(cleaned, 10);
+                    const val = typeof raw === 'number' ? Math.max(-999, Math.min(999, raw)) : raw;
                     inputBaseTRef.current = val;
                     setInputBaseT(val);
                     emitPT(inputBasePRef.current, val, inputPlus, inputMinus);
@@ -632,7 +638,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                       typeof inputBaseTRef.current === 'number'
                         ? inputBaseTRef.current
                         : (printedToughness ?? 0);
-                    const next = current + step;
+                    const next = Math.max(-999, Math.min(999, current + step));
                     inputBaseTRef.current = next;
                     setInputBaseT(next);
                     emitPT(inputBasePRef.current, next, inputPlus, inputMinus);
@@ -951,12 +957,15 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                     <input
                       type="number"
                       min="1"
+                      max="20"
                       step="1"
                       placeholder="Otra..."
                       data-testid="clone-custom-input"
                       value={cloneCountInput}
                       onChange={e =>
-                        setCloneCountInput(Math.max(1, parseInt(e.target.value, 10) || 1))
+                        setCloneCountInput(
+                          Math.max(1, Math.min(20, parseInt(e.target.value.replace(/[^0-9]/g, ''), 10) || 1)),
+                        )
                       }
                       onKeyDown={e => {
                         if (e.key === 'Enter') {
