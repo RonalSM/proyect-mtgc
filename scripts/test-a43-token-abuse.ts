@@ -1,23 +1,34 @@
 import http from 'node:http';
+import https from 'node:https';
 
 async function testTokenAbuse() {
-  const host = process.env.TEST_HOST || '127.0.0.1';
-  const port = parseInt(process.env.TEST_PORT || '3001', 10);
-  console.log(`🛡️ [Test A4.3] Iniciando prueba de abuso con 1.000 peticiones y tokens falsificados/rotados hacia ${host}:${port}...`);
+  const targetUrl = process.env.TEST_URL || 'https://mtgc-backend-caf950eaa8b4.herokuapp.com';
+  const urlObj = new URL(targetUrl);
+  const client = urlObj.protocol === 'https:' ? https : http;
+  const port = urlObj.port ? parseInt(urlObj.port, 10) : (urlObj.protocol === 'https:' ? 443 : 80);
+
+  console.log(`🛡️ [Test A4.3] Iniciando prueba de abuso con 1.000 peticiones concurrentes y tokens falsificados/rotados hacia ${targetUrl}...`);
 
   let count200 = 0;
   let count429 = 0;
   let first429Index = -1;
+  let totalDone = 0;
 
-  for (let i = 1; i <= 1000; i++) {
+  const agent = new (urlObj.protocol === 'https:' ? https.Agent : http.Agent)({
+    keepAlive: true,
+    maxSockets: 50,
+  });
+
+  const sendRequest = async (i: number) => {
     const fakeToken = `fake_guest_token_${Math.random().toString(36).substring(2)}_${Date.now()}`;
-    const result = await new Promise<{ status: number; body: string }>((resolve) => {
-      const req = http.request(
+    return new Promise<{ status: number; body: string }>((resolve) => {
+      const req = client.request(
         {
-          hostname: host,
+          hostname: urlObj.hostname,
           port: port,
           path: '/api/cards/search?q=Forest',
           method: 'GET',
+          agent,
           headers: {
             'x-guest-token': fakeToken,
             'User-Agent': 'MtgcTokenAbuseTest/1.0',
@@ -32,23 +43,36 @@ async function testTokenAbuse() {
       req.on('error', () => resolve({ status: 500, body: 'error' }));
       req.end();
     });
+  };
 
-    if (result.status === 200) {
-      count200++;
-    } else if (result.status === 429) {
-      count429++;
-      if (first429Index === -1) {
-        first429Index = i;
+  const CONCURRENCY = 25;
+  let nextIndex = 1;
+
+  const worker = async () => {
+    while (nextIndex <= 1000) {
+      const idx = nextIndex++;
+      const res = await sendRequest(idx);
+      totalDone++;
+      if (res.status === 200) {
+        count200++;
+      } else if (res.status === 429) {
+        count429++;
+        if (first429Index === -1 || idx < first429Index) {
+          first429Index = idx;
+        }
+      }
+
+      if (totalDone % 200 === 0) {
+        console.log(`[Progreso ${totalDone}/1000] 200 OK: ${count200} | 429 Too Many Requests: ${count429}`);
       }
     }
+  };
 
-    if (i % 200 === 0) {
-      console.log(`[Petición ${i}/1000] 200 OK: ${count200} | 429 Too Many Requests: ${count429}`);
-    }
-  }
+  const workers = Array.from({ length: CONCURRENCY }, () => worker());
+  await Promise.all(workers);
 
   console.log(`\n📊 [Resultado Prueba A4.3 Abuso de Tokens]`);
-  console.log(`Total peticiones: 1000`);
+  console.log(`Total peticiones: ${totalDone}`);
   console.log(`Peticiones exitosas (200): ${count200}`);
   console.log(`Peticiones bloqueadas con 429: ${count429}`);
   console.log(`Primera petición bloqueada con 429: #${first429Index}`);
