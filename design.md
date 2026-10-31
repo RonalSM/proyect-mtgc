@@ -1249,9 +1249,9 @@ TABLE_IDLE_TIMEOUT_MIN=120
 5. **Hash criptográfico con `scrypt` asíncrono y control de concurrencia:**
    - *Justificación*: Argon2id requería bindings nativos en C++ y consumía hasta 64 MB de RAM por hash. Con múltiples logins simultáneos, el servidor arriesgaba OOM. `crypto.scrypt` de la biblioteca estándar de Node.js es una función de derivación de claves recomendada por OWASP y NIST, y permite parametrizar con exactitud el costo de memoria ($N=16384, r=8, p=1$, ~16 MB de memoria por operación).
    - *Impacto*: Implementación asíncrona no bloqueante de `crypto.scrypt` con un semáforo de concurrencia máxima (máx. 3 ejecuciones paralelas) para proteger el event loop y la memoria del dyno. Formato de hash autodescriptivo `$scrypt$N=16384,r=8,p=1$salt$hash` con soporte retrocompatible.
-6. **Desacoplamiento de repositorios y despliegues (Netlify + Heroku):**
+6. **Desacoplamiento de repositorios y despliegues (Netlify + Heroku — B3):**
    - *Justificación*: Netlify aloja la SPA React con compresión edge y distribución CDN global sin costo de servidor, mientras que Heroku ejecuta el proceso Node.js/Fastify con WebSockets 24/7 y Postgres gestionado.
-   - *Impacto*: `packages/shared` funge como Single Source of Truth para tipos, esquemas Zod y validaciones. La sincronización entre el monorepo y el repositorio del backend se gestiona de forma determinista para evitar desalineación de contratos.
+   - *Impacto*: `packages/shared` funge como Single Source of Truth para tipos, esquemas Zod y validaciones. La sincronización se documenta formalmente en [`docs/SHARED_PACKAGE_SYNC.md`](docs/SHARED_PACKAGE_SYNC.md) utilizando tres vías: git subtree (`git subtree split`), script automatizado de sincronización espejo (`scripts/sync-shared.js`) y pipeline de GitHub Actions para evitar cualquier divergencia de contratos entre frontend y backend.
 7. **Fixture ligero de cartas para CI/CD:**
    - *Justificación*: Las pruebas de integración en CI no deben descargar volcados de Scryfall ni sincronizar 32.000 cartas en cada commit.
    - *Impacto*: Creación de `cards-sample.json` (~100 cartas) que permite levantar y verificar la suite completa de pruebas unitarias y de integración en menos de 5 segundos.
