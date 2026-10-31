@@ -208,7 +208,7 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     }
   };
 
-  // Punto 1 / Punto 3 / G2: Coordenadas optimistas y transformación segura para vista normal y ampliada
+  // Coordenadas normalizadas sobre la mesa total
   const rawX = Number.isFinite(optimisticPosition?.x)
     ? optimisticPosition!.x
     : Number.isFinite(card.position?.x)
@@ -223,24 +223,11 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   let screenNormX = rawX;
   let screenNormY = rawY;
 
+  // Proyección de cámara cuando la vista está ampliada (Tarea 2)
   if (viewFraming?.isExpanded && viewFraming.width > 0 && viewFraming.height > 0) {
     screenNormX = (rawX - viewFraming.xMin) / viewFraming.width;
     screenNormY = (rawY - viewFraming.yMin) / viewFraming.height;
-    if (
-      !Number.isFinite(screenNormX) ||
-      !Number.isFinite(screenNormY) ||
-      screenNormX < -0.15 ||
-      screenNormX > 1.15 ||
-      screenNormY < -0.15 ||
-      screenNormY > 1.15
-    ) {
-      return null;
-    }
   }
-
-  // Acotamiento numérico estricto para evitar NaN o desbordes visuales (Punto G2)
-  screenNormX = Number.isFinite(screenNormX) ? Math.max(0.01, Math.min(0.99, screenNormX)) : 0.5;
-  screenNormY = Number.isFinite(screenNormY) ? Math.max(0.01, Math.min(0.99, screenNormY)) : 0.5;
 
   const cardWNum = cardPixelWidth || 96;
   const cardHNum = cardPixelHeight || 134;
@@ -252,19 +239,26 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   const orientedH = isTapped ? cardWNum : cardHNum;
 
   // Convención única (Punto 2): la posición normalizada (x, y) es el centro de la carta.
-  // El límite al viewport utiliza las dimensiones orientadas actuales (w x h o h x w) con protecciones numéricas.
   const rawCenterX = screenNormX * winW;
   const rawCenterY = screenNormY * winH;
-  const clampedCenterX = Number.isFinite(rawCenterX)
-    ? Math.max(orientedW / 2, Math.min(winW - orientedW / 2, rawCenterX))
-    : winW / 2;
-  const clampedCenterY = Number.isFinite(rawCenterY)
-    ? Math.max(orientedH / 2, Math.min(winH - orientedH / 2, rawCenterY))
-    : winH / 2;
+
+  // Optimización de rendimiento (Tarea 1.3): únicamente contra los bordes de la pantalla (viewport)
+  // con margen de holgura (+200px), NUNCA contra los límites de la celda del jugador.
+  const VIEWPORT_MARGIN = 200;
+  if (
+    !Number.isFinite(rawCenterX) ||
+    !Number.isFinite(rawCenterY) ||
+    rawCenterX + orientedW / 2 < -VIEWPORT_MARGIN ||
+    rawCenterX - orientedW / 2 > winW + VIEWPORT_MARGIN ||
+    rawCenterY + orientedH / 2 < -VIEWPORT_MARGIN ||
+    rawCenterY - orientedH / 2 > winH + VIEWPORT_MARGIN
+  ) {
+    return null;
+  }
 
   // Redondeo del centro de la carta a píxeles enteros exactos para eliminar subpíxeles y carta borrosa (Punto 1)
-  const centerPixelX = Math.round(clampedCenterX);
-  const centerPixelY = Math.round(clampedCenterY);
+  const centerPixelX = Math.round(rawCenterX);
+  const centerPixelY = Math.round(rawCenterY);
 
   const zIndex = optimisticPosition?.zIndex ?? card.position?.zIndex ?? 5;
 
@@ -376,35 +370,6 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   const { showPreview, hidePreview } = useCardPreview();
   const [internalSelectedCardId, setInternalSelectedCardId] = useState<string | null>(null);
 
-  // Filtrar de forma memoizada las cartas visibles según viewFraming (optimización y ciclo de vida de componentes)
-  const visibleCards = React.useMemo(() => {
-    if (!viewFraming?.isExpanded || viewFraming.width <= 0 || viewFraming.height <= 0) {
-      return cards;
-    }
-    return cards.filter(card => {
-      const rawX = Number.isFinite(optimisticPositions?.[card.instanceId]?.x)
-        ? optimisticPositions![card.instanceId].x
-        : Number.isFinite(card.position?.x)
-          ? card.position!.x
-          : 0.5;
-      const rawY = Number.isFinite(optimisticPositions?.[card.instanceId]?.y)
-        ? optimisticPositions![card.instanceId].y
-        : Number.isFinite(card.position?.y)
-          ? card.position!.y
-          : 0.5;
-      const screenNormX = (rawX - viewFraming.xMin) / viewFraming.width;
-      const screenNormY = (rawY - viewFraming.yMin) / viewFraming.height;
-      return (
-        Number.isFinite(screenNormX) &&
-        Number.isFinite(screenNormY) &&
-        screenNormX >= -0.15 &&
-        screenNormX <= 1.15 &&
-        screenNormY >= -0.15 &&
-        screenNormY <= 1.15
-      );
-    });
-  }, [cards, viewFraming, optimisticPositions]);
-
   const handleCardClick = (card: CardInstance, e: React.MouseEvent) => {
     if (onSelectCard) {
       onSelectCard(card.instanceId, e.shiftKey || e.ctrlKey || e.metaKey);
@@ -460,8 +425,8 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
         data-battlefield-canvas="true"
         className="fixed inset-0 w-screen h-[100dvh] pointer-events-none z-10 overflow-hidden"
       >
-        {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas */}
-        {visibleCards.map(card => {
+        {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas (Tarea 1: sin filtro ni umbrales arbitrarios) */}
+        {cards.map(card => {
         const remoteItem = remoteDraggingCards && remoteDraggingCards[card.instanceId];
         const isRemoteDragging = !!(
           remoteItem &&
@@ -509,40 +474,31 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
           if (viewFraming?.isExpanded && viewFraming.width > 0 && viewFraming.height > 0) {
             screenNormX = (screenNormX - viewFraming.xMin) / viewFraming.width;
             screenNormY = (screenNormY - viewFraming.yMin) / viewFraming.height;
-            if (
-              !Number.isFinite(screenNormX) ||
-              !Number.isFinite(screenNormY) ||
-              screenNormX < -0.15 ||
-              screenNormX > 1.15 ||
-              screenNormY < -0.15 ||
-              screenNormY > 1.15
-            ) {
-              return null;
-            }
           }
-          screenNormX = Number.isFinite(screenNormX) ? Math.max(0.01, Math.min(0.99, screenNormX)) : 0.5;
-          screenNormY = Number.isFinite(screenNormY) ? Math.max(0.01, Math.min(0.99, screenNormY)) : 0.5;
           const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
           const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
           const cardWNum = cardPixelWidth || 96;
           const cardHNum = cardPixelHeight || 134;
-          const ghostW = item.isTapped ? cardHNum : cardWNum;
-          const ghostH = item.isTapped ? cardWNum : cardHNum;
 
           // Convención única (Punto 2 & Punto 3): la posición es el centro con dimensiones orientadas
           const rawGhostCenterX = screenNormX * winW;
           const rawGhostCenterY = screenNormY * winH;
-          const clampedGhostCenterX = Math.max(
-            ghostW / 2,
-            Math.min(winW - ghostW / 2, rawGhostCenterX),
-          );
-          const clampedGhostCenterY = Math.max(
-            ghostH / 2,
-            Math.min(winH - ghostH / 2, rawGhostCenterY),
-          );
 
-          const ghostCenterX = Math.round(clampedGhostCenterX);
-          const ghostCenterY = Math.round(clampedGhostCenterY);
+          // Optimización de rendimiento por viewport con holgura de +200px (Tarea 1.3)
+          const VIEWPORT_MARGIN = 200;
+          if (
+            !Number.isFinite(rawGhostCenterX) ||
+            !Number.isFinite(rawGhostCenterY) ||
+            rawGhostCenterX < -VIEWPORT_MARGIN ||
+            rawGhostCenterX > winW + VIEWPORT_MARGIN ||
+            rawGhostCenterY < -VIEWPORT_MARGIN ||
+            rawGhostCenterY > winH + VIEWPORT_MARGIN
+          ) {
+            return null;
+          }
+
+          const ghostCenterX = Math.round(rawGhostCenterX);
+          const ghostCenterY = Math.round(rawGhostCenterY);
 
           return (
             <div

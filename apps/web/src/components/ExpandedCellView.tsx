@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import type { PlayerState, PlayerZones, GameActionType, RoomState, CardInstance } from '@mtgc/shared';
 import { X, Maximize2 } from 'lucide-react';
 import { PlayerCell } from './PlayerCell';
-import { CardDisplay } from './CardDisplay';
 import { BattlefieldCanvas } from './BattlefieldCanvas';
 import { ErrorBoundary } from './ErrorBoundary';
+import { getPlayerFraming } from '../utils/table-framing';
 
 interface ExpandedCellViewProps {
   player: PlayerState;
@@ -40,6 +40,15 @@ export const ExpandedCellView: React.FC<ExpandedCellViewProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  const framing = roomState
+    ? getPlayerFraming(player.id, roomState)
+    : { xMin: 0, yMin: 0, width: 1, height: 1, isExpanded: true };
+
+  const scaleX = framing.width > 0 ? 1 / framing.width : 1;
+  const scaleY = framing.height > 0 ? 1 / framing.height : 1;
+  const originX = framing.width >= 1 ? 50 : (framing.xMin / (1 - framing.width)) * 100;
+  const originY = framing.height >= 1 ? 50 : (framing.yMin / (1 - framing.height)) * 100;
+
   return (
     <ErrorBoundary fallbackTitle="Error al mostrar la vista ampliada" onReset={onClose}>
       <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col p-3 sm:p-6 select-none animate-in fade-in duration-200">
@@ -64,53 +73,38 @@ export const ExpandedCellView: React.FC<ExpandedCellViewProps> = ({
           </button>
         </div>
 
-        {/* Expanded Cell Container */}
+        {/* Global Tabletop Surface under Camera Framing (Tarea 2) */}
         <div className="flex-1 overflow-hidden mt-3 rounded-2xl border border-[#12544F] relative bg-[#092328] shadow-2xl">
-          <PlayerCell
-            player={player}
-            zones={zones}
-            row={1}
-            col={0}
-            isLocalPlayer={isLocal}
-            isActiveTurn={isActiveTurn}
-            localPlayerId={localPlayerId}
-            roomState={roomState}
-            allBattlefieldCards={allBattlefieldCards}
-            onAction={onAction}
-            onExpandCell={onClose}
-          />
-          {isLocal ? (
-            <BattlefieldCanvas
-              cards={zones.battlefield}
+          <div
+            className="w-full h-full relative"
+            style={{
+              transform: `scale(${scaleX}, ${scaleY})`,
+              transformOrigin: `${originX}% ${originY}%`,
+            }}
+          >
+            <PlayerCell
+              player={player}
+              zones={zones}
+              row={1}
+              col={0}
+              isLocalPlayer={isLocal}
+              isActiveTurn={isActiveTurn}
               localPlayerId={localPlayerId}
               roomState={roomState}
+              allBattlefieldCards={allBattlefieldCards}
               onAction={onAction}
+              onExpandCell={onClose}
             />
-          ) : (
-            <div className="absolute inset-0 p-4 overflow-hidden pointer-events-auto z-15">
-              <div className="flex flex-wrap gap-3">
-                {zones.battlefield.map(card => (
-                  <div
-                    key={card.instanceId}
-                    className={`w-24 h-34 rounded-lg overflow-hidden border border-[#12544F] shadow-md bg-[#040d0f] transition-transform origin-center ${
-                      card.isTapped ? 'rotate-90' : ''
-                    }`}
-                  >
-                    <CardDisplay
-                      card={card.definition}
-                      isFaceDown={card.isFaceDown}
-                      isTapped={card.isTapped}
-                    />
-                  </div>
-                ))}
-                {zones.battlefield.length === 0 && (
-                  <div className="w-full text-center py-24 text-zinc-400 text-xs italic">
-                    Sin cartas en el campo de batalla
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          </div>
+
+          {/* BattlefieldCanvas con todas las cartas globales bajo el mismo encuadre de cámara (sin ocultar rivales) */}
+          <BattlefieldCanvas
+            cards={allBattlefieldCards || zones.battlefield}
+            viewFraming={framing}
+            localPlayerId={localPlayerId}
+            roomState={roomState}
+            onAction={onAction}
+          />
         </div>
       </div>
     </ErrorBoundary>
