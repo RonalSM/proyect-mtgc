@@ -137,7 +137,9 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-[#12544F] transition-colors cursor-pointer"
+            data-testid="close-issue-report"
+            aria-label="Cerrar modal de reporte de problemas"
+            className="text-zinc-200 hover:text-white p-1 rounded-lg hover:bg-[#12544F] transition-colors cursor-pointer"
             title="Cerrar modal"
           >
             <X className="w-5 h-5" />

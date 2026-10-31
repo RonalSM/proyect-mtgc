@@ -1034,27 +1034,37 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">
+                    <label
+                      htmlFor="custom-deck-name"
+                      className="block text-xs font-bold text-slate-300 mb-1"
+                    >
                       Nombre del Mazo
                     </label>
                     <input
+                      id="custom-deck-name"
                       type="text"
                       value={deckNameInput}
                       onChange={e => setDeckNameInput(e.target.value)}
                       placeholder="Ej. Atraxa Contadores"
+                      aria-label="Nombre del Mazo"
                       className="w-full bg-[#040d0f] border border-[#12544F] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#2A835F]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-zinc-300 mb-1">
+                    <label
+                      htmlFor="custom-deck-text"
+                      className="block text-xs font-bold text-zinc-300 mb-1"
+                    >
                       Lista en formato texto (MTG Arena, Moxfield o Archidekt)
                     </label>
                     <textarea
+                      id="custom-deck-text"
                       rows={6}
                       value={rawDeckText}
                       onChange={e => setRawDeckText(e.target.value)}
                       placeholder={`Commander\n1 Atraxa, Praetors' Voice\n\nDeck\n1 Sol Ring\n1 Command Tower...`}
+                      aria-label="Lista en formato texto"
                       className="w-full bg-[#040d0f] border border-[#12544F] rounded-xl p-3 text-xs font-mono text-white focus:outline-none focus:border-[#2A835F]"
                     />
                   </div>

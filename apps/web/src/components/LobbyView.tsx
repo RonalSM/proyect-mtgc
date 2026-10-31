@@ -286,7 +286,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                             loading="eager"
                           />
                         ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-zinc-500">
+                          <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center text-zinc-300">
                             <Crown className="w-10 h-10 text-[#12544F] mb-2" />
                             <span className="font-bold text-xs text-zinc-300">
                               {selectedPresetForView.commanderName}
@@ -315,7 +315,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                           <div className="flex items-center space-x-1 shrink-0">
                             <ManaCostRenderer cost={cmdrCard?.manaCost} size="sm" />
                             {cmdrCard?.power !== undefined && cmdrCard?.toughness !== undefined && (
-                              <span className="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-[#12544F] text-[#8BBB92] border border-[#2A835F]/40 ml-1">
+                              <span className="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-[#12544F] text-emerald-300 border border-[#2A835F]/40 ml-1">
                                 {cmdrCard.power}/{cmdrCard.toughness}
                               </span>
                             )}
@@ -387,7 +387,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="py-8 text-center text-xs text-zinc-500">
+              <div className="py-8 text-center text-xs text-zinc-300">
                 Selecciona un mazo de la izquierda para ver sus detalles.
               </div>
             )}
@@ -466,7 +466,8 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               <button
                 type="button"
                 onClick={() => setModalMode('none')}
-                className="text-zinc-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-[#12544F]/60"
+                className="text-zinc-200 hover:text-white text-xs font-bold px-2.5 py-1 rounded bg-[#12544F] border border-[#2A835F]/40 cursor-pointer"
+                aria-label="Cerrar modal de creación de mesa"
               >
                 Cerrar
               </button>
@@ -474,41 +475,56 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
 
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase tracking-wider">
+                <label
+                  htmlFor="create-room-name"
+                  className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase tracking-wider"
+                >
                   Nombre de la Mesa
                 </label>
                 <input
+                  id="create-room-name"
                   type="text"
                   value={roomName}
                   onChange={e => setRoomName(e.target.value)}
                   required
                   placeholder="Ej. Pod de Viernes por la Noche"
+                  aria-label="Nombre de la Mesa"
                   className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase tracking-wider">
+                <label
+                  htmlFor="create-host-name"
+                  className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase tracking-wider"
+                >
                   Tu Nombre de Jugador
                 </label>
                 <input
+                  id="create-host-name"
                   type="text"
                   value={hostName}
                   onChange={e => setHostName(e.target.value)}
                   required
                   placeholder="Ej. Planeswalker 1"
+                  aria-label="Tu Nombre de Jugador"
                   className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase tracking-wider">
+                  <label
+                    htmlFor="create-max-players"
+                    className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase tracking-wider"
+                  >
                     Asientos
                   </label>
                   <select
+                    id="create-max-players"
                     value={maxPlayers}
                     onChange={e => setMaxPlayers(Number(e.target.value))}
+                    aria-label="Número de asientos"
                     className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-3 py-2.5 text-sm text-zinc-200 focus:outline-none"
                   >
                     <option value={2}>2 Jugadores (1v1)</option>
@@ -520,15 +536,20 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase tracking-wider">
+                  <label
+                    htmlFor="create-starting-life"
+                    className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase tracking-wider"
+                  >
                     Vidas Iniciales
                   </label>
                   <input
+                    id="create-starting-life"
                     type="number"
                     min={1}
                     max={100}
                     value={startingLife}
                     onChange={e => setStartingLife(Number(e.target.value))}
+                    aria-label="Vidas Iniciales"
                     className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none"
                   />
                 </div>
@@ -573,7 +594,8 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               <button
                 type="button"
                 onClick={() => setModalMode('none')}
-                className="text-zinc-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-[#12544F]/60"
+                className="text-zinc-200 hover:text-white text-xs font-bold px-2.5 py-1 rounded bg-[#12544F] border border-[#2A835F]/40 cursor-pointer"
+                aria-label="Cerrar modal de unirse a mesa"
               >
                 Cerrar
               </button>
@@ -581,30 +603,40 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
 
             <form onSubmit={handleJoinSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase tracking-wider text-center">
+                <label
+                  htmlFor="join-room-code"
+                  className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase tracking-wider text-center"
+                >
                   Código de la Mesa
                 </label>
                 <input
+                  id="join-room-code"
                   type="text"
                   maxLength={6}
                   value={joinCode}
                   onChange={e => setJoinCode(e.target.value.toUpperCase())}
                   required
                   placeholder="ABCDEF"
-                  className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-4 py-3 text-center text-2xl font-mono font-bold tracking-[0.25em] text-[#8BBB92] focus:outline-none"
+                  aria-label="Código de la Mesa"
+                  className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-4 py-3 text-center text-2xl font-mono font-bold tracking-[0.25em] text-emerald-300 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase tracking-wider">
+                <label
+                  htmlFor="join-player-name"
+                  className="block text-xs font-bold text-zinc-300 mb-1.5 uppercase tracking-wider"
+                >
                   Tu Nombre de Jugador
                 </label>
                 <input
+                  id="join-player-name"
                   type="text"
                   value={joinPlayerName}
                   onChange={e => setJoinPlayerName(e.target.value)}
                   required
                   placeholder="Ej. Planeswalker 2"
+                  aria-label="Tu Nombre de Jugador"
                   className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
                 />
               </div>

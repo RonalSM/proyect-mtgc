@@ -223,7 +223,7 @@ export default function App() {
                 <h1 className="font-sans font-extrabold text-sm tracking-tight text-white uppercase">
                   MTG Commander Sandbox
                 </h1>
-                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-[#2A835F]/40 bg-[#12544F] text-[#8BBB92] tracking-wider">
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border border-[#2A835F]/40 bg-[#12544F] text-emerald-300 tracking-wider">
                   EDH
                 </span>
               </div>

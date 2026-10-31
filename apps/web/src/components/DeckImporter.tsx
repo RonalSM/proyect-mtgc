@@ -212,6 +212,8 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
           <button
             type="button"
             onClick={onClose}
+            aria-label="Cerrar importador de mazos"
+            title="Cerrar importador de mazos"
             className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-[#0c2d32] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -229,6 +231,7 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
               value={searchQuery}
               onChange={e => handleAutocomplete(e.target.value)}
               placeholder="Buscar carta en Scryfall para añadir (ej. Sol Ring, Rhystic Study)..."
+              aria-label="Buscar carta en Scryfall para añadir"
               className="w-full bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none"
             />
             <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3" />
@@ -260,6 +263,7 @@ export const DeckImporter: React.FC<DeckImporterProps> = ({ onDeckLoaded, onClos
             value={deckText}
             onChange={e => setDeckText(e.target.value)}
             rows={13}
+            aria-label="Lista de cartas del mazo"
             className="w-full font-mono text-xs bg-[#040d0f] border border-[#12544F] focus:border-[#2A835F] rounded-xl p-4 text-zinc-200 focus:outline-none leading-relaxed resize-y"
             placeholder="1 Atraxa, Praetors' Voice *CMDR*&#10;1 Sol Ring..."
           />
