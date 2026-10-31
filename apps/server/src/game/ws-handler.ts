@@ -58,6 +58,10 @@ export class WebSocketHandler {
   public readonly MAX_CONNECTIONS_PER_IP = 30;
   public readonly MAX_CONNECTIONS_PER_TABLE = 12;
 
+  public getRoomClientCount(roomCode: string): number {
+    return this.roomClients.get(roomCode.toUpperCase())?.size || 0;
+  }
+
   // playerId -> message timestamps in sliding window (REQ-12.4, REQ-16.4)
   private messageRateLimits = new Map<string, number[]>();
   private heartbeatTimer: NodeJS.Timeout | null = null;

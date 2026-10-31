@@ -1085,8 +1085,11 @@ server.get(
   },
 );
 
-// Límite y tope de creación de mesas (Punto A2.2)
-const MAX_TOTAL_ROOMS = 100;
+// Conectar contador de clientes activos para purgado automático de salas
+roomManager.getActiveClientCount = (code: string) => wsHandler.getRoomClientCount(code);
+
+// Límite y tope de creación de mesas (Punto A2.2 y Corrección Bloqueante)
+const MAX_TOTAL_ROOMS = 500;
 
 // Create Room REST endpoint con límite estricto de tasa y capacidad total
 server.post(
@@ -1094,12 +1097,15 @@ server.post(
   {
     config: {
       rateLimit: {
-        max: 10,
+        max: 20,
         timeWindow: '10 minutes',
       },
     },
   },
   async (request, reply) => {
+    // Purgar salas inactivas o huérfanas antes de evaluar capacidad
+    roomManager.pruneInactiveRooms();
+
     if (roomManager.getActiveRoomsCount() >= MAX_TOTAL_ROOMS) {
       server.log.warn(`[ROOM_CREATION_REJECTED] Servidor alcanzó el tope de ${MAX_TOTAL_ROOMS} mesas activas`);
       return reply.status(503).send({
@@ -1246,12 +1252,13 @@ const HOST = process.env.HOST || '0.0.0.0';
 
 try {
   await connectDatabase();
+  // Limpieza previa de instantáneas expiradas (> 2h) en PostgreSQL antes de restaurar
+  await redisSnapshotService.cleanExpiredSnapshots(2);
   await roomManager.restoreFromSnapshots();
-  // Limpieza periódica de instantáneas expiradas (> 24h) en PostgreSQL (Punto A3.4)
-  await redisSnapshotService.cleanExpiredSnapshots(24);
   const snapshotCleanupInterval = setInterval(() => {
-    redisSnapshotService.cleanExpiredSnapshots(24).catch(() => {});
-  }, 6 * 60 * 60 * 1000);
+    redisSnapshotService.cleanExpiredSnapshots(2).catch(() => {});
+    roomManager.pruneInactiveRooms();
+  }, 5 * 60 * 1000);
   if (snapshotCleanupInterval.unref) snapshotCleanupInterval.unref();
 
   // Escuchar en el puerto de inmediato para evitar el timeout de 60s en plataformas como Heroku

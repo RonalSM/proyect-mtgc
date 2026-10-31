@@ -1,2 +1,2 @@
-# Single Page Application fallback for Netlify
-/*    /index.html   200
+/api/*  https://mtgc-backend-caf950eaa8b4.herokuapp.com/api/:splat  200!
+/*      /index.html                                                  200

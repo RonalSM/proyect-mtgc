@@ -7,6 +7,8 @@ import { redisSnapshotService } from '../services/redis-snapshot.service.js';
 export class RoomManager {
   private sessions = new Map<string, GameStateSession>(); // roomCode -> GameStateSession
   private disconnectTimers = new Map<string, NodeJS.Timeout>(); // playerId -> Timeout (10 min seat reservation)
+  private lastActivityTimestamps = new Map<string, number>(); // roomCode -> timestamp
+  public getActiveClientCount?: (code: string) => number;
 
   /**
    * Generates a unique 6-character uppercase alphanumeric room code
@@ -107,6 +109,7 @@ export class RoomManager {
 
     const session = new GameStateSession(initialRoomState);
     this.sessions.set(code, session);
+    this.lastActivityTimestamps.set(code, Date.now());
 
     // Save initial snapshot in Redis
     redisSnapshotService.save(code, initialRoomState).catch(() => {});
@@ -315,7 +318,41 @@ export class RoomManager {
       .catch(() => {});
 
     this.sessions.delete(code.toUpperCase());
+    this.lastActivityTimestamps.delete(code.toUpperCase());
     return true;
+  }
+
+  /**
+   * Registra actividad reciente en una sala
+   */
+  public recordActivity(roomCode: string): void {
+    this.lastActivityTimestamps.set(roomCode.toUpperCase(), Date.now());
+  }
+
+  /**
+   * Purgado automático de salas inactivas o huérfanas sin sockets conectados (Punto A2.2 / Corrección Bloqueante)
+   */
+  public pruneInactiveRooms(maxInactiveMs: number = 15 * 60 * 1000): number {
+    const now = Date.now();
+    let pruned = 0;
+    for (const [code, session] of Array.from(this.sessions.entries())) {
+      if (session.state.status === 'finished') {
+        this.closeRoom(code);
+        pruned++;
+        continue;
+      }
+      const clientCount = this.getActiveClientCount ? this.getActiveClientCount(code) : 0;
+      const lastActivity = this.lastActivityTimestamps.get(code) || 0;
+      const isTestRoom = code.startsWith('TEST') || session.state.name?.startsWith('Mesa Concurrente');
+
+      if (clientCount === 0) {
+        if (isTestRoom || now - lastActivity > maxInactiveMs) {
+          this.closeRoom(code);
+          pruned++;
+        }
+      }
+    }
+    return pruned;
   }
 
   /**
@@ -325,8 +362,12 @@ export class RoomManager {
     const restoredRooms = await redisSnapshotService.restoreAllActiveRooms();
     let restoredCount = 0;
     for (const [code, state] of restoredRooms.entries()) {
+      if (code.startsWith('TEST') || state.status === 'finished') {
+        continue;
+      }
       if (!this.sessions.has(code)) {
         this.sessions.set(code, new GameStateSession(state));
+        this.lastActivityTimestamps.set(code, Date.now());
         restoredCount++;
       }
     }

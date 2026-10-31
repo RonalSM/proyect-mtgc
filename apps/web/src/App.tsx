@@ -130,7 +130,12 @@ export default function App() {
         }
         setIsSpectator(false);
       } else {
-        alert('Error al crear la sala');
+        let errorMsg = 'Error al crear la sala';
+        try {
+          const errData = await res.json();
+          if (errData?.error) errorMsg = errData.error;
+        } catch {}
+        alert(errorMsg);
       }
     } catch (err) {
       console.error(err);

@@ -78,11 +78,19 @@ export function useGameSocket({
         wsBase = `${protocol}//${cleanEnv}`;
       }
     } else {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      // If in development with Vite proxy on port 3000, ws to localhost:3001
-      const host =
-        window.location.port === '3000' ? `${window.location.hostname}:3001` : window.location.host;
-      wsBase = `${protocol}//${host}`;
+      const isNetlifyOrRemote =
+        typeof window !== 'undefined' &&
+        !window.location.hostname.includes('localhost') &&
+        !window.location.hostname.includes('127.0.0.1');
+      if (isNetlifyOrRemote) {
+        wsBase = 'wss://mtgc-backend-caf950eaa8b4.herokuapp.com';
+      } else {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        // If in development with Vite proxy on port 3000, ws to localhost:3001
+        const host =
+          window.location.port === '3000' ? `${window.location.hostname}:3001` : window.location.host;
+        wsBase = `${protocol}//${host}`;
+      }
     }
 
     // Punto F2(c): Obtener token de autenticación o de invitado para pasarlo por query param
