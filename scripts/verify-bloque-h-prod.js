@@ -180,19 +180,28 @@ async function run() {
     }
 
     // ----------------------------------------------------
-    // VERIFICATION H2: Player Colors (AA Contrast & Distinction)
+    // VERIFICATION H2: Player Colors (Container Colors & No Symbols)
     // ----------------------------------------------------
-    console.log('--- Verifying H2: Distinct Player Colors ---');
-    const playerHeaders = pageA.locator('[data-player-header]');
-    const count = await playerHeaders.count();
-    console.log(`Checking ${count} player headers for color tags...`);
+    console.log('--- Verifying H2: Container Player Colors (No Symbols) ---');
+    const playerContainers = pageA.locator('[data-testid^="player-name-container-"]');
+    const count = await playerContainers.count();
+    console.log(`Checking ${count} player name containers for color styles...`);
     for (let i = 0; i < count; i++) {
-      const header = playerHeaders.nth(i);
-      const text = await header.innerText();
-      const dot = header.locator('span').first();
-      const dotTitle = await dot.getAttribute('title');
-      console.log(`Player header #${i + 1}: "${text.replace(/\n/g, ' ')}" | ${dotTitle}`);
+      const container = playerContainers.nth(i);
+      const text = await container.innerText();
+      const style = await container.getAttribute('style');
+      const title = await container.getAttribute('title');
+      console.log(`Player container #${i + 1}: text="${text.replace(/\n/g, ' ')}" | title="${title}" | style="${style}"`);
+      if (text.includes('◆') || text.includes('▲')) {
+        throw new Error(`Symbol still present in player name container: ${text}`);
+      }
     }
+
+    // Capture specific screenshot of table showing container colors
+    await pageA.screenshot({
+      path: path.join(ARTIFACT_DIR, 'prod-h2-container-colors.png'),
+    });
+    console.log('✅ Captured prod-h2-container-colors.png');
 
     // ----------------------------------------------------
     // VERIFICATION H3: Commander Damage in Life Popover

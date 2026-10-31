@@ -14,7 +14,9 @@ import {
   SkipForward,
   Coins,
   LogOut,
+  Bug,
 } from 'lucide-react';
+import { ReportIssueModal } from './ReportIssueModal';
 
 interface FloatingToolbarProps {
   roomState: RoomState;
@@ -41,6 +43,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   const [isInitiativeDropdownOpen, setIsInitiativeDropdownOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isReportIssueOpen, setIsReportIssueOpen] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
 
   const activePlayer = roomState.activePlayerId
@@ -337,6 +340,16 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                 <HelpCircle className="w-3.5 h-3.5" />
               </button>
 
+              {/* Report Issue button (D1) */}
+              <button
+                data-testid="report-issue-btn"
+                onClick={() => setIsReportIssueOpen(true)}
+                className="p-1.5 text-amber-400/90 hover:text-amber-300 hover:bg-amber-950/40 rounded-lg transition-colors cursor-pointer"
+                title="Reportar problema técnico (genera diagnóstico)"
+              >
+                <Bug className="w-3.5 h-3.5" />
+              </button>
+
               {/* Leave Room button */}
               {onLeaveRoom && (
                 <button
@@ -502,6 +515,14 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
           </div>
         </div>
       )}
+
+      {/* Report Issue Modal (D1) */}
+      <ReportIssueModal
+        isOpen={isReportIssueOpen}
+        onClose={() => setIsReportIssueOpen(false)}
+        roomState={roomState}
+        localPlayerId={localPlayerId}
+      />
     </>
   );
 };

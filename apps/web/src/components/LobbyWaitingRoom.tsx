@@ -26,7 +26,9 @@ import {
   ChevronUp,
   BookOpen,
   Trash2,
+  Bug,
 } from 'lucide-react';
+import { ReportIssueModal } from './ReportIssueModal';
 import { MtgSymbolIcon } from '../utils/mana-icons';
 import { DeckInspectorModal } from './DeckInspectorModal';
 
@@ -63,6 +65,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
     commanderCards: CardDefinition[];
     maindeckCards: CardDefinition[];
   } | null>(null);
+  const [isReportIssueOpen, setIsReportIssueOpen] = useState(false);
 
   const localPlayer = roomState.players[localPlayerId];
   const isHost = localPlayer?.isHost ?? false;
@@ -489,6 +492,16 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
             ) : (
               <Copy className="w-3.5 h-3.5 text-zinc-400" />
             )}
+          </button>
+
+          <button
+            data-testid="lobby-report-issue-btn"
+            onClick={() => setIsReportIssueOpen(true)}
+            className="flex items-center space-x-1.5 bg-[#040d0f] hover:bg-[#0c2d32] border border-[#12544F] px-3 py-2 rounded-xl text-xs font-bold text-amber-400 hover:text-amber-300 transition-all cursor-pointer"
+            title="Reportar problema técnico (genera diagnóstico)"
+          >
+            <Bug className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Reportar problema</span>
           </button>
 
           <button
@@ -1130,6 +1143,13 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
           setIsDeckModalOpen(false);
         }}
         selectButtonLabel="Elegir este Mazo"
+      />
+      {/* MODAL: REPORTAR PROBLEMA TÉCNICO (D1) */}
+      <ReportIssueModal
+        isOpen={isReportIssueOpen}
+        onClose={() => setIsReportIssueOpen(false)}
+        roomState={roomState}
+        localPlayerId={localPlayerId}
       />
     </div>
   );

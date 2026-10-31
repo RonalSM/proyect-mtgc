@@ -819,6 +819,28 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 2. **Evidencias y Métricas Archivadas:**
    - Toda ejecución SHALL generar y almacenar evidencias visuales en el directorio de artefactos (`audit-p20-lobby-ready.png`), verificando el cumplimiento estricto del criterio de cero datos sintéticos (`cmdr_`, `main_`, `id_`, `?178975`).
 
+### REQ-57 Paquete de Diagnóstico Técnico Anonimizado "Reportar Problema" (Punto D1)
+
+**Historia:** Como jugador o tester en la fase beta, quiero disponer de un botón intuitivo "Reportar problema" que genere un paquete de diagnóstico técnico descargable o copiable, para poder remitir reportes detallados de incidencias sin comprometer mi privacidad ni revelar cartas ocultas.
+
+1. **Disponibilidad y Accesibilidad del Botón:**
+   - THE aplicación SHALL proporcionar un botón accesible "Reportar problema" (`data-testid="report-issue-btn"` y `data-testid="lobby-report-issue-btn"`) tanto en la barra flotante de partida (`FloatingToolbar`) como en la sala de espera (`LobbyWaitingRoom`).
+2. **Estructura del Paquete de Diagnóstico JSON:**
+   - THE modal `ReportIssueModal` SHALL recopilar y formatear en JSON:
+     - Versión de la aplicación y entorno de ejecución (`0.1.0-beta.20261031`).
+     - Código de la mesa (`roomCode`) y versión del estado autoritativo (`stateVersion`).
+     - Últimas 50 acciones de la bitácora pública de la partida (`recentActions`).
+     - Últimos 50 errores y advertencias de consola interceptados en tiempo real (`consoleErrors`).
+     - Últimos 50 fallos de carga de imágenes o cartas (`failedCardLoads`).
+     - Métricas del cliente (navegador, resolución y dimensiones de viewport).
+3. **Privacidad Estricta y Filtrado de Cartas Ocultas:**
+   - THE paquete SHALL excluir de forma obligatoria toda identidad de cartas en manos privadas ajenas y bibliotecas no reveladas.
+   - THE paquete SHALL excluir tokens de autenticación, contraseñas, correos electrónicos o datos personales de los jugadores.
+4. **Exportación y Descarga:**
+   - THE modal SHALL incluir botones de un solo clic para:
+     - "Copiar diagnóstico" (`data-testid="copy-diagnostic-btn"`) hacia el portapapeles con confirmación visual.
+     - "Descargar .json" (`data-testid="download-diagnostic-btn"`) generando un archivo descargable `diagnostico-mtgc-[codigo]-[timestamp].json`.
+
 ### REQ-22 Interfaz de mesa inmersiva (estilo playgroup.gg)
 
 **Referencia visual:** concepto de cuadrícula a sangre, playmats, vida en la esquina interior, mano y pilas en el borde inferior, barra flotante (sin copiar código, imágenes ni marca de playgroup.gg).
