@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { RoomState, GameActionType, PlayerState } from '@mtgc/shared';
+import { type RoomState, type GameActionType, type PlayerState, getGridSlotForSeat } from '@mtgc/shared';
 import { FloatingToolbar } from './FloatingToolbar';
 import { GameLogAndChat } from './GameLogAndChat';
 
@@ -65,27 +65,37 @@ export const TableGrid: React.FC<TableGridProps> = ({
       gridSlots.push({ row: 0, col: 1, player: seatedPlayers[1] });
     }
   } else {
-    // 3 o más jugadores: cuadrícula canónica de 2 filas y hasta 3 columnas
-    let playerIdx = 0;
+    // Cuadrícula canónica de 2 filas y hasta 3 columnas dispuesta en sentido horario (H1)
+    const matrix: (CellSlot | undefined)[][] = [
+      new Array(cols).fill(undefined),
+      new Array(cols).fill(undefined),
+    ];
 
-    // Fila Superior (Row 0): col 0 .. cols - 1
-    for (let c = 0; c < cols; c++) {
-      gridSlots.push({
-        row: 0,
-        col: c,
-        player: seatedPlayers[playerIdx++],
-      });
+    // Posicionar jugadores según su asiento horario (H1)
+    for (let i = 0; i < seatedPlayers.length; i++) {
+      const p = seatedPlayers[i];
+      const slot = getGridSlotForSeat(p.seatNumber ?? i, totalPlayers);
+      matrix[slot.row][slot.col] = {
+        row: slot.row,
+        col: slot.col,
+        player: p,
+      };
     }
 
-    // Fila Inferior (Row 1): col 0 .. cols - 1
-    for (let c = 0; c < cols; c++) {
-      const p = seatedPlayers[playerIdx++];
-      gridSlots.push({
-        row: 1,
-        col: c,
-        player: p,
-        isFreeCellForChat: !p && (totalPlayers === 3 || totalPlayers === 5),
-      });
+    // Completar celdas libres o vacías (Chat para 3 o 5 jugadores en row 1, col 0)
+    for (let r: 0 | 1 = 0; r <= 1; r = (r + 1) as 0 | 1) {
+      for (let c = 0; c < cols; c++) {
+        if (!matrix[r][c]) {
+          const isFreeCellForChat = r === 1 && c === 0 && (totalPlayers === 3 || totalPlayers === 5);
+          matrix[r][c] = {
+            row: r,
+            col: c,
+            player: undefined,
+            isFreeCellForChat,
+          };
+        }
+        gridSlots.push(matrix[r][c]!);
+      }
     }
   }
 

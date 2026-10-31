@@ -122,6 +122,7 @@ test('Punto 4: Tirada de iniciativa automatica en servidor sin accion de cliente
   session.cleanup();
 });
 
+
 test('Punto 4: Desempate automatico en servidor sin intervencion de ningun jugador', () => {
   const room = createMockRoomState();
   room.status = 'initiative';
@@ -194,3 +195,56 @@ test('Punto 4: Boton de dados libres en la barra continua siendo tirado por el s
 
   session.cleanup();
 });
+
+test('H1: Orden circular por iniciativa en 4 jugadores [(A,B),(C,D)]', () => {
+  const room = createMockRoomState();
+  room.players['p3'] = {
+    ...room.players['p2']!,
+    id: 'p3',
+    name: 'Charlie',
+    seatNumber: 2,
+    initiativeRoll: 5,
+  };
+  room.players['p4'] = {
+    ...room.players['p2']!,
+    id: 'p4',
+    name: 'David',
+    seatNumber: 3,
+    initiativeRoll: 10,
+  };
+  room.playerZones['p3'] = { library: [], hand: [], battlefield: [], graveyard: [], exile: [], command: [] };
+  room.playerZones['p4'] = { library: [], hand: [], battlefield: [], graveyard: [], exile: [], command: [] };
+
+  // Asignar tiradas del ejemplo del cliente: A(20), B(17), C(5), D(10)
+  room.status = 'initiative';
+  room.initiative = {
+    round: 1,
+    deadlineTimestamp: Date.now() + 3500,
+    rolls: {
+      p1: 20, // Alice (A)
+      p2: 17, // Bob (B)
+      p3: 5,  // Charlie (C)
+      p4: 10, // David (D)
+    },
+  };
+  room.players['p1']!.initiativeRoll = 20;
+  room.players['p2']!.initiativeRoll = 17;
+  room.players['p3']!.initiativeRoll = 5;
+  room.players['p4']!.initiativeRoll = 10;
+
+  const session = new GameStateSession(room);
+  session.initiativeService.resolveRound({ autoAdvance: false });
+
+  // Orden de juego esperado: A (20), B (17), D (10), C (5)
+  assert.deepStrictEqual(session.state.turnOrder, ['p1', 'p2', 'p4', 'p3']);
+  assert.strictEqual(session.state.activePlayerId, 'p1');
+
+  // Asientos reasignados en orden de tirada para recorrido horario (H1)
+  assert.strictEqual(session.state.players['p1']?.seatNumber, 0); // 1.º en iniciativa -> Asiento 0
+  assert.strictEqual(session.state.players['p2']?.seatNumber, 1); // 2.º en iniciativa -> Asiento 1
+  assert.strictEqual(session.state.players['p4']?.seatNumber, 2); // 3.º en iniciativa -> Asiento 2
+  assert.strictEqual(session.state.players['p3']?.seatNumber, 3); // 4.º en iniciativa -> Asiento 3
+
+  session.cleanup();
+});
+

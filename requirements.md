@@ -283,6 +283,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 6. THE sistema SHALL mostrar el orden resultante (1.º, 2.º, 3.º…) en la barra de turnos y junto a cada zona de jugador.
 7. WHEN la iniciativa termina y se muestra el orden resuelto, THE sistema SHALL pasar la mesa de forma automática a la fase de mulligan (`mulligan`); REQ-6 (pasar turno) usa este orden.
 8. THE botón "Dados" existente SHALL seguir disponible en la barra flotante durante la partida para tiradas libres (d6, d20, moneda), siendo tiradas y generadas siempre de forma autoritativa por el servidor.
+9. **Disposición circular por iniciativa (Bloque H1):** Tras resolver la iniciativa, los asientos y los turnos SHALL seguir el orden estricto de la tirada, en sentido horario empezando arriba a la izquierda. El jugador con mayor tirada ocupa el asiento 0 (arriba a la izquierda, Turno 1) y los asientos sucesivos se asignan en sentido horario según el orden de turnos resuelto (`turnOrder`). Antes de la iniciativa (sala de espera/lobby), los asientos reflejan el orden de unión. La disposición es canónica e idéntica en todas las pantallas de los clientes.
 
 ### REQ-23 Fase de Mano Inicial y Mulligan de Londres (Punto 5)
 
@@ -820,12 +821,12 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 **Historia:** Como jugador, quiero ver a todos en una cuadrícula a pantalla completa, cada uno con su propio fondo y su propio espacio, para sentir que estamos jugando juntos en una mesa.
 
 1. THE pantalla de partida SHALL ocupar toda la ventana (100 % del ancho y alto) sin scroll, sin márgenes exteriores y sin barra lateral permanente; las celdas SHALL tocarse entre sí separadas solo por una línea fina (1 px) oscura.
-2. THE pantalla SHALL dividirse en una cuadrícula de **2 columnas** para 2 jugadores (1 fila × 2 columnas lado a lado, `--cols = 2`) o de **2 filas y hasta 3 columnas** para 3–6 jugadores (máximo 6 celdas), una por jugador:
-   - 2 jugadores: 1 fila × 2 columnas (2 columnas lado a lado, `--cols = 2`)
-   - 3 jugadores: 2 filas × 2 columnas (3 jugadores + 1 celda libre para registro/chat)
-   - 4 jugadores: 2 filas × 2 columnas
-   - 5 jugadores: 2 filas × 3 columnas (5 jugadores + 1 celda libre)
-   - 6 jugadores: 2 filas × 3 columnas
+2. THE pantalla SHALL dividirse en una cuadrícula de **2 columnas** para 2 jugadores (1 fila × 2 columnas lado a lado, `--cols = 2`) o de **2 filas y hasta 3 columnas** para 3–6 jugadores (máximo 6 celdas), una por jugador, mapeadas en sentido horario circular (H1):
+   - **2 jugadores:** 1 fila × 2 columnas (`--cols = 2`). Fila 0: `[Asiento 0 (izq), Asiento 1 (der)]`. Sentido horario: Asiento 0 → Asiento 1 → Asiento 0.
+   - **3 jugadores:** 2 filas × 2 columnas (`--cols = 2`). Fila 0: `[Asiento 0 (arr-izq), Asiento 1 (arr-der)]`. Fila 1: `[Chat/registro (abj-izq, col 0), Asiento 2 (abj-der, col 1)]`. Sentido horario: Asiento 0 → Asiento 1 → Asiento 2 → Asiento 0.
+   - **4 jugadores:** 2 filas × 2 columnas (`--cols = 2`). Fila 0: `[Asiento 0 (arr-izq), Asiento 1 (arr-der)]`. Fila 1: `[Asiento 3 (abj-izq), Asiento 2 (abj-der)]`. Matriz `[(0, 1), (3, 2)]`. Sentido horario: Asiento 0 → Asiento 1 → Asiento 2 → Asiento 3 → Asiento 0. Ejemplo: tiradas A(20), B(17), D(10), C(5) resultan en orden [A, B, D, C], ubicando arriba a (A, B) y abajo a (C, D).
+   - **5 jugadores:** 2 filas × 3 columnas (`--cols = 3`). Fila 0: `[Asiento 0 (arr-izq), Asiento 1 (arr-cen), Asiento 2 (arr-der)]`. Fila 1: `[Chat/registro (abj-izq, col 0), Asiento 4 (abj-cen, col 1), Asiento 3 (abj-der, col 2)]`. Sentido horario: Asiento 0 → Asiento 1 → Asiento 2 → Asiento 3 → Asiento 4 → Asiento 0.
+   - **6 jugadores:** 2 filas × 3 columnas (`--cols = 3`). Fila 0: `[Asiento 0 (arr-izq), Asiento 1 (arr-cen), Asiento 2 (arr-der)]`. Fila 1: `[Asiento 5 (abj-izq), Asiento 4 (abj-cen), Asiento 3 (abj-der)]`. Sentido horario: Asiento 0 → Asiento 1 → Asiento 2 → Asiento 3 → Asiento 4 → Asiento 5 → Asiento 0.
      2.1. Todos los clientes SHALL ver la misma disposición canónica de asientos y divisiones en todas las pantallas (disposición idéntica para todos, sin rotar ni reordenar según el jugador local).
      2.2. THE contenido de todas las celdas SHALL mostrarse en posición vertical, sin rotar.
 3. THE cada celda SHALL tener un **playmat** como fondo a celda completa:

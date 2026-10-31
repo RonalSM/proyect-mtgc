@@ -1591,6 +1591,13 @@ export class GameStateSession {
     }
 
     this.state.turnOrder = [...newTurnOrder];
+    newTurnOrder.forEach((pid, index) => {
+      const p = this.state.players[pid];
+      if (p) {
+        p.seatNumber = index;
+        p.initiativeOrder = index + 1;
+      }
+    });
     if (this.state.turnOrder.length > 0) {
       this.state.activePlayerId = this.state.turnOrder[0]!;
     }

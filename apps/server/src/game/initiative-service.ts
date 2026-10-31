@@ -291,6 +291,7 @@ export class InitiativeService {
       const p = state.players[pid];
       if (p) {
         p.initiativeOrder = index + 1; // 1.º, 2.º, etc. (REQ-21.7)
+        p.seatNumber = index; // H1: Asiento horario a partir del 1.º arriba a la izquierda
       }
     });
 

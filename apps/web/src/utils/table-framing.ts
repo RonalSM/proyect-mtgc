@@ -1,4 +1,4 @@
-import { type RoomState, type CardInstance, getCardDimensions } from '@mtgc/shared';
+import { type RoomState, type CardInstance, getCardDimensions, getGridSlotForSeat } from '@mtgc/shared';
 import type { ViewFraming } from '../components/BattlefieldCanvas';
 
 export function getPlayerFraming(playerId: string, roomState: RoomState): ViewFraming {
@@ -13,8 +13,10 @@ export function getPlayerFraming(playerId: string, roomState: RoomState): ViewFr
     return { xMin: 0, yMin: 0, width: 1, height: 1, isExpanded: false };
   }
 
+  const player = seatedPlayers[playerIdx];
+  const { row, col } = getGridSlotForSeat(player.seatNumber ?? playerIdx, totalPlayers);
+
   if (isTwoPlayerMode) {
-    const col = playerIdx === 0 ? 0 : 1;
     return {
       xMin: col * 0.5,
       yMin: 0,
@@ -23,9 +25,6 @@ export function getPlayerFraming(playerId: string, roomState: RoomState): ViewFr
       isExpanded: true,
     };
   }
-
-  const row = playerIdx < cols ? 0 : 1;
-  const col = playerIdx < cols ? playerIdx : playerIdx - cols;
 
   return {
     xMin: col / cols,
