@@ -42,16 +42,16 @@
     "semantic_hash": "514b598394ef0a22d7f4da3b772e5002"
   },
   "apps/server/src/game/game-state.ts": {
-    "mtime": 1793401262.2729905,
-    "seen": 1793401514.1670027,
-    "ast_hash": "62fdd3447dae6b1e54bff6fd40993b57",
+    "mtime": 1793413983.3041058,
+    "seen": 1793416604.0475023,
+    "ast_hash": "96a1763791bee5f77212f1e9864cf280",
     "semantic_hash": ""
   },
   "apps/server/src/game/initiative-service.ts": {
-    "mtime": 1792527166.2220223,
-    "seen": 1792868383.1935666,
-    "ast_hash": "1e756b15f5b2fa3b85eedc5b2526360b",
-    "semantic_hash": "1e756b15f5b2fa3b85eedc5b2526360b"
+    "mtime": 1793413966.047256,
+    "seen": 1793416604.0475023,
+    "ast_hash": "53b9d24c43fab1f55f13c6a6b1f2f704",
+    "semantic_hash": ""
   },
   "apps/server/src/game/lobby-manager.ts": {
     "mtime": 1793399736.936943,
@@ -66,9 +66,9 @@
     "semantic_hash": "50a0bb8ce82f3d83857e31dacd9f6685"
   },
   "apps/server/src/game/room-manager.ts": {
-    "mtime": 1793407678.7970908,
-    "seen": 1793408525.42288,
-    "ast_hash": "ef103ee3ddbea93d3636afbeeca7e2b8",
+    "mtime": 1793415376.158934,
+    "seen": 1793416604.0491254,
+    "ast_hash": "8057c59dd655dc9119010e772f2306a8",
     "semantic_hash": ""
   },
   "apps/server/src/game/visibility-filter.ts": {
@@ -180,10 +180,10 @@
     "semantic_hash": "e9179f3edf6844baeb492d4efd4ab2ef"
   },
   "apps/server/test/automatic-initiative.test.ts": {
-    "mtime": 1792527166.5286021,
-    "seen": 1792868383.1935666,
-    "ast_hash": "d8e11a4693d5080bd5790bc1a989db79",
-    "semantic_hash": "d8e11a4693d5080bd5790bc1a989db79"
+    "mtime": 1793414353.1737192,
+    "seen": 1793416604.051519,
+    "ast_hash": "277fe4064c626e99139187c6ea04b52e",
+    "semantic_hash": ""
   },
   "apps/server/test/bulk-sync.test.ts": {
     "mtime": 1792527166.5366032,
@@ -510,9 +510,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/BattlefieldCanvas.tsx": {
-    "mtime": 1793412614.8282137,
-    "seen": 1793413188.9068952,
-    "ast_hash": "a6adbe52486a1bd3697320a7133b9aca",
+    "mtime": 1793414975.3974948,
+    "seen": 1793416604.059308,
+    "ast_hash": "79d6090f10adfb83e5f2dd28ee06357e",
     "semantic_hash": ""
   },
   "apps/web/src/components/CardBadges.tsx": {
@@ -576,9 +576,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/GameLogAndChat.tsx": {
-    "mtime": 1793248300.9492433,
-    "seen": 1793248393.354617,
-    "ast_hash": "4dac1debffe3ee515676c8551ddcc877",
+    "mtime": 1793415030.582088,
+    "seen": 1793416604.0626605,
+    "ast_hash": "1d298499bec15301302de8387c2fdee7",
     "semantic_hash": ""
   },
   "apps/web/src/components/HandFan.tsx": {
@@ -618,15 +618,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/PlayerCard.tsx": {
-    "mtime": 1793401197.0150776,
-    "seen": 1793401514.1848147,
-    "ast_hash": "b85fd01ca165248e8ff1c3a4efc23c50",
+    "mtime": 1793415418.0416546,
+    "seen": 1793416604.0637772,
+    "ast_hash": "1ae52394c05c07b2f5978155815635ae",
     "semantic_hash": ""
   },
   "apps/web/src/components/PlayerCell.tsx": {
-    "mtime": 1793401189.5487075,
-    "seen": 1793401514.1848147,
-    "ast_hash": "472ad324d087c97ce1031b593955525d",
+    "mtime": 1793415812.7656,
+    "seen": 1793416604.0637772,
+    "ast_hash": "b5c46e499ef73aeb1a87de1b1e00057c",
     "semantic_hash": ""
   },
   "apps/web/src/components/Portal.tsx": {
@@ -648,15 +648,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/TableGrid.tsx": {
-    "mtime": 1793248301.3686562,
-    "seen": 1793248393.354617,
-    "ast_hash": "5a2fe97bda5cd6ce0d71f1783b2db171",
+    "mtime": 1793415066.4211423,
+    "seen": 1793416604.0642946,
+    "ast_hash": "ea81c6e54f5f33c1754888e9a5b270c5",
     "semantic_hash": ""
   },
   "apps/web/src/components/TurnBar.tsx": {
-    "mtime": 1793248301.4042916,
-    "seen": 1793248393.354617,
-    "ast_hash": "f6d91a52d21fcc62e56765d9d8c50f9b",
+    "mtime": 1793415240.6750374,
+    "seen": 1793416604.0642946,
+    "ast_hash": "aaccb669b95d9dab7e6daebc5df9ccc8",
     "semantic_hash": ""
   },
   "apps/web/src/components/VirtualizedCardGrid.tsx": {
@@ -726,10 +726,10 @@
     "semantic_hash": ""
   },
   "apps/web/src/utils/table-framing.ts": {
-    "mtime": 1792527168.040739,
-    "seen": 1792868383.1935666,
-    "ast_hash": "5ed5ee750d4de220fbea73be06b5cd62",
-    "semantic_hash": "5ed5ee750d4de220fbea73be06b5cd62"
+    "mtime": 1793414005.3322816,
+    "seen": 1793416604.065993,
+    "ast_hash": "b617bdf3c4ce721a7a0db7b3b75b0eee",
+    "semantic_hash": ""
   },
   "apps/web/tailwind.config.js": {
     "mtime": 1793248301.5322154,
@@ -780,10 +780,10 @@
     "semantic_hash": "f904f5cdbb0d32041bffe1c02a60aab3"
   },
   "packages/shared/src/index.ts": {
-    "mtime": 1792527168.3728862,
-    "seen": 1792868383.1935666,
-    "ast_hash": "15c851c43c9f7b312a988b45d80c3860",
-    "semantic_hash": "15c851c43c9f7b312a988b45d80c3860"
+    "mtime": 1793414870.7658143,
+    "seen": 1793416604.0675504,
+    "ast_hash": "2af92a2be94aec20721507d4527154e1",
+    "semantic_hash": ""
   },
   "packages/shared/src/schemas/actions.schema.ts": {
     "mtime": 1793400958.1798239,
@@ -810,10 +810,10 @@
     "semantic_hash": ""
   },
   "packages/shared/src/types/player.ts": {
-    "mtime": 1792527168.423809,
-    "seen": 1792868383.1935666,
-    "ast_hash": "db1c7590c3e70056d56a219e3f1598c8",
-    "semantic_hash": "db1c7590c3e70056d56a219e3f1598c8"
+    "mtime": 1793414858.4647484,
+    "seen": 1793416604.0680678,
+    "ast_hash": "3a6c392c7d198e6757c8ce77e011fb6b",
+    "semantic_hash": ""
   },
   "packages/shared/src/types/room.ts": {
     "mtime": 1793221359.4913719,
@@ -1050,21 +1050,21 @@
     "semantic_hash": ""
   },
   "design.md": {
-    "mtime": 1793248302.4030583,
-    "seen": 1793248393.354617,
-    "ast_hash": "353ab5bce9437881fbc60a017c8245c7",
+    "mtime": 1793415919.9887216,
+    "seen": 1793416604.07695,
+    "ast_hash": "786055c3c8efb9a6d921cfba832ac35e",
     "semantic_hash": ""
   },
   "requirements.md": {
-    "mtime": 1793399249.2246795,
-    "seen": 1793401514.2011716,
-    "ast_hash": "ac50b45a4f9b2980384571886f42d6c0",
+    "mtime": 1793415869.3258376,
+    "seen": 1793416604.07695,
+    "ast_hash": "9dc67908bf8c4b4e9a20005c1acab1da",
     "semantic_hash": ""
   },
   "tasks.md": {
-    "mtime": 1793334337.61589,
-    "seen": 1793401514.2011716,
-    "ast_hash": "4d865409efd7d02c86e366e3c1f082a1",
+    "mtime": 1793416589.3640318,
+    "seen": 1793416604.07695,
+    "ast_hash": "32f2fb6bdac05a780cd23e8e8addd056",
     "semantic_hash": ""
   },
   "apps/web/e2e/screenshots/audit-p4-font-glyphs-list.png": {
@@ -1110,9 +1110,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/TargetingArrowsLayer.tsx": {
-    "mtime": 1793248301.3883681,
-    "seen": 1793248393.354617,
-    "ast_hash": "b78708d751c6624fc6948fcf3a8d918b",
+    "mtime": 1793415120.3209133,
+    "seen": 1793416604.0642946,
+    "ast_hash": "14b9038468b9abae3786997d5661cd69",
     "semantic_hash": ""
   },
   "apps/web/e2e/smoke-multibrowser.spec.ts": {
@@ -1233,6 +1233,36 @@
     "mtime": 1793413129.9686215,
     "seen": 1793413188.9173083,
     "ast_hash": "9bee6f6147e2229c7dc0969bc9a2a7a0",
+    "semantic_hash": ""
+  },
+  "packages/shared/src/utils/player-colors.ts": {
+    "mtime": 1793415330.382789,
+    "seen": 1793416604.0696425,
+    "ast_hash": "dadb472df2368e8b1b5a9a033a9f1d13",
+    "semantic_hash": ""
+  },
+  "packages/shared/src/utils/table-layout.ts": {
+    "mtime": 1793413902.0115874,
+    "seen": 1793416604.0696425,
+    "ast_hash": "19146d0899b79bcf19aa7d3e08b8725e",
+    "semantic_hash": ""
+  },
+  "packages/shared/test/player-colors.test.ts": {
+    "mtime": 1793414881.3340087,
+    "seen": 1793416604.0701647,
+    "ast_hash": "6906c7bd412ca737d172f69c0126be40",
+    "semantic_hash": ""
+  },
+  "packages/shared/test/table-layout.test.ts": {
+    "mtime": 1793413922.8603163,
+    "seen": 1793416604.0701647,
+    "ast_hash": "e32d826c58c2eae1bcf16eefee3552a7",
+    "semantic_hash": ""
+  },
+  "scripts/verify-bloque-h-prod.js": {
+    "mtime": 1793416354.501696,
+    "seen": 1793416604.0727684,
+    "ast_hash": "a784671b6c929ed8414873cc02674799",
     "semantic_hash": ""
   }
 }

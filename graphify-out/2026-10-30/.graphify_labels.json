@@ -2,8 +2,6 @@
   "0": "Cluster 0: filter",
   "2": "Cluster 2: starter",
   "4": "Cluster 4: config",
-  "6": "Cluster 6: gamestatesession",
-  "9": "Cluster 9: cardbadges",
   "12": "Cluster 12: compose",
   "14": "Cluster 14: base",
   "20": "Cluster 20: package",
@@ -28,7 +26,6 @@
   "53": "Cluster 53: dotenv",
   "54": "Cluster 54: spec",
   "55": "Cluster 55: spec",
-  "57": "Cluster 57: spec",
   "78": "Cluster 78: config",
   "79": "Cluster 79: config"
 }

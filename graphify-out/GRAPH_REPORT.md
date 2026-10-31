@@ -1,17 +1,17 @@
 # Graph Report - Proyect MTGC  (2026-10-30)
 
 ## Corpus Check
-- 201 files · ~511,723 words
+- 210 files · ~520,830 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 15 file(s) not represented in the graph (top: (none) 8, .example 2, .css 2)
 
 ## Summary
-- 1499 nodes · 3283 edges · 109 communities (77 shown, 32 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 341 edges (avg confidence: 0.94)
+- 1544 nodes · 3358 edges · 107 communities (74 shown, 33 thin omitted)
+- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 344 edges (avg confidence: 0.94)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `edaf3ce6`
+- Built from commit: `60fa5d07`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -22,14 +22,14 @@
 - RoomState
 - Cluster 4: config
 - imageLoaderQueue
-- .addLog
-- ref_node_assert
+- GameStateSession
+- visibility-filter.ts
 - diagnosticsService
-- App.tsx
+- CardPreviewContext.tsx
 - Tareas
 - ErrorBoundary
 - Cluster 12: compose
-- GameStateSession
+- .syncPlayerCounts
 - Cluster 14: base
 - db.ts
 - room-manager.ts
@@ -37,7 +37,7 @@
 - Plan de Implementación — Mesa Virtual de Commander (MTG)
 - CardDefinition
 - Cluster 20: package
-- room.ts
+- bulk-sync.service.ts
 - Cluster 22: tsconfig
 - Cluster 23: ci
 - Cluster 24: secureroll
@@ -49,8 +49,8 @@
 - Cluster 30: spec
 - Cluster 31: spec
 - Cluster 32: prod
-- Flujos de datos
-- Cluster 34: spec
+- tokenService
+- fullscreen-visual.spec.ts
 - Cluster 35: scryfallqueue
 - server/package.json
 - deckService
@@ -59,46 +59,45 @@
 - Cluster 40: origin
 - Cluster 41: db
 - Cluster 42: scripts
-- authService
+- menu-battlefield-send.test.ts
 - Cluster 44: postgres
 - Cluster 45: dependabot
 - Requisitos funcionales
 - pg
 - Cluster 48: spec
 - CardDisplay.tsx
-- dependencies
+- capture-visual-pods.js
 - Cluster 51: tsconfig
 - Cluster 52: interval
 - Cluster 53: dotenv
 - Cluster 54: spec
 - Cluster 55: spec
 - Mesa Virtual de Commander (MTG) ⚔️
-- runG3Tests
 - cardImageResolver
 - card.ts
-- LanguageContext.tsx
-- token-creation.spec.ts
+- error-collector.ts
+- run
 - Dominio: Magic: The Gathering, formato Commander
-- verify-g2-prod.js
-- LobbyManager
-- Documento de Requisitos — Mesa Virtual de Commander (MTG)
+- ref_fs
+- command-zone.test.ts
+- ownership.test.ts
 - Changelog del Proyecto MTG Commander (EDH)
-- Externos
+- @electric-sql/pglite-socket
 - test-g1-latency-bank.ts
-- Requisitos no funcionales
-- Componentes en detalle
-- scripts
+- fastify
+- @fastify/cors
+- @fastify/jwt
 - visual-tabletop.spec.ts
-- tap-animation.spec.ts
+- @fastify/rate-limit
 - vite-env.d.ts
 - ws
 - Documento de Diseño — Mesa Virtual de Commander (MTG)
-- Arquitectura
-- toArtCropUrl
+- ioredis
+- LobbyManager
 - player-colors.ts
 - Servidor de juego en tiempo real
 - bulkSyncService
-- vite.config.ts
+- prisma@^7.10.0
 - Seguridad de la aplicación
 - Pantalla de partida: cuadrícula a sangre
 - getGridSlotForSeat
@@ -107,121 +106,123 @@
 - card-details.spec.ts
 - Sala de espera e iniciativa (REQ-20 y REQ-21)
 - Integración con Scryfall
-- client-corrections-audit-p1-to-p8.spec.ts
-- getPlayerFraming
+- deck.service.ts
+- shared/src/index.ts
 - Frontend Design
 - Auditoría de conformidad con la especificación
-- COMP-6 Card Service y Telemetría de Base de Datos Local (Punto 1 - A.1)
-- @fastify/cookie
+- CardPTBadge
+- @prisma/client
 - auth.service.ts
-- @fastify/websocket
-- autoprefixer@^10.4.20
-- @mtgc/shared@*
-- DiagnosticPanel.tsx
+- @types/node@^22.13.0
+- @types/ws@^8.5.14
+- zod@^3.24.2
+- App.tsx
 - client-corrections.spec.ts
-- tailwindcss@^3.4.17
-- @types/react-dom@^18.3.5
 
 ## God Nodes (most connected - your core abstractions)
 1. `GameStateSession` - 82 edges
 2. `CardDefinition` - 74 edges
-3. `RoomState` - 60 edges
-4. `CardInstance` - 53 edges
-5. `Requisitos funcionales` - 53 edges
+3. `RoomState` - 62 edges
+4. `Requisitos funcionales` - 54 edges
+5. `CardInstance` - 53 edges
 6. `Tareas` - 44 edges
-7. `react` - 40 edges
+7. `react` - 41 edges
 8. `GameActionType` - 39 edges
-9. `CardDisplay()` - 35 edges
-10. `@playwright/test` - 34 edges
+9. `@playwright/test` - 35 edges
+10. `CardDisplay()` - 35 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `COMP-4 Room Manager` --references--> `LobbyManager`  [INFERRED]
   design.md → apps/server/src/game/lobby-manager.ts
-- `REQ-25 Certificación E2E integral de correcciones del cliente (Punto 8 de Correcciones del Cliente - E.8)` --references--> `CardPTBadge()`  [INFERRED]
-  requirements.md → apps/web/src/components/BattlefieldCanvas.tsx
 - `REQ-46 Menú Contextual sin Encabezado Redundante de Nombre (Punto 10 de Correcciones del Cliente - C.10)` --references--> `CardContextMenu()`  [INFERRED]
   requirements.md → apps/web/src/components/CardContextMenu.tsx
 - `REQ-48 Orden Estricto de Opciones en Menú Contextual (Punto 12 de Correcciones del Cliente - C.12)` --references--> `CardContextMenu()`  [INFERRED]
   requirements.md → apps/web/src/components/CardContextMenu.tsx
-- `Estructura` --references--> `PlayerCell()`  [INFERRED]
-  .agents/skills/tabletop-grid-ui/SKILL.md → apps/web/src/components/PlayerCell.tsx
+- `5. Checklist de Aceptación de 15 Minutos` --references--> `CardDetailsModal()`  [INFERRED]
+  PLAYTEST.md → apps/web/src/components/CardDetailsModal.tsx
+- `REQ-35 Panel de Diagnóstico (?debug=1) y Registro de Errores de Cartas en Servidor (Punto 7 de Correcciones del Cliente - D.7)` --references--> `DiagnosticPanel()`  [INFERRED]
+  requirements.md → apps/web/src/components/DiagnosticPanel.tsx
 
 ## Import Cycles
 - None detected.
 
-## Communities (109 total, 32 thin omitted)
+## Communities (107 total, 33 thin omitted)
 
 ### Community 0 - "Cluster 0: filter"
 Cohesion: 0.08
-Nodes (41): ClientConnection, ActionEnvelopeSchema, AdjustLifeSchema, CardDragMoveSchema, ChatMessageSchema, ClearTargetingArrowsSchema, CloneTokenSchema, CommanderDamageSchema (+33 more)
+Nodes (42): ClientConnection, wsHandler, ActionEnvelopeSchema, AdjustLifeSchema, CardDragMoveSchema, ChatMessageSchema, ClearTargetingArrowsSchema, CloneTokenSchema (+34 more)
 
 ### Community 1 - "web/package.json"
-Cohesion: 0.15
-Nodes (12): clsx@^2.1.1, keyrune@^3.19.0, typescript@^5.7.3, devDependencies, @playwright/test@^1.64.0, typescript, name, private (+4 more)
+Cohesion: 0.05
+Nodes (46): dependencies, autoprefixer@^10.4.20, clsx@^2.1.1, @dnd-kit/core@^6.3.1, @dnd-kit/utilities@^3.2.2, keyrune@^3.19.0, lucide-react@^0.475.0, mana-font@^1.18.0 (+38 more)
 
 ### Community 2 - "Cluster 2: starter"
 Cohesion: 0.08
-Nodes (26): DroppableZoneProps, CardDragMovePayload, CardRevealedPayload, ChatMessagePayload, ClearTargetingArrowsPayload, CreateTokenPayload, DrawCardsPayload, KickPlayerPayload (+18 more)
+Nodes (39): UndoRecord, DroppableZoneProps, AdjustLifePayload, CardDragMovePayload, CardRevealedPayload, ChatMessagePayload, ClearTargetingArrowsPayload, CloneTokenPayload (+31 more)
 
 ### Community 3 - "RoomState"
-Cohesion: 0.09
-Nodes (47): Battlefield(), BattlefieldProps, DraggableCard(), DraggableCardProps, DroppableZone(), BattlefieldCanvasProps, BattlefieldCardItemProps, ViewFraming (+39 more)
+Cohesion: 0.08
+Nodes (44): Battlefield(), BattlefieldProps, DraggableCard(), DraggableCardProps, DroppableZone(), BattlefieldCanvasProps, BattlefieldCardItemProps, CardBadgesProps (+36 more)
 
 ### Community 4 - "Cluster 4: config"
-Cohesion: 0.06
-Nodes (40): dependencies, prisma@^7.10.0, description, devDependencies, concurrently@^10.0.6, eslint@^9.20.0, @eslint/js@^9.20.0, prettier@^3.5.1 (+32 more)
+Cohesion: 0.05
+Nodes (44): dependencies, prisma@^7.10.0, description, devDependencies, axe-core@^4.14.0, @axe-core/playwright@^4.14.0, concurrently@^10.0.6, eslint@^9.20.0 (+36 more)
 
-### Community 6 - ".addLog"
-Cohesion: 0.12
-Nodes (9): CloneTokenPayload, ConfirmUndoPayload, FlipCardPayload, SetCardCounterPayload, SetCardPTPayload, SetPlayerStatusPayload, SetTargetingArrowPayload, TapCardPayload (+1 more)
+### Community 6 - "GameStateSession"
+Cohesion: 0.16
+Nodes (3): GameStateSession, runG3Tests(), 3. Servidor de Juego en Tiempo Real (Fase 3 — REQ-2 a REQ-6, REQ-9 a REQ-13, REQ-16)
 
-### Community 7 - "ref_node_assert"
-Cohesion: 0.11
-Nodes (16): UndoRecord, filterRoomStateForPlayer(), MASKED_CARD_DEFINITION, createCommanderCard(), setupCommanderSession(), createDummyCard(), createRoomWithPlayers(), createMockCard() (+8 more)
+### Community 7 - "visibility-filter.ts"
+Cohesion: 0.20
+Nodes (7): filterRoomStateForPlayer(), MASKED_CARD_DEFINITION, createMock4PlayerRoom(), createMockCard(), createMockDeck(), getContrastRatio(), getLuminance()
 
-### Community 9 - "App.tsx"
-Cohesion: 0.09
-Nodes (45): App(), CardBadges(), CardBadgesProps, DeckImporter(), DeckImporterProps, DeckInspectorModal(), DeckInspectorModalProps, getCategoryIcon() (+37 more)
+### Community 8 - "diagnosticsService"
+Cohesion: 0.18
+Nodes (5): CardHealthData, DiagnosticFailure, DiagnosticsListener, diagnosticsService, REQ-44 Ver Carta Completo con Datos Reales y Dictámenes Oficiales (Punto 8 de Correcciones del Cliente - B.8)
+
+### Community 9 - "CardPreviewContext.tsx"
+Cohesion: 0.17
+Nodes (22): CardBadges(), FontGlyphsAudit(), CardPreviewContext, CardPreviewProvider(), COUNTER_ICON_CLASSES, COUNTER_ICONS, CustomCounterSvg(), GenericCounterSvg() (+14 more)
 
 ### Community 10 - "Tareas"
-Cohesion: 0.11
-Nodes (52): Capas de una celda (de atrás hacia delante), GameStarter, tokenService, BattlefieldCanvas(), BattlefieldCardItem(), CardPTBadge(), CardContextMenu(), CardDisplay() (+44 more)
+Cohesion: 0.18
+Nodes (36): Capas de una celda (de atrás hacia delante), GameStarter, BattlefieldCanvas(), CardDisplay(), ExpandedCellView(), FloatingToolbar(), GameLogAndChat(), getRevealedTooltipForOwner() (+28 more)
+
+### Community 11 - "ErrorBoundary"
+Cohesion: 0.29
+Nodes (3): ErrorBoundary, Props, State
 
 ### Community 12 - "Cluster 12: compose"
 Cohesion: 0.08
 Nodes (28): POSTGRES_DB, POSTGRES_PASSWORD, POSTGRES_USER, interval, retries, test, timeout, container_name (+20 more)
-
-### Community 13 - "GameStateSession"
-Cohesion: 0.14
-Nodes (5): secureShuffle(), GameStateSession, MulliganService, createMock4PlayerRoom(), 3. Servidor de Juego en Tiempo Real (Fase 3 — REQ-2 a REQ-6, REQ-9 a REQ-13, REQ-16)
 
 ### Community 14 - "Cluster 14: base"
 Cohesion: 0.08
 Nodes (24): compilerOptions, alwaysStrict, declaration, declarationMap, esModuleInterop, forceConsistentCasingInFileNames, lib, module (+16 more)
 
 ### Community 15 - "db.ts"
-Cohesion: 0.09
-Nodes (27): adapter, connectDatabase(), disconnectDatabase(), ensureTablesExist(), getAppMetadata(), getRootDataDir(), isPortOpen(), pool (+19 more)
+Cohesion: 0.11
+Nodes (16): adapter, connectDatabase(), disconnectDatabase(), ensureTablesExist(), getRootDataDir(), isPortOpen(), pool, prisma (+8 more)
 
 ### Community 17 - "server/src/index.ts"
-Cohesion: 0.07
-Nodes (23): @fastify/cors@^10.0.2, @fastify/helmet@^13.1.2, @fastify/jwt@^10.2.4, @fastify/rate-limit@^11.2.1, @fastify/static@^10.1.6, wsHandler, ALLOWED_ORIGINS, CardErrorLogEntry (+15 more)
+Cohesion: 0.12
+Nodes (12): ALLOWED_ORIGINS, CardErrorLogEntry, cookieSameSite, __dirname, failedCodeAttempts, __filename, ipGlobalRequestCounts, RateLimit429Entry (+4 more)
 
 ### Community 18 - "Plan de Implementación — Mesa Virtual de Commander (MTG)"
-Cohesion: 0.20
-Nodes (7): Cronograma estimado (equipo pequeño, 1–2 desarrolladores), Fases posteriores (post-MVP), Grafo de dependencias (resumen), Hitos, Límites del proyecto, Plan de Implementación — Mesa Virtual de Commander (MTG), Riesgos principales
+Cohesion: 0.05
+Nodes (32): 1. Cómo Crear una Mesa de Commander (Anfitrión / Host), 2. Cómo Unirse a una Mesa (Jugadores 2, 3 y 4), 3. Cómo Elegir un Mazo Listo (Presets de Commander), 4. Qué Hacer si Algo Falla (Soporte y Diagnóstico Técnico), 5. Checklist de Aceptación de 15 Minutos, 6. Resultado Final de la Prueba, Guía de Prueba de Aceptación (Playtest) — MTG Commander Sandbox, Documento de Requisitos — Mesa Virtual de Commander (MTG) (+24 more)
 
 ### Community 19 - "CardDefinition"
 Cohesion: 0.10
-Nodes (11): CardLocaleRecord, cardLocaleService, cardSearchService, ScryfallCardFace, ScryfallCardRaw, scryfallService, COMMON_TOKENS, CardDisplayProps (+3 more)
+Nodes (16): CardLocaleRecord, cardLocaleService, cardSearchService, ScryfallCardFace, ScryfallCardRaw, scryfallService, CardDetailsModalProps, CardDisplayProps (+8 more)
 
 ### Community 20 - "Cluster 20: package"
 Cohesion: 0.12
 Nodes (18): dependencies, zod@^3.24.2, devDependencies, typescript@^5.7.3, exports, typescript, zod, main (+10 more)
 
-### Community 21 - "room.ts"
-Cohesion: 0.29
-Nodes (6): InitiativeState, MulliganPlayerState, MulliganState, RoomSettings, TargetingArrow, UndoProposal
+### Community 21 - "bulk-sync.service.ts"
+Cohesion: 0.15
+Nodes (9): getAppMetadata(), setAppMetadata(), args, fileArgIndex, LocaleCandidate, RawScryfallCard, BulkDataResponse, OFFICIAL_SOL_RING_RULINGS (+1 more)
 
 ### Community 22 - "Cluster 22: tsconfig"
 Cohesion: 0.11
@@ -230,6 +231,10 @@ Nodes (17): compilerOptions, allowImportingTsExtensions, isolatedModules, jsx, l
 ### Community 23 - "Cluster 23: ci"
 Cohesion: 0.07
 Nodes (28): DATABASE_URL, POSTGRES_DB, POSTGRES_PASSWORD, POSTGRES_USER, jobs, validate, name, env (+20 more)
+
+### Community 24 - "Cluster 24: secureroll"
+Cohesion: 0.18
+Nodes (3): secureRoll(), secureShuffle(), InitiativeService
 
 ### Community 25 - "Essential service definitions only"
 Cohesion: 0.05
@@ -240,40 +245,36 @@ Cohesion: 0.18
 Nodes (6): ImageLoadStatus, ImageQueueListener, ImageQueueStats, QueueItem, persistentImageCache, REQ-34 Cadena de Respaldo Progresiva de Carga de Cartas y Resolución Segura de Fichas (Puntos 5 y 6 de Correcciones del Cliente - D.5 y D.6)
 
 ### Community 28 - "dependencies"
-Cohesion: 0.10
-Nodes (21): dependencies, @electric-sql/pglite@^0.4.3, @electric-sql/pglite-socket@^0.1.3, fastify@^5.2.1, ioredis@^6.0.0, @mtgc/shared@*, prisma@^7.10.0, @prisma/client@^7.10.0 (+13 more)
+Cohesion: 0.12
+Nodes (17): dependencies, @electric-sql/pglite@^0.4.3, @fastify/cookie@^11.1.3, @fastify/helmet@^13.1.2, @fastify/static@^10.1.6, @fastify/websocket@^11.0.2, @mtgc/shared@*, @node-rs/argon2@^2.2.2 (+9 more)
 
 ### Community 29 - "roomManager"
-Cohesion: 0.16
-Nodes (4): roomManager, REQ-20.F1 Inventario exhaustivo de funciones de sala y estados (Punto F1), runF2ConcurrencyTest(), 7. Despliegue y Observabilidad (Fase 7 — REQ-19)
+Cohesion: 0.18
+Nodes (3): roomManager, REQ-20.F1 Inventario exhaustivo de funciones de sala y estados (Punto F1), runF2ConcurrencyTest()
 
 ### Community 30 - "Cluster 30: spec"
-Cohesion: 0.13
-Nodes (4): SCREENSHOT_DIR, SCREENSHOT_DIR, SCREENSHOT_DIR, SCREENSHOT_DIR
+Cohesion: 0.11
+Nodes (5): SCREENSHOT_DIR, SCREENSHOT_DIR, SCREENSHOT_DIR, SCREENSHOT_DIR, SCREENSHOT_DIR
 
 ### Community 31 - "Cluster 31: spec"
-Cohesion: 0.12
-Nodes (3): FailedRequest, ViewAuditResult, @playwright/test
+Cohesion: 0.11
+Nodes (4): FailedRequest, ViewAuditResult, SCREENSHOT_DIR, @playwright/test
 
 ### Community 32 - "Cluster 32: prod"
 Cohesion: 0.17
 Nodes (11): command, container_name, image, restart, volumes, services, redis, version (+3 more)
-
-### Community 33 - "Flujos de datos"
-Cohesion: 0.25
-Nodes (8): Flujo 1: Crear mesa y unirse, Flujo 2: Acción de juego (mover carta en MesaTotal con coordenadas globales, titularidad temporal y sincronización sin parpadeo), Flujo 3: Importar mazo, Flujo 4: Reconexión, Flujo 5: Sala de espera → inicio de partida (v2), Flujo 6: Iniciativa Automática (Punto 4, REQ-21), Flujo 7: Fase de Mulligan y Mano Inicial (Punto 5, REQ-23), Flujos de datos
 
 ### Community 35 - "Cluster 35: scryfallqueue"
 Cohesion: 0.27
 Nodes (3): scryfallQueue, ScryfallQueueListener, ScryfallQueueService
 
 ### Community 36 - "server/package.json"
-Cohesion: 0.12
-Nodes (17): @node-rs/argon2@^2.2.2, @prisma/adapter-pg@^7.10.0, @types/node@^22.13.0, zod@^3.24.2, devDependencies, pino-pretty@^13.0.0, @types/pg@^8.23.1, @types/node (+9 more)
+Cohesion: 0.16
+Nodes (13): @prisma/adapter-pg@^7.10.0, tsx@^4.19.2, devDependencies, pino-pretty@^13.0.0, @types/pg@^8.23.1, name, private, type (+5 more)
 
 ### Community 37 - "deckService"
-Cohesion: 0.18
-Nodes (5): deckService, mockCommander, mockSolRing, REQ-29 Mazos Listos de Commander (Presets) (Punto 8 de Correcciones del Cliente - F.8), REQ-39 Mazos Listos con Resolución Real y Purga de URLs Sintéticas (Punto 3 de Correcciones del Cliente - A.3)
+Cohesion: 0.24
+Nodes (3): deckService, REQ-29 Mazos Listos de Commander (Presets) (Punto 8 de Correcciones del Cliente - F.8), REQ-39 Mazos Listos con Resolución Real y Purga de URLs Sintéticas (Punto 3 de Correcciones del Cliente - A.3)
 
 ### Community 38 - "Cluster 38: tsconfig"
 Cohesion: 0.22
@@ -294,6 +295,10 @@ Nodes (9): POSTGRES_DB, POSTGRES_PASSWORD, POSTGRES_USER, container_name, enviro
 ### Community 42 - "Cluster 42: scripts"
 Cohesion: 0.25
 Nodes (8): scripts, build, dev, seed:presets, start, sync:cards, test, typecheck
+
+### Community 43 - "menu-battlefield-send.test.ts"
+Cohesion: 0.33
+Nodes (5): createDummyCard(), createRoomWithPlayers(), CardDimensions, getCardDimensions(), ViewportDimensions
 
 ### Community 44 - "Cluster 44: postgres"
 Cohesion: 0.25
@@ -316,12 +321,12 @@ Cohesion: 0.33
 Nodes (4): completeMulliganPhase(), MINIMAL_PNG, MockServerStats, setupPodWith100Cards()
 
 ### Community 49 - "CardDisplay.tsx"
-Cohesion: 0.22
-Nodes (16): CardDetailsModal(), CardDetailsModalProps, FormattedOracleText(), FormattedSymbol(), COMMON_TOKENS_CLIENT, CreateTokenModal(), CreateTokenModalProps, OpeningHandModal() (+8 more)
+Cohesion: 0.17
+Nodes (18): CardDetailsModal(), FormattedOracleText(), FormattedSymbol(), COMMON_TOKENS_CLIENT, CreateTokenModal(), OpeningHandModal(), LanguageContext, LanguageContextType (+10 more)
 
-### Community 50 - "dependencies"
-Cohesion: 0.15
-Nodes (13): dependencies, @dnd-kit/core@^6.3.1, @dnd-kit/utilities@^3.2.2, lucide-react@^0.475.0, postcss@^8.5.1, react@^18.3.1, react-dom@^18.3.1, tailwind-merge@^3.0.1 (+5 more)
+### Community 50 - "capture-visual-pods.js"
+Cohesion: 0.33
+Nodes (5): ARTIFACT_DIR, capturePod(), POD_SIZES, RESOLUTIONS, run()
 
 ### Community 51 - "Cluster 51: tsconfig"
 Cohesion: 0.29
@@ -335,69 +340,41 @@ Nodes (6): interval, retries, test, timeout, healthcheck, healthcheck
 Cohesion: 0.09
 Nodes (21): 1. Crear o Unirse a una Sala, 1. Requisitos, 2. Cargar tu Mazo, 2. Instalación y dependencias, 3. Configuración de variables de entorno, 3. Jugar en el Tablero, 4. Iniciar base de datos local (PostgreSQL + Redis), 5. Compilar librerías compartidas (+13 more)
 
-### Community 57 - "runG3Tests"
-Cohesion: 0.18
-Nodes (5): AdjustLifePayload, CommanderDamagePayload, SetLifePayload, SetPlayerCounterPayload, runG3Tests()
-
-### Community 58 - "cardImageResolver"
-Cohesion: 0.25
-Nodes (3): BatchRequestItem, cardImageResolver, REQ-40 Resolvedor Canónico por Lotes `POST /api/cards/resolve` (Punto 4 de Correcciones del Cliente - A.4)
-
 ### Community 59 - "card.ts"
-Cohesion: 0.11
-Nodes (15): PresetMeta, SavedDeck, CardColor, CardFace, CardLocaleData, CardDisplayData, CardImageSize, CardPTInfo (+7 more)
+Cohesion: 0.12
+Nodes (12): CardFace, CardLocaleData, CardRuling, CardDisplayData, CardImageSize, CardPTInfo, BASIC_LANDS, DeckCardWithQuantity (+4 more)
 
-### Community 60 - "LanguageContext.tsx"
-Cohesion: 0.22
-Nodes (7): mana-font@^1.18.0, LanguageContext, LanguageContextType, LanguageProvider(), apiBase, SupportedLanguage, mana-font
+### Community 60 - "error-collector.ts"
+Cohesion: 0.40
+Nodes (3): ErrorLogEntry, errorLogs, getCollectedErrors()
 
 ### Community 62 - "Dominio: Magic: The Gathering, formato Commander"
 Cohesion: 0.33
 Nodes (5): Dominio: Magic: The Gathering, formato Commander, Modelo de datos sugerido, Qué NO hacer, Reglas del formato, Validación de mazo (informativa, nunca bloquea)
 
-### Community 65 - "Documento de Requisitos — Mesa Virtual de Commander (MTG)"
-Cohesion: 0.29
-Nodes (7): Documento de Requisitos — Mesa Virtual de Commander (MTG), Glosario, Introducción, Límites del sistema, Matriz de trazabilidad (resumen), Métricas de éxito, Supuestos (confirmar con el cliente)
+### Community 63 - "ref_fs"
+Cohesion: 0.12
+Nodes (6): ARTIFACT_DIR, runA11yAudit(), summarizeAxeResults(), ARTIFACT_DIR, ARTIFACT_DIR, ARTIFACT_DIR
 
 ### Community 66 - "Changelog del Proyecto MTG Commander (EDH)"
 Cohesion: 0.33
 Nodes (5): Changelog del Proyecto MTG Commander (EDH), Corregido / Agregado, Crédito GitHub Student Developer Pack (Heroku), [Infraestructura & Créditos Estudiantiles] - 2026-10-30, [Ronda de Producción: Bloque A3 y A4] - 2026-10-30
 
-### Community 67 - "Externos"
-Cohesion: 0.33
-Nodes (6): Externos, Importadores de mazos (fase 2), Internos, Puntos de integración, Scryfall API, Videollamada externa (fase 1) / LiveKit o WebRTC (fase 2)
-
 ### Community 68 - "test-g1-latency-bank.ts"
 Cohesion: 0.50
 Nodes (4): CardItem, main(), OptimisticTransfer, runLatencySimulation()
-
-### Community 69 - "Requisitos no funcionales"
-Cohesion: 0.33
-Nodes (6): REQ-15 Rendimiento, REQ-16 Seguridad y privacidad, REQ-17 Usabilidad y accesibilidad, REQ-18 Cumplimiento legal y atribución, REQ-19 Disponibilidad y observabilidad, Requisitos no funcionales
-
-### Community 70 - "Componentes en detalle"
-Cohesion: 0.50
-Nodes (4): COMP-4 Room Manager, COMP-5 Game Server, COMP-6 Card Service, Componentes en detalle
-
-### Community 72 - "scripts"
-Cohesion: 0.29
-Nodes (7): scripts, build, dev, preview, test, test:e2e, typecheck
 
 ### Community 77 - "ws"
 Cohesion: 0.13
 Nodes (3): ws@^8.18.0, ws, LatencyMeasurement
 
 ### Community 80 - "Documento de Diseño — Mesa Virtual de Commander (MTG)"
-Cohesion: 0.15
-Nodes (13): Decisiones resueltas y abiertas, Despliegue, Documento de Diseño — Mesa Virtual de Commander (MTG), Estrategia de pruebas, Manejo de errores, Modelo de amenazas (resumen), Modelos de datos, Máquina de estados de la mesa (v2) (+5 more)
+Cohesion: 0.05
+Nodes (38): Arquitectura, COMP-4 Room Manager, COMP-5 Game Server, COMP-6 Card Service, Componentes en detalle, Decisiones resueltas y abiertas, Despliegue, Diagrama de alto nivel (+30 more)
 
-### Community 81 - "Arquitectura"
-Cohesion: 0.67
-Nodes (3): Arquitectura, Diagrama de alto nivel, Mapa de componentes
-
-### Community 82 - "toArtCropUrl"
-Cohesion: 0.27
-Nodes (5): PendingPlayerDeck, SelectDeckPayload, PlayerCounters, PlayerSelectedDeck, toArtCropUrl()
+### Community 82 - "LobbyManager"
+Cohesion: 0.17
+Nodes (5): LobbyManager, PendingPlayerDeck, SelectDeckPayload, PlayerSelectedDeck, toArtCropUrl()
 
 ### Community 83 - "player-colors.ts"
 Cohesion: 0.52
@@ -410,10 +387,6 @@ Nodes (10): Aleatoriedad, Ciclo de una acción, Deshacer, Límites y abuso, Medi
 ### Community 85 - "bulkSyncService"
 Cohesion: 0.16
 Nodes (4): processAllCardsLocales(), bulkSyncService, REQ-28 Dictámenes Oficiales y Sincronización al Arranque (Punto 6 de Correcciones del Cliente - D.6), REQ-38 Sincronización Automática e Ingesta de Catálogo Scryfall Local (Punto 2 de Correcciones del Cliente - A.2)
-
-### Community 86 - "vite.config.ts"
-Cohesion: 0.40
-Nodes (4): vite@^6.1.0, @vitejs/plugin-react@^4.3.4, vite, @vitejs/plugin-react
 
 ### Community 87 - "Seguridad de la aplicación"
 Cohesion: 0.20
@@ -443,6 +416,14 @@ Nodes (7): Casos límite que debes cubrir, Después de la iniciativa, Estados de
 Cohesion: 0.25
 Nodes (7): Campos de carta que usarás, Endpoints útiles, Esqueleto de cola con límite de tasa, Importación de listas, Imágenes y playmats, Integración con Scryfall, Reglas de uso (verifica en la documentación vigente)
 
+### Community 95 - "deck.service.ts"
+Cohesion: 0.17
+Nodes (8): DeckConfig, DECKS, PRESET_DIR, PRESET_METAS, PresetMeta, SavedDeck, SCREENSHOT_DIR, CardColor
+
+### Community 96 - "shared/src/index.ts"
+Cohesion: 0.16
+Nodes (21): BattlefieldCardItem(), ViewFraming, CardContextMenu(), cardTokensClientCache, LibraryContextMenu(), LibraryRevealModal(), CARD_TYPE_FILTERS, Portal() (+13 more)
+
 ### Community 97 - "Frontend Design"
 Cohesion: 0.29
 Nodes (6): Design principles, Frontend Design, Ground your designs in the subject matter, More on writing in design, Process: plan, review against the brief, build, critique, Restraint and self-critique
@@ -451,33 +432,37 @@ Nodes (6): Design principles, Frontend Design, Ground your designs in the subjec
 Cohesion: 0.29
 Nodes (6): Anti-patrones que debes evitar, Auditoría de conformidad con la especificación, Informe final, Plantilla de matriz, Procedimiento, Reglas de oro
 
-### Community 101 - "auth.service.ts"
-Cohesion: 0.19
-Nodes (6): AuthUser, InMemoryUserRecord, DevEmailSender, emailSender, SentEmailRecord, PasswordService
+### Community 99 - "CardPTBadge"
+Cohesion: 0.38
+Nodes (6): CardPTBadge(), COMP-6 Card Service y Telemetría de Base de Datos Local (Punto 1 - A.1), computeCardPT(), REQ-25 Certificación E2E integral de correcciones del cliente (Punto 8 de Correcciones del Cliente - E.8), REQ-42 Métrica Honesta y Benchmark de Red con Cero Fallos (Punto 6 de Correcciones del Cliente - A.6), REQ-43 Indicador P/T en Esquina Inferior Izquierda con Datos Reales (Punto 7 de Correcciones del Cliente - B.7)
 
-### Community 105 - "DiagnosticPanel.tsx"
-Cohesion: 0.29
-Nodes (6): CardHealthData, DiagnosticPanel(), DiagnosticFailure, DiagnosticsListener, REQ-35 Panel de Diagnóstico (?debug=1) y Registro de Errores de Cartas en Servidor (Punto 7 de Correcciones del Cliente - D.7), REQ-37 Diagnóstico de Base de Datos Local y Telemetría de Presencia de Cartas (Punto 1 de Correcciones del Cliente - A.1)
+### Community 101 - "auth.service.ts"
+Cohesion: 0.11
+Nodes (7): authService, AuthUser, InMemoryUserRecord, DevEmailSender, emailSender, SentEmailRecord, PasswordService
+
+### Community 105 - "App.tsx"
+Cohesion: 0.15
+Nodes (21): App(), DeckImporter(), DeckInspectorModal(), getCategoryIcon(), ManaCostRenderer(), DiagnosticPanel(), LegalModal(), LegalModalProps (+13 more)
 
 ## Knowledge Gaps
 - **2 isolated node(s):** `../../tsconfig.base.json`, `../../tsconfig.base.json`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 623 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **32 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 645 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **33 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `GameStateSession` connect `GameStateSession` to `LobbyManager`, `Cluster 0: filter`, `Cluster 2: starter`, `RoomState`, `.addLog`, `ref_node_assert`, `App.tsx`, `CardDefinition`, `Cluster 24: secureroll`, `runG3Tests`, `roomManager`?**
-  _High betweenness centrality (0.059) - this node is a cross-community bridge._
+- **Why does `Requisitos funcionales` connect `Requisitos funcionales` to `CardPTBadge`, `deckService`, `diagnosticsService`, `CardPreviewContext.tsx`, `Tareas`, `App.tsx`, `CardDisplay.tsx`, `Plan de Implementación — Mesa Virtual de Commander (MTG)`, `bulkSyncService`, `cardImageResolver`, `imageLoaderQueue.ts`, `roomManager`?**
+  _High betweenness centrality (0.068) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `GameStateSession` (e.g. with `3. Servidor de Juego en Tiempo Real (Fase 3 — REQ-2 a REQ-6, REQ-9 a REQ-13, REQ-16)` and `6. Pruebas y Validación (Fase 6 — REQ-2 a REQ-12, REQ-15, REQ-16)`) actually correct?**
   _`GameStateSession` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `../../tsconfig.base.json`, `../../tsconfig.base.json` to the rest of the system?**
   _2 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Cluster 0: filter` be split into smaller, more focused modules?**
-  _Cohesion score 0.08115942028985507 - nodes in this community are weakly interconnected._
-- **Why does `@playwright/test` connect `Cluster 31: spec` to `web/package.json`, `Cluster 34: spec`, `visual-tabletop.spec.ts`, `client-corrections.spec.ts`, `tap-animation.spec.ts`, `db.ts`, `Cluster 48: spec`, `Cluster 54: spec`, `Cluster 55: spec`, `card-details.spec.ts`, `token-creation.spec.ts`, `Cluster 30: spec`, `client-corrections-audit-p1-to-p8.spec.ts`?**
+  _Cohesion score 0.07738095238095238 - nodes in this community are weakly interconnected._
+- **Why does `@playwright/test` connect `Cluster 31: spec` to `web/package.json`, `fullscreen-visual.spec.ts`, `visual-tabletop.spec.ts`, `client-corrections.spec.ts`, `Cluster 48: spec`, `Cluster 54: spec`, `Cluster 55: spec`, `full-game-4p.spec.ts`, `card-details.spec.ts`, `ref_fs`, `Cluster 30: spec`, `deck.service.ts`?**
   _High betweenness centrality (0.056) - this node is a cross-community bridge._
 - **Are the 4 inferred relationships involving `CardDefinition` (e.g. with `COMP-8 Gestión de Imágenes y Diagnóstico de Red (Punto 1)` and `REQ-41 Resolución Unificada de URLs de Imágenes sin Manipulación de Texto (Punto 5 de Correcciones del Cliente - A.5)`) actually correct?**
   _`CardDefinition` has 4 INFERRED edges - model-reasoned connections that need verification._
-- **Should `Cluster 2: starter` be split into smaller, more focused modules?**
-  _Cohesion score 0.07741935483870968 - nodes in this community are weakly interconnected._
+- **Should `web/package.json` be split into smaller, more focused modules?**
+  _Cohesion score 0.0549645390070922 - nodes in this community are weakly interconnected._
