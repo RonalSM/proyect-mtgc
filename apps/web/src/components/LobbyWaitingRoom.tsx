@@ -164,59 +164,20 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
     fetchDecks();
   }, []);
 
-  // Remember last selected deck from localStorage on initial lobby entry (Punto 8)
+  // Regla estricta 1.2: El jugador entra SIEMPRE sin mazo seleccionado (estado vacío).
+  // La ÚNICA excepción es si hizo clic explícito en el botón 'Jugar con este mazo' desde el launcher principal.
   const hasAutoSelectedRef = useRef(false);
 
   useEffect(() => {
     if (hasAutoSelectedRef.current) return;
     if (localPlayer && !localPlayer.selectedDeck) {
       try {
-        const cached = localStorage.getItem('mtgc_last_selected_deck');
-        if (cached) {
-          const parsed = JSON.parse(cached);
+        const explicitDeckJson = sessionStorage.getItem('mtgc_explicit_launcher_deck');
+        if (explicitDeckJson) {
+          sessionStorage.removeItem('mtgc_explicit_launcher_deck');
+          hasAutoSelectedRef.current = true;
+          const parsed = JSON.parse(explicitDeckJson);
           if (parsed && parsed.name && parsed.commanderName) {
-            hasAutoSelectedRef.current = true;
-            // Sanitize / upgrade any obsolete or art_series cards stored in previous sessions
-            const hasObsoleteCard = (parsed.maindeckCards || []).some(
-              (c: any) =>
-                c.layout === 'art_series' ||
-                c.typeLine === 'Card // Card' ||
-                c.scryfallId === '6894b688-4966-4277-8e11-d3c91042180c' ||
-                (c.imageUrlNormal && c.imageUrlNormal.includes('/art_crop/')) ||
-                (!c.oracleText && !c.typeLine?.includes('Land') && !c.typeLine?.includes('Card')),
-            );
-
-            if (hasObsoleteCard) {
-              // Re-resolve deck cards from server
-              const names = (parsed.maindeckCards || []).map((c: any) => c.name);
-              fetch('/api/cards/resolve', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ names, lang: 'en' }),
-              })
-                .then(r => (r.ok ? r.json() : null))
-                .then(resolvedData => {
-                  if (resolvedData?.cards) {
-                    const upgradedDeck = {
-                      ...parsed,
-                      maindeckCards: resolvedData.cards,
-                    };
-                    localStorage.setItem('mtgc_last_selected_deck', JSON.stringify(upgradedDeck));
-                    onAction('SELECT_DECK', {
-                      deckId: upgradedDeck.id,
-                      deckName: upgradedDeck.name,
-                      commanderName: upgradedDeck.commanderName,
-                      commanderImageUrl: upgradedDeck.commanderImageUrl,
-                      commanderCards: upgradedDeck.commanderCards,
-                      maindeckCards: upgradedDeck.maindeckCards,
-                      warnings: upgradedDeck.warnings,
-                    });
-                  }
-                })
-                .catch(() => {});
-              return;
-            }
-
             onAction('SELECT_DECK', {
               deckId: parsed.id,
               deckName: parsed.name,
@@ -229,7 +190,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
           }
         }
       } catch {
-        // Ignore JSON/localStorage error
+        // Ignore JSON/sessionStorage error
       }
     }
   }, [localPlayer?.selectedDeck, localPlayer?.id, onAction]);
@@ -427,14 +388,10 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
       warnings: deck.warnings,
     });
 
-    try {
-      localStorage.setItem('mtgc_last_selected_deck', JSON.stringify(deck));
-      hasAutoSelectedRef.current = true;
-    } catch {
-      // Ignore quota error
-    }
+    hasAutoSelectedRef.current = true;
 
     // Persistencia local reactiva para invitados (Puntos F5.b y F5.c)
+    // Se guarda en la lista local de mazos del invitado, pero NO se autoselecciona en salas futuras (Regla 1.2)
     saveLocalGuestDeck(deck);
     setSavedDecks(prev => {
       const filtered = prev.filter(d => d.id !== deck.id && d.name !== deck.name);

@@ -93,11 +93,6 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
     e.preventDefault();
     if (!roomName.trim() || !hostName.trim()) return;
     localStorage.setItem('mtgc_player_name', hostName.trim());
-    if (selectedPresetForView) {
-      try {
-        localStorage.setItem('mtgc_last_selected_deck', JSON.stringify(selectedPresetForView));
-      } catch {}
-    }
     await onCreateRoom({
       name: roomName.trim(),
       hostName: hostName.trim(),
@@ -110,6 +105,9 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   const handleJoinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!joinCode.trim() || !joinPlayerName.trim()) return;
+    try {
+      sessionStorage.removeItem('mtgc_explicit_launcher_deck');
+    } catch {}
     localStorage.setItem('mtgc_player_name', joinPlayerName.trim());
     onJoinRoom(joinCode.trim().toUpperCase(), joinPlayerName.trim(), isSpectator);
     setModalMode('none');
@@ -138,7 +136,12 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full lg:w-auto">
             <button
               type="button"
-              onClick={() => setModalMode('create')}
+              onClick={() => {
+                try {
+                  sessionStorage.removeItem('mtgc_explicit_launcher_deck');
+                } catch {}
+                setModalMode('create');
+              }}
               className="inline-flex items-center justify-center space-x-2.5 px-6 py-3.5 rounded-xl bg-[#2A835F] hover:bg-[#349e73] active:bg-[#237050] text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-[#2A835F]/25 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
@@ -182,9 +185,6 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   key={deck.id}
                   onClick={() => {
                     setSelectedPresetForView(deck);
-                    try {
-                      localStorage.setItem('mtgc_last_selected_deck', JSON.stringify(deck));
-                    } catch {}
                   }}
                   className={`group relative rounded-xl bg-[#092328] border transition-all cursor-pointer overflow-hidden p-4 flex flex-col justify-between space-y-3.5 ${
                     isSelected
@@ -361,8 +361,8 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                     onClick={() => {
                       if (selectedPresetForView) {
                         try {
-                          localStorage.setItem(
-                            'mtgc_last_selected_deck',
+                          sessionStorage.setItem(
+                            'mtgc_explicit_launcher_deck',
                             JSON.stringify(selectedPresetForView),
                           );
                         } catch {}
@@ -682,7 +682,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
         onSelectDeck={deck => {
           setSelectedPresetForView(deck);
           try {
-            localStorage.setItem('mtgc_last_selected_deck', JSON.stringify(deck));
+            sessionStorage.setItem('mtgc_explicit_launcher_deck', JSON.stringify(deck));
           } catch {}
           setRoomName(`Mesa ${deck.name}`);
           setModalMode('create');
