@@ -19,6 +19,7 @@ import {
   User,
   BookOpen,
   X,
+  Swords,
 } from 'lucide-react';
 import { HandFan } from './HandFan';
 import { CardDisplay } from './CardDisplay';
@@ -353,6 +354,77 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   useEffect(() => {
     return imageLoaderQueue.subscribe(setImageStats);
   }, []);
+
+  const hasCommanderLethalRisk = useMemo(() => {
+    return Boolean(
+      player.commanderDamage && Object.values(player.commanderDamage).some(v => v >= 21),
+    );
+  }, [player.commanderDamage]);
+
+  const opponentCommanders = useMemo(() => {
+    if (!roomState?.players) return [];
+    const opponents = Object.values(roomState.players).filter(
+      p => p.id !== player.id && !p.isSpectator,
+    );
+
+    const result: {
+      opponentId: string;
+      opponentName: string;
+      opponentColor: string;
+      commanderInstanceId: string;
+      commanderName: string;
+      damage: number;
+    }[] = [];
+
+    for (const opp of opponents) {
+      const oppColor = getPlayerColor(opp);
+      const oppZones = roomState.playerZones?.[opp.id];
+      const cmdCards: CardInstance[] = [];
+
+      if (oppZones) {
+        const allCards = [
+          ...(oppZones.command || []),
+          ...(oppZones.battlefield || []),
+          ...(oppZones.graveyard || []),
+          ...(oppZones.exile || []),
+          ...(oppZones.hand || []),
+        ];
+        for (const c of allCards) {
+          if (c.isCommander && !cmdCards.some(existing => existing.instanceId === c.instanceId)) {
+            cmdCards.push(c);
+          }
+        }
+      }
+
+      if (cmdCards.length > 0) {
+        cmdCards.forEach(cmd => {
+          const dmg =
+            player.commanderDamage?.[cmd.instanceId] ?? player.commanderDamage?.[opp.id] ?? 0;
+          result.push({
+            opponentId: opp.id,
+            opponentName: opp.name,
+            opponentColor: oppColor,
+            commanderInstanceId: cmd.instanceId,
+            commanderName: cmd.definition.name || opp.selectedDeck?.commanderName || 'Comandante',
+            damage: dmg,
+          });
+        });
+      } else {
+        const fallbackKey = opp.id;
+        const dmg = player.commanderDamage?.[fallbackKey] ?? 0;
+        result.push({
+          opponentId: opp.id,
+          opponentName: opp.name,
+          opponentColor: oppColor,
+          commanderInstanceId: fallbackKey,
+          commanderName: opp.selectedDeck?.commanderName || 'Comandante',
+          damage: dmg,
+        });
+      }
+    }
+
+    return result;
+  }, [roomState, player.id, player.commanderDamage]);
 
   useEffect(() => {
     if (activePileModal === 'library' && zones.library.length > 0) {
@@ -830,14 +902,16 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               className={`flex items-center space-x-2.5 px-3.5 py-1.5 rounded-2xl backdrop-blur-xl border shadow-2xl transition-[border-color,background-color,box-shadow,transform] duration-200 cursor-pointer active:scale-95 ring-1 ring-white/5 ${
                 player.life <= 0
                   ? 'bg-rose-950/90 border-rose-600 text-rose-300 ring-2 ring-rose-500/30 shadow-rose-900/40'
-                  : player.life <= 10
-                    ? 'bg-amber-950/90 border-amber-500 text-amber-200 shadow-amber-900/30'
-                    : 'bg-[#092328]/95 border-[#12544F] text-zinc-100 hover:border-[#8BBB92] shadow-black/80'
+                  : hasCommanderLethalRisk
+                    ? 'bg-rose-950/95 border-rose-500 text-rose-200 ring-2 ring-rose-500/80 shadow-[0_0_15px_rgba(244,63,94,0.6)] animate-pulse'
+                    : player.life <= 10
+                      ? 'bg-amber-950/90 border-amber-500 text-amber-200 shadow-amber-900/30'
+                      : 'bg-[#092328]/95 border-[#12544F] text-zinc-100 hover:border-[#8BBB92] shadow-black/80'
               }`}
             >
               <Heart
                 className={`w-4 h-4 ${
-                  player.life <= 10
+                  hasCommanderLethalRisk || player.life <= 10
                     ? 'text-rose-500 fill-rose-500 animate-pulse'
                     : 'text-rose-400 fill-rose-400/20'
                 }`}
@@ -845,9 +919,18 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               <span className="text-xl sm:text-2xl font-black font-mono tracking-tight leading-none tabular-nums">
                 {player.life}
               </span>
+              {hasCommanderLethalRisk && (
+                <span
+                  data-testid={`commander-damage-alert-pill-${player.id}`}
+                  className="bg-rose-600 text-white font-black text-[9px] px-1.5 py-0.5 rounded-full uppercase tracking-tighter shadow-sm animate-bounce"
+                  title="Riesgo de derrota: 21 o más daño de comandante recibido"
+                >
+                  21+ CMDR
+                </span>
+              )}
             </button>
 
-            {/* Quick Life Modifiers Popover via Portal (REQ-22.5) */}
+            {/* Quick Life Modifiers Popover via Portal (REQ-22.5, H3) */}
             {showLifeControls && lifePopoverPos && (
               <Portal>
                 {/* Invisible overlay for click-outside */}
@@ -858,7 +941,7 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                 />
                 <div
                   style={{ top: `${lifePopoverPos.top}px`, left: `${lifePopoverPos.left}px` }}
-                  className="fixed z-50 bg-[#092328] border border-[#12544F] rounded-2xl shadow-2xl p-3 flex flex-col space-y-2.5 w-52 backdrop-blur-xl animate-in fade-in zoom-in-95 ring-1 ring-[#2A835F]/30"
+                  className="fixed z-50 bg-[#092328] border border-[#12544F] rounded-2xl shadow-2xl p-3 flex flex-col space-y-2.5 w-64 max-h-[85vh] overflow-y-auto dark-custom-scrollbar backdrop-blur-xl animate-in fade-in zoom-in-95 ring-1 ring-[#2A835F]/30"
                   onClick={e => e.stopPropagation()}
                 >
                   {/* Botones -1 y +1 (Punto 7: se eliminan los botones +-5) */}
@@ -971,6 +1054,133 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                       </button>
                     </div>
                   </div>
+
+                  {/* Sección de Daño de Comandante (H3) */}
+                  {opponentCommanders.length > 0 && (
+                    <div className="pt-2 border-t border-[#12544F] flex flex-col space-y-1.5" data-testid="commander-damage-section">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-rose-300">
+                        <span className="flex items-center space-x-1">
+                          <Swords className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Daño de Comandante</span>
+                        </span>
+                        {hasCommanderLethalRisk && (
+                          <span className="text-[8px] bg-rose-900/90 text-rose-200 border border-rose-600 px-1 py-0.2 rounded font-mono font-bold animate-pulse">
+                            ¡21+ EN RIESGO!
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col space-y-1 max-h-48 overflow-y-auto pr-0.5 dark-custom-scrollbar">
+                        {opponentCommanders.map(item => {
+                          const isLethal = item.damage >= 21;
+                          return (
+                            <div
+                              key={`cmd-dmg-${item.opponentId}-${item.commanderInstanceId}`}
+                              data-testid={`commander-damage-row-${item.opponentId}`}
+                              className={`flex items-center justify-between text-xs py-1 px-1.5 rounded-lg border transition-all ${
+                                isLethal
+                                  ? 'bg-rose-950/90 border-rose-500 text-rose-200 shadow-[0_0_8px_rgba(244,63,94,0.4)] animate-pulse'
+                                  : 'bg-[#040d0f]/90 border-[#12544F] text-zinc-300 hover:border-[#12544F]/80'
+                              }`}
+                            >
+                              <div className="flex flex-col min-w-0 pr-1">
+                                <span
+                                  className="font-bold truncate text-[11px] flex items-center space-x-1"
+                                  style={{ color: item.opponentColor }}
+                                >
+                                  <span
+                                    className="w-2 h-2 rounded-full flex-shrink-0"
+                                    style={{ backgroundColor: item.opponentColor }}
+                                  />
+                                  <span className="truncate max-w-[85px]">{item.opponentName}</span>
+                                </span>
+                                <span
+                                  className="text-[9px] text-zinc-400 truncate max-w-[85px]"
+                                  title={item.commanderName}
+                                >
+                                  {item.commanderName}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center space-x-1 flex-shrink-0">
+                                <button
+                                  type="button"
+                                  data-testid={`cmd-dmg-minus-${item.opponentId}`}
+                                  onClick={() => {
+                                    if (item.damage > 0) {
+                                      onAction('COMMANDER_DAMAGE', {
+                                        targetPlayerId: player.id,
+                                        sourceCommanderInstanceId: item.commanderInstanceId,
+                                        delta: -1,
+                                      });
+                                    }
+                                  }}
+                                  disabled={item.damage <= 0}
+                                  className="w-5 h-5 rounded bg-[#0c2d32] hover:bg-[#12544F] disabled:opacity-30 disabled:hover:bg-[#0c2d32] text-zinc-300 font-bold text-[10px] flex items-center justify-center transition-colors cursor-pointer"
+                                  title="Restar 1 al daño de este comandante"
+                                >
+                                  -
+                                </button>
+
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="999"
+                                  value={item.damage}
+                                  data-testid={`cmd-dmg-input-${item.opponentId}`}
+                                  aria-label={`Daño de comandante de ${item.opponentName}`}
+                                  onChange={e => {
+                                    const raw = parseInt(e.target.value.replace(/[^0-9]/g, '').slice(0, 3) || '0', 10);
+                                    const clamped = Math.max(0, Math.min(999, isNaN(raw) ? 0 : raw));
+                                    const delta = clamped - item.damage;
+                                    if (delta !== 0) {
+                                      onAction('COMMANDER_DAMAGE', {
+                                        targetPlayerId: player.id,
+                                        sourceCommanderInstanceId: item.commanderInstanceId,
+                                        delta,
+                                      });
+                                    }
+                                  }}
+                                  className={`w-10 h-6 text-center text-xs font-mono font-bold rounded border bg-[#040d0f] focus:outline-none ${
+                                    isLethal
+                                      ? 'border-rose-500 text-rose-300 ring-1 ring-rose-500'
+                                      : 'border-[#12544F] text-[#8BBB92] focus:border-[#2A835F]'
+                                  }`}
+                                />
+
+                                <button
+                                  type="button"
+                                  data-testid={`cmd-dmg-plus-${item.opponentId}`}
+                                  onClick={() => {
+                                    if (item.damage < 999) {
+                                      onAction('COMMANDER_DAMAGE', {
+                                        targetPlayerId: player.id,
+                                        sourceCommanderInstanceId: item.commanderInstanceId,
+                                        delta: 1,
+                                      });
+                                    }
+                                  }}
+                                  className="w-5 h-5 rounded bg-[#12544F] hover:bg-[#2A835F] text-[#8BBB92] hover:text-white font-bold text-[10px] flex items-center justify-center transition-colors cursor-pointer"
+                                  title="Sumar 1 al daño de este comandante"
+                                >
+                                  +
+                                </button>
+
+                                {isLethal && (
+                                  <span
+                                    className="text-xs text-rose-400 font-bold ml-0.5"
+                                    title="¡21+ de daño! Condición de riesgo"
+                                  >
+                                    ⚠️
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </Portal>
             )}

@@ -73,8 +73,12 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 **Historia:** Como jugador, quiero registrar el daño de comandante por oponente, para detectar derrotas por 21.
 
 1. THE sistema SHALL mantener un contador de daño de comandante por cada par (jugador dañado, comandante origen).
-2. WHEN un contador alcanza 21, THE sistema SHALL resaltar al jugador como derrotado por daño de comandante.
+2. WHEN un contador alcanza 21, THE sistema SHALL resaltar al jugador como en condición de riesgo por daño de comandante (sin eliminar automáticamente).
 3. WHERE el jugador tiene partner/compañero, THE sistema SHALL llevar contadores separados por cada comandante.
+4. **Panel de Vida y Daño de Comandante (Bloque H3):**
+   - En la pastilla de vida o en su ventana desplegable (`PlayerCell`), THE sistema SHALL presentar una fila por cada jugador contrario con su nombre, su color de jugador y un campo numérico (0 a 999) del daño recibido de su comandante (si hay compañeros/partners, una fila por comandante).
+   - WHEN el daño recibido de un comandante alcanza 21 puntos, THE sistema SHALL resaltar la fila correspondiente y la pastilla de vida en alerta (`21+ CMDR`) como condición de riesgo sin eliminación automática.
+   - THE sistema SHALL reutilizar la acción de WebSocket autoritativa `COMMANDER_DAMAGE` (`{ targetPlayerId, sourceCommanderInstanceId, delta }`).
 
 ### REQ-5 Contadores y estados
 

@@ -677,6 +677,15 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
 - Cuando el puntero del arrastre cruza la zona de la mano propia (`isHandOver: true`), el contenedor activa un resalte suave (`ring-2 ring-amber-400/80 bg-amber-400/15 shadow-[0_0_30px_rgba(251,191,36,0.3)] border-amber-400/50`) con transición de 200 ms.
 - Las manos de los rivales (`!isLocalPlayer`) no son droppables (`disabled: true` y sin registro de ref), asegurando que un jugador nunca pueda soltar o introducir cartas en las manos ajenas.
 
+13. **Panel de Vida y Control de Daño de Comandante (Bloque H3):**
+    - En `PlayerCell.tsx`, el popover anexo a la pastilla de vida incorpora una lista interactiva de comandantes rivales (`opponentCommanders`).
+    - Para cada comandante contrario (soportando variantes con compañeros/partners de forma independiente), se muestra:
+      - Nombre y distintivo con el color oficial y estable del oponente.
+      - Nombre oficial del comandante.
+      - Campo numérico editable (0 a 999) con botones decremento (-) e incremento (+) rápidos.
+    - Se reutiliza la acción autoritativa de WebSocket `COMMANDER_DAMAGE` (`{ targetPlayerId, sourceCommanderInstanceId, delta }`), actualizando el contador autoritativo del servidor y la bitácora pública con soporte para deshacer (`UNDO_LAST`).
+    - **Condición de riesgo a 21 de daño:** Al alcanzar 21 puntos acumulados, la fila individual y la pastilla de vida principal (`data-player-life`) se iluminan en rojo de alerta pulsante (`animate-pulse border-rose-500 shadow-rose-900/60`) con distintivo `21+ CMDR`, señalando la condición crítica de Commander sin provocar eliminación prematura o forzada en el cliente.
+
 11. **Pilas interactivas y modales con menú contextual (Punto 7):**
 
 - **Ilustración y conteo de la carta superior:** El cementerio y el exilio renderizan `DraggablePileCard`, mostrando la imagen real de la última carta llegada como carátula de la pila y un contador nítido sobre ella.
