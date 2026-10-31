@@ -16,3 +16,4 @@ export * from './utils/card-pt.js';
 export * from './utils/card-keywords.js';
 export * from './utils/card-locale.js';
 export * from './utils/table-layout.js';
+export * from './utils/player-colors.js';

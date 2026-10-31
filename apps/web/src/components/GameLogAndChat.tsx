@@ -1,14 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import type { GameLogEntry, GameActionType } from '@mtgc/shared';
+import type { GameLogEntry, GameActionType, PlayerState } from '@mtgc/shared';
+import { getPlayerColor } from '@mtgc/shared';
 import { Send, History, MessageSquare, X } from 'lucide-react';
 
 interface GameLogAndChatProps {
   logs: GameLogEntry[];
+  players?: Record<string, PlayerState>;
   onAction: (type: GameActionType, payload: unknown) => void;
   onClose?: () => void;
 }
 
-export const GameLogAndChat: React.FC<GameLogAndChatProps> = ({ logs, onAction, onClose }) => {
+export const GameLogAndChat: React.FC<GameLogAndChatProps> = ({ logs, players, onAction, onClose }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'chat'>('all');
   const [chatInput, setChatInput] = useState('');
   const logEndRef = useRef<HTMLDivElement>(null);
@@ -93,6 +95,8 @@ export const GameLogAndChat: React.FC<GameLogAndChatProps> = ({ logs, onAction, 
               second: '2-digit',
             });
             const isChat = log.actionText.startsWith('💬');
+            const authorPlayer = players?.[log.playerId];
+            const authorColor = getPlayerColor(authorPlayer);
             return (
               <div
                 key={log.id}
@@ -101,9 +105,16 @@ export const GameLogAndChat: React.FC<GameLogAndChatProps> = ({ logs, onAction, 
                     ? 'bg-[#12544F]/40 border border-[#2A835F]/50 text-[#8BBB92]'
                     : 'bg-[#040d0f]/80 border border-[#12544F] text-zinc-300'
                 }`}
+                style={isChat ? { borderLeftColor: authorColor, borderLeftWidth: '3px' } : undefined}
               >
                 <div className="flex items-center justify-between text-[10px] text-zinc-500 mb-0.5">
-                  <span className="font-semibold text-[#8BBB92]">{log.playerName}</span>
+                  <span className="font-bold flex items-center space-x-1.5" style={{ color: authorColor }}>
+                    <span
+                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: authorColor }}
+                    />
+                    <span>{log.playerName}</span>
+                  </span>
                   <span>{timeStr}</span>
                 </div>
                 <div>{log.actionText}</div>

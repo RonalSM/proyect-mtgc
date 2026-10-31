@@ -898,6 +898,15 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
    4.2. THE orden de iniciativa (1.º, 2.º…), corona de anfitrión 👑, píldora 'Tú' y punto indicador de conexión se trasladan a la barra superior desplegable (FloatingToolbar), con dropdown interactivo de jugadores.
    4.3. WHEN un jugador se desconecta, su nombre en el contenedor superior se atenuará con opacidad reducida y un tooltip explícito `${player.name} (Desconectado)`.
    4.4. THE pastilla de vida se mantiene en el dock inferior sobre el playmat, garantizando aislamiento total sin solapar elementos.
+   4.5. **Paleta Unificada y Colores por Jugador (Bloque H2):**
+   - **Asignación estable al unirse:** A cada jugador se le asigna de forma determinista y permanente al conectarse un color de la paleta `PLAYER_PALETTE` de 6 colores (`#38BDF8` Azul Cielo, `#4ADE80` Verde Esmeralda, `#C084FC` Púrpura Orquídea, `#FB7185` Rosa Coral, `#F8FAFC` Blanco Hielo, `#A3E635` Lima Limón).
+   - **Contraste WCAG AA y daltonismo:** Cada color posee un ratio de contraste $> 6:1$ (excediendo el umbral WCAG AA de $4.5:1$) sobre el fondo oscuro verde-azulado (`#092328`), niveles diferenciados de luminancia relativa y símbolos geométricos asociados (◆, ▲, ●, ★, ■, ⬟) para garantizar plena accesibilidad a personas con discromatopsia o daltonismo. Ningún color de la paleta cae en el rango del ámbar de turno activo (`#F59E0B`, 30°–55°).
+   - **Superficies donde se aplica:**
+     1. **Nombre del jugador:** Cabecera de celda (`PlayerCell`), indicador y píldoras de turno en `TurnBar`.
+     2. **Flechas:** Flechas persistentes (ataque y objetivo) y haz dinámico de apuntado en vivo (`TargetingArrowsLayer`).
+     3. **Fantasma de arrastre remoto:** Borde exterior, resplandor y cartela inferior de nombre en `BattlefieldCanvas`.
+     4. **Bitácora:** Nombres de autor y distintivo lateral de chat en `GameLogAndChat`.
+     5. **Filas de daño de comandante:** Registros individuales de comandantes contrarios en el panel de vida (`PlayerCell` y `PlayerCard`).
 5. THE pastilla de vida SHALL ubicarse en la **esquina interior** de cada celda, es decir, la más cercana al centro de la pantalla:
    5.1. Fila superior → borde inferior de la celda; fila inferior → borde superior de la celda.
    5.2. Columna izquierda → lado derecho; columna derecha o central → lado izquierdo.

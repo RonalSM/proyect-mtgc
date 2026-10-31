@@ -1,4 +1,4 @@
-import { RoomState, PlayerState } from '@mtgc/shared';
+import { RoomState, PlayerState, PLAYER_PALETTE } from '@mtgc/shared';
 import { GameStateSession } from './game-state.js';
 import { prisma } from '../db.js';
 import { randomBytes } from 'crypto';
@@ -45,6 +45,7 @@ export class RoomManager {
     const hostPlayer: PlayerState = {
       id: input.hostId,
       name: input.hostName,
+      color: PLAYER_PALETTE[0]!.hex,
       seatNumber: 0,
       isHost: true,
       isSpectator: false,
@@ -225,6 +226,7 @@ export class RoomManager {
     const newPlayer: PlayerState = {
       id: playerInfo.playerId,
       name: playerInfo.playerName,
+      color: (PLAYER_PALETTE[assignedSeat % PLAYER_PALETTE.length] || PLAYER_PALETTE[0])!.hex,
       seatNumber: assignedSeat,
       isHost: false,
       isSpectator: false,

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { PlayerState, GameActionType } from '@mtgc/shared';
+import { getPlayerColor } from '@mtgc/shared';
 import {
   RotateCcw,
   Dices,
@@ -78,14 +79,23 @@ export const TurnBar: React.FC<TurnBarProps> = ({
 
   return (
     <div className="bg-[#092328] border border-[#12544F] rounded-2xl px-4 py-2.5 shadow-xl flex items-center justify-between">
-      {/* Turn Indicator & Turn Order Sequence (REQ-21.7, REQ-21.8) */}
+      {/* Turn Indicator & Turn Order Sequence (REQ-21.7, REQ-21.8, H2) */}
       <div className="flex items-center space-x-3">
         <div className="flex items-center space-x-2 bg-[#040d0f] px-3 py-1.5 rounded-xl border border-[#12544F]">
           <span className="text-[11px] font-bold uppercase tracking-wider text-[#8BBB92]">
             Turno #{turnNumber}
           </span>
           <span className="text-zinc-600">&bull;</span>
-          <span className="text-xs font-semibold text-white">
+          {activePlayer && (
+            <span
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{ backgroundColor: getPlayerColor(activePlayer) }}
+            />
+          )}
+          <span
+            className="text-xs font-bold"
+            style={{ color: activePlayer ? getPlayerColor(activePlayer) : '#FFFFFF' }}
+          >
             {activePlayer?.name || 'Esperando inicio'}
           </span>
           {activePlayer?.initiativeOrder && (
@@ -106,21 +116,33 @@ export const TurnBar: React.FC<TurnBarProps> = ({
             {turnOrder.map((pid, idx) => {
               const p = players[pid];
               const isCurrent = pid === activePlayerId;
+              const pColor = getPlayerColor(p, idx);
               return (
                 <span
                   key={pid}
                   className={`px-2 py-0.5 rounded-lg font-semibold flex items-center space-x-1 border transition-colors ${
                     isCurrent
                       ? 'bg-[#2A835F] text-white border-[#8BBB92] font-bold shadow-sm'
-                      : 'bg-[#040d0f] text-zinc-300 border-[#12544F]'
+                      : 'bg-[#040d0f] text-zinc-300'
                   }`}
+                  style={!isCurrent ? { borderColor: `${pColor}60` } : undefined}
                 >
                   <span
-                    className={`${isCurrent ? 'text-white' : 'text-[#8BBB92]'} font-mono text-[10px]`}
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: pColor }}
+                  />
+                  <span
+                    className={`${isCurrent ? 'text-white' : ''} font-mono text-[10px]`}
+                    style={!isCurrent ? { color: pColor } : undefined}
                   >
                     {idx + 1}.º
                   </span>
-                  <span className="truncate max-w-[80px]">{p?.name || pid}</span>
+                  <span
+                    className="truncate max-w-[80px]"
+                    style={!isCurrent ? { color: pColor } : undefined}
+                  >
+                    {p?.name || pid}
+                  </span>
                 </span>
               );
             })}

@@ -174,7 +174,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
                     </span>
                   </div>
                   <div className="flex-1 overflow-hidden p-2">
-                    <GameLogAndChat logs={roomState.logs} onAction={onAction} />
+                    <GameLogAndChat logs={roomState.logs} players={roomState.players} onAction={onAction} />
                   </div>
                 </div>
               );
@@ -218,6 +218,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
           <div className="flex-1 overflow-hidden p-2">
             <GameLogAndChat
               logs={roomState.logs}
+              players={roomState.players}
               onAction={onAction}
               onClose={() => setIsChatDrawerOpen(false)}
             />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { RoomState, CardInstance } from '@mtgc/shared';
+import { getPlayerColor } from '@mtgc/shared';
 import { Crosshair, Swords, X } from 'lucide-react';
 
 export interface TargetingArrowsLayerProps {
@@ -94,6 +95,15 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
         ? [activeTargetingSourceId]
         : [];
 
+  const firstSourceCard =
+    sourceIds.length > 0
+      ? allBattlefieldCards?.find(c => c.instanceId === sourceIds[0])
+      : undefined;
+  const aimingPlayer = firstSourceCard
+    ? roomState?.players[firstSourceCard.holderId || firstSourceCard.ownerId]
+    : undefined;
+  const aimingColor = getPlayerColor(aimingPlayer);
+
   return (
     <svg
       id="targeting-arrows-overlay"
@@ -101,33 +111,7 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
       className="fixed inset-0 w-screen h-[100dvh] pointer-events-none z-30 overflow-visible select-none"
     >
       <defs>
-        {/* Arrowhead marker: Green/Sage */}
-        <marker
-          id="arrowhead-target"
-          viewBox="0 0 10 10"
-          refX="8"
-          refY="5"
-          markerWidth="8"
-          markerHeight="8"
-          orient="auto-start-reverse"
-        >
-          <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#8BBB92" />
-        </marker>
-
-        {/* Arrowhead marker: Attack Red/Crimson */}
-        <marker
-          id="arrowhead-attack"
-          viewBox="0 0 10 10"
-          refX="8"
-          refY="5"
-          markerWidth="8"
-          markerHeight="8"
-          orient="auto-start-reverse"
-        >
-          <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#F43F5E" />
-        </marker>
-
-        {/* Arrowhead marker: Dynamic Aiming */}
+        {/* Dynamic Aiming Marker & Glow (H2) */}
         <marker
           id="arrowhead-aim"
           viewBox="0 0 10 10"
@@ -137,19 +121,36 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
           markerHeight="9"
           orient="auto-start-reverse"
         >
-          <path d="M 0 1 L 10 5 L 0 9 z" fill="#34D399" />
+          <path d="M 0 1 L 10 5 L 0 9 z" fill={aimingColor} />
         </marker>
 
-        {/* Drop shadow filters for glowing spell lines */}
-        <filter id="glow-target" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#2A835F" floodOpacity="0.8" />
-        </filter>
-        <filter id="glow-attack" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#F43F5E" floodOpacity="0.8" />
-        </filter>
         <filter id="glow-aim" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#10B981" floodOpacity="0.9" />
+          <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor={aimingColor} floodOpacity="0.9" />
         </filter>
+
+        {/* Dynamic markers and filters for each active arrow by player color (H2) */}
+        {arrows.map(arrow => {
+          const srcPlayer = roomState?.players[arrow.sourcePlayerId];
+          const color = arrow.color || getPlayerColor(srcPlayer);
+          return (
+            <React.Fragment key={`defs-arrow-${arrow.id}`}>
+              <marker
+                id={`arrowhead-${arrow.id}`}
+                viewBox="0 0 10 10"
+                refX="8"
+                refY="5"
+                markerWidth="8"
+                markerHeight="8"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill={color} />
+              </marker>
+              <filter id={`glow-${arrow.id}`} x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor={color} floodOpacity="0.8" />
+              </filter>
+            </React.Fragment>
+          );
+        })}
       </defs>
 
       {/* 1. Render all persisted arrows from RoomState */}
@@ -164,9 +165,10 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
 
         const { midX, midY } = getCurveControlPoint(p1.x, p1.y, p2.x, p2.y);
         const isAttack = arrow.arrowType === 'attack';
-        const strokeColor = isAttack ? '#F43F5E' : '#8BBB92';
-        const filterId = isAttack ? 'url(#glow-attack)' : 'url(#glow-target)';
-        const markerId = isAttack ? 'url(#arrowhead-attack)' : 'url(#arrowhead-target)';
+        const sourcePlayer = roomState?.players[arrow.sourcePlayerId];
+        const strokeColor = arrow.color || getPlayerColor(sourcePlayer);
+        const filterId = `url(#glow-${arrow.id})`;
+        const markerId = `url(#arrowhead-${arrow.id})`;
 
         return (
           <g
@@ -202,11 +204,14 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
               height="28"
               className="overflow-visible pointer-events-auto"
             >
-              <div className="flex items-center space-x-1 px-1.5 py-0.5 rounded-full bg-[#092328]/95 border border-[#12544F] text-zinc-100 shadow-xl backdrop-blur-md group hover:border-rose-500 transition-all cursor-pointer">
+              <div
+                className="flex items-center space-x-1 px-1.5 py-0.5 rounded-full bg-[#092328]/95 border text-zinc-100 shadow-xl backdrop-blur-md group hover:border-rose-500 transition-all cursor-pointer"
+                style={{ borderColor: strokeColor }}
+              >
                 {isAttack ? (
-                  <Swords className="w-3 h-3 text-rose-400" />
+                  <Swords className="w-3 h-3" style={{ color: strokeColor }} />
                 ) : (
-                  <Crosshair className="w-3 h-3 text-[#8BBB92]" />
+                  <Crosshair className="w-3 h-3" style={{ color: strokeColor }} />
                 )}
                 <button
                   type="button"
@@ -246,7 +251,7 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
                 <path
                   d={`M ${sourcePos.x} ${sourcePos.y} Q ${midX} ${midY} ${targetingMousePos.x} ${targetingMousePos.y}`}
                   fill="none"
-                  stroke="#2A835F"
+                  stroke={aimingColor}
                   strokeWidth="8"
                   strokeOpacity="0.3"
                 />
@@ -255,7 +260,7 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
                 <path
                   d={`M ${sourcePos.x} ${sourcePos.y} Q ${midX} ${midY} ${targetingMousePos.x} ${targetingMousePos.y}`}
                   fill="none"
-                  stroke="#34D399"
+                  stroke={aimingColor}
                   strokeWidth="3.5"
                   strokeDasharray="6 4"
                   filter="url(#glow-aim)"
@@ -272,7 +277,7 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
             cy={targetingMousePos.y}
             r="14"
             fill="none"
-            stroke="#34D399"
+            stroke={aimingColor}
             strokeWidth="2"
             strokeDasharray="4 2"
             className="animate-spin"

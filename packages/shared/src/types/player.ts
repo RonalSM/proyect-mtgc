@@ -18,6 +18,7 @@ export interface PlayerSelectedDeck {
 export interface PlayerState {
   id: string;
   name: string;
+  color?: string; // Color hexadecimal asignado y estable toda la partida (H2)
   seatNumber: number; // 0 to 5 (2-6 players)
   isHost: boolean;
   isSpectator: boolean;

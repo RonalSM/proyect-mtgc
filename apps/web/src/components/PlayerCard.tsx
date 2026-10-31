@@ -345,7 +345,16 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
                     key={opponent.id}
                     className="flex items-center justify-between text-xs py-1 px-1.5 rounded hover:bg-slate-900/60"
                   >
-                    <span className="text-slate-300 truncate max-w-[120px]">{opponent.name}</span>
+                    <span
+                      className="font-bold truncate max-w-[120px] flex items-center space-x-1"
+                      style={{ color: opponent.color }}
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: opponent.color }}
+                      />
+                      <span>{opponent.name}</span>
+                    </span>
                     <div className="flex items-center space-x-2">
                       <span
                         className={`font-bold ${dmg >= 21 ? 'text-rose-400' : 'text-amber-200'}`}

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
-import { toArtCropUrl, inferCardTypeLine } from '@mtgc/shared';
+import { toArtCropUrl, inferCardTypeLine, getPlayerColor, getPlayerColorDef } from '@mtgc/shared';
 import type {
   PlayerState,
   GameActionType,
@@ -740,20 +740,27 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             onTargetPlayer(player.id);
           }
         }}
-        className={`absolute top-12 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 px-3.5 py-1 rounded-xl backdrop-blur-xl border text-xs font-sans font-bold transition-all shadow-xl select-none pointer-events-auto ring-1 ring-white/5 ${
+        className={`absolute top-12 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 px-3 py-1 rounded-xl backdrop-blur-xl border text-xs font-sans font-bold transition-all shadow-xl select-none pointer-events-auto ring-1 ring-white/5 ${
           activeTargetingSourceId
             ? 'ring-2 ring-[#8BBB92] bg-[#2A835F] text-white animate-pulse cursor-crosshair shadow-[0_0_15px_rgba(139,187,146,0.6)]'
             : isActiveTurn
               ? 'bg-[#2A835F] text-white border-[#8BBB92] shadow-lg shadow-[#2A835F]/40 ring-2 ring-[#8BBB92]/50 tracking-wide'
-              : isLocalPlayer
-                ? 'bg-[#092328]/95 text-[#8BBB92] border-[#12544F] ring-1 ring-[#2A835F]/30'
-                : 'bg-[#092328]/95 text-zinc-200 border-[#12544F]/80 hover:border-[#12544F]'
+              : 'bg-[#092328]/95 border-[#12544F]/80 hover:border-[#12544F]'
         }`}
+        style={!isActiveTurn ? { borderColor: `${getPlayerColor(player)}80` } : undefined}
       >
+        <span
+          className="w-2.5 h-2.5 rounded-full flex-shrink-0 flex items-center justify-center text-[8px] font-black shadow-sm"
+          style={{ backgroundColor: getPlayerColor(player), color: '#092328' }}
+          title={`Color de ${player.name}: ${getPlayerColorDef(player).name} (${getPlayerColor(player)})`}
+        >
+          {getPlayerColorDef(player).symbol}
+        </span>
         <span
           className={`whitespace-nowrap max-w-[clamp(120px,25cqw,280px)] truncate ${
             !player.isConnected ? 'opacity-40 text-zinc-500 line-through' : ''
           }`}
+          style={!isActiveTurn ? { color: getPlayerColor(player) } : undefined}
           title={player.isConnected ? player.name : `${player.name} (Desconectado)`}
         >
           {player.name}

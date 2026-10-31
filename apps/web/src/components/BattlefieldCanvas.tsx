@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { CardInstance, GameActionType, CardDefinition, RoomState } from '@mtgc/shared';
-import { computeCardPT } from '@mtgc/shared';
+import { computeCardPT, getPlayerColor } from '@mtgc/shared';
 import { useDraggable } from '@dnd-kit/core';
 import { CardDisplay } from './CardDisplay';
 import { CardContextMenu } from './CardContextMenu';
@@ -499,6 +499,8 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
 
           const ghostCenterX = Math.round(rawGhostCenterX);
           const ghostCenterY = Math.round(rawGhostCenterY);
+          const remotePlayer = roomState?.players[item.playerId];
+          const ghostColor = getPlayerColor(remotePlayer);
 
           return (
             <div
@@ -527,17 +529,25 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
                   height: `${cardHNum}px`,
                   transform: item.isTapped ? 'rotate(90deg)' : 'rotate(0deg)',
                   transformOrigin: 'center center',
+                  borderColor: ghostColor,
+                  boxShadow: `0 0 14px ${ghostColor}66`,
                 }}
-                className="card-rotator flex-shrink-0 rounded-md overflow-hidden border-2 border-[#8BBB92] shadow-lg shadow-[#2A835F]/25 bg-[#092328] relative"
+                className="card-rotator flex-shrink-0 rounded-md overflow-hidden border-2 shadow-lg bg-[#092328] relative"
               >
                 {item.cardDefinition ? (
                   <CardDisplay card={item.cardDefinition} isTapped={item.isTapped} />
                 ) : (
-                  <div className="w-full h-full bg-[#040d0f] flex items-center justify-center text-xs text-[#8BBB92]">
+                  <div
+                    className="w-full h-full bg-[#040d0f] flex items-center justify-center text-xs font-bold"
+                    style={{ color: ghostColor }}
+                  >
                     {item.playerName}
                   </div>
                 )}
-                <div className="absolute bottom-0 inset-x-0 bg-black/75 backdrop-blur-xs text-[9px] text-[#8BBB92] font-semibold text-center py-0.5 truncate px-1 border-t border-[#12544F]">
+                <div
+                  className="absolute bottom-0 inset-x-0 bg-black/85 backdrop-blur-xs text-[9px] font-bold text-center py-0.5 truncate px-1 border-t border-[#12544F]"
+                  style={{ color: ghostColor }}
+                >
                   {item.playerName}
                 </div>
               </div>
