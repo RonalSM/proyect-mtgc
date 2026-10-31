@@ -98,9 +98,11 @@ export function useGameSocket({
     // evitando depender de cookies de terceros que son bloqueadas por defecto en Safari/iOS y modos incógnito
     const storedToken =
       typeof window !== 'undefined'
-        ? sessionStorage.getItem('token') ||
+        ? sessionStorage.getItem('mtgc_ws_session_token') ||
+          sessionStorage.getItem('token') ||
           sessionStorage.getItem('mtgc_access_token') ||
           sessionStorage.getItem('mtgc_guest_token') ||
+          localStorage.getItem('mtgc_ws_session_token') ||
           localStorage.getItem('token') ||
           localStorage.getItem('mtgc_access_token') ||
           localStorage.getItem('mtgc_auth_token') ||

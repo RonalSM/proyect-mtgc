@@ -16,6 +16,7 @@ import { wsHandler } from './game/ws-handler.js';
 import helmet from '@fastify/helmet';
 import cookie from '@fastify/cookie';
 import jwt from '@fastify/jwt';
+import { z } from 'zod';
 import rateLimit from '@fastify/rate-limit';
 import { authService } from './services/auth.service.js';
 import { deckService } from './services/deck.service.js';
@@ -1132,11 +1133,97 @@ server.post(
       allowSpectators: parseResult.data.allowSpectators,
     });
 
+    const sessionToken = server.jwt.sign(
+      {
+        id: hostId,
+        username: parseResult.data.hostName,
+        roomCode: session.state.code,
+        isSpectator: false,
+        isGuest: true,
+      },
+      { expiresIn: '6h' },
+    );
+
     return reply.status(201).send({
       roomId: session.state.id,
       code: session.state.code,
       name: session.state.name,
       hostId,
+      sessionToken,
+      state: session.state,
+    });
+  },
+);
+
+const JoinRoomInputSchema = z.object({
+  roomCode: z.string().min(1).max(20),
+  playerName: z.string().min(1).max(30),
+  playerId: z.string().optional(),
+  isSpectator: z.boolean().optional(),
+});
+
+// Join Room REST endpoint que valida sala y emite JWT de sesión para WebSocket (Tarea 2)
+server.post(
+  '/api/rooms/join',
+  {
+    config: {
+      rateLimit: {
+        max: 30,
+        timeWindow: '1 minute',
+      },
+    },
+  },
+  async (request, reply) => {
+    const parseResult = JoinRoomInputSchema.safeParse(request.body);
+    if (!parseResult.success) {
+      return reply.status(400).send({
+        error: 'Datos de unión a sala inválidos',
+        details: parseResult.error.flatten(),
+      });
+    }
+
+    const { roomCode, playerName, isSpectator } = parseResult.data;
+    const code = roomCode.toUpperCase();
+    const session = roomManager.getSession(code);
+    if (!session) {
+      return reply.status(404).send({
+        error: `La mesa "${code}" no existe o ha expirado.`,
+        reason: 'room_not_found',
+      });
+    }
+
+    const playerList = Object.values(session.state.players || {});
+    const existingPlayer = playerList.find(
+      (p) =>
+        p.name.toLowerCase() === playerName.toLowerCase() ||
+        (parseResult.data.playerId && p.id === parseResult.data.playerId),
+    );
+
+    const maxPlayers = session.state.settings?.maxPlayers || 4;
+    if (!isSpectator && !existingPlayer && playerList.length >= maxPlayers) {
+      return reply.status(403).send({
+        error: 'La mesa ha alcanzado el límite máximo de jugadores.',
+        reason: 'room_full',
+      });
+    }
+
+    const playerId = existingPlayer?.id || parseResult.data.playerId || `p_${Date.now()}`;
+
+    const sessionToken = server.jwt.sign(
+      {
+        id: playerId,
+        username: playerName,
+        roomCode: code,
+        isSpectator: !!isSpectator,
+        isGuest: true,
+      },
+      { expiresIn: '6h' },
+    );
+
+    return reply.status(200).send({
+      roomCode: code,
+      playerId,
+      sessionToken,
       state: session.state,
     });
   },
@@ -1206,9 +1293,26 @@ server.register(async function (fastifyInstance) {
     const query = req.query as { playerId?: string; playerName?: string; spectator?: string; token?: string };
 
     const roomCode = params.roomCode?.toUpperCase() || '';
-    const playerId = query.playerId || `p_${Date.now()}`;
-    const playerName = query.playerName || 'Planeswalker';
-    const isSpectator = query.spectator === 'true';
+    let playerId = query.playerId || `p_${Date.now()}`;
+    let playerName = query.playerName || 'Planeswalker';
+    let isSpectator = query.spectator === 'true';
+
+    // Validación rápida de firma de token JWT de sesión (Tarea 2: sin DB ni hashes en WS/acciones)
+    if (query.token) {
+      try {
+        const decoded = server.jwt.verify<{
+          id?: string;
+          username?: string;
+          roomCode?: string;
+          isSpectator?: boolean;
+        }>(query.token);
+        if (decoded?.id) playerId = decoded.id;
+        if (decoded?.username) playerName = decoded.username;
+        if (typeof decoded?.isSpectator === 'boolean') isSpectator = decoded.isSpectator;
+      } catch {
+        server.log.warn(`[WS_AUTH] Token de sesión no válido o expirado para ${roomCode}`);
+      }
+    }
 
     wsHandler.handleConnection(
       socket,

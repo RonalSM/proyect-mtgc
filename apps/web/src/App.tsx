@@ -142,6 +142,10 @@ export default function App() {
       if (res.ok) {
         const roomData = await res.json();
         disconnectAndReset();
+        if (roomData.sessionToken && typeof window !== 'undefined') {
+          sessionStorage.setItem('mtgc_ws_session_token', roomData.sessionToken);
+          localStorage.setItem('mtgc_ws_session_token', roomData.sessionToken);
+        }
         setRoomCode(roomData.code);
         if (typeof window !== 'undefined') {
           sessionStorage.setItem('mtgc_room_code', roomData.code);
@@ -164,11 +168,35 @@ export default function App() {
     }
   };
 
-  const handleJoinRoom = (code: string, name: string, spectator: boolean) => {
+  const handleJoinRoom = async (code: string, name: string, spectator: boolean) => {
     disconnectAndReset();
     localStorage.setItem('mtgc_player_name', name);
     setPlayerName(name);
     setIsSpectator(spectator);
+
+    // Mover verificación criptográfica al momento de unirse y obtener token JWT de sesión para WS (Tarea 2)
+    try {
+      const res = await fetch('/api/rooms/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomCode: code,
+          playerName: name,
+          playerId,
+          isSpectator: spectator,
+        }),
+      });
+      if (res.ok) {
+        const joinData = await res.json();
+        if (joinData.sessionToken && typeof window !== 'undefined') {
+          sessionStorage.setItem('mtgc_ws_session_token', joinData.sessionToken);
+          localStorage.setItem('mtgc_ws_session_token', joinData.sessionToken);
+        }
+      }
+    } catch (e) {
+      console.warn('Error al solicitar token de sesión de sala:', e);
+    }
+
     setRoomCode(code);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('mtgc_room_code', code);
