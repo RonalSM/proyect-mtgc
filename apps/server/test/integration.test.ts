@@ -84,7 +84,7 @@ test('Integration Test - Lifecycle: Crear mesa -> unirse -> jugar -> reconectar'
     playerName: 'Bob',
   });
   assert.strictEqual(bobReconnected.isConnected, true);
-  assert.strictEqual(bobReconnected.life, 37); // Preserved state
+  assert.strictEqual(bobReconnected.life, 33); // 40 - 3 normal - 4 cmdr damage = 33 (REQ-4.1)
   assert.strictEqual(bobReconnected.commanderDamage['cmd_alice'], 4);
 });
 

@@ -129,8 +129,9 @@ test('GameStateSession - adjustLife & setLife flag defeat risk without automatic
   assert.strictEqual(session.state.players['p1']?.isAtRisk, true);
 });
 
-test('GameStateSession - commanderDamage triggers defeat risk at 21 damage without auto eliminate (REQ-4.2)', () => {
+test('GameStateSession - commanderDamage triggers defeat risk at 21 damage without auto eliminate and reduces life (REQ-4.2)', () => {
   const session = new GameStateSession(createMockRoomState());
+  assert.strictEqual(session.state.players['p1']?.life, 40);
 
   session.adjustCommanderDamage({
     targetPlayerId: 'p1',
@@ -138,6 +139,7 @@ test('GameStateSession - commanderDamage triggers defeat risk at 21 damage witho
     delta: 15,
   });
   assert.strictEqual(session.state.players['p1']?.commanderDamage['cmdr_opponent'], 15);
+  assert.strictEqual(session.state.players['p1']?.life, 25, 'Daño de comandante debe restar vida efectiva');
   assert.strictEqual(session.state.players['p1']?.isEliminated, false);
   assert.strictEqual(session.state.players['p1']?.isAtRisk, false);
 
@@ -147,10 +149,21 @@ test('GameStateSession - commanderDamage triggers defeat risk at 21 damage witho
     delta: 6,
   });
   assert.strictEqual(session.state.players['p1']?.commanderDamage['cmdr_opponent'], 21);
+  assert.strictEqual(session.state.players['p1']?.life, 19, 'Daño acumulado total debe restar vida a 19');
   // En riesgo de derrota, no eliminado automáticamente
   assert.strictEqual(session.state.players['p1']?.isEliminated, false);
   assert.strictEqual(session.state.players['p1']?.isAtRisk, true);
   assert.strictEqual(session.state.players['p1']?.riskReason, 'commander_damage');
+
+  // Reducir daño de comandante con botón '-' (delta: -1) revierte vida
+  session.adjustCommanderDamage({
+    targetPlayerId: 'p1',
+    sourceCommanderInstanceId: 'cmdr_opponent',
+    delta: -1,
+  });
+  assert.strictEqual(session.state.players['p1']?.commanderDamage['cmdr_opponent'], 20);
+  assert.strictEqual(session.state.players['p1']?.life, 20, 'Restar 1 de daño de comandante aumenta 1 de vida');
+  assert.strictEqual(session.state.players['p1']?.isAtRisk, false, 'Al bajar de 21 ya no esta en riesgo');
 });
 
 test('VisibilityFilter - masks opponent hand while leaving owner hand intact', () => {

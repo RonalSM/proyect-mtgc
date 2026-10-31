@@ -257,11 +257,17 @@ export class GameStateSession {
 
     const current = target.commanderDamage[payload.sourceCommanderInstanceId] ?? 0;
     const previous = current;
+    const previousLife = target.life;
     const previousIsAtRisk = target.isAtRisk;
     const previousRiskReason = target.riskReason;
 
     const newDamage = Math.max(0, Math.min(999, current + payload.delta));
+    const appliedDelta = newDamage - current;
     target.commanderDamage[payload.sourceCommanderInstanceId] = newDamage;
+
+    // Regla MTG Commander (CR 903.10a): El daño de comandante es daño de combate que
+    // RESTA vida al jugador receptor ademas de acumularse contra el umbral de derrota (21).
+    target.life = Math.max(-10000, Math.min(10000, target.life - appliedDelta));
 
     if (newDamage >= 21) {
       target.isAtRisk = true;
@@ -270,18 +276,26 @@ export class GameStateSession {
         payload.targetPlayerId,
         `está en riesgo de derrota (21 o más daño de comandante acumulado)`,
       );
+    } else if (target.life <= 0) {
+      target.isAtRisk = true;
+      target.riskReason = 'life';
+      this.addLog(payload.targetPlayerId, `está en riesgo de derrota (0 o menos vidas)`);
     } else if (target.riskReason === 'commander_damage') {
       const any21 = Object.values(target.commanderDamage).some(v => v >= 21);
       if (!any21) {
-        target.isAtRisk = false;
-        target.riskReason = undefined;
+        target.isAtRisk = target.life <= 0;
+        target.riskReason = target.life <= 0 ? 'life' : undefined;
       }
+    } else if (target.riskReason === 'life' && target.life > 0) {
+      const any21 = Object.values(target.commanderDamage).some(v => v >= 21);
+      target.isAtRisk = any21;
+      target.riskReason = any21 ? 'commander_damage' : undefined;
     }
 
     const sign = payload.delta > 0 ? `+${payload.delta}` : `${payload.delta}`;
     this.addLog(
       payload.targetPlayerId,
-      `recibió ${sign} daño de comandante (Total: ${newDamage})`,
+      `recibió ${sign} daño de comandante (Total: ${newDamage}, Vidas: ${target.life})`,
       true,
     );
 
@@ -295,6 +309,7 @@ export class GameStateSession {
       affectedPlayerIds: [payload.targetPlayerId],
       revert: () => {
         target.commanderDamage[payload.sourceCommanderInstanceId] = previous;
+        target.life = previousLife;
         target.isAtRisk = previousIsAtRisk;
         target.riskReason = previousRiskReason;
       },
