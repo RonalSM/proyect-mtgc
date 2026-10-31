@@ -63,6 +63,7 @@ export function useGameSocket({
       socketRef.current = null;
     }
 
+    setRoomState(null);
     setStatus(reconnectAttemptsRef.current > 0 ? 'reconnecting' : 'connecting');
     setErrorMessage(null);
 

@@ -176,11 +176,32 @@ export default function App() {
     }
   };
 
+  const isRoomReady = !!(roomCode && roomState && roomState.code?.toUpperCase() === roomCode.toUpperCase());
+
+  // Estado de carga si el roomCode cambio o se crea una sala y se espera el ROOM_STATE_SYNC inicial (Tarea 1.1)
+  if (roomCode && !isRoomReady) {
+    return (
+      <div className="fixed inset-0 w-screen h-[100dvh] bg-[#051316] text-white flex flex-col items-center justify-center space-y-4 select-none z-50">
+        <div className="w-12 h-12 rounded-2xl bg-[#092328] border border-[#12544F] flex items-center justify-center shadow-xl">
+          <RefreshCw className="w-6 h-6 text-[#8BBB92] animate-spin" />
+        </div>
+        <p className="text-base font-bold text-zinc-100 tracking-wide">
+          Conectando a la nueva mesa...
+        </p>
+        <span className="text-xs font-mono text-[#8BBB92] bg-[#0c2d32] border border-[#12544F] px-3 py-1 rounded-lg">
+          Sala: {roomCode}
+        </span>
+      </div>
+    );
+  }
+
   // Full-bleed game table view (REQ-22.1, REQ-22.2) — no page scroll, exactly 100dvh
-  if (roomCode && roomState && roomState.status !== 'lobby') {
+  // Se ata key={roomCode} a TableBoard para forzar desmontaje y destruccion completa al cambiar de sala (Tarea 1.2)
+  if (isRoomReady && roomState.status !== 'lobby') {
     return (
       <div className="fixed inset-0 w-screen h-[100dvh] overflow-hidden bg-black select-none">
         <TableBoard
+          key={roomCode}
           roomState={roomState}
           localPlayerId={playerId}
           connectionStatus={status}
@@ -189,10 +210,10 @@ export default function App() {
           onLeaveRoom={handleLeaveRoom}
         />
         {roomState.status === 'initiative' && (
-          <InitiativeOverlay roomState={roomState} localPlayerId={playerId} onAction={sendAction} />
+          <InitiativeOverlay key={`init-${roomCode}`} roomState={roomState} localPlayerId={playerId} onAction={sendAction} />
         )}
         {roomState.status === 'mulligan' && (
-          <OpeningHandModal roomState={roomState} localPlayerId={playerId} onAction={sendAction} />
+          <OpeningHandModal key={`mull-${roomCode}`} roomState={roomState} localPlayerId={playerId} onAction={sendAction} />
         )}
         {/* Deck Importer Modal Popup */}
         {isImporterOpen && (
@@ -332,8 +353,9 @@ export default function App() {
       {/* Main Container */}
       <main className="flex-1 p-4 max-w-7xl w-full mx-auto">
         <CardPreviewProvider>
-          {roomCode && roomState ? (
+          {isRoomReady ? (
             <LobbyWaitingRoom
+              key={roomCode}
               roomState={roomState}
               localPlayerId={playerId}
               onAction={sendAction}
