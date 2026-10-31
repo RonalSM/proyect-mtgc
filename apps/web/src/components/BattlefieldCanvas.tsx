@@ -142,6 +142,22 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     disabled: !canMove,
   });
 
+  // Doble clic / animación de tap: Hooks declarados incondicionalmente arriba (Regla de Hooks)
+  const isTapped = !!card.isTapped;
+  const [isAnimatingTap, setIsAnimatingTap] = useState(false);
+  const prevTappedRef = React.useRef(isTapped);
+
+  React.useEffect(() => {
+    if (prevTappedRef.current !== isTapped) {
+      prevTappedRef.current = isTapped;
+      setIsAnimatingTap(true);
+      const timer = setTimeout(() => {
+        setIsAnimatingTap(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isTapped]);
+
   // Clic derecho abre menú contextual (inspección de lectura para cartas ajenas o mutación para propias)
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -182,6 +198,16 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
     }
   };
 
+  const handleTransitionEnd = (e: React.TransitionEvent) => {
+    if (
+      e.propertyName === 'transform' ||
+      e.propertyName === 'width' ||
+      e.propertyName === 'height'
+    ) {
+      setIsAnimatingTap(false);
+    }
+  };
+
   // Punto 1 / Punto 3 / G2: Coordenadas optimistas y transformación segura para vista normal y ampliada
   const rawX = Number.isFinite(optimisticPosition?.x)
     ? optimisticPosition!.x
@@ -215,31 +241,6 @@ const BattlefieldCardItem: React.FC<BattlefieldCardItemProps> = ({
   // Acotamiento numérico estricto para evitar NaN o desbordes visuales (Punto G2)
   screenNormX = Number.isFinite(screenNormX) ? Math.max(0.01, Math.min(0.99, screenNormX)) : 0.5;
   screenNormY = Number.isFinite(screenNormY) ? Math.max(0.01, Math.min(0.99, screenNormY)) : 0.5;
-
-  const isTapped = !!card.isTapped;
-  const [isAnimatingTap, setIsAnimatingTap] = useState(false);
-  const prevTappedRef = React.useRef(isTapped);
-
-  React.useEffect(() => {
-    if (prevTappedRef.current !== isTapped) {
-      prevTappedRef.current = isTapped;
-      setIsAnimatingTap(true);
-      const timer = setTimeout(() => {
-        setIsAnimatingTap(false);
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [isTapped]);
-
-  const handleTransitionEnd = (e: React.TransitionEvent) => {
-    if (
-      e.propertyName === 'transform' ||
-      e.propertyName === 'width' ||
-      e.propertyName === 'height'
-    ) {
-      setIsAnimatingTap(false);
-    }
-  };
 
   const cardWNum = cardPixelWidth || 96;
   const cardHNum = cardPixelHeight || 134;
@@ -375,6 +376,35 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
   const { showPreview, hidePreview } = useCardPreview();
   const [internalSelectedCardId, setInternalSelectedCardId] = useState<string | null>(null);
 
+  // Filtrar de forma memoizada las cartas visibles según viewFraming (optimización y ciclo de vida de componentes)
+  const visibleCards = React.useMemo(() => {
+    if (!viewFraming?.isExpanded || viewFraming.width <= 0 || viewFraming.height <= 0) {
+      return cards;
+    }
+    return cards.filter(card => {
+      const rawX = Number.isFinite(optimisticPositions?.[card.instanceId]?.x)
+        ? optimisticPositions![card.instanceId].x
+        : Number.isFinite(card.position?.x)
+          ? card.position!.x
+          : 0.5;
+      const rawY = Number.isFinite(optimisticPositions?.[card.instanceId]?.y)
+        ? optimisticPositions![card.instanceId].y
+        : Number.isFinite(card.position?.y)
+          ? card.position!.y
+          : 0.5;
+      const screenNormX = (rawX - viewFraming.xMin) / viewFraming.width;
+      const screenNormY = (rawY - viewFraming.yMin) / viewFraming.height;
+      return (
+        Number.isFinite(screenNormX) &&
+        Number.isFinite(screenNormY) &&
+        screenNormX >= -0.15 &&
+        screenNormX <= 1.15 &&
+        screenNormY >= -0.15 &&
+        screenNormY <= 1.15
+      );
+    });
+  }, [cards, viewFraming, optimisticPositions]);
+
   const handleCardClick = (card: CardInstance, e: React.MouseEvent) => {
     if (onSelectCard) {
       onSelectCard(card.instanceId, e.shiftKey || e.ctrlKey || e.metaKey);
@@ -431,7 +461,7 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
         className="fixed inset-0 w-screen h-[100dvh] pointer-events-none z-10 overflow-hidden"
       >
         {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas */}
-        {cards.map(card => {
+        {visibleCards.map(card => {
         const remoteItem = remoteDraggingCards && remoteDraggingCards[card.instanceId];
         const isRemoteDragging = !!(
           remoteItem &&
