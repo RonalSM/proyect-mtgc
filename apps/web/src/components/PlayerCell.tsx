@@ -813,19 +813,24 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             onTargetPlayer(player.id);
           }
         }}
-        className={`absolute top-12 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 px-3.5 py-1.5 rounded-xl backdrop-blur-xl border-2 text-xs font-sans font-bold transition-all shadow-xl select-none pointer-events-auto ${
+        className={`absolute top-12 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 px-3.5 py-1.5 rounded-xl backdrop-blur-xl text-xs font-sans font-bold transition-all shadow-xl select-none pointer-events-auto ${
           activeTargetingSourceId
             ? 'ring-2 ring-[#8BBB92] animate-pulse cursor-crosshair shadow-[0_0_15px_rgba(139,187,146,0.6)]'
             : isActiveTurn
-              ? 'ring-2 ring-[#F59E0B] shadow-lg shadow-[#F59E0B]/40 tracking-wide'
+              ? 'shadow-lg shadow-[#F59E0B]/25 tracking-wide'
               : 'hover:brightness-110 shadow-md'
         }`}
         style={{
           backgroundColor: `${getPlayerColor(player)}2e`,
-          borderColor: isActiveTurn ? '#F59E0B' : getPlayerColor(player),
-          boxShadow: `0 0 14px ${getPlayerColor(player)}33`,
+          borderTop: `2px solid ${getPlayerColor(player)}`,
+          borderLeft: `2px solid ${getPlayerColor(player)}`,
+          borderRight: `2px solid ${getPlayerColor(player)}`,
+          borderBottom: isActiveTurn ? '3px solid #F59E0B' : `2px solid ${getPlayerColor(player)}`,
+          boxShadow: isActiveTurn
+            ? `0 0 14px ${getPlayerColor(player)}44, 0 4px 12px rgba(245, 158, 11, 0.45)`
+            : `0 0 14px ${getPlayerColor(player)}33`,
         }}
-        title={`Jugador: ${player.name} (${getPlayerColorDef(player).name})`}
+        title={`Jugador: ${player.name} (${getPlayerColorDef(player).name})${isActiveTurn ? ' — Turno Activo' : ''}`}
       >
         <span
           className={`whitespace-nowrap max-w-[clamp(120px,25cqw,280px)] truncate text-white drop-shadow-sm font-extrabold ${

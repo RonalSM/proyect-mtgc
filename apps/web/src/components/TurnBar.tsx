@@ -83,11 +83,16 @@ export const TurnBar: React.FC<TurnBarProps> = ({
       <div className="flex items-center space-x-3">
         <div
           data-testid="turn-bar-active-player"
-          className="flex items-center space-x-2 px-3 py-1.5 rounded-xl border-2 shadow-md transition-all"
+          className="flex items-center space-x-2 px-3 py-1.5 rounded-xl shadow-md transition-all"
           style={{
             backgroundColor: activePlayer ? `${getPlayerColor(activePlayer)}2e` : '#040d0f',
-            borderColor: activePlayer ? getPlayerColor(activePlayer) : '#12544F',
-            boxShadow: activePlayer ? `0 0 12px ${getPlayerColor(activePlayer)}33` : 'none',
+            borderTop: `2px solid ${activePlayer ? getPlayerColor(activePlayer) : '#12544F'}`,
+            borderLeft: `2px solid ${activePlayer ? getPlayerColor(activePlayer) : '#12544F'}`,
+            borderRight: `2px solid ${activePlayer ? getPlayerColor(activePlayer) : '#12544F'}`,
+            borderBottom: activePlayer ? '3px solid #F59E0B' : '2px solid #12544F',
+            boxShadow: activePlayer
+              ? `0 0 12px ${getPlayerColor(activePlayer)}33, 0 3px 8px #F59E0B55`
+              : 'none',
           }}
         >
           <span className="text-[11px] font-bold uppercase tracking-wider text-[#8BBB92]">
@@ -120,12 +125,15 @@ export const TurnBar: React.FC<TurnBarProps> = ({
                 <span
                   key={pid}
                   data-testid={`turn-order-pill-${pid}`}
-                  className="px-2.5 py-1 rounded-xl font-bold flex items-center space-x-1.5 border-2 text-xs text-white shadow-sm transition-all"
+                  className="px-2.5 py-1 rounded-xl font-bold flex items-center space-x-1.5 text-xs text-white shadow-sm transition-all"
                   style={{
                     backgroundColor: `${pColor}2e`,
-                    borderColor: isCurrent ? '#F59E0B' : pColor,
+                    borderTop: `2px solid ${pColor}`,
+                    borderLeft: `2px solid ${pColor}`,
+                    borderRight: `2px solid ${pColor}`,
+                    borderBottom: isCurrent ? '3px solid #F59E0B' : `2px solid ${pColor}`,
                     boxShadow: isCurrent
-                      ? `0 0 12px #F59E0B66, 0 0 8px ${pColor}44`
+                      ? `0 0 10px ${pColor}44, 0 3px 8px #F59E0B66`
                       : `0 0 8px ${pColor}22`,
                   }}
                 >
