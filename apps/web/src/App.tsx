@@ -16,7 +16,14 @@ import { RefreshCw, Layers } from 'lucide-react';
 export default function App() {
   const [roomCode, setRoomCode] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('mtgc_room_code') || null;
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlRoom = urlParams.get('room');
+      if (urlRoom) return urlRoom.toUpperCase();
+      return (
+        sessionStorage.getItem('mtgc_room_code') ||
+        localStorage.getItem('mtgc_room_code') ||
+        null
+      );
     }
     return null;
   });
@@ -67,13 +74,6 @@ export default function App() {
     checkHealth();
   }, []);
 
-  const handleKicked = useCallback(() => {
-    setRoomCode(null);
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('mtgc_room_code');
-    }
-  }, []);
-
   // Connect WebSocket when inside a room
   const {
     status,
@@ -83,14 +83,31 @@ export default function App() {
     revealedCard,
     dismissRevealedCard,
     errorMessage,
+    disconnectAndReset,
   } = useGameSocket({
     roomCode: roomCode || '',
     playerId,
     playerName,
     isSpectator,
     enabled: !!roomCode,
-    onKicked: handleKicked,
+    onKicked: () => handleLeaveRoom(),
   });
+
+  const handleLeaveRoom = useCallback(() => {
+    disconnectAndReset();
+    setRoomCode(null);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('mtgc_room_code');
+      localStorage.removeItem('mtgc_room_code');
+      if (window.location.search.includes('room=')) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('room');
+        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+      }
+    }
+    setIsImporterOpen(false);
+    setIsLegalOpen(false);
+  }, [disconnectAndReset]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -124,9 +141,11 @@ export default function App() {
 
       if (res.ok) {
         const roomData = await res.json();
+        disconnectAndReset();
         setRoomCode(roomData.code);
         if (typeof window !== 'undefined') {
           sessionStorage.setItem('mtgc_room_code', roomData.code);
+          localStorage.setItem('mtgc_room_code', roomData.code);
         }
         setIsSpectator(false);
       } else {
@@ -146,19 +165,14 @@ export default function App() {
   };
 
   const handleJoinRoom = (code: string, name: string, spectator: boolean) => {
+    disconnectAndReset();
     localStorage.setItem('mtgc_player_name', name);
     setPlayerName(name);
     setIsSpectator(spectator);
     setRoomCode(code);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('mtgc_room_code', code);
-    }
-  };
-
-  const handleLeaveRoom = () => {
-    setRoomCode(null);
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('mtgc_room_code');
+      localStorage.setItem('mtgc_room_code', code);
     }
   };
 

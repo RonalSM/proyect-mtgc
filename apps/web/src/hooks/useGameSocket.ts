@@ -310,7 +310,38 @@ export function useGameSocket({
     }
   }, [enabled, roomCode, playerId, playerName, isSpectator]);
 
+  const disconnectAndReset = useCallback(() => {
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
+      heartbeatIntervalRef.current = null;
+    }
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+    Object.values(remoteDragTimeoutsRef.current).forEach(t => clearTimeout(t));
+    remoteDragTimeoutsRef.current = {};
+    if (socketRef.current) {
+      try {
+        socketRef.current.close(1000, 'User left room');
+      } catch {}
+      socketRef.current = null;
+    }
+    setRoomState(null);
+    setStatus('disconnected');
+    setErrorMessage(null);
+    setRemoteDraggingCards({});
+    setRevealedCard(null);
+    reconnectAttemptsRef.current = 0;
+    pendingActionsRef.current = [];
+  }, []);
+
   useEffect(() => {
+    if (!enabled || !roomCode) {
+      disconnectAndReset();
+      return;
+    }
+
     connect();
 
     return () => {
@@ -320,13 +351,16 @@ export function useGameSocket({
       }
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
       if (socketRef.current) {
-        socketRef.current.close();
+        try {
+          socketRef.current.close(1000, 'Component unmounted or room change');
+        } catch {}
         socketRef.current = null;
       }
     };
-  }, [connect]);
+  }, [enabled, roomCode, connect, disconnectAndReset]);
 
   const sendAction = useCallback((type: GameActionType, payload: unknown) => {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
@@ -352,5 +386,6 @@ export function useGameSocket({
     dismissRevealedCard: () => setRevealedCard(null),
     sendAction,
     reconnect: connect,
+    disconnectAndReset,
   };
 }
