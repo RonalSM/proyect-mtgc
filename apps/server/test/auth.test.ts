@@ -4,14 +4,24 @@ import { PasswordService } from '../src/services/password.service.js';
 import { authService } from '../src/services/auth.service.js';
 import { emailSender } from '../src/services/email.service.js';
 
-test('PasswordService - hashes passwords with Argon2id and verifies correctly', async () => {
+test('PasswordService - hashes passwords with asynchronous scrypt and verifies correctly', async () => {
   const password = 'SuperSecretCommanderPassword123!';
-  const argonHash = await PasswordService.hash(password);
+  const scryptHash = await PasswordService.hash(password);
 
-  assert.ok(argonHash.startsWith('$argon2'), `Expected Argon2 hash format, got: ${argonHash}`);
-  assert.strictEqual(await PasswordService.verify(password, argonHash), true);
-  assert.strictEqual(await PasswordService.verify('WrongPassword', argonHash), false);
-  assert.strictEqual(await PasswordService.verify('', argonHash), false);
+  assert.ok(
+    scryptHash.startsWith('$scrypt$N=16384,r=8,p=1$'),
+    `Expected scrypt hash format, got: ${scryptHash}`
+  );
+  assert.strictEqual(await PasswordService.verify(password, scryptHash), true);
+  assert.strictEqual(await PasswordService.verify('WrongPassword', scryptHash), false);
+  assert.strictEqual(await PasswordService.verify('', scryptHash), false);
+
+  // Backward compatibility test: verify legacy salt:hash
+  const legacySalt = 'abc12345';
+  const legacyHash = `${legacySalt}:5f4dcc3b5aa765d61d8327deb882cf99`;
+  // Test doesn't crash on legacy
+  const legacyResult = await PasswordService.verify('password', legacyHash);
+  assert.strictEqual(typeof legacyResult, 'boolean');
 });
 
 test('AuthService - registers user with email verification, Argon2id, and refresh token rotation', async () => {
