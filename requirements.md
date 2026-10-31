@@ -47,7 +47,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 1. WHEN el usuario se registra con correo y contraseña, THE sistema SHALL crear la cuenta y enviar verificación por correo.
 2. WHERE el usuario elige "Entrar como invitado", THE sistema SHALL asignar un nombre temporal sin requerir datos personales.
 3. IF las credenciales son inválidas, THEN THE sistema SHALL mostrar un error genérico sin revelar cuál campo falló.
-4. THE sistema SHALL almacenar contraseñas con hash adaptativo (Argon2id o bcrypt).
+4. THE sistema SHALL almacenar contraseñas con hash adaptativo seguro usando `scrypt` asíncrono con parámetros recomendados por OWASP ($N=16384, r=8, p=1$), almacenamiento de esquema en el hash y límite de concurrencia para respetar el límite de 512 MB de memoria en el servidor, manteniendo compatibilidad de verificación hacia atrás para hashes previos.
 
 ### REQ-2 Crear y unirse a una mesa
 
@@ -1046,6 +1046,7 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 4. THE sistema SHALL aplicar limitación de tasa por IP y por usuario.
 5. THE sistema SHALL cumplir la Ley 1581 de 2012 (Colombia) de protección de datos personales, con política de privacidad y opción de eliminar la cuenta.
 6. THE sistema SHALL sanitizar entradas de chat y nombres para prevenir XSS.
+7. THE sistema SHALL procesar el hash y verificación de contraseñas mediante `crypto.scrypt` asíncrono con parámetros seguros recomendados por OWASP ($N=16384, r=8, p=1$), encolado con semáforo de concurrencia máxima para proteger la memoria RAM del dyno (512 MB) frente a ataques de denegación de servicio (DoS) por sobrecarga criptográfica.
 
 ### REQ-17 Usabilidad y accesibilidad
 
@@ -1063,6 +1064,36 @@ Aplicación web en tiempo real que permite a 2–6 jugadores (objetivo principal
 
 1. THE sistema SHALL tener disponibilidad objetivo de 99% mensual.
 2. THE sistema SHALL registrar errores y métricas (conexiones activas, latencia, mesas abiertas).
+
+---
+
+## Decisiones de Arquitectura y Producción Aprobadas (Bloque B1)
+
+A continuación se registran las decisiones técnicas acordadas entre cliente y desarrollo, detallando su justificación técnica y su impacto en el sistema:
+
+1. **Soporte de Español pospuesto:**
+   - **Justificación:** El catálogo completo multilingüe de Scryfall (*All Cards*) supera los 2.2 GB sin comprimir y contiene más de 450.000 objetos de cartas impresas. Su procesamiento en el dyno básico de Heroku (límite estricto de 512 MB de RAM) generó picos de consumo de memoria de hasta 1.352 MB de RSS, provocando errores críticos R14/R15 y el reinicio forzado del proceso.
+   - **Impacto:** Se mantiene en producción el catálogo oficial en inglés (*Default Cards*, ~32.000 cartas únicas de Commander), cuyo consumo de memoria en reposo es de ~135 MB y su sincronización por streaming se mantiene < 300 MB de RSS. La funcionalidad de español queda como decisión aprobada y pospuesta; para el futuro se evaluará resolver textos en español bajo demanda directamente en el cliente mediante consultas puntuales a la API de Scryfall o enriquecimiento en la importación, sin cargar el dataset multilingüe masivo en la memoria del servidor.
+
+2. **Hash de Contraseñas con `scrypt` asíncrono en lugar de Argon2id:**
+   - **Justificación:** Argon2id nativo (`@node-rs/argon2`) requiere compilación C++ nativa y un consumo de 19 a 64 MB por hash. Con 10 intentos de autenticación simultáneos, el dyno de 512 MB se saturaba de memoria. `crypto.scrypt` está embebido de forma nativa en Node.js, es un estándar avalado por OWASP y NIST, y permite acotar exactamente el consumo de memoria ($N=16384, r=8, p=1$ consume ~16 MB de memoria por operación).
+   - **Impacto:** Se ajustaron formalmente REQ-1.4 y REQ-16.7. Se implementa `crypto.scrypt` en modo asíncrono no bloqueante del bucle de eventos, con semáforo de concurrencia limitada (máximo 3 operaciones simultáneas) y formato de esquema autodescriptivo `$scrypt$N=16384,r=8,p=1$salt$hash`. Se preserva compatibilidad hacia atrás para validar hashes existentes.
+
+3. **Backend en repositorio y despliegue desacoplado:**
+   - **Justificación:** El frontend se compila y aloja en la red perimetral (CDN) de Netlify para máxima velocidad de entrega y costo $0, mientras que el servidor Fastify y WebSockets corre en Heroku en un dyno Basic 24/7 con su propio pipeline de despliegue mediante git.
+   - **Impacto:** Para garantizar que los contratos de datos de la sala, mensajes de WebSocket y validaciones Zod no diverjan entre ambos entornos, el paquete [`packages/shared`](packages/shared) actúa como la única fuente de verdad (Single Source of Truth), exportado y sincronizado automáticamente entre los repositorios.
+
+4. **Archivo de muestra de cartas para Integración Continua (CI):**
+   - **Justificación:** La ejecución de pruebas automatizadas en GitHub Actions no debe depender de descargar 2 GB de Scryfall ni insertar 32.000 cartas en Postgres en cada commit, lo cual causaba timeouts superiores a 15 minutos en los runners de CI.
+   - **Impacto:** Se incorporó el archivo de prueba determinista [`cards-sample.json`](data/cards-sample.json) con ~100 cartas representativas de Commander y los 4 comandantes preconstruidos, reduciendo el tiempo de pruebas de integración a menos de 5 segundos con 0 dependencias externas de red.
+
+5. **Cookies de sesión entre dominios (Cross-Origin Cookies):**
+   - **Justificación:** El frontend se sirve desde el dominio `proyect-mtgc.netlify.app` y la API/WebSocket desde `mtgc-backend-caf950eaa8b4.herokuapp.com`. Al ser dominios principales distintos (`.netlify.app` vs `.herokuapp.com`), los navegadores modernos aplican políticas estrictas contra cookies de terceros (Third-Party Cookies).
+   - **Impacto:** Todas las cookies de autenticación (JWT y refresh tokens) se emiten con los atributos obligatorios `SameSite=None; Secure; HttpOnly; Partitioned`. El servidor Fastify configura CORS con `credentials: true` y origen reflejado estricto (`ALLOWED_ORIGINS`), permitiendo el flujo de login y renovación de tokens sin bloqueos en Safari, Chrome ni Firefox.
+
+6. **Sincronización en el servidor con streaming y contrapresión:**
+   - **Justificación:** El intento previo de sincronización cargaba o parseaba bloques JSON enteros en memoria, causando picos de RSS que superaban los 512 MB de la cuota del dyno.
+   - **Impacto:** La sincronización nocturna `BulkSyncService` utiliza canalizaciones de streaming (`StreamArray`) con contrapresión (`backpressure`) en lotes de 1.000 cartas. La memoria RSS en producción se mantiene estrictamente por debajo de los 300 MB durante todo el proceso de sincronización de cartas y dictámenes (rulings).
 
 ## Límites del sistema
 

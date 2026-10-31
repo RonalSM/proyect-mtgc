@@ -1238,9 +1238,26 @@ TABLE_IDLE_TIMEOUT_MIN=120
 - Rendimiento visual: 60 fps con 6 jugadores y 60 cartas en el campo.
 - Uso de memoria: < 200 KB de estado por mesa activa.
 
-## Decisiones resueltas y abiertas
+## Decisiones arquitectónicas y de producción aprobadas (Bloque B1)
 
 1. **Audio y Video:** Descartado por decisión del cliente. El grupo jugará mediante Discord externo; la web no incluirá funcionalidades de voz ni videollamada (REQ-12.3 descartado).
-2. **Imágenes:** Servidas directamente desde la CDN de Scryfall (respetando sus pautas de uso y atribución legal).
-3. **Invitados:** Permitidos sin registro previo mediante sesiones anónimas.
-4. ¿Presupuesto de infraestructura mensual objetivo?
+2. **Imágenes de cartas:** Servidas y resueltas directamente desde la CDN global de Scryfall (`cards.scryfall.io`) con precarga por prioridades y almacenamiento persistente en el navegador vía Cache API (`caches.open('mtgc-card-images-v1')`). Sin almacenamiento ni mirroring en disco del servidor para respetar la cuota efímera de Heroku.
+3. **Invitados:** Permitidos sin registro previo mediante sesiones anónimas efímeras.
+4. **Español pospuesto por memoria en Heroku Dyno (512 MB):**
+   - *Justificación*: El volcado masivo multilingüe `all-cards.json` (>2.2 GB) generó picos de memoria RSS de hasta 1.352 MB durante el parseo, excediendo la cuota de 512 MB del Basic Dyno.
+   - *Impacto*: Se procesa y almacena en PostgreSQL únicamente el volcado `default-cards.json` en inglés (~32.000 cartas de Commander), manteniendo la memoria RSS bajo 300 MB. La localización en español queda aprobada como funcionalidad pospuesta; en una fase posterior se resolverá bajo demanda desde el frontend mediante consultas directas a la API de Scryfall sin sobrecargar la RAM del backend.
+5. **Hash criptográfico con `scrypt` asíncrono y control de concurrencia:**
+   - *Justificación*: Argon2id requería bindings nativos en C++ y consumía hasta 64 MB de RAM por hash. Con múltiples logins simultáneos, el servidor arriesgaba OOM. `crypto.scrypt` de la biblioteca estándar de Node.js es una función de derivación de claves recomendada por OWASP y NIST, y permite parametrizar con exactitud el costo de memoria ($N=16384, r=8, p=1$, ~16 MB de memoria por operación).
+   - *Impacto*: Implementación asíncrona no bloqueante de `crypto.scrypt` con un semáforo de concurrencia máxima (máx. 3 ejecuciones paralelas) para proteger el event loop y la memoria del dyno. Formato de hash autodescriptivo `$scrypt$N=16384,r=8,p=1$salt$hash` con soporte retrocompatible.
+6. **Desacoplamiento de repositorios y despliegues (Netlify + Heroku):**
+   - *Justificación*: Netlify aloja la SPA React con compresión edge y distribución CDN global sin costo de servidor, mientras que Heroku ejecuta el proceso Node.js/Fastify con WebSockets 24/7 y Postgres gestionado.
+   - *Impacto*: `packages/shared` funge como Single Source of Truth para tipos, esquemas Zod y validaciones. La sincronización entre el monorepo y el repositorio del backend se gestiona de forma determinista para evitar desalineación de contratos.
+7. **Fixture ligero de cartas para CI/CD:**
+   - *Justificación*: Las pruebas de integración en CI no deben descargar volcados de Scryfall ni sincronizar 32.000 cartas en cada commit.
+   - *Impacto*: Creación de `cards-sample.json` (~100 cartas) que permite levantar y verificar la suite completa de pruebas unitarias y de integración en menos de 5 segundos.
+8. **Manejo de Cookies Cross-Origin (`SameSite=None; Secure`):**
+   - *Justificación*: El frontend (`proyect-mtgc.netlify.app`) y la API (`mtgc-backend-caf950eaa8b4.herokuapp.com`) residen en distintos dominios públicos.
+   - *Impacto*: Las cookies de refresh token y sesión se configuran con `SameSite=None; Secure; HttpOnly; Partitioned`, y Fastify CORS responde con `credentials: true` y origen verificado, asegurando persistencia de sesión sin ser bloqueadas por políticas de privacidad de los navegadores.
+9. **Sincronización en streaming con contrapresión:**
+   - *Justificación*: La lectura de arrays masivos en memoria satura el heap de V8.
+   - *Impacto*: `BulkSyncService` procesa el streaming JSON mediante `StreamArray` en lotes de 1.000 cartas con pausas de contrapresión, reduciendo el RSS máximo en producción a <300 MB.
