@@ -1,13 +1,11 @@
 {
   "0": "Cluster 0: filter",
-  "2": "Cluster 2: starter",
   "4": "Cluster 4: config",
   "12": "Cluster 12: compose",
   "14": "Cluster 14: base",
   "20": "Cluster 20: package",
   "22": "Cluster 22: tsconfig",
   "23": "Cluster 23: ci",
-  "24": "Cluster 24: secureroll",
   "30": "Cluster 30: spec",
   "31": "Cluster 31: spec",
   "32": "Cluster 32: prod",
