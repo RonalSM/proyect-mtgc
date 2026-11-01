@@ -157,6 +157,7 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
         >
           <button
             onClick={onPlay}
+            data-testid="hand-play-btn"
             className="flex items-center space-x-1 px-2 py-1 bg-[#2A835F] hover:bg-[#349e73] text-white font-bold rounded-lg shadow cursor-pointer"
             title="Lanzar al campo de batalla"
           >
