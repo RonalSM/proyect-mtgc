@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import {
   DndContext,
   DragOverlay,
@@ -125,6 +126,8 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
 export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, onAction }) => {
   const [zoomedCard, setZoomedCard] = useState<CardInstance | null>(null);
   const [viewingZone, setViewingZone] = useState<'graveyard' | 'exile' | null>(null);
+  const viewingZoneBackdropProps = useBackdropClose(() => setViewingZone(null));
+  const zoomCardBackdropProps = useBackdropClose(() => setZoomedCard(null));
   const [activeCard, setActiveCard] = useState<{ card: CardInstance; fromZone: ZoneType } | null>(
     null,
   );
@@ -720,11 +723,13 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
         {/* Graveyard / Exile Zone Viewer Modal */}
         {viewingZone && (
           <div
-            onClick={() => setViewingZone(null)}
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            {...viewingZoneBackdropProps}
           >
             <div
               onClick={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+              onMouseUp={e => e.stopPropagation()}
               className="relative bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
             >
               {/* Header */}
@@ -829,11 +834,13 @@ export const Battlefield: React.FC<BattlefieldProps> = ({ localPlayerId, zones, 
         {/* Zoomed Card Fullscreen Preview Modal */}
         {zoomedCard && (
           <div
-            onClick={() => setZoomedCard(null)}
             className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150"
+            {...zoomCardBackdropProps}
           >
             <div
               onClick={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+              onMouseUp={e => e.stopPropagation()}
               className="relative max-w-sm sm:max-w-md w-full flex flex-col items-center space-y-4"
             >
               <button

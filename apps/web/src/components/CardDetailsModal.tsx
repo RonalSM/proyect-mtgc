@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import {
   getCardDisplayData,
   getCardImageUrl,
@@ -206,27 +207,19 @@ export const CardDetailsModal: React.FC<CardDetailsModalProps> = ({ card, onClos
 
   const commanderLegality = card.legalities?.commander || 'legal';
   const isCommanderLegal = commanderLegality === 'legal';
+  const backdropProps = useBackdropClose(onClose);
 
   return (
     <div
       data-testid="card-details-modal"
       className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto select-none"
-      onClick={onClose}
-      onDoubleClick={e => {
-        e.stopPropagation();
-        onClose();
-      }}
-      onPointerDown={e => e.stopPropagation()}
-      onMouseDown={e => e.stopPropagation()}
-      onContextMenu={e => e.stopPropagation()}
+      {...backdropProps}
     >
       <div
         className="bg-[#092328] border border-[#12544F] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-zinc-100 ring-1 ring-[#2A835F]/30 animate-in fade-in zoom-in-95 duration-150"
         onClick={e => e.stopPropagation()}
-        onDoubleClick={e => e.stopPropagation()}
-        onPointerDown={e => e.stopPropagation()}
         onMouseDown={e => e.stopPropagation()}
-        onContextMenu={e => e.stopPropagation()}
+        onMouseUp={e => e.stopPropagation()}
       >
         {/* Header Bar */}
         <div className="bg-[#040d0f]/90 px-5 py-3 border-b border-[#12544F] flex items-center justify-between">

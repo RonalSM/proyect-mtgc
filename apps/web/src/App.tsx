@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useBackdropClose } from './hooks/useBackdropClose';
 import { useGameSocket } from './hooks/useGameSocket';
 import { LobbyView } from './components/LobbyView';
 import { TableBoard } from './components/TableBoard';
@@ -45,6 +46,8 @@ export default function App() {
     }
     return false;
   });
+
+  const importerBackdropProps = useBackdropClose(() => setIsImporterOpen(false));
 
   // Initialize or restore player ID isolated per tab/window (Punto F2.d)
   useEffect(() => {
@@ -247,9 +250,14 @@ export default function App() {
         {isImporterOpen && (
           <div
             className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 animate-in fade-in duration-150"
-            onClick={() => setIsImporterOpen(false)}
+            {...importerBackdropProps}
           >
-            <div className="w-full max-w-5xl" onClick={e => e.stopPropagation()}>
+            <div
+              className="w-full max-w-5xl"
+              onClick={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+              onMouseUp={e => e.stopPropagation()}
+            >
               <DeckImporter onClose={() => setIsImporterOpen(false)} />
             </div>
           </div>
@@ -434,9 +442,14 @@ export default function App() {
       {isImporterOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4 animate-in fade-in duration-150"
-          onClick={() => setIsImporterOpen(false)}
+          {...importerBackdropProps}
         >
-          <div className="w-full max-w-5xl" onClick={e => e.stopPropagation()}>
+          <div
+            className="w-full max-w-5xl"
+            onClick={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
+            onMouseUp={e => e.stopPropagation()}
+          >
             <DeckImporter onClose={() => setIsImporterOpen(false)} />
           </div>
         </div>

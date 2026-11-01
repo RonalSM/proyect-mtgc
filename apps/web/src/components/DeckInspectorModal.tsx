@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import {
   X,
   Search,
@@ -168,15 +169,18 @@ export const DeckInspectorModal: React.FC<DeckInspectorModalProps> = ({
 
   const totalMaindeck = deck.maindeckCards?.length || 0;
   const totalDeckCount = totalMaindeck + (deck.commanderCards?.length || 1);
+  const backdropProps = useBackdropClose(onClose);
 
   return (
     <div
       className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
-      onClick={onClose}
+      {...backdropProps}
     >
       <div
         className="relative w-full max-w-6xl max-h-[92vh] bg-[#092328] border-2 border-[#12544F] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-white"
         onClick={e => e.stopPropagation()}
+        onMouseDown={e => e.stopPropagation()}
+        onMouseUp={e => e.stopPropagation()}
       >
         {/* MODAL HEADER */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#12544F] bg-[#06181c]/80">

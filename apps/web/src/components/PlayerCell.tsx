@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
 import { toArtCropUrl, inferCardTypeLine, getPlayerColor, getPlayerColorDef } from '@mtgc/shared';
 import type {
@@ -28,6 +28,7 @@ import { LibraryContextMenu } from './LibraryContextMenu';
 import { LibraryRevealModal } from './LibraryRevealModal';
 import { CreateTokenModal } from './CreateTokenModal';
 import { Portal } from './Portal';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import { VirtualizedCardGrid } from './VirtualizedCardGrid';
 import { useCardPreview } from '../context/CardPreviewContext';
 import { scryfallQueue } from '../services/scryfallQueue';
@@ -501,6 +502,13 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const [customPlaymatInput, setCustomPlaymatInput] = useState('');
   const [isCreateTokenModalOpen, setIsCreateTokenModalOpen] = useState(false);
   const [zoomedCard, setZoomedCard] = useState<CardInstance | null>(null);
+
+  const handleClosePileModal = useCallback(() => {
+    setActivePileModal(null);
+  }, []);
+  const pileModalBackdropProps = useBackdropClose(handleClosePileModal);
+  const playmatModalBackdropProps = useBackdropClose(() => setIsPlaymatModalOpen(false));
+  const zoomModalBackdropProps = useBackdropClose(() => setZoomedCard(null));
 
   // Cerrar modal de inspección de pila con tecla Escape
   useEffect(() => {
@@ -1469,21 +1477,12 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
             data-testid="pile-viewer-modal"
             data-active-pile={activePileModal}
             className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
-            onClick={() => setActivePileModal(null)}
-            onDoubleClick={e => {
-              e.stopPropagation();
-              setActivePileModal(null);
-            }}
-            onPointerDown={e => e.stopPropagation()}
-            onMouseDown={e => e.stopPropagation()}
-            onContextMenu={e => e.stopPropagation()}
+            {...pileModalBackdropProps}
           >
             <div
               onClick={e => e.stopPropagation()}
-              onDoubleClick={e => e.stopPropagation()}
-              onPointerDown={e => e.stopPropagation()}
               onMouseDown={e => e.stopPropagation()}
-              onContextMenu={e => e.stopPropagation()}
+              onMouseUp={e => e.stopPropagation()}
               className={`bg-[#092328] border border-[#12544F] rounded-2xl w-full ${
                 activePileModal === 'library' ? 'max-w-2xl' : 'max-w-lg'
               } max-h-[80vh] flex flex-col shadow-2xl overflow-hidden ring-1 ring-[#2A835F]/30 animate-in fade-in zoom-in-95`}
@@ -1684,22 +1683,13 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
           <div
             data-testid="playmat-modal-overlay"
             className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
-            onClick={() => setIsPlaymatModalOpen(false)}
-            onDoubleClick={e => {
-              e.stopPropagation();
-              setIsPlaymatModalOpen(false);
-            }}
-            onPointerDown={e => e.stopPropagation()}
-            onMouseDown={e => e.stopPropagation()}
-            onContextMenu={e => e.stopPropagation()}
+            {...playmatModalBackdropProps}
           >
             <form
               onSubmit={handleSavePlaymat}
               onClick={e => e.stopPropagation()}
-              onDoubleClick={e => e.stopPropagation()}
-              onPointerDown={e => e.stopPropagation()}
               onMouseDown={e => e.stopPropagation()}
-              onContextMenu={e => e.stopPropagation()}
+              onMouseUp={e => e.stopPropagation()}
               className="bg-[#092328] border border-[#12544F] rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl"
             >
               <div className="flex items-center justify-between border-b border-[#12544F] pb-2">
@@ -1835,11 +1825,13 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
       {zoomedCard && (
         <Portal>
           <div
-            onClick={() => setZoomedCard(null)}
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+            {...zoomModalBackdropProps}
           >
             <div
               onClick={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+              onMouseUp={e => e.stopPropagation()}
               className="bg-[#092328] border border-[#12544F] rounded-3xl max-w-sm w-full p-4 flex flex-col space-y-3 shadow-2xl overflow-hidden cursor-default ring-1 ring-[#2A835F]/30"
             >
               <div className="flex items-center justify-between pb-2 border-b border-[#12544F]">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import {
   getCardDisplayData,
   getCardImageUrl,
@@ -220,34 +221,21 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
     { color: 'G', label: 'Verde (G)', bg: 'bg-emerald-600 text-white' },
   ];
 
+  const backdropProps = useBackdropClose(onClose);
+
   return (
     <Portal>
       <div
         data-testid="create-token-backdrop"
         className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150"
-        onClick={e => {
-          e.stopPropagation();
-          onClose();
-        }}
-        onDoubleClick={e => e.stopPropagation()}
-        onPointerDown={e => e.stopPropagation()}
-        onMouseDown={e => e.stopPropagation()}
-        onContextMenu={e => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
+        {...backdropProps}
       >
         <div
           data-testid="create-token-modal"
           className="bg-[#092328] border border-[#12544F] rounded-2xl w-full max-w-2xl max-h-[85vh] shadow-2xl flex flex-col overflow-hidden text-zinc-100 ring-1 ring-[#2A835F]/30"
           onClick={e => e.stopPropagation()}
-          onDoubleClick={e => e.stopPropagation()}
-          onPointerDown={e => e.stopPropagation()}
           onMouseDown={e => e.stopPropagation()}
-          onContextMenu={e => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
+          onMouseUp={e => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-[#12544F] bg-[#040d0f]/90">

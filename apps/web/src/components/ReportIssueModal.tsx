@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import type { RoomState } from '@mtgc/shared';
 import { diagnosticsService } from '../services/diagnosticsService';
 import { getCollectedErrors } from '../utils/error-collector';
@@ -107,14 +108,18 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  const backdropProps = useBackdropClose(onClose);
+
   return (
     <div
       className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in"
-      onClick={onClose}
+      {...backdropProps}
     >
       <div
         className="bg-[#092328] border-2 border-[#12544F] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl ring-1 ring-[#2A835F]/30 overflow-hidden"
         onClick={e => e.stopPropagation()}
+        onMouseDown={e => e.stopPropagation()}
+        onMouseUp={e => e.stopPropagation()}
         data-testid="report-issue-modal"
       >
         {/* Header */}

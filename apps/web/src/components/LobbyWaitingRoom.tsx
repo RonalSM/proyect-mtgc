@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import type { RoomState, GameActionType, CardDefinition, DeckCardWithQuantity } from '@mtgc/shared';
 import {
   parseDecklist,
@@ -47,6 +48,7 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
 }) => {
   const [isCopied, setIsCopied] = useState(false);
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
+  const deckModalBackdropProps = useBackdropClose(() => setIsDeckModalOpen(false));
   const [presetDecks, setPresetDecks] = useState<any[]>([]);
   const [isLoadingPresets, setIsLoadingPresets] = useState(false);
   const [expandedPresetId, setExpandedPresetId] = useState<string | null>(null);
@@ -680,21 +682,12 @@ export const LobbyWaitingRoom: React.FC<LobbyWaitingRoomProps> = ({
       {isDeckModalOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-150"
-          onClick={() => setIsDeckModalOpen(false)}
-          onDoubleClick={e => {
-            e.stopPropagation();
-            setIsDeckModalOpen(false);
-          }}
-          onPointerDown={e => e.stopPropagation()}
-          onMouseDown={e => e.stopPropagation()}
-          onContextMenu={e => e.stopPropagation()}
+          {...deckModalBackdropProps}
         >
           <div
             onClick={e => e.stopPropagation()}
-            onDoubleClick={e => e.stopPropagation()}
-            onPointerDown={e => e.stopPropagation()}
             onMouseDown={e => e.stopPropagation()}
-            onContextMenu={e => e.stopPropagation()}
+            onMouseUp={e => e.stopPropagation()}
             className="bg-[#092328] border border-[#12544F] rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
           >
             {/* Modal Header */}

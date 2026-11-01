@@ -1,4 +1,5 @@
 import React from 'react';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import type { CardInstance, GameActionType } from '@mtgc/shared';
 import { Portal } from './Portal';
 import { CardDisplay } from './CardDisplay';
@@ -23,6 +24,8 @@ export const LibraryRevealModal: React.FC<LibraryRevealModalProps> = ({
   onAction,
   localPlayerId,
 }) => {
+  const backdropProps = useBackdropClose(onClose);
+
   if (!isOpen) return null;
 
   const handleMoveCard = (
@@ -44,10 +47,14 @@ export const LibraryRevealModal: React.FC<LibraryRevealModalProps> = ({
       <div
         data-testid="library-reveal-modal"
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md select-none animate-fadeIn"
+        {...backdropProps}
       >
         <div
           data-testid="library-reveal-content"
           className="bg-[#092328] border border-[#12544F] rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-zinc-100 ring-1 ring-white/10"
+          onClick={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
+          onMouseUp={e => e.stopPropagation()}
         >
           {/* Header */}
           <div className="px-6 py-4 border-b border-[#12544F] flex items-center justify-between bg-[#040d0f]/90">

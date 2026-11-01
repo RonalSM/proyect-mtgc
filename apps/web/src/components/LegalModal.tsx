@@ -1,4 +1,5 @@
 import React from 'react';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import { X, ShieldCheck, HeartHandshake, Lock, Trash2 } from 'lucide-react';
 
 interface LegalModalProps {
@@ -14,26 +15,19 @@ export const LegalModal: React.FC<LegalModalProps> = ({
   onDeleteAccount,
   isLoggedIn = false,
 }) => {
+  const backdropProps = useBackdropClose(onClose);
+
   if (!isOpen) return null;
 
   return (
     <div
-      onClick={onClose}
-      onDoubleClick={e => {
-        e.stopPropagation();
-        onClose();
-      }}
-      onPointerDown={e => e.stopPropagation()}
-      onMouseDown={e => e.stopPropagation()}
-      onContextMenu={e => e.stopPropagation()}
+      {...backdropProps}
       className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
     >
       <div
         onClick={e => e.stopPropagation()}
-        onDoubleClick={e => e.stopPropagation()}
-        onPointerDown={e => e.stopPropagation()}
         onMouseDown={e => e.stopPropagation()}
-        onContextMenu={e => e.stopPropagation()}
+        onMouseUp={e => e.stopPropagation()}
         className="bg-[#092328] border border-[#12544F] rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl space-y-5 text-zinc-100 ring-1 ring-[#2A835F]/30"
       >
         <div className="flex items-center justify-between border-b border-[#12544F] pb-3">

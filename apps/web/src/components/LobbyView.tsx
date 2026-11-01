@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import {
   Plus,
   ArrowRight,
@@ -46,6 +47,9 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   );
   const [maxPlayers, setMaxPlayers] = useState(4);
   const [startingLife, setStartingLife] = useState(40);
+
+  const createModalBackdropProps = useBackdropClose(() => setModalMode('none'));
+  const joinModalBackdropProps = useBackdropClose(() => setModalMode('none'));
 
   const [joinCode, setJoinCode] = useState('');
   const [joinPlayerName, setJoinPlayerName] = useState(
@@ -450,11 +454,13 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
       {modalMode === 'create' && (
         <div
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-150"
-          onClick={() => setModalMode('none')}
+          {...createModalBackdropProps}
         >
           <div
             className="w-full max-w-lg bg-[#092328] border border-[#12544F] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-6 text-white"
             onClick={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
+            onMouseUp={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-[#12544F] pb-3">
               <div>
@@ -580,11 +586,13 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
       {modalMode === 'join' && (
         <div
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-150"
-          onClick={() => setModalMode('none')}
+          {...joinModalBackdropProps}
         >
           <div
             className="w-full max-w-md bg-[#092328] border border-[#12544F] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-6 text-white"
             onClick={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
+            onMouseUp={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-[#12544F] pb-3">
               <div>

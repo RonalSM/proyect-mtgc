@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import type { CardInstance } from '@mtgc/shared';
 import { CardDisplay } from './CardDisplay';
 import { Eye, X } from 'lucide-react';
@@ -34,26 +35,19 @@ export const RevealedCardModal: React.FC<RevealedCardModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  const backdropProps = useBackdropClose(onClose);
+
   return (
     <div
       data-testid="revealed-card-modal"
       className="fixed inset-0 z-[150] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200"
-      onClick={onClose}
-      onDoubleClick={e => {
-        e.stopPropagation();
-        onClose();
-      }}
-      onPointerDown={e => e.stopPropagation()}
-      onMouseDown={e => e.stopPropagation()}
-      onContextMenu={e => e.stopPropagation()}
+      {...backdropProps}
     >
       <div
         className="relative bg-[#092328] border border-[#12544F] rounded-2xl shadow-[0_0_60px_rgba(42,131,95,0.25)] p-5 max-w-sm w-full flex flex-col items-center space-y-4 text-center ring-1 ring-[#2A835F]/30"
         onClick={e => e.stopPropagation()}
-        onDoubleClick={e => e.stopPropagation()}
-        onPointerDown={e => e.stopPropagation()}
         onMouseDown={e => e.stopPropagation()}
-        onContextMenu={e => e.stopPropagation()}
+        onMouseUp={e => e.stopPropagation()}
       >
         {/* Botón de cierre superior derecho */}
         <button

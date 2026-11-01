@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import type { PlayerState, GameActionType } from '@mtgc/shared';
 import { getPlayerColor } from '@mtgc/shared';
 import {
@@ -38,6 +39,7 @@ export const TurnBar: React.FC<TurnBarProps> = ({
   const isMyTurn = activePlayerId === localPlayerId;
   const [showDiceMenu, setShowDiceMenu] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const orderModalBackdropProps = useBackdropClose(() => setShowOrderModal(false));
   const [customOrder, setCustomOrder] = useState<string[]>([]);
 
   const handlePassTurn = () => {
@@ -242,21 +244,12 @@ export const TurnBar: React.FC<TurnBarProps> = ({
       {showOrderModal && (
         <div
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setShowOrderModal(false)}
-          onDoubleClick={e => {
-            e.stopPropagation();
-            setShowOrderModal(false);
-          }}
-          onPointerDown={e => e.stopPropagation()}
-          onMouseDown={e => e.stopPropagation()}
-          onContextMenu={e => e.stopPropagation()}
+          {...orderModalBackdropProps}
         >
           <div
             onClick={e => e.stopPropagation()}
-            onDoubleClick={e => e.stopPropagation()}
-            onPointerDown={e => e.stopPropagation()}
             onMouseDown={e => e.stopPropagation()}
-            onContextMenu={e => e.stopPropagation()}
+            onMouseUp={e => e.stopPropagation()}
             className="bg-[#092328] border border-[#12544F] rounded-2xl p-5 max-w-sm w-full shadow-2xl ring-1 ring-[#2A835F]/30"
           >
             <h3 className="text-sm font-bold text-white flex items-center space-x-2 mb-2">

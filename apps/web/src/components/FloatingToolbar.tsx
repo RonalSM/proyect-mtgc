@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useBackdropClose } from '../hooks/useBackdropClose';
 import type { RoomState, GameActionType } from '@mtgc/shared';
 import {
   ChevronDown,
@@ -43,6 +44,8 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   const [isInitiativeDropdownOpen, setIsInitiativeDropdownOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const settingsBackdropProps = useBackdropClose(() => setIsSettingsOpen(false));
+  const helpBackdropProps = useBackdropClose(() => setIsHelpOpen(false));
   const [isReportIssueOpen, setIsReportIssueOpen] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
 
@@ -382,21 +385,12 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
       {isSettingsOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in"
-          onClick={() => setIsSettingsOpen(false)}
-          onDoubleClick={e => {
-            e.stopPropagation();
-            setIsSettingsOpen(false);
-          }}
-          onPointerDown={e => e.stopPropagation()}
-          onMouseDown={e => e.stopPropagation()}
-          onContextMenu={e => e.stopPropagation()}
+          {...settingsBackdropProps}
         >
           <div
             onClick={e => e.stopPropagation()}
-            onDoubleClick={e => e.stopPropagation()}
-            onPointerDown={e => e.stopPropagation()}
             onMouseDown={e => e.stopPropagation()}
-            onContextMenu={e => e.stopPropagation()}
+            onMouseUp={e => e.stopPropagation()}
             className="bg-[#092328] border border-[#12544F] rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl ring-1 ring-[#2A835F]/30"
           >
             <div className="flex items-center justify-between border-b border-[#12544F] pb-3">
@@ -446,21 +440,12 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
       {isHelpOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in"
-          onClick={() => setIsHelpOpen(false)}
-          onDoubleClick={e => {
-            e.stopPropagation();
-            setIsHelpOpen(false);
-          }}
-          onPointerDown={e => e.stopPropagation()}
-          onMouseDown={e => e.stopPropagation()}
-          onContextMenu={e => e.stopPropagation()}
+          {...helpBackdropProps}
         >
           <div
             onClick={e => e.stopPropagation()}
-            onDoubleClick={e => e.stopPropagation()}
-            onPointerDown={e => e.stopPropagation()}
             onMouseDown={e => e.stopPropagation()}
-            onContextMenu={e => e.stopPropagation()}
+            onMouseUp={e => e.stopPropagation()}
             className="bg-[#092328] border border-[#12544F] rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl ring-1 ring-[#2A835F]/30"
           >
             <div className="flex items-center justify-between border-b border-[#12544F] pb-3">
