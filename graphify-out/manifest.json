@@ -498,9 +498,9 @@
     "semantic_hash": "c735540bb63936a123bc867d950c9f69"
   },
   "apps/web/src/App.tsx": {
-    "mtime": 1793497656.5232098,
-    "seen": 1793497701.778938,
-    "ast_hash": "869b2f3ab93635a598f1c80ab7101e41",
+    "mtime": 1793499415.7683032,
+    "seen": 1793499533.5658648,
+    "ast_hash": "7b2578bd96b48b41888ee190256d3c99",
     "semantic_hash": ""
   },
   "apps/web/src/components/Battlefield.tsx": {
@@ -540,9 +540,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/CreateTokenModal.tsx": {
-    "mtime": 1793491461.2635968,
-    "seen": 1793494093.9221501,
-    "ast_hash": "5a69c9c2a55f9aab420892f0dc8716eb",
+    "mtime": 1793498885.535499,
+    "seen": 1793499533.5674517,
+    "ast_hash": "0e05bf722b087e3b030f61729b4dcac0",
     "semantic_hash": ""
   },
   "apps/web/src/components/DeckImporter.tsx": {
@@ -678,9 +678,9 @@
     "semantic_hash": "a46ab7627b03752119c9397afe7fa119"
   },
   "apps/web/src/hooks/useGameSocket.ts": {
-    "mtime": 1793495267.066728,
-    "seen": 1793497701.7819378,
-    "ast_hash": "f0c2218a6a0a9f1a3fa84d0afd0b60fd",
+    "mtime": 1793499371.8800056,
+    "seen": 1793499533.570575,
+    "ast_hash": "cab5cf412161b5c70af9b4a59e2c79c3",
     "semantic_hash": ""
   },
   "apps/web/src/main.tsx": {
@@ -1092,9 +1092,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/DeckInspectorModal.tsx": {
-    "mtime": 1793490826.7920673,
-    "seen": 1793494093.9221501,
-    "ast_hash": "3a4639b54647bb964707ac6350633921",
+    "mtime": 1793498902.3032167,
+    "seen": 1793499533.5674517,
+    "ast_hash": "fc41d79868d633165a22cef8724101af",
     "semantic_hash": ""
   },
   "apps/web/src/components/LibraryContextMenu.tsx": {
@@ -1371,6 +1371,18 @@
     "mtime": 1793497643.8690388,
     "seen": 1793497701.7869368,
     "ast_hash": "f4caa84334c13734e050ebbcb0d1a415",
+    "semantic_hash": ""
+  },
+  "scripts/reproduce-right-click.js": {
+    "mtime": 1793499028.1458626,
+    "seen": 1793499533.5765793,
+    "ast_hash": "a8a5ce3b9f8d8281f4ef2a28e2e4f11c",
+    "semantic_hash": ""
+  },
+  "scripts/verify-tokens-browser.js": {
+    "mtime": 1793499298.6587641,
+    "seen": 1793499533.5785801,
+    "ast_hash": "6db3ce32b956ad1b3b25a2fa6c220676",
     "semantic_hash": ""
   }
 }
