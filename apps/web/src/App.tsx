@@ -20,8 +20,10 @@ export default function App() {
       const urlParams = new URLSearchParams(window.location.search);
       const urlRoom = urlParams.get('room');
       if (urlRoom) return urlRoom.toUpperCase();
-      // Solo restaurar de sessionStorage (pestaña activa), NUNCA resucitar salas viejas/muertas de localStorage
-      return sessionStorage.getItem('mtgc_room_code') || null;
+      // Si la URL no contiene ?room=, el usuario abrió la raíz directamente (mostrar Lobby limpio).
+      // Se limpian residuos viejos de sesiones previas en la pestaña para evitar bucles o intentos de conexión a salas muertas.
+      sessionStorage.removeItem('mtgc_room_code');
+      return null;
     }
     return null;
   });
@@ -95,7 +97,11 @@ export default function App() {
     onKicked: () => handleLeaveRoom(),
   });
 
-  const isRoomReady = !!(roomCode && roomState && roomState.code?.toUpperCase() === roomCode.toUpperCase());
+  const isRoomReady = !!(
+    roomCode &&
+    roomState &&
+    roomState.code?.toUpperCase() === roomCode.toUpperCase()
+  );
 
   // Watchdog timer para evitar que la UI quede atascada indefinidamente en el spinner si el WS no responde
   useEffect(() => {
@@ -170,6 +176,9 @@ export default function App() {
         if (typeof window !== 'undefined') {
           sessionStorage.setItem('mtgc_room_code', roomData.code);
           localStorage.setItem('mtgc_room_code', roomData.code);
+          const url = new URL(window.location.href);
+          url.searchParams.set('room', roomData.code);
+          window.history.replaceState({}, '', url.pathname + url.search);
         }
         setIsSpectator(false);
       } else {
@@ -230,6 +239,9 @@ export default function App() {
     setRoomCode(code);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('mtgc_room_code', code);
+      const url = new URL(window.location.href);
+      url.searchParams.set('room', code);
+      window.history.replaceState({}, '', url.pathname + url.search);
     }
   };
 

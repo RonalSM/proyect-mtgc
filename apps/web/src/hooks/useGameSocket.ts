@@ -296,11 +296,17 @@ export function useGameSocket({
           return;
         }
 
-        // Punto F3 y F4: Si el cierre fue por motivo permanente (sala llena 4003, origen 4008), suprimir reintentos
+        // Punto F3 y F4: Si el cierre fue por motivo permanente (sala llena 4003, origen 4008, sala no encontrada 1008), suprimir reintentos
         const isPermanentClose =
-          event.code === 4003 || event.code === 4008 || reconnectAttemptsRef.current >= 999;
+          event.code === 4003 ||
+          event.code === 4008 ||
+          event.code === 1008 ||
+          reconnectAttemptsRef.current >= 999;
 
         if (isPermanentClose) {
+          if (event.code === 1008) {
+            setErrorMessage('La mesa no existe o ha expirado.');
+          }
           reconnectAttemptsRef.current = 999;
           return;
         }
