@@ -161,6 +161,8 @@ export const DeckInspectorModal: React.FC<DeckInspectorModalProps> = ({
     return result;
   }, [categorized, searchTerm, selectedCategory]);
 
+  const backdropProps = useBackdropClose(onClose);
+
   if (!isOpen || !deck) return null;
 
   const commander = deck.commanderCards?.[0];
@@ -169,7 +171,6 @@ export const DeckInspectorModal: React.FC<DeckInspectorModalProps> = ({
 
   const totalMaindeck = deck.maindeckCards?.length || 0;
   const totalDeckCount = totalMaindeck + (deck.commanderCards?.length || 1);
-  const backdropProps = useBackdropClose(onClose);
 
   return (
     <div

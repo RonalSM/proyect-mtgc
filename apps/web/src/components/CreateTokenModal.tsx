@@ -119,6 +119,8 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
   const [customTypeLine, setCustomTypeLine] = useState('Token Creature');
   const [customColors, setCustomColors] = useState<CardColor[]>([]);
 
+  const backdropProps = useBackdropClose(onClose);
+
   // Cargar fichas del mazo del jugador cuando se abre el modal
   useEffect(() => {
     if (!isOpen || !roomState) return;
@@ -220,8 +222,6 @@ export const CreateTokenModal: React.FC<CreateTokenModalProps> = ({
     { color: 'R', label: 'Rojo (R)', bg: 'bg-rose-600 text-white' },
     { color: 'G', label: 'Verde (G)', bg: 'bg-emerald-600 text-white' },
   ];
-
-  const backdropProps = useBackdropClose(onClose);
 
   return (
     <Portal>
