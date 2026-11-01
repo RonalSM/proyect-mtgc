@@ -768,7 +768,7 @@ export const LibraryContextMenu: React.FC<LibraryContextMenuProps> = ({
             className="w-full flex items-center space-x-2 px-3 py-1.5 hover:bg-[#12544F] rounded-lg text-[#8BBB92] hover:text-white cursor-pointer transition-colors text-[13px]"
           >
             <Search className="w-3.5 h-3.5" />
-            <span>Ver biblioteca (solo tú)</span>
+            <span>Ver mi biblioteca</span>
           </button>
         </div>
       </div>

@@ -24,11 +24,12 @@ export function filterRoomStateForPlayer(
   for (const [playerId, zones] of Object.entries(state.playerZones)) {
     const isOwner = targetPlayerId === playerId;
 
-    // 1. Filter Hand: owner sees full card data; recipients of revealedTo see full card; non-recipients get masked (Punto 1)
+    // 1. Filter Hand: owner sees full card data; recipients of revealedTo see full card; non-recipients get masked (Punto 1 & Tarea 4)
     const filteredHand: CardInstance[] = zones.hand.map(card => {
       const isRevealedToAll =
         card.revealedTo === 'all' ||
-        (Array.isArray(card.revealedTo) && card.revealedTo.includes('all'));
+        (Array.isArray(card.revealedTo) && card.revealedTo.includes('all')) ||
+        !!card.isKnownToAll;
       const isRevealedToTarget =
         !!targetPlayerId &&
         Array.isArray(card.revealedTo) &&

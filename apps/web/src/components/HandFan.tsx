@@ -129,13 +129,22 @@ const HandCardItem: React.FC<HandCardItemProps> = ({
         }`}
       >
         <CardDisplay card={card.definition} isFaceDown={false} allowFaceToggle={false} />
-        {card.revealedTo && (
+        {(card.revealedTo || card.isKnownToAll) && (
           <div
             data-testid="revealed-eye-badge"
-            title={getRevealedTooltipForOwner(card.revealedTo, roomState)}
-            className="absolute top-1 right-1 z-30 bg-[#040d0f]/90 border border-red-500/80 rounded-full p-1 shadow-lg text-red-500 flex items-center justify-center pointer-events-auto"
+            data-is-known-to-all={card.isKnownToAll ? 'true' : 'false'}
+            title={
+              card.isKnownToAll
+                ? 'Pública para todos (devuelta a la mano desde el campo de batalla)'
+                : getRevealedTooltipForOwner(card.revealedTo, roomState)
+            }
+            className={`absolute top-1 right-1 z-30 bg-[#040d0f]/90 border rounded-full p-1 shadow-lg flex items-center justify-center pointer-events-auto ${
+              card.isKnownToAll
+                ? 'border-amber-400 text-amber-400'
+                : 'border-red-500/80 text-red-500'
+            }`}
           >
-            <Eye className="w-3.5 h-3.5 fill-red-500/20 text-red-500" />
+            <Eye className="w-3.5 h-3.5 fill-current/20" />
           </div>
         )}
       </div>
@@ -276,8 +285,11 @@ export const HandFan: React.FC<HandFanProps> = ({
             const offset = i - (cardsToShow - 1) / 2;
             const rot = Math.max(-14, Math.min(14, offset * 4.5));
             const transY = Math.abs(offset) * 2;
+            const isKnown = !!card?.isKnownToAll;
             const isRevealed =
-              card && card.revealedTo && card.definition?.scryfallId !== 'hidden_card';
+              card &&
+              (card.revealedTo || isKnown) &&
+              card.definition?.scryfallId !== 'hidden_card';
 
             if (isRevealed && card) {
               return (
@@ -287,6 +299,7 @@ export const HandFan: React.FC<HandFanProps> = ({
                   data-card-name={card.definition.name}
                   data-hand-card="true"
                   data-revealed-card="true"
+                  data-is-known-to-all={isKnown ? 'true' : 'false'}
                   data-from-zone="hand"
                   onMouseEnter={e => showPreview(card.definition, e)}
                   onMouseLeave={hidePreview}
@@ -303,15 +316,28 @@ export const HandFan: React.FC<HandFanProps> = ({
                     height: 'var(--card-h)',
                     marginLeft: i === 0 ? 0 : `calc(var(--card-w) * -${oppOverlap.toFixed(2)})`,
                   }}
-                  className="relative rounded-md overflow-hidden border border-[#12544F] hover:border-[#8BBB92] bg-[#092328] shadow-md transition-transform duration-200 flex-shrink-0 cursor-pointer hover:-translate-y-3 hover:z-40"
+                  className={`relative rounded-md overflow-hidden bg-[#092328] shadow-md transition-transform duration-200 flex-shrink-0 cursor-pointer hover:-translate-y-3 hover:z-40 ${
+                    isKnown
+                      ? 'border-2 border-amber-400/90 ring-1 ring-amber-400/50 shadow-amber-500/20'
+                      : 'border border-[#12544F] hover:border-[#8BBB92]'
+                  }`}
                 >
                   <CardDisplay card={card.definition} isFaceDown={false} allowFaceToggle={false} />
                   <div
                     data-testid="revealed-eye-badge"
-                    title={getRevealedTooltipForRecipient(card.ownerId, roomState)}
-                    className="absolute top-1 right-1 z-30 bg-[#040d0f]/90 border border-red-500/80 rounded-full p-1 shadow-lg text-red-500 flex items-center justify-center pointer-events-auto"
+                    data-is-known-to-all={isKnown ? 'true' : 'false'}
+                    title={
+                      isKnown
+                        ? 'Carta conocida por todos (devuelta a la mano desde el campo)'
+                        : getRevealedTooltipForRecipient(card.ownerId, roomState)
+                    }
+                    className={`absolute top-1 right-1 z-30 bg-[#040d0f]/90 border rounded-full p-1 shadow-lg flex items-center justify-center pointer-events-auto ${
+                      isKnown
+                        ? 'border-amber-400 text-amber-400'
+                        : 'border-red-500/80 text-red-500'
+                    }`}
                   >
-                    <Eye className="w-3.5 h-3.5 fill-red-500/20 text-red-500" />
+                    <Eye className="w-3.5 h-3.5 fill-current/20" />
                   </div>
                 </div>
               );

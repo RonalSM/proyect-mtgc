@@ -179,6 +179,65 @@ test('VisibilityFilter - masks opponent hand while leaving owner hand intact', (
   assert.strictEqual(p2View.playerZones['p1']?.hand[0]?.definition.scryfallId, 'hidden_card');
 });
 
+test('GameStateSession - card returned to hand from battlefield retains isKnownToAll and is visible to opponents (Tarea 4)', () => {
+  const session = new GameStateSession({
+    id: 'room_99',
+    code: 'ROOM99',
+    name: 'Test Room',
+    hostId: 'p1',
+    status: 'playing',
+    settings: { maxPlayers: 4, startingLife: 40 },
+    players: {
+      p1: { id: 'p1', name: 'Alice', seatNumber: 0, life: 40, counters: {}, isAtRisk: false, hasLost: false, isSpectator: false, libraryCount: 99, handCount: 0, graveyardCount: 0, exileCount: 0, commandCount: 1 },
+      p2: { id: 'p2', name: 'Bob', seatNumber: 1, life: 40, counters: {}, isAtRisk: false, hasLost: false, isSpectator: false, libraryCount: 99, handCount: 0, graveyardCount: 0, exileCount: 0, commandCount: 1 },
+    },
+    playerZones: {
+      p1: {
+        library: [],
+        hand: [],
+        battlefield: [
+          {
+            instanceId: 'c_rhystic',
+            definition: { scryfallId: 'scry_1', name: 'Rhystic Study', typeLine: 'Enchantment', cmc: 3, colors: ['U'], colorIdentity: ['U'] },
+            ownerId: 'p1',
+            controllerId: 'p1',
+            isCommander: false,
+            isTapped: false,
+            isFaceDown: false,
+            rotation: 0,
+            counters: {},
+          },
+        ],
+        graveyard: [],
+        exile: [],
+        command: [],
+      },
+      p2: { library: [], hand: [], battlefield: [], graveyard: [], exile: [], command: [] },
+    },
+    turnOrder: ['p1', 'p2'],
+    activePlayerId: 'p1',
+    turnNumber: 1,
+    version: 1,
+    logs: [],
+  });
+
+  session.moveCard('p1', {
+    cardInstanceId: 'c_rhystic',
+    fromZone: 'battlefield',
+    toZone: 'hand',
+    toPlayerId: 'p1',
+  });
+
+  const p1HandCard = session.state.playerZones['p1']?.hand[0];
+  assert.strictEqual(p1HandCard?.definition.name, 'Rhystic Study');
+  assert.strictEqual(p1HandCard?.isKnownToAll, true, 'Card must be marked isKnownToAll');
+
+  const p2View = filterRoomStateForPlayer(session.state, 'p2');
+  const p2SeenCard = p2View.playerZones['p1']?.hand[0];
+  assert.strictEqual(p2SeenCard?.definition.name, 'Rhystic Study', 'Opponent must see the face-up returned card name');
+  assert.strictEqual(p2SeenCard?.isKnownToAll, true, 'Opponent view must preserve isKnownToAll');
+});
+
 test('CSPRNG - secureShuffle preserves array length and elements', () => {
   const original = Array.from({ length: 99 }, (_, i) => `card_${i}`);
   const shuffled = secureShuffle(original);

@@ -805,9 +805,10 @@ export class GameStateSession {
     const [card] = fromArray.splice(cardIndex, 1);
     if (!card) return;
 
-    // Al salir de la mano o moverse de zona, termina cualquier revelación activa (Punto 1)
+    // Al salir de la mano o moverse de zona, termina cualquier revelación activa (Punto 1 & Tarea 4)
     if (payload.fromZone === 'hand' || card.revealedTo) {
       delete card.revealedTo;
+      delete card.isKnownToAll;
     }
 
     // Punto 4: Si una ficha sale de la mesa, desaparece (sin motor de reglas)
@@ -919,6 +920,15 @@ export class GameStateSession {
     const toArray = toZones[payload.toZone];
     if (!toArray) return;
 
+    // Tarea 4: REGLA DE REVELACIÓN (CR 400.7 / CR 701.16)
+    // Si una carta en el campo de batalla (visible para todos) vuelve a la mano de su dueño,
+    // queda VISIBLE para todos en esa mano (boca arriba, isKnownToAll = true).
+    if (payload.fromZone === 'battlefield' && payload.toZone === 'hand' && !cardToMove.isFaceDown) {
+      card.isKnownToAll = true;
+    } else if (payload.toZone !== 'hand') {
+      delete card.isKnownToAll;
+    }
+
     if (payload.toZone === 'library') {
       if (payload.randomPosition || payload.isRandom) {
         // Punto 2: "Aleatoria" inserta la carta en una posición al azar uniforme (0 a toArray.length) con CSPRNG
@@ -974,6 +984,9 @@ export class GameStateSession {
           toArray.splice(idx, 1);
           card.holderId = previousHolderId;
           card.position = previousPosition;
+          if (payload.fromZone !== 'hand') {
+            delete card.isKnownToAll;
+          }
           fromArray.splice(cardIndex, 0, card);
           this.syncPlayerCounts(fromPlayerId);
           if (targetPlayerId !== fromPlayerId) {

@@ -502,10 +502,15 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
   const [customPlaymatInput, setCustomPlaymatInput] = useState('');
   const [isCreateTokenModalOpen, setIsCreateTokenModalOpen] = useState(false);
   const [zoomedCard, setZoomedCard] = useState<CardInstance | null>(null);
+  const [shuffleOnCloseLibrary, setShuffleOnCloseLibrary] = useState(true);
 
   const handleClosePileModal = useCallback(() => {
+    if (activePileModal === 'library' && shuffleOnCloseLibrary && isLocalPlayer) {
+      onAction('SHUFFLE_LIBRARY', { playerId: player.id });
+    }
     setActivePileModal(null);
-  }, []);
+  }, [activePileModal, shuffleOnCloseLibrary, isLocalPlayer, onAction, player.id]);
+
   const pileModalBackdropProps = useBackdropClose(handleClosePileModal);
   const playmatModalBackdropProps = useBackdropClose(() => setIsPlaymatModalOpen(false));
   const zoomModalBackdropProps = useBackdropClose(() => setZoomedCard(null));
@@ -515,12 +520,12 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
     if (!activePileModal) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setActivePileModal(null);
+        handleClosePileModal();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activePileModal]);
+  }, [activePileModal, handleClosePileModal]);
 
   const handleCellContextMenu = (e: React.MouseEvent) => {
     if (!isLocalPlayer) return;
@@ -1343,19 +1348,6 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
               }
             }}
           />
-          {isLocalPlayer && (
-            <button
-              data-library-inspect-btn="true"
-              onClick={e => {
-                e.stopPropagation();
-                setActivePileModal('library');
-              }}
-              className="absolute top-1 right-1 p-1 bg-[#092328]/90 hover:bg-[#2A835F] hover:text-white text-zinc-300 rounded-md border border-[#12544F] shadow transition-colors cursor-pointer z-10"
-              title="Ver contenido de la biblioteca (solo tú)"
-            >
-              <Eye className="w-3 h-3" />
-            </button>
-          )}
         </div>
 
         {/* Library Context Menu for Local Player */}
@@ -1559,13 +1551,31 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                     </div>
                   )}
                 </div>
-                <button
-                  data-testid="close-pile-modal-btn"
-                  onClick={() => setActivePileModal(null)}
-                  className="text-zinc-400 hover:text-white font-bold text-lg cursor-pointer transition-colors"
-                >
-                  &times;
-                </button>
+                <div className="flex items-center space-x-3">
+                  {activePileModal === 'library' && isLocalPlayer && (
+                    <label
+                      data-testid="shuffle-on-close-label"
+                      className="flex items-center space-x-1.5 text-xs text-zinc-300 hover:text-white cursor-pointer select-none bg-[#040d0f] px-2.5 py-1 rounded-lg border border-[#12544F]"
+                      title="Si está marcado, baraja automáticamente tu biblioteca al cerrar este modal (Reglas MTG)"
+                    >
+                      <input
+                        type="checkbox"
+                        data-testid="shuffle-on-close-checkbox"
+                        checked={shuffleOnCloseLibrary}
+                        onChange={e => setShuffleOnCloseLibrary(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded bg-[#092328] border-[#12544F] text-[#2A835F] focus:ring-0 cursor-pointer"
+                      />
+                      <span>Barajar al cerrar</span>
+                    </label>
+                  )}
+                  <button
+                    data-testid="close-pile-modal-btn"
+                    onClick={handleClosePileModal}
+                    className="text-zinc-400 hover:text-white font-bold text-lg cursor-pointer transition-colors"
+                  >
+                    &times;
+                  </button>
+                </div>
               </div>
 
               {/* Barra de búsqueda y filtros rápidos por tipo (solo en Biblioteca, Punto 8) */}

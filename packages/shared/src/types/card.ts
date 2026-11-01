@@ -76,6 +76,7 @@ export interface CardInstance {
   baseToughness?: number; // Resistencia base modificada o definida (Punto 2 & Punto 3)
   keywords?: string[]; // Palabras clave activas (Punto 4)
   revealedTo?: string[] | 'all'; // Jugadores a quienes esta carta de la mano ha sido revelada de forma persistente (Punto 1)
+  isKnownToAll?: boolean; // Pública para todos tras regresar a mano desde el campo (Reglas MTG, Tarea 4)
   isToken?: boolean; // Ficha de criatura/permanente (Punto 4)
   activeFaceIndex?: number; // Índice de la cara activa (0: frontal, 1: trasera / MDFC / transform) (Punto 15)
   position?: {
