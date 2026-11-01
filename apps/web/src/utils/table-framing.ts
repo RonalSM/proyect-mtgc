@@ -1,4 +1,9 @@
-import { type RoomState, type CardInstance, getCardDimensions, getGridSlotForSeat } from '@mtgc/shared';
+import {
+  type RoomState,
+  type CardInstance,
+  getCardDimensions,
+  getGridSlotForSeat,
+} from '@mtgc/shared';
 import type { ViewFraming } from '../components/BattlefieldCanvas';
 
 export function getPlayerFraming(playerId: string, roomState: RoomState): ViewFraming {

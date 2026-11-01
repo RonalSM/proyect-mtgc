@@ -30,7 +30,7 @@ async function runF2ConcurrencyTest() {
     const joinPromises = [];
     for (let p = 1; p < maxPlayers; p++) {
       joinPromises.push(
-        new Promise<{ success: boolean; seat?: number; error?: string }>((resolve) => {
+        new Promise<{ success: boolean; seat?: number; error?: string }>(resolve => {
           try {
             const res = rm.joinRoom(code, {
               playerId: `player_${round}_${p}`,
@@ -40,7 +40,7 @@ async function runF2ConcurrencyTest() {
           } catch (err: any) {
             resolve({ success: false, error: err.message });
           }
-        })
+        }),
       );
     }
 
@@ -83,7 +83,9 @@ async function runF2ConcurrencyTest() {
     }
 
     if (round % 25 === 0) {
-      console.log(`[Ronda ${round}/100] Rondas superadas: ${passedRounds} | Asientos duplicados: ${seatDuplicateErrors} | Rechazos inesperados: ${unexpectedRejections}`);
+      console.log(
+        `[Ronda ${round}/100] Rondas superadas: ${passedRounds} | Asientos duplicados: ${seatDuplicateErrors} | Rechazos inesperados: ${unexpectedRejections}`,
+      );
     }
   }
 
@@ -96,14 +98,16 @@ async function runF2ConcurrencyTest() {
   console.log('======================================================================\n');
 
   if (passedRounds === totalRounds && seatDuplicateErrors === 0 && unexpectedRejections === 0) {
-    console.log('🎉 [ÉXITO F2.a] Hipótesis descartada: La asignación de asientos es 100% atómica y sin carreras.');
+    console.log(
+      '🎉 [ÉXITO F2.a] Hipótesis descartada: La asignación de asientos es 100% atómica y sin carreras.',
+    );
   } else {
     console.error('❌ [FALLO F2.a] Se detectaron carreras o duplicados.');
     process.exit(1);
   }
 }
 
-runF2ConcurrencyTest().catch((err) => {
+runF2ConcurrencyTest().catch(err => {
   console.error(err);
   process.exit(1);
 });

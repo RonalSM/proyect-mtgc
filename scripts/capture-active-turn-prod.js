@@ -3,7 +3,9 @@ const { chromium } = require('playwright');
 const path = require('path');
 
 const PROD_URL = 'https://proyect-mtgc.netlify.app';
-const ARTIFACT_DIR = path.resolve('C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa');
+const ARTIFACT_DIR = path.resolve(
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
+);
 
 async function main() {
   console.log('[PROD-CHECK] Starting active turn capture test in production...');
@@ -23,10 +25,14 @@ async function main() {
     await createBtn.waitFor({ state: 'visible', timeout: 15000 });
     await createBtn.click();
 
-    const roomNameInput = pageA.getByPlaceholder(/Pod de Viernes|Nombre de la mesa/i).or(pageA.locator('#create-room-name'));
+    const roomNameInput = pageA
+      .getByPlaceholder(/Pod de Viernes|Nombre de la mesa/i)
+      .or(pageA.locator('#create-room-name'));
     await roomNameInput.fill('Active Turn Refinement');
 
-    const hostNameInput = pageA.getByPlaceholder(/Planeswalker 1|Tu nombre/i).or(pageA.locator('#create-host-name'));
+    const hostNameInput = pageA
+      .getByPlaceholder(/Planeswalker 1|Tu nombre/i)
+      .or(pageA.locator('#create-host-name'));
     await hostNameInput.fill('Alice_Host');
 
     const seatsSelect = pageA.locator('#create-max-players, select').first();
@@ -37,14 +43,21 @@ async function main() {
     const submitCreateBtn = pageA.getByRole('button', { name: /Crear y Abrir Sala|Crear Mesa/i });
     await submitCreateBtn.click();
 
-    await pageA.waitForSelector('[data-testid="room-code-badge"], :has-text("Código:")', { timeout: 20000 });
-    const roomCodeEl = await pageA.locator('[data-testid="room-code-display"]').or(pageA.locator('text=/Código:/i')).first();
+    await pageA.waitForSelector('[data-testid="room-code-badge"], :has-text("Código:")', {
+      timeout: 20000,
+    });
+    const roomCodeEl = await pageA
+      .locator('[data-testid="room-code-display"]')
+      .or(pageA.locator('text=/Código:/i'))
+      .first();
     const fullCodeText = await roomCodeEl.innerText();
     const roomCode = fullCodeText.replace(/Código:\s*/i, '').trim();
     console.log(`[PROD-CHECK] Room created with code: "${roomCode}"`);
 
     // Step 2: Alice selects preset deck
-    const selectDeckBtnA = pageA.getByRole('button', { name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i });
+    const selectDeckBtnA = pageA.getByRole('button', {
+      name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i,
+    });
     await selectDeckBtnA.waitFor({ state: 'visible', timeout: 15000 });
     await selectDeckBtnA.click();
     await pageA.waitForTimeout(1000);
@@ -54,7 +67,9 @@ async function main() {
       await presetTabA.click();
     }
 
-    const chooseDeckBtnA = pageA.getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i }).first();
+    const chooseDeckBtnA = pageA
+      .getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i })
+      .first();
     await chooseDeckBtnA.waitFor({ state: 'visible', timeout: 10000 });
     await chooseDeckBtnA.click();
     await pageA.waitForTimeout(1000);
@@ -81,11 +96,15 @@ async function main() {
     const submitJoinBtn = pageB.getByRole('button', { name: 'Entrar a la Sala' });
     await submitJoinBtn.click();
 
-    await pageB.waitForSelector('[data-testid="room-code-badge"], :has-text("Código:")', { timeout: 20000 });
+    await pageB.waitForSelector('[data-testid="room-code-badge"], :has-text("Código:")', {
+      timeout: 20000,
+    });
     console.log('[PROD-CHECK] Bob joined successfully');
 
     // Bob selects preset deck
-    const selectDeckBtnB = pageB.getByRole('button', { name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i });
+    const selectDeckBtnB = pageB.getByRole('button', {
+      name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i,
+    });
     await selectDeckBtnB.waitFor({ state: 'visible', timeout: 15000 });
     await selectDeckBtnB.click();
     await pageB.waitForTimeout(1000);
@@ -95,7 +114,9 @@ async function main() {
       await presetTabB.click();
     }
 
-    const chooseDeckBtnB = pageB.getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i }).first();
+    const chooseDeckBtnB = pageB
+      .getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i })
+      .first();
     await chooseDeckBtnB.waitFor({ state: 'visible', timeout: 10000 });
     await chooseDeckBtnB.click();
     await pageB.waitForTimeout(1000);
@@ -131,7 +152,10 @@ async function main() {
     console.log('[PROD-CHECK] In-game tableboard loaded. Determining active player...');
     await pageA.waitForTimeout(3000);
 
-    const isAliceTurn = await pageA.locator('text=¡Tu Turno!').isVisible().catch(() => false);
+    const isAliceTurn = await pageA
+      .locator('text=¡Tu Turno!')
+      .isVisible()
+      .catch(() => false);
     const activePage = isAliceTurn ? pageA : pageB;
     const activeName = isAliceTurn ? 'Alice' : 'Bob';
     console.log(`[PROD-CHECK] Active player turn is: ${activeName}`);

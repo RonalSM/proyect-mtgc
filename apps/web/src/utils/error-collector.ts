@@ -50,9 +50,7 @@ if (typeof window !== 'undefined') {
   console.warn = (...args: unknown[]) => {
     try {
       origWarn.apply(console, args);
-      const msg = args
-        .map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a)))
-        .join(' ');
+      const msg = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
       errorLogs.push({
         timestamp: new Date().toISOString(),
         type: 'warn',

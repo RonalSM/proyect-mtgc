@@ -2,7 +2,8 @@ import { chromium } from 'playwright';
 import path from 'path';
 
 const PROD_URL = 'https://proyect-mtgc.netlify.app';
-const ARTIFACT_DIR = 'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa';
+const ARTIFACT_DIR =
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa';
 
 async function main() {
   console.log('--- INICIANDO VERIFICACIÓN EN PRODUCCIÓN: TAREAS 1, 2 Y 3 ---');
@@ -39,7 +40,9 @@ async function main() {
     // Verificar limpieza de storage
     const sessionRoom = await page1.evaluate(() => sessionStorage.getItem('mtgc_room_code'));
     const localRoom = await page1.evaluate(() => localStorage.getItem('mtgc_room_code'));
-    console.log(`  -> Storage tras salir: sessionStorage=${sessionRoom}, localStorage=${localRoom}`);
+    console.log(
+      `  -> Storage tras salir: sessionStorage=${sessionRoom}, localStorage=${localRoom}`,
+    );
     if (sessionRoom !== null || localRoom !== null) {
       throw new Error('El código de sala no fue limpiado de storage al salir');
     }
@@ -76,12 +79,18 @@ async function main() {
     await page2.waitForLoadState('networkidle');
 
     // Crear mesa normal desde launcher
-    await page2.getByRole('button', { name: /Crear Nueva Mesa/i }).first().click();
+    await page2
+      .getByRole('button', { name: /Crear Nueva Mesa/i })
+      .first()
+      .click();
     await page2.fill('input[placeholder="Ej. Pod de Viernes por la Noche"]', 'Mesa Mazo Vacío');
     await page2.fill('input[placeholder="Ej. Planeswalker 1"]', 'Jugador_Sin_Mazo');
     await page2.locator('button[type="submit"]').click();
 
-    await page2.locator('button:has-text("Código:")').first().waitFor({ state: 'visible', timeout: 20000 });
+    await page2
+      .locator('button:has-text("Código:")')
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 });
 
     // Verificar que el jugador entra SIN mazo seleccionado
     const noDeckMsg = page2.locator('text=Sin mazo seleccionado').first();
@@ -131,10 +140,15 @@ async function main() {
     await pageB.locator('input[placeholder="Ej. Planeswalker 2"]').fill('Bob_Rival');
     await pageB.getByRole('button', { name: 'Entrar a la Sala' }).click();
 
-    await pageB.locator('button:has-text("Código:")').first().waitFor({ state: 'visible', timeout: 20000 });
+    await pageB
+      .locator('button:has-text("Código:")')
+      .first()
+      .waitFor({ state: 'visible', timeout: 20000 });
 
     // Bob selecciona mazo
-    const selectDeckB = pageB.getByRole('button', { name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i });
+    const selectDeckB = pageB.getByRole('button', {
+      name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i,
+    });
     await selectDeckB.waitFor({ state: 'visible', timeout: 15000 });
     await selectDeckB.click();
     await pageB.waitForTimeout(1000);
@@ -144,16 +158,22 @@ async function main() {
       await presetTabB.click();
     }
 
-    const chooseDeckBtnB = pageB.getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i }).first();
+    const chooseDeckBtnB = pageB
+      .getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i })
+      .first();
     await chooseDeckBtnB.waitFor({ state: 'visible', timeout: 10000 });
     await chooseDeckBtnB.click();
     await pageB.waitForTimeout(1000);
 
     // Ambos listos
-    const readyBtnB = pageB.getByRole('button', { name: /¡Estoy Listo!|Marcarme Listo|Listo/i }).first();
+    const readyBtnB = pageB
+      .getByRole('button', { name: /¡Estoy Listo!|Marcarme Listo|Listo/i })
+      .first();
     await readyBtnB.click();
 
-    const readyBtnA = pageA.getByRole('button', { name: /¡Estoy Listo!|Marcarme Listo|Listo/i }).first();
+    const readyBtnA = pageA
+      .getByRole('button', { name: /¡Estoy Listo!|Marcarme Listo|Listo/i })
+      .first();
     await readyBtnA.click();
 
     // Alice inicia la partida
@@ -173,22 +193,28 @@ async function main() {
       }
       if (statusA === 'mulligan') {
         // Enviar MULLIGAN_KEEP si estamos en mulligan
-        await pageA.evaluate(() => {
-          if (window.__mtgcRoomState?.status === 'mulligan') {
-            window.__mtgcSendAction?.('MULLIGAN_KEEP', { bottomCardIds: [] });
-          }
-        }).catch(() => {});
-        await pageB.evaluate(() => {
-          if (window.__mtgcRoomState?.status === 'mulligan') {
-            window.__mtgcSendAction?.('MULLIGAN_KEEP', { bottomCardIds: [] });
-          }
-        }).catch(() => {});
+        await pageA
+          .evaluate(() => {
+            if (window.__mtgcRoomState?.status === 'mulligan') {
+              window.__mtgcSendAction?.('MULLIGAN_KEEP', { bottomCardIds: [] });
+            }
+          })
+          .catch(() => {});
+        await pageB
+          .evaluate(() => {
+            if (window.__mtgcRoomState?.status === 'mulligan') {
+              window.__mtgcSendAction?.('MULLIGAN_KEEP', { bottomCardIds: [] });
+            }
+          })
+          .catch(() => {});
       }
       await pageA.waitForTimeout(1000);
     }
 
     // Asegurar que el estado es playing y no hay overlays
-    await pageA.waitForFunction(() => window.__mtgcRoomState?.status === 'playing', { timeout: 30000 });
+    await pageA.waitForFunction(() => window.__mtgcRoomState?.status === 'playing', {
+      timeout: 30000,
+    });
     await pageA.waitForTimeout(2000);
 
     // Abrir menú de vida en Alice

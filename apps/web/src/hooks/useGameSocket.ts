@@ -89,7 +89,9 @@ export function useGameSocket({
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         // If in development with Vite proxy on port 3000, ws to localhost:3001
         const host =
-          window.location.port === '3000' ? `${window.location.hostname}:3001` : window.location.host;
+          window.location.port === '3000'
+            ? `${window.location.hostname}:3001`
+            : window.location.host;
         wsBase = `${protocol}//${host}`;
       }
     }
@@ -246,6 +248,12 @@ export function useGameSocket({
               data.reason === 'join_rejected';
             if (isPermanent) {
               reconnectAttemptsRef.current = 999;
+              if (typeof window !== 'undefined') {
+                sessionStorage.removeItem('mtgc_room_code');
+                localStorage.removeItem('mtgc_room_code');
+                sessionStorage.removeItem('mtgc_ws_session_token');
+                localStorage.removeItem('mtgc_ws_session_token');
+              }
             }
           }
         } catch (err) {
@@ -265,22 +273,32 @@ export function useGameSocket({
         setRemoteDraggingCards({});
         socketRef.current = null;
 
+        // Limpiar storage ante cierres permanentes o sala no encontrada (1008)
+        if (
+          event.code === 4001 ||
+          event.code === 4003 ||
+          event.code === 4008 ||
+          event.code === 1008
+        ) {
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('mtgc_room_code');
+            localStorage.removeItem('mtgc_room_code');
+            sessionStorage.removeItem('mtgc_ws_session_token');
+            localStorage.removeItem('mtgc_ws_session_token');
+          }
+        }
+
         // Punto F4: Al ser expulsado (código 4001), suprimir reconexión, limpiar sesión y notificar
         if (event.code === 4001) {
           setErrorMessage('Has sido expulsado de la mesa por el anfitrión.');
           reconnectAttemptsRef.current = 999;
-          if (typeof window !== 'undefined') {
-            sessionStorage.removeItem('mtgc_room_code');
-          }
           if (onKicked) onKicked();
           return;
         }
 
         // Punto F3 y F4: Si el cierre fue por motivo permanente (sala llena 4003, origen 4008), suprimir reintentos
         const isPermanentClose =
-          event.code === 4003 ||
-          event.code === 4008 ||
-          reconnectAttemptsRef.current >= 999;
+          event.code === 4003 || event.code === 4008 || reconnectAttemptsRef.current >= 999;
 
         if (isPermanentClose) {
           reconnectAttemptsRef.current = 999;

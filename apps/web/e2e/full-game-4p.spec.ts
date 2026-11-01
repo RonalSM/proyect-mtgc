@@ -138,7 +138,7 @@ test.describe('Punto D2: E2E Partida Completa 4 Jugadores y 10 Turnos', () => {
         const keepBtn = page.getByTestId('keep-btn');
         await keepBtn.waitFor({ state: 'visible', timeout: 10000 });
         await keepBtn.click();
-      })
+      }),
     );
 
     // Verify all 4 players see tableboard
@@ -147,8 +147,8 @@ test.describe('Punto D2: E2E Partida Completa 4 Jugadores y 10 Turnos', () => {
         p
           .locator('[data-table-board], [data-player-header]')
           .first()
-          .waitFor({ state: 'visible', timeout: 20000 })
-      )
+          .waitFor({ state: 'visible', timeout: 20000 }),
+      ),
     );
 
     async function getActivePage() {
@@ -197,7 +197,9 @@ test.describe('Punto D2: E2E Partida Completa 4 Jugadores y 10 Turnos', () => {
           }
         }
       } else if (turn === 2) {
-        const tableCard = active.page.locator('.card-slot-container, [data-card-item="true"]').first();
+        const tableCard = active.page
+          .locator('.card-slot-container, [data-card-item="true"]')
+          .first();
         if (await tableCard.isVisible({ timeout: 5000 }).catch(() => false)) {
           await tableCard.click({ button: 'right', force: true });
           await active.page.waitForTimeout(400);
@@ -207,11 +209,15 @@ test.describe('Punto D2: E2E Partida Completa 4 Jugadores y 10 Turnos', () => {
           }
         }
       } else if (turn === 3) {
-        const cardForCounter = active.page.locator('.card-slot-container, [data-card-item="true"]').first();
+        const cardForCounter = active.page
+          .locator('.card-slot-container, [data-card-item="true"]')
+          .first();
         if (await cardForCounter.isVisible({ timeout: 5000 }).catch(() => false)) {
           await cardForCounter.click({ button: 'right', force: true });
           await active.page.waitForTimeout(400);
-          const countersToggle = active.page.locator('[data-testid="context-counters-toggle"]').first();
+          const countersToggle = active.page
+            .locator('[data-testid="context-counters-toggle"]')
+            .first();
           if (await countersToggle.isVisible({ timeout: 3000 }).catch(() => false)) {
             await countersToggle.click();
             await active.page.waitForTimeout(200);
@@ -234,7 +240,9 @@ test.describe('Punto D2: E2E Partida Completa 4 Jugadores y 10 Turnos', () => {
           const commonTab = active.page.locator('[data-testid="tab-common-tokens"]');
           if (await commonTab.isVisible()) await commonTab.click();
           await active.page.waitForTimeout(300);
-          const createCommonBtn = active.page.locator('[data-testid^="create-common-token-"]').first();
+          const createCommonBtn = active.page
+            .locator('[data-testid^="create-common-token-"]')
+            .first();
           if (await createCommonBtn.isVisible()) await createCommonBtn.click();
         }
       } else if (turn === 5) {
@@ -260,7 +268,9 @@ test.describe('Punto D2: E2E Partida Completa 4 Jugadores y 10 Turnos', () => {
           }
         }
       } else if (turn === 6) {
-        const cloneTarget = active.page.locator('.card-slot-container, [data-card-item="true"]').first();
+        const cloneTarget = active.page
+          .locator('.card-slot-container, [data-card-item="true"]')
+          .first();
         if (await cloneTarget.isVisible({ timeout: 4000 }).catch(() => false)) {
           await cloneTarget.click({ button: 'right', force: true });
           await active.page.waitForTimeout(400);
@@ -274,7 +284,9 @@ test.describe('Punto D2: E2E Partida Completa 4 Jugadores y 10 Turnos', () => {
           await active.page.keyboard.press('Escape');
         }
       } else if (turn === 7) {
-        const flipTarget = active.page.locator('.card-slot-container, [data-card-item="true"]').first();
+        const flipTarget = active.page
+          .locator('.card-slot-container, [data-card-item="true"]')
+          .first();
         if (await flipTarget.isVisible({ timeout: 4000 }).catch(() => false)) {
           await flipTarget.click({ button: 'right', force: true });
           await active.page.waitForTimeout(400);
@@ -285,7 +297,9 @@ test.describe('Punto D2: E2E Partida Completa 4 Jugadores y 10 Turnos', () => {
           await active.page.keyboard.press('Escape');
         }
       } else if (turn === 8) {
-        const viewTarget = active.page.locator('.card-slot-container, [data-card-item="true"]').first();
+        const viewTarget = active.page
+          .locator('.card-slot-container, [data-card-item="true"]')
+          .first();
         if (await viewTarget.isVisible({ timeout: 4000 }).catch(() => false)) {
           await viewTarget.click({ button: 'right', force: true });
           await active.page.waitForTimeout(400);

@@ -345,7 +345,8 @@ export class RoomManager {
       }
       const clientCount = this.getActiveClientCount ? this.getActiveClientCount(code) : 0;
       const lastActivity = this.lastActivityTimestamps.get(code) || 0;
-      const isTestRoom = code.startsWith('TEST') || session.state.name?.startsWith('Mesa Concurrente');
+      const isTestRoom =
+        code.startsWith('TEST') || session.state.name?.startsWith('Mesa Concurrente');
 
       if (clientCount === 0) {
         if (isTestRoom || now - lastActivity > maxInactiveMs) {

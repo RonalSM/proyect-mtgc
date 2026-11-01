@@ -10,7 +10,9 @@ async function main() {
   await connectDatabase();
 
   const initialMem = process.memoryUsage();
-  console.log(`[Memoria Inicial] RSS: ${Math.round(initialMem.rss / 1024 / 1024)} MB | HeapUsed: ${Math.round(initialMem.heapUsed / 1024 / 1024)} MB`);
+  console.log(
+    `[Memoria Inicial] RSS: ${Math.round(initialMem.rss / 1024 / 1024)} MB | HeapUsed: ${Math.round(initialMem.heapUsed / 1024 / 1024)} MB`,
+  );
 
   // 1. Simular 100 salas activas en memoria
   console.log('\n🏠 1. Creando 100 salas activas simultáneas con 4 jugadores cada una...');
@@ -62,7 +64,9 @@ async function main() {
   const heap100Rooms = Math.round(memWith100Rooms.heapUsed / 1024 / 1024);
   const rss100Rooms = Math.round(memWith100Rooms.rss / 1024 / 1024);
   console.log(`✅ 100 salas creadas en memoria.`);
-  console.log(`📊 [Memoria con 100 salas] Heap: ${heap100Rooms} MB | RSS: ${rss100Rooms} MB (Tope de Procfile: 280 MB Heap)`);
+  console.log(
+    `📊 [Memoria con 100 salas] Heap: ${heap100Rooms} MB | RSS: ${rss100Rooms} MB (Tope de Procfile: 280 MB Heap)`,
+  );
 
   if (heap100Rooms >= 280) {
     console.error(`❌ El heap con 100 salas superó los 280 MB: ${heap100Rooms} MB`);
@@ -84,10 +88,14 @@ async function main() {
 
   try {
     const cardRes = await bulkSyncService.syncOracleCards(undefined, true);
-    console.log(`✅ Oracle Cards sincronizadas: ${cardRes.syncedCount} cartas (Pico RSS: ${cardRes.peakMemRssMb} MB)`);
+    console.log(
+      `✅ Oracle Cards sincronizadas: ${cardRes.syncedCount} cartas (Pico RSS: ${cardRes.peakMemRssMb} MB)`,
+    );
 
     const rulingRes = await bulkSyncService.syncRulings(undefined, true);
-    console.log(`✅ Rulings sincronizados: ${rulingRes.syncedCount} dictámenes (Pico RSS: ${rulingRes.peakMemRssMb} MB)`);
+    console.log(
+      `✅ Rulings sincronizados: ${rulingRes.syncedCount} dictámenes (Pico RSS: ${rulingRes.peakMemRssMb} MB)`,
+    );
   } finally {
     clearInterval(monitor);
   }
@@ -100,7 +108,9 @@ async function main() {
   console.log('======================================================================\n');
 
   if (peakRss <= 300 && peakHeap <= 280) {
-    console.log('🎉 [ÉXITO A4.1] Memoria dentro de los límites estrictos (< 300 MB RSS y < 280 MB Heap).');
+    console.log(
+      '🎉 [ÉXITO A4.1] Memoria dentro de los límites estrictos (< 300 MB RSS y < 280 MB Heap).',
+    );
   } else {
     console.warn(`⚠️ [REVISAR A4.1] RSS: ${peakRss} MB, Heap: ${peakHeap} MB`);
   }

@@ -964,7 +964,10 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                       value={cloneCountInput}
                       onChange={e =>
                         setCloneCountInput(
-                          Math.max(1, Math.min(20, parseInt(e.target.value.replace(/[^0-9]/g, ''), 10) || 1)),
+                          Math.max(
+                            1,
+                            Math.min(20, parseInt(e.target.value.replace(/[^0-9]/g, ''), 10) || 1),
+                          ),
                         )
                       }
                       onKeyDown={e => {

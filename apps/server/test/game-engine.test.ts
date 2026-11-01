@@ -139,7 +139,11 @@ test('GameStateSession - commanderDamage triggers defeat risk at 21 damage witho
     delta: 15,
   });
   assert.strictEqual(session.state.players['p1']?.commanderDamage['cmdr_opponent'], 15);
-  assert.strictEqual(session.state.players['p1']?.life, 25, 'Daño de comandante debe restar vida efectiva');
+  assert.strictEqual(
+    session.state.players['p1']?.life,
+    25,
+    'Daño de comandante debe restar vida efectiva',
+  );
   assert.strictEqual(session.state.players['p1']?.isEliminated, false);
   assert.strictEqual(session.state.players['p1']?.isAtRisk, false);
 
@@ -149,7 +153,11 @@ test('GameStateSession - commanderDamage triggers defeat risk at 21 damage witho
     delta: 6,
   });
   assert.strictEqual(session.state.players['p1']?.commanderDamage['cmdr_opponent'], 21);
-  assert.strictEqual(session.state.players['p1']?.life, 19, 'Daño acumulado total debe restar vida a 19');
+  assert.strictEqual(
+    session.state.players['p1']?.life,
+    19,
+    'Daño acumulado total debe restar vida a 19',
+  );
   // En riesgo de derrota, no eliminado automáticamente
   assert.strictEqual(session.state.players['p1']?.isEliminated, false);
   assert.strictEqual(session.state.players['p1']?.isAtRisk, true);
@@ -162,8 +170,16 @@ test('GameStateSession - commanderDamage triggers defeat risk at 21 damage witho
     delta: -1,
   });
   assert.strictEqual(session.state.players['p1']?.commanderDamage['cmdr_opponent'], 20);
-  assert.strictEqual(session.state.players['p1']?.life, 20, 'Restar 1 de daño de comandante aumenta 1 de vida');
-  assert.strictEqual(session.state.players['p1']?.isAtRisk, false, 'Al bajar de 21 ya no esta en riesgo');
+  assert.strictEqual(
+    session.state.players['p1']?.life,
+    20,
+    'Restar 1 de daño de comandante aumenta 1 de vida',
+  );
+  assert.strictEqual(
+    session.state.players['p1']?.isAtRisk,
+    false,
+    'Al bajar de 21 ya no esta en riesgo',
+  );
 });
 
 test('VisibilityFilter - masks opponent hand while leaving owner hand intact', () => {
@@ -188,8 +204,36 @@ test('GameStateSession - card returned to hand from battlefield retains isKnownT
     status: 'playing',
     settings: { maxPlayers: 4, startingLife: 40 },
     players: {
-      p1: { id: 'p1', name: 'Alice', seatNumber: 0, life: 40, counters: {}, isAtRisk: false, hasLost: false, isSpectator: false, libraryCount: 99, handCount: 0, graveyardCount: 0, exileCount: 0, commandCount: 1 },
-      p2: { id: 'p2', name: 'Bob', seatNumber: 1, life: 40, counters: {}, isAtRisk: false, hasLost: false, isSpectator: false, libraryCount: 99, handCount: 0, graveyardCount: 0, exileCount: 0, commandCount: 1 },
+      p1: {
+        id: 'p1',
+        name: 'Alice',
+        seatNumber: 0,
+        life: 40,
+        counters: {},
+        isAtRisk: false,
+        hasLost: false,
+        isSpectator: false,
+        libraryCount: 99,
+        handCount: 0,
+        graveyardCount: 0,
+        exileCount: 0,
+        commandCount: 1,
+      },
+      p2: {
+        id: 'p2',
+        name: 'Bob',
+        seatNumber: 1,
+        life: 40,
+        counters: {},
+        isAtRisk: false,
+        hasLost: false,
+        isSpectator: false,
+        libraryCount: 99,
+        handCount: 0,
+        graveyardCount: 0,
+        exileCount: 0,
+        commandCount: 1,
+      },
     },
     playerZones: {
       p1: {
@@ -198,7 +242,14 @@ test('GameStateSession - card returned to hand from battlefield retains isKnownT
         battlefield: [
           {
             instanceId: 'c_rhystic',
-            definition: { scryfallId: 'scry_1', name: 'Rhystic Study', typeLine: 'Enchantment', cmc: 3, colors: ['U'], colorIdentity: ['U'] },
+            definition: {
+              scryfallId: 'scry_1',
+              name: 'Rhystic Study',
+              typeLine: 'Enchantment',
+              cmc: 3,
+              colors: ['U'],
+              colorIdentity: ['U'],
+            },
             ownerId: 'p1',
             controllerId: 'p1',
             isCommander: false,
@@ -234,7 +285,11 @@ test('GameStateSession - card returned to hand from battlefield retains isKnownT
 
   const p2View = filterRoomStateForPlayer(session.state, 'p2');
   const p2SeenCard = p2View.playerZones['p1']?.hand[0];
-  assert.strictEqual(p2SeenCard?.definition.name, 'Rhystic Study', 'Opponent must see the face-up returned card name');
+  assert.strictEqual(
+    p2SeenCard?.definition.name,
+    'Rhystic Study',
+    'Opponent must see the face-up returned card name',
+  );
   assert.strictEqual(p2SeenCard?.isKnownToAll, true, 'Opponent view must preserve isKnownToAll');
 });
 

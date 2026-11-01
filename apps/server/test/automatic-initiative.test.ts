@@ -122,7 +122,6 @@ test('Punto 4: Tirada de iniciativa automatica en servidor sin accion de cliente
   session.cleanup();
 });
 
-
 test('Punto 4: Desempate automatico en servidor sin intervencion de ningun jugador', () => {
   const room = createMockRoomState();
   room.status = 'initiative';
@@ -212,8 +211,22 @@ test('H1: Orden circular por iniciativa en 4 jugadores [(A,B),(C,D)]', () => {
     seatNumber: 3,
     initiativeRoll: 10,
   };
-  room.playerZones['p3'] = { library: [], hand: [], battlefield: [], graveyard: [], exile: [], command: [] };
-  room.playerZones['p4'] = { library: [], hand: [], battlefield: [], graveyard: [], exile: [], command: [] };
+  room.playerZones['p3'] = {
+    library: [],
+    hand: [],
+    battlefield: [],
+    graveyard: [],
+    exile: [],
+    command: [],
+  };
+  room.playerZones['p4'] = {
+    library: [],
+    hand: [],
+    battlefield: [],
+    graveyard: [],
+    exile: [],
+    command: [],
+  };
 
   // Asignar tiradas del ejemplo del cliente: A(20), B(17), C(5), D(10)
   room.status = 'initiative';
@@ -223,7 +236,7 @@ test('H1: Orden circular por iniciativa en 4 jugadores [(A,B),(C,D)]', () => {
     rolls: {
       p1: 20, // Alice (A)
       p2: 17, // Bob (B)
-      p3: 5,  // Charlie (C)
+      p3: 5, // Charlie (C)
       p4: 10, // David (D)
     },
   };
@@ -247,4 +260,3 @@ test('H1: Orden circular por iniciativa en 4 jugadores [(A,B),(C,D)]', () => {
 
   session.cleanup();
 });
-

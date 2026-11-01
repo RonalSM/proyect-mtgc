@@ -60,7 +60,9 @@ function runLatencySimulation(latencyMs: number): {
       ),
       ...Object.values(optimisticTransfers)
         .filter(
-          t => t.toZone === 'battlefield' && !authoritativeZones.battlefield.some(c => c.id === t.card.id),
+          t =>
+            t.toZone === 'battlefield' &&
+            !authoritativeZones.battlefield.some(c => c.id === t.card.id),
         )
         .map(t => t.card),
     ];
@@ -99,7 +101,9 @@ function runLatencySimulation(latencyMs: number): {
     ),
     ...Object.values(optimisticTransfers)
       .filter(
-        t => t.toZone === 'battlefield' && !authoritativeZones.battlefield.some(c => c.id === t.card.id),
+        t =>
+          t.toZone === 'battlefield' &&
+          !authoritativeZones.battlefield.some(c => c.id === t.card.id),
       )
       .map(t => t.card),
   ];
@@ -133,20 +137,34 @@ async function main() {
     console.log(`   - Duración de simulación: ${res.latencyMs} ms`);
     console.log(`   - Frames evaluados a 60fps: ${res.totalFrames} frames`);
     console.log(`   - Frames mostrando carta en zona de origen (Mano): ${res.framesInOrigin}`);
-    console.log(`   - Frames mostrando carta en zona destino (Mesa): ${res.framesInTarget} (${((res.framesInTarget / res.totalFrames) * 100).toFixed(1)}%)`);
-    console.log(`   - Reconciliación autoritativa limpia (sin duplicados ni saltos): ${res.reconciledProperly ? '✅ SÍ' : '❌ NO'}`);
+    console.log(
+      `   - Frames mostrando carta en zona destino (Mesa): ${res.framesInTarget} (${((res.framesInTarget / res.totalFrames) * 100).toFixed(1)}%)`,
+    );
+    console.log(
+      `   - Reconciliación autoritativa limpia (sin duplicados ni saltos): ${res.reconciledProperly ? '✅ SÍ' : '❌ NO'}`,
+    );
 
-    if (res.framesInOrigin !== 0 || !res.reconciledProperly || res.framesInTarget !== res.totalFrames) {
+    if (
+      res.framesInOrigin !== 0 ||
+      !res.reconciledProperly ||
+      res.framesInTarget !== res.totalFrames
+    ) {
       allTiersPassed = false;
-      console.error(`   ❌ FALLO en tier ${res.latencyMs}ms: se detectaron frames en origen o fallo de reconciliación.`);
+      console.error(
+        `   ❌ FALLO en tier ${res.latencyMs}ms: se detectaron frames en origen o fallo de reconciliación.`,
+      );
     } else {
-      console.log(`   ✅ SUPERADO: Cero frames en origen y presencia inmediata continua en destino.\n`);
+      console.log(
+        `   ✅ SUPERADO: Cero frames en origen y presencia inmediata continua en destino.\n`,
+      );
     }
   }
 
   console.log('========================================================================');
   if (allTiersPassed) {
-    console.log('🎉 [ÉXITO G1] Banco de latencia superado al 100% en todos los niveles (100, 250, 500 ms).');
+    console.log(
+      '🎉 [ÉXITO G1] Banco de latencia superado al 100% en todos los niveles (100, 250, 500 ms).',
+    );
     console.log('   Garantía estricta: 0 frames mostrando la carta en origen tras soltar.');
   } else {
     console.error('❌ [FALLO G1] Falló alguna de las verificaciones de latencia.');

@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const TARGET_URL = process.env.TARGET_URL || 'https://proyect-mtgc.netlify.app';
 const ARTIFACT_DIR = path.resolve(
-  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
 );
 
 const POD_SIZES = [3, 5, 6];
@@ -20,7 +20,7 @@ async function capturePod(browser, podSize) {
 
   const playerNames = ['Alice', 'Bob', 'Charlie', 'Diana', 'Evan', 'Fiona'].slice(0, podSize);
   const contexts = await Promise.all(
-    playerNames.map(() => browser.newContext({ viewport: { width: 1920, height: 1080 } }))
+    playerNames.map(() => browser.newContext({ viewport: { width: 1920, height: 1080 } })),
   );
   const pages = await Promise.all(contexts.map(c => c.newPage()));
   const pageHost = pages[0];
@@ -49,7 +49,9 @@ async function capturePod(browser, podSize) {
     const selectElem = pageHost.locator('select').first();
     await selectElem.selectOption(String(podSize));
 
-    const submitCreateBtn = pageHost.getByRole('button', { name: /Crear y Abrir Sala|Crear Mesa/i });
+    const submitCreateBtn = pageHost.getByRole('button', {
+      name: /Crear y Abrir Sala|Crear Mesa/i,
+    });
     await submitCreateBtn.click();
 
     await pageHost.waitForSelector('[data-testid="room-code-badge"], :has-text("Código:")', {
@@ -138,7 +140,7 @@ async function capturePod(browser, podSize) {
         await keepBtn.waitFor({ state: 'visible', timeout: 10000 });
         await keepBtn.click();
         console.log(`Mano aceptada por ${playerNames[idx]}`);
-      })
+      }),
     );
 
     await pageHost.waitForSelector('[data-table-board], [data-player-header]', { timeout: 20000 });

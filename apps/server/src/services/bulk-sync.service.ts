@@ -79,7 +79,8 @@ export class BulkSyncService {
         if (parsed.lastCardsUpdatedAt) this.lastCardsUpdatedAt = parsed.lastCardsUpdatedAt;
         if (parsed.lastRulingsUpdatedAt) this.lastRulingsUpdatedAt = parsed.lastRulingsUpdatedAt;
         if (parsed.lastSyncTime) this.lastSyncTime = new Date(parsed.lastSyncTime);
-        if (parsed.lastRulingsSyncTime) this.lastRulingsSyncTime = new Date(parsed.lastRulingsSyncTime);
+        if (parsed.lastRulingsSyncTime)
+          this.lastRulingsSyncTime = new Date(parsed.lastRulingsSyncTime);
       }
     } catch {
       // Ignorar fallo al leer metadatos iniciales
@@ -206,7 +207,12 @@ export class BulkSyncService {
   public async syncOracleCards(
     limit?: number,
     force?: boolean,
-  ): Promise<{ syncedCount: number; durationMs: number; peakMemRssMb?: number; memorySamples?: number[] }> {
+  ): Promise<{
+    syncedCount: number;
+    durationMs: number;
+    peakMemRssMb?: number;
+    memorySamples?: number[];
+  }> {
     if (this.isSyncing) {
       throw new Error('La sincronización de bulk data ya está en curso.');
     }
@@ -348,7 +354,7 @@ export class BulkSyncService {
             });
             syncedCount += batch.length;
             batch = [];
-            
+
             // Pausa breve con contrapresión en el bucle de eventos para recolección de basura (Punto A4.1)
             await new Promise(resolve => setTimeout(resolve, 8));
             rl.resume();
@@ -443,7 +449,14 @@ export class BulkSyncService {
   public async syncRulings(
     limit?: number,
     force?: boolean,
-  ): Promise<{ syncedCount: number; durationMs: number; skipped?: boolean; reason?: string; peakMemRssMb?: number; memorySamples?: number[] }> {
+  ): Promise<{
+    syncedCount: number;
+    durationMs: number;
+    skipped?: boolean;
+    reason?: string;
+    peakMemRssMb?: number;
+    memorySamples?: number[];
+  }> {
     if (this.isSyncingRulings) {
       return { syncedCount: 0, durationMs: 0, skipped: true, reason: 'already_in_progress' };
     }
@@ -466,7 +479,9 @@ export class BulkSyncService {
         const heap = Math.round(mem.heapUsed / 1024 / 1024);
         memorySamples.push(rss);
         if (rss > peakMemRssMb) peakMemRssMb = rss;
-        console.log(`[RulingsSync Memory] RSS: ${rss} MB | Heap: ${heap} MB | Rulings: ${syncedCount}`);
+        console.log(
+          `[RulingsSync Memory] RSS: ${rss} MB | Heap: ${heap} MB | Rulings: ${syncedCount}`,
+        );
       }, 1000);
       if (memInterval.unref) memInterval.unref();
 
@@ -522,7 +537,9 @@ export class BulkSyncService {
         };
       }
 
-      console.log(`⬇️ [BulkSync] Descargando y procesando Rulings por streaming desde: ${downloadUri}`);
+      console.log(
+        `⬇️ [BulkSync] Descargando y procesando Rulings por streaming desde: ${downloadUri}`,
+      );
       const rulingsResponse = await fetch(downloadUri, {
         headers: {
           'User-Agent': userAgent,
@@ -537,7 +554,8 @@ export class BulkSyncService {
       const readline = await import('node:readline');
       const zlibMod = await import('node:zlib');
 
-      const isGzip = downloadUri.endsWith('.gz') || rulingsResponse.headers.get('content-encoding') === 'gzip';
+      const isGzip =
+        downloadUri.endsWith('.gz') || rulingsResponse.headers.get('content-encoding') === 'gzip';
       let stream: any = Readable.fromWeb(rulingsResponse.body as any);
       if (isGzip) {
         stream = stream.pipe(zlibMod.createGunzip());

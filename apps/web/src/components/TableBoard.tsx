@@ -77,8 +77,12 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
       const localZones = roomState.playerZones[localPlayerId];
       if (localZones) {
         for (const [id, transfer] of Object.entries(next)) {
-          const inTarget = ((localZones as any)[transfer.toZone] || []).some((c: any) => c.id === id);
-          const notInSource = !((localZones as any)[transfer.fromZone] || []).some((c: any) => c.id === id);
+          const inTarget = ((localZones as any)[transfer.toZone] || []).some(
+            (c: any) => c.id === id,
+          );
+          const notInSource = !((localZones as any)[transfer.fromZone] || []).some(
+            (c: any) => c.id === id,
+          );
           if ((inTarget && notInSource) || Date.now() - transfer.timestamp > 3000) {
             delete next[id];
             changed = true;
@@ -783,9 +787,13 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
   const allBattlefieldCards = useMemo(() => {
     const rawCards = Object.values(roomState.playerZones).flatMap(zones => zones.battlefield);
     const optimisticToBf = Object.values(optimisticZoneTransfers)
-      .filter(t => t.toZone === 'battlefield' && !rawCards.some(c => c.instanceId === t.card.instanceId))
+      .filter(
+        t => t.toZone === 'battlefield' && !rawCards.some(c => c.instanceId === t.card.instanceId),
+      )
       .map(t => t.card);
-    const filteredRaw = rawCards.filter(c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'battlefield');
+    const filteredRaw = rawCards.filter(
+      c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'battlefield',
+    );
     return [...filteredRaw, ...optimisticToBf];
   }, [roomState.playerZones, optimisticZoneTransfers]);
 
@@ -916,14 +924,26 @@ const TableBoardInner: React.FC<TableBoardProps> = ({
         ...rawZones,
         hand: rawZones.hand.filter(c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'hand'),
         battlefield: [
-          ...rawZones.battlefield.filter(c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'battlefield'),
+          ...rawZones.battlefield.filter(
+            c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'battlefield',
+          ),
           ...Object.values(optimisticZoneTransfers)
-            .filter(t => t.toZone === 'battlefield' && !rawZones.battlefield.some(c => c.instanceId === t.card.instanceId))
+            .filter(
+              t =>
+                t.toZone === 'battlefield' &&
+                !rawZones.battlefield.some(c => c.instanceId === t.card.instanceId),
+            )
             .map(t => t.card),
         ],
-        graveyard: rawZones.graveyard.filter(c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'graveyard'),
-        exile: rawZones.exile.filter(c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'exile'),
-        command: rawZones.command.filter(c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'command'),
+        graveyard: rawZones.graveyard.filter(
+          c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'graveyard',
+        ),
+        exile: rawZones.exile.filter(
+          c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'exile',
+        ),
+        command: rawZones.command.filter(
+          c => optimisticZoneTransfers[c.instanceId]?.fromZone !== 'command',
+        ),
       };
     }
 

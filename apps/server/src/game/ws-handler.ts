@@ -706,10 +706,14 @@ export class WebSocketHandler {
       }
 
       // Broadcast updated room state to all clients (inmediato para transiciones de turno y fase)
-      const isCriticalTransition = type === 'PASS_TURN' || type === 'START_GAME' || type === 'SET_READY';
+      const isCriticalTransition =
+        type === 'PASS_TURN' || type === 'START_GAME' || type === 'SET_READY';
       this.broadcastRoomState(client.roomCode, isCriticalTransition);
     } catch (err: any) {
-      console.warn(`[WS REJECT] Acción rechazada ${type} de jugador ${client.playerId}:`, err?.message || err);
+      console.warn(
+        `[WS REJECT] Acción rechazada ${type} de jugador ${client.playerId}:`,
+        err?.message || err,
+      );
       client.socket.send(
         JSON.stringify({
           type: 'ACTION_REJECTED',

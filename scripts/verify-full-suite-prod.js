@@ -2,7 +2,8 @@ import { chromium } from 'playwright';
 import path from 'path';
 
 const PROD_URL = 'https://proyect-mtgc.netlify.app';
-const ARTIFACT_DIR = 'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa';
+const ARTIFACT_DIR =
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa';
 
 async function run() {
   console.log('=== VERIFICACIÓN EN PRODUCCIÓN: TAREAS 1, 2, 3 Y 4 ===');
@@ -19,7 +20,10 @@ async function run() {
     await page1.waitForLoadState('networkidle');
 
     // Crear primera sala
-    await page1.getByRole('button', { name: /Crear Nueva Mesa/i }).first().click();
+    await page1
+      .getByRole('button', { name: /Crear Nueva Mesa/i })
+      .first()
+      .click();
     await page1.fill('input[placeholder="Ej. Pod de Viernes por la Noche"]', 'Mesa Test Salida 1');
     await page1.fill('input[placeholder="Ej. Planeswalker 1"]', 'Player_Alpha');
     await page1.locator('button[type="submit"]').click();
@@ -34,7 +38,10 @@ async function run() {
     await page1.waitForTimeout(1000);
 
     // Crear inmediatamente la sala 2 sin F5
-    await page1.getByRole('button', { name: /Crear Nueva Mesa/i }).first().click();
+    await page1
+      .getByRole('button', { name: /Crear Nueva Mesa/i })
+      .first()
+      .click();
     await page1.fill('input[placeholder="Ej. Pod de Viernes por la Noche"]', 'Mesa Test Salida 2');
     await page1.locator('button[type="submit"]').click();
 
@@ -55,14 +62,19 @@ async function run() {
     // ----------------------------------------------------
     // TEST 2: DRAG SELECTION FUERA DE MODAL NO LO CIERRA (TAREA 3)
     // ----------------------------------------------------
-    console.log('\n[2/5] TEST 2: Selección y arrastre de texto fuera del modal no lo cierra (useBackdropClose)...');
+    console.log(
+      '\n[2/5] TEST 2: Selección y arrastre de texto fuera del modal no lo cierra (useBackdropClose)...',
+    );
     const ctx2 = await browser.newContext({ viewport: { width: 1366, height: 768 } });
     const page2 = await ctx2.newPage();
     await page2.goto(PROD_URL);
     await page2.waitForLoadState('networkidle');
 
     // Abrir modal de creación de mesa
-    await page2.getByRole('button', { name: /Crear Nueva Mesa/i }).first().click();
+    await page2
+      .getByRole('button', { name: /Crear Nueva Mesa/i })
+      .first()
+      .click();
     const modalInput = page2.locator('input[placeholder="Ej. Pod de Viernes por la Noche"]');
     await modalInput.waitFor({ state: 'visible' });
     await modalInput.fill('Texto Para Arrastrar y Seleccionar');
@@ -97,7 +109,9 @@ async function run() {
     // ----------------------------------------------------
     // TEST 3, 4 Y 5: PARTIDA REAL CON DOS JUGADORES (TAREA 4 Y REGLAS)
     // ----------------------------------------------------
-    console.log('\n[3/5] TEST 3, 4 & 5: Partida real 2 jugadores (Biblioteca, Revelación en Mano y Daño Comandante)...');
+    console.log(
+      '\n[3/5] TEST 3, 4 & 5: Partida real 2 jugadores (Biblioteca, Revelación en Mano y Daño Comandante)...',
+    );
     const ctxA = await browser.newContext({ viewport: { width: 1366, height: 768 } });
     const ctxB = await browser.newContext({ viewport: { width: 1366, height: 768 } });
     const pageA = await ctxA.newPage();
@@ -106,7 +120,10 @@ async function run() {
     // 1. Alice crea sala para 2 jugadores
     await pageA.goto(PROD_URL);
     await pageA.waitForLoadState('networkidle');
-    await pageA.getByRole('button', { name: /Crear Nueva Mesa/i }).first().click();
+    await pageA
+      .getByRole('button', { name: /Crear Nueva Mesa/i })
+      .first()
+      .click();
     await pageA.fill('input[placeholder="Ej. Pod de Viernes por la Noche"]', 'Mesa Duelo Pro');
     await pageA.fill('input[placeholder="Ej. Planeswalker 1"]', 'Alice_Host');
     await pageA.locator('select').selectOption('2');
@@ -119,9 +136,14 @@ async function run() {
     console.log(`  -> Sala creada: ${roomCode}`);
 
     // 2. Alice selecciona mazo
-    await pageA.getByRole('button', { name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i }).first().click();
+    await pageA
+      .getByRole('button', { name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i })
+      .first()
+      .click();
     await pageA.waitForTimeout(1000);
-    const chooseDeckBtnA = pageA.getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i }).first();
+    const chooseDeckBtnA = pageA
+      .getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i })
+      .first();
     await chooseDeckBtnA.waitFor({ state: 'visible', timeout: 15000 });
     await chooseDeckBtnA.click();
     await pageA.waitForTimeout(1000);
@@ -129,24 +151,38 @@ async function run() {
     // 3. Bob se une a la sala
     await pageB.goto(PROD_URL);
     await pageB.waitForLoadState('networkidle');
-    await pageB.getByRole('button', { name: /Unirse con Código/i }).first().click();
+    await pageB
+      .getByRole('button', { name: /Unirse con Código/i })
+      .first()
+      .click();
     await pageB.fill('input[placeholder="ABCDEF"]', roomCode);
     await pageB.fill('input[placeholder="Ej. Planeswalker 2"]', 'Bob_Rival');
     await pageB.locator('button[type="submit"]').click();
     await pageB.waitForSelector(`text=${roomCode}`, { timeout: 20000 });
 
     // 4. Bob selecciona mazo
-    await pageB.getByRole('button', { name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i }).first().click();
+    await pageB
+      .getByRole('button', { name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i })
+      .first()
+      .click();
     await pageB.waitForTimeout(1000);
-    const chooseDeckBtnB = pageB.getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i }).first();
+    const chooseDeckBtnB = pageB
+      .getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i })
+      .first();
     await chooseDeckBtnB.waitFor({ state: 'visible', timeout: 15000 });
     await chooseDeckBtnB.click();
     await pageB.waitForTimeout(1000);
 
     // 5. Ambos listos y comenzar partida
-    await pageA.getByRole('button', { name: /¡Estoy Listo!|Listo/i }).first().click();
-    await pageB.getByRole('button', { name: /¡Estoy Listo!|Listo/i }).first().click();
-    
+    await pageA
+      .getByRole('button', { name: /¡Estoy Listo!|Listo/i })
+      .first()
+      .click();
+    await pageB
+      .getByRole('button', { name: /¡Estoy Listo!|Listo/i })
+      .first()
+      .click();
+
     // Esperar a que el botón INICIAR PARTIDA esté habilitado en Alice (canStart = true tras sync)
     const startBtn = pageA.locator('button:has-text("INICIAR PARTIDA"):not([disabled])');
     await startBtn.waitFor({ state: 'visible', timeout: 15000 });
@@ -160,12 +196,30 @@ async function run() {
 
     while (Date.now() - mulliganStartTime < 60000) {
       // Verificar si ambos jugadores ya superaron el modal de mano inicial
-      const isMulliganA = await pageA.locator('[data-testid="opening-hand-modal"]').isVisible().catch(() => false);
-      const isMulliganB = await pageB.locator('[data-testid="opening-hand-modal"]').isVisible().catch(() => false);
-      const isInitA = await pageA.locator('[data-testid="initiative-overlay"]').isVisible().catch(() => false);
-      const isInitB = await pageB.locator('[data-testid="initiative-overlay"]').isVisible().catch(() => false);
+      const isMulliganA = await pageA
+        .locator('[data-testid="opening-hand-modal"]')
+        .isVisible()
+        .catch(() => false);
+      const isMulliganB = await pageB
+        .locator('[data-testid="opening-hand-modal"]')
+        .isVisible()
+        .catch(() => false);
+      const isInitA = await pageA
+        .locator('[data-testid="initiative-overlay"]')
+        .isVisible()
+        .catch(() => false);
+      const isInitB = await pageB
+        .locator('[data-testid="initiative-overlay"]')
+        .isVisible()
+        .catch(() => false);
 
-      if (!isMulliganA && !isMulliganB && !isInitA && !isInitB && (Date.now() - mulliganStartTime > 8000)) {
+      if (
+        !isMulliganA &&
+        !isMulliganB &&
+        !isInitA &&
+        !isInitB &&
+        Date.now() - mulliganStartTime > 8000
+      ) {
         mulliganDone = true;
         break;
       }
@@ -198,12 +252,15 @@ async function run() {
     // ----------------------------------------------------
     // VERIFICACIÓN 3: BIBLIOTECA (SIN OJITO + MENÚ CONTEXTUAL + BARAJAR AL CERRAR)
     // ----------------------------------------------------
-    console.log('\n  -> Verificando biblioteca: ojito removido, menú clic derecho y checkbox barajar...');
+    console.log(
+      '\n  -> Verificando biblioteca: ojito removido, menú clic derecho y checkbox barajar...',
+    );
     // Obtener los IDs de Alice y Bob del estado
     const { aliceId, bobId } = await pageA.evaluate(() => {
       const state = window.__mtgcRoomState;
       const pEntries = Object.entries(state?.players || {});
-      const a = pEntries.find(([_, p]) => p.name === 'Alice_Host')?.[0] || window.__mtgcLocalPlayerId;
+      const a =
+        pEntries.find(([_, p]) => p.name === 'Alice_Host')?.[0] || window.__mtgcLocalPlayerId;
       const b = pEntries.find(([id, _]) => id !== a)?.[0];
       return { aliceId: a, bobId: b };
     });
@@ -254,7 +311,9 @@ async function run() {
     // ----------------------------------------------------
     console.log('\n  -> Verificando regla de revelación de carta devuelta a mano...');
     // Alice selecciona la última carta de su propia mano y la juega al campo
-    const targetHandCard = pageA.locator(`[data-player-dock="${aliceId}"] [data-hand-card="true"]`).last();
+    const targetHandCard = pageA
+      .locator(`[data-player-dock="${aliceId}"] [data-hand-card="true"]`)
+      .last();
     await targetHandCard.waitFor({ state: 'visible', timeout: 10000 });
     const cardNameToPlay = await targetHandCard.getAttribute('data-card-name');
     await targetHandCard.click({ force: true });
@@ -297,7 +356,7 @@ async function run() {
     await lifeBtn.click({ force: true });
     await pageA.waitForSelector('[data-testid="commander-damage-section"]', { timeout: 10000 });
 
-    const initialLife = await pageA.evaluate((aId) => {
+    const initialLife = await pageA.evaluate(aId => {
       const state = window.__mtgcRoomState;
       return state?.players?.[aId]?.life ?? 40;
     }, aliceId);
@@ -307,14 +366,18 @@ async function run() {
     await plusDamageBtn.click();
     await pageA.waitForTimeout(1000);
 
-    const newLife = await pageA.evaluate((aId) => {
+    const newLife = await pageA.evaluate(aId => {
       const state = window.__mtgcRoomState;
       return state?.players?.[aId]?.life;
     }, aliceId);
 
-    console.log(`  -> Vida antes del daño: ${initialLife}, Vida después del daño de comandante: ${newLife}`);
+    console.log(
+      `  -> Vida antes del daño: ${initialLife}, Vida después del daño de comandante: ${newLife}`,
+    );
     if (newLife !== initialLife - 1) {
-      throw new Error(`El daño de comandante no restó vida (esperado ${initialLife - 1}, actual ${newLife})`);
+      throw new Error(
+        `El daño de comandante no restó vida (esperado ${initialLife - 1}, actual ${newLife})`,
+      );
     }
 
     const shot5 = path.join(ARTIFACT_DIR, 'prod-flow5-commander-damage-subtractive.png');

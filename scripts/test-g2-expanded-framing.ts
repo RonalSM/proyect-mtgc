@@ -83,7 +83,9 @@ function testG2() {
       centerPixelY >= orientedH / 2 &&
       centerPixelY <= winH - orientedH / 2;
 
-    console.log(`   - Caso: [${tc.label}] -> Pixeles: (${centerPixelX}px, ${centerPixelY}px) | Seguro: ${isSafe ? '✅' : '❌'}`);
+    console.log(
+      `   - Caso: [${tc.label}] -> Pixeles: (${centerPixelX}px, ${centerPixelY}px) | Seguro: ${isSafe ? '✅' : '❌'}`,
+    );
 
     if (!isSafe) {
       allClampedCleanly = false;
@@ -92,7 +94,9 @@ function testG2() {
 
   console.log('\n========================================================================');
   if (allClampedCleanly) {
-    console.log('🎉 [ÉXITO G2] Encodings geométricos desacoplados y acotamiento numérico estricto verificado.');
+    console.log(
+      '🎉 [ÉXITO G2] Encodings geométricos desacoplados y acotamiento numérico estricto verificado.',
+    );
     console.log('   Protegido contra NaN, Infinity y pantalla negra con ErrorBoundary.');
   } else {
     console.error('❌ [FALLO G2] Alguna coordenada no pudo ser acotada de forma segura.');

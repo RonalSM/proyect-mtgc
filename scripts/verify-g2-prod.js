@@ -3,7 +3,9 @@ const path = require('path');
 const fs = require('fs');
 
 const PROD_URL = 'https://proyect-mtgc.netlify.app';
-const ARTIFACT_DIR = path.resolve('C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa');
+const ARTIFACT_DIR = path.resolve(
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
+);
 
 async function run() {
   console.log('🚀 Starting live production verification for G2 (Vista Ampliada y Cámara)...');
@@ -32,32 +34,43 @@ async function run() {
     // 1. Host (Player A) creates room
     console.log('--- Step 1: Player A creates room ---');
     await pageA.goto(PROD_URL, { waitUntil: 'networkidle' });
-    
+
     const createBtn = pageA.getByRole('button', { name: /Crear Nueva Mesa/i });
     await createBtn.waitFor({ state: 'visible', timeout: 15000 });
     await createBtn.click();
 
     // Fill room name & player name
-    const roomNameInput = pageA.getByPlaceholder(/Pod de Viernes|Nombre de la mesa/i).or(pageA.locator('input[type="text"]').first());
+    const roomNameInput = pageA
+      .getByPlaceholder(/Pod de Viernes|Nombre de la mesa/i)
+      .or(pageA.locator('input[type="text"]').first());
     await roomNameInput.fill('G2 Camera Test Room');
 
-    const hostNameInput = pageA.getByPlaceholder(/Planeswalker 1|Tu nombre/i).or(pageA.locator('input[type="text"]').nth(1));
+    const hostNameInput = pageA
+      .getByPlaceholder(/Planeswalker 1|Tu nombre/i)
+      .or(pageA.locator('input[type="text"]').nth(1));
     await hostNameInput.fill('JugadorA');
 
     const submitCreateBtn = pageA.getByRole('button', { name: /Crear y Abrir Sala|Crear Mesa/i });
     await submitCreateBtn.click();
 
     // Wait for room to be created and read room code
-    await pageA.waitForSelector('[data-testid="room-code-badge"], :has-text("Código:")', { timeout: 20000 });
-    
-    const roomCodeEl = await pageA.locator('[data-testid="room-code-display"]').or(pageA.locator('text=/Código:/i')).first();
+    await pageA.waitForSelector('[data-testid="room-code-badge"], :has-text("Código:")', {
+      timeout: 20000,
+    });
+
+    const roomCodeEl = await pageA
+      .locator('[data-testid="room-code-display"]')
+      .or(pageA.locator('text=/Código:/i'))
+      .first();
     const fullCodeText = await roomCodeEl.innerText();
     const roomCode = fullCodeText.replace(/Código:\s*/i, '').trim();
     console.log(`✅ Room created successfully with code: "${roomCode}"`);
 
     // Player A selects a deck and marks ready
     console.log('--- Step 2: Player A selects deck and marks ready ---');
-    const selectDeckBtnA = pageA.getByRole('button', { name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i });
+    const selectDeckBtnA = pageA.getByRole('button', {
+      name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i,
+    });
     await selectDeckBtnA.waitFor({ state: 'visible', timeout: 10000 });
     await selectDeckBtnA.click();
 
@@ -66,7 +79,9 @@ async function run() {
       await presetTabA.click();
     }
 
-    const chooseDeckBtnA = pageA.getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i }).first();
+    const chooseDeckBtnA = pageA
+      .getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i })
+      .first();
     await chooseDeckBtnA.waitFor({ state: 'visible', timeout: 10000 });
     await chooseDeckBtnA.click();
 
@@ -95,7 +110,9 @@ async function run() {
 
     // Player B selects deck and marks ready
     console.log('--- Step 4: Player B selects deck and marks ready ---');
-    const selectDeckBtnB = pageB.getByRole('button', { name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i });
+    const selectDeckBtnB = pageB.getByRole('button', {
+      name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i,
+    });
     await selectDeckBtnB.waitFor({ state: 'visible', timeout: 15000 });
     await selectDeckBtnB.click();
 
@@ -104,7 +121,9 @@ async function run() {
       await presetTabB.click();
     }
 
-    const chooseDeckBtnB = pageB.getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i }).first();
+    const chooseDeckBtnB = pageB
+      .getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i })
+      .first();
     await chooseDeckBtnB.waitFor({ state: 'visible', timeout: 10000 });
     await chooseDeckBtnB.click();
 
@@ -121,8 +140,10 @@ async function run() {
 
     // 4. Pass Mulligan on both clients sequentially
     console.log('--- Step 6: Passing Mulligan ---');
-    await pageA.locator('[data-testid="opening-hand-modal"]').waitFor({ state: 'visible', timeout: 15000 });
-    
+    await pageA
+      .locator('[data-testid="opening-hand-modal"]')
+      .waitFor({ state: 'visible', timeout: 15000 });
+
     const startTime = Date.now();
     while (Date.now() - startTime < 20000) {
       const modalCount = await pageA.locator('[data-testid="opening-hand-modal"]').count();
@@ -143,8 +164,12 @@ async function run() {
       await pageA.waitForTimeout(500);
     }
 
-    await pageA.locator('[data-testid="opening-hand-modal"]').waitFor({ state: 'detached', timeout: 10000 });
-    await pageB.locator('[data-testid="opening-hand-modal"]').waitFor({ state: 'detached', timeout: 10000 });
+    await pageA
+      .locator('[data-testid="opening-hand-modal"]')
+      .waitFor({ state: 'detached', timeout: 10000 });
+    await pageB
+      .locator('[data-testid="opening-hand-modal"]')
+      .waitFor({ state: 'detached', timeout: 10000 });
     console.log('✅ Mulligan modal dismissed on both clients, game status: playing');
 
     // Wait for both players to enter playing state
@@ -188,7 +213,9 @@ async function run() {
     const cardsOnBInZoom = await pageB.locator('[data-battlefield-card="true"]').count();
     console.log(`Cartas en el battlefield de Jugador B (vista ampliada): ${cardsOnBInZoom}`);
     if (cardsOnBInZoom < 1) {
-      throw new Error('❌ Fallo: La carta del Jugador A desapareció de la pantalla de Jugador B al ampliar la vista!');
+      throw new Error(
+        '❌ Fallo: La carta del Jugador A desapareció de la pantalla de Jugador B al ampliar la vista!',
+      );
     }
     const cardElOnB = pageB.locator('[data-battlefield-card="true"]').first();
     const isCardVisibleOnB = await cardElOnB.isVisible();
@@ -207,7 +234,9 @@ async function run() {
     console.log(`📸 Captura guardada: ${shotCPlayerA}`);
 
     // (d) Comprueba que si B arrastra su propia carta hacia el borde de la mesa, la carta de A no desaparece ni parpadea
-    console.log('--- (d) Comprueba que si B arrastra su propia carta hacia el borde, la carta de A no desaparece ni parpadea ---');
+    console.log(
+      '--- (d) Comprueba que si B arrastra su propia carta hacia el borde, la carta de A no desaparece ni parpadea ---',
+    );
     const handCardB = pageB.locator('[data-hand-card="true"]').last();
     await handCardB.waitFor({ state: 'visible', timeout: 15000 });
     const handBoxB = await handCardB.boundingBox();
@@ -216,7 +245,7 @@ async function run() {
     // Start dragging Player B's card towards the left border of their expanded view
     await pageB.mouse.move(handBoxB.x + handBoxB.width / 2, handBoxB.y + handBoxB.height / 2);
     await pageB.mouse.down();
-    
+
     // Drag towards the border (x = 100px)
     await pageB.mouse.move(100, 350, { steps: 15 });
     await pageB.waitForTimeout(300);
@@ -225,7 +254,9 @@ async function run() {
     const cardsDuringDrag = await pageB.locator('[data-battlefield-card="true"]').count();
     console.log(`Cartas en el battlefield mientras Jugador B arrastra: ${cardsDuringDrag}`);
     if (cardsDuringDrag < 1) {
-      throw new Error('❌ Fallo: La carta de Jugador A desapareció durante el arrastre de Jugador B!');
+      throw new Error(
+        '❌ Fallo: La carta de Jugador A desapareció durante el arrastre de Jugador B!',
+      );
     }
 
     // Release card onto the table near the border
@@ -236,7 +267,9 @@ async function run() {
     const finalCardsOnB = await pageB.locator('[data-battlefield-card="true"]').count();
     console.log(`Cartas finales en el battlefield de B (vista ampliada): ${finalCardsOnB}`);
     if (finalCardsOnB < 2) {
-      throw new Error(`❌ Se esperaban 2 cartas en la mesa ampliada de B, pero hay: ${finalCardsOnB}`);
+      throw new Error(
+        `❌ Se esperaban 2 cartas en la mesa ampliada de B, pero hay: ${finalCardsOnB}`,
+      );
     }
 
     // Save screenshots for (d)
@@ -250,20 +283,32 @@ async function run() {
 
     // Check console errors (ignoring benign font CSP/favicon/ResizeObserver warnings)
     const fatalErrorsB = errorsB.filter(
-      e => !e.includes('ResizeObserver') && !e.includes('favicon') && !e.includes('Third-party cookie') && !e.includes('fonts.googleapis.com'),
+      e =>
+        !e.includes('ResizeObserver') &&
+        !e.includes('favicon') &&
+        !e.includes('Third-party cookie') &&
+        !e.includes('fonts.googleapis.com'),
     );
     const fatalErrorsA = errorsA.filter(
-      e => !e.includes('ResizeObserver') && !e.includes('favicon') && !e.includes('Third-party cookie') && !e.includes('fonts.googleapis.com'),
+      e =>
+        !e.includes('ResizeObserver') &&
+        !e.includes('favicon') &&
+        !e.includes('Third-party cookie') &&
+        !e.includes('fonts.googleapis.com'),
     );
 
     console.log('Console errors Jugador A:', fatalErrorsA);
     console.log('Console errors Jugador B:', fatalErrorsB);
 
     if (fatalErrorsA.length > 0 || fatalErrorsB.length > 0) {
-      throw new Error(`Errores de consola encontrados:\nJugador A: ${fatalErrorsA.join(', ')}\nJugador B: ${fatalErrorsB.join(', ')}`);
+      throw new Error(
+        `Errores de consola encontrados:\nJugador A: ${fatalErrorsA.join(', ')}\nJugador B: ${fatalErrorsB.join(', ')}`,
+      );
     }
 
-    console.log('\n🎉 ¡TODAS LAS COMPROBACIONES DE PRODUCCIÓN EN G2 PASARON EXITOSAMENTE CON 0 ERRORES DE CONSOLA!');
+    console.log(
+      '\n🎉 ¡TODAS LAS COMPROBACIONES DE PRODUCCIÓN EN G2 PASARON EXITOSAMENTE CON 0 ERRORES DE CONSOLA!',
+    );
   } finally {
     await browser.close();
   }

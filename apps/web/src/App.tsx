@@ -12,7 +12,7 @@ import { DeckImporter } from './components/DeckImporter';
 import { LegalModal } from './components/LegalModal';
 import { FontGlyphsAudit } from './components/FontGlyphsAudit';
 import { DiagnosticPanel } from './components/DiagnosticPanel';
-import { RefreshCw, Layers } from 'lucide-react';
+import { RefreshCw, Layers, AlertTriangle, Home } from 'lucide-react';
 
 export default function App() {
   const [roomCode, setRoomCode] = useState<string | null>(() => {
@@ -20,14 +20,12 @@ export default function App() {
       const urlParams = new URLSearchParams(window.location.search);
       const urlRoom = urlParams.get('room');
       if (urlRoom) return urlRoom.toUpperCase();
-      return (
-        sessionStorage.getItem('mtgc_room_code') ||
-        localStorage.getItem('mtgc_room_code') ||
-        null
-      );
+      // Solo restaurar de sessionStorage (pestaña activa), NUNCA resucitar salas viejas/muertas de localStorage
+      return sessionStorage.getItem('mtgc_room_code') || null;
     }
     return null;
   });
+  const [connectionTimedOut, setConnectionTimedOut] = useState(false);
   const [playerId, setPlayerId] = useState<string>('');
   const [playerName, setPlayerName] = useState<string>('Planeswalker');
   const [isSpectator, setIsSpectator] = useState<boolean>(false);
@@ -87,6 +85,7 @@ export default function App() {
     dismissRevealedCard,
     errorMessage,
     disconnectAndReset,
+    reconnect,
   } = useGameSocket({
     roomCode: roomCode || '',
     playerId,
@@ -96,12 +95,30 @@ export default function App() {
     onKicked: () => handleLeaveRoom(),
   });
 
+  const isRoomReady = !!(roomCode && roomState && roomState.code?.toUpperCase() === roomCode.toUpperCase());
+
+  // Watchdog timer para evitar que la UI quede atascada indefinidamente en el spinner si el WS no responde
+  useEffect(() => {
+    if (roomCode && !isRoomReady) {
+      setConnectionTimedOut(false);
+      const timer = setTimeout(() => {
+        setConnectionTimedOut(true);
+      }, 7000);
+      return () => clearTimeout(timer);
+    } else {
+      setConnectionTimedOut(false);
+    }
+  }, [roomCode, isRoomReady]);
+
   const handleLeaveRoom = useCallback(() => {
     disconnectAndReset();
     setRoomCode(null);
+    setConnectionTimedOut(false);
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('mtgc_room_code');
       localStorage.removeItem('mtgc_room_code');
+      sessionStorage.removeItem('mtgc_ws_session_token');
+      localStorage.removeItem('mtgc_ws_session_token');
       if (window.location.search.includes('room=')) {
         const url = new URL(window.location.href);
         url.searchParams.delete('room');
@@ -195,22 +212,80 @@ export default function App() {
           sessionStorage.setItem('mtgc_ws_session_token', joinData.sessionToken);
           localStorage.setItem('mtgc_ws_session_token', joinData.sessionToken);
         }
+      } else {
+        let errDesc = `La mesa "${code}" no existe o ha expirado.`;
+        try {
+          const errData = await res.json();
+          if (errData?.error) errDesc = errData.error;
+        } catch {}
+        alert(errDesc);
+        return; // Detener flujo para no bloquear la UI con sala inexistente
       }
     } catch (e) {
       console.warn('Error al solicitar token de sesión de sala:', e);
+      alert('Error de red al intentar unirse a la sala.');
+      return;
     }
 
     setRoomCode(code);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('mtgc_room_code', code);
-      localStorage.setItem('mtgc_room_code', code);
     }
   };
 
-  const isRoomReady = !!(roomCode && roomState && roomState.code?.toUpperCase() === roomCode.toUpperCase());
-
-  // Estado de carga si el roomCode cambio o se crea una sala y se espera el ROOM_STATE_SYNC inicial (Tarea 1.1)
+  // Estado de carga o error si el roomCode cambio o se crea una sala y se espera el ROOM_STATE_SYNC inicial (Tarea 1.1 / Tarea 1.2)
   if (roomCode && !isRoomReady) {
+    const isError = !!errorMessage || status === 'disconnected' || connectionTimedOut;
+
+    if (isError) {
+      return (
+        <div className="fixed inset-0 w-screen h-[100dvh] bg-[#040d0f] text-white flex flex-col items-center justify-center p-4 select-none z-50">
+          <div className="w-full max-w-md bg-[#092328] border-2 border-rose-500/60 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center space-y-4 animate-in fade-in zoom-in-95">
+            <div className="w-14 h-14 rounded-2xl bg-rose-950/80 border border-rose-500 flex items-center justify-center text-rose-400 shadow-lg">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-1">
+              <h2 className="text-lg font-black text-rose-200">Error de conexión con la mesa</h2>
+              <p className="text-xs text-zinc-300">
+                {errorMessage ||
+                  (status === 'disconnected'
+                    ? 'Se perdió la conexión en tiempo real con el servidor.'
+                    : 'La mesa tardó demasiado en responder. Puede haber expirado o haber un problema de red.')}
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-2 text-xs font-mono text-zinc-400 bg-[#040d0f] px-3 py-1.5 rounded-xl border border-[#12544F]">
+              <span>Sala:</span>
+              <strong className="text-[#8BBB92]">{roomCode}</strong>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setConnectionTimedOut(false);
+                  reconnect();
+                }}
+                className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-[#12544F] hover:bg-[#2A835F] text-[#8BBB92] hover:text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer border border-[#2A835F]/40"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Reintentar</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleLeaveRoom}
+                className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-rose-900/80 hover:bg-rose-800 text-rose-100 font-bold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer border border-rose-600/50 shadow-md"
+              >
+                <Home className="w-3.5 h-3.5" />
+                <span>Volver al inicio</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="fixed inset-0 w-screen h-[100dvh] bg-[#051316] text-white flex flex-col items-center justify-center space-y-4 select-none z-50">
         <div className="w-12 h-12 rounded-2xl bg-[#092328] border border-[#12544F] flex items-center justify-center shadow-xl">
@@ -241,10 +316,20 @@ export default function App() {
           onLeaveRoom={handleLeaveRoom}
         />
         {roomState.status === 'initiative' && (
-          <InitiativeOverlay key={`init-${roomCode}`} roomState={roomState} localPlayerId={playerId} onAction={sendAction} />
+          <InitiativeOverlay
+            key={`init-${roomCode}`}
+            roomState={roomState}
+            localPlayerId={playerId}
+            onAction={sendAction}
+          />
         )}
         {roomState.status === 'mulligan' && (
-          <OpeningHandModal key={`mull-${roomCode}`} roomState={roomState} localPlayerId={playerId} onAction={sendAction} />
+          <OpeningHandModal
+            key={`mull-${roomCode}`}
+            roomState={roomState}
+            localPlayerId={playerId}
+            onAction={sendAction}
+          />
         )}
         {/* Deck Importer Modal Popup */}
         {isImporterOpen && (

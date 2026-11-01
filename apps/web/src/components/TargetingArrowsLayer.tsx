@@ -125,7 +125,13 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
         </marker>
 
         <filter id="glow-aim" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor={aimingColor} floodOpacity="0.9" />
+          <feDropShadow
+            dx="0"
+            dy="0"
+            stdDeviation="5"
+            floodColor={aimingColor}
+            floodOpacity="0.9"
+          />
         </filter>
 
         {/* Dynamic markers and filters for each active arrow by player color (H2) */}
@@ -146,7 +152,13 @@ export const TargetingArrowsLayer: React.FC<TargetingArrowsLayerProps> = ({
                 <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill={color} />
               </marker>
               <filter id={`glow-${arrow.id}`} x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor={color} floodOpacity="0.8" />
+                <feDropShadow
+                  dx="0"
+                  dy="0"
+                  stdDeviation="4"
+                  floodColor={color}
+                  floodOpacity="0.8"
+                />
               </filter>
             </React.Fragment>
           );

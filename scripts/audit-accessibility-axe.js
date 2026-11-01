@@ -21,14 +21,14 @@ function summarizeAxeResults(axeResult) {
       nodes: v.nodes.map(n => ({
         html: n.html,
         target: n.target,
-        failureSummary: n.failureSummary
-      }))
+        failureSummary: n.failureSummary,
+      })),
     });
   }
 
   return {
     ...counts,
-    violations
+    violations,
   };
 }
 
@@ -41,7 +41,7 @@ async function runA11yAudit() {
   const auditResults = {
     target: TARGET_URL,
     timestamp: new Date().toISOString(),
-    screens: {}
+    screens: {},
   };
 
   try {
@@ -52,7 +52,9 @@ async function runA11yAudit() {
 
     const landingAxe = await new AxeBuilder({ page }).analyze();
     auditResults.screens.landing = summarizeAxeResults(landingAxe);
-    console.log(`[A11Y] Screen 1 (Landing): Critical=${auditResults.screens.landing.critical}, Serious=${auditResults.screens.landing.serious}`);
+    console.log(
+      `[A11Y] Screen 1 (Landing): Critical=${auditResults.screens.landing.critical}, Serious=${auditResults.screens.landing.serious}`,
+    );
 
     // 2. Open Create Room Modal
     console.log('[A11Y] Auditing Screen 2: Create Room Modal...');
@@ -62,7 +64,9 @@ async function runA11yAudit() {
       await page.waitForTimeout(500);
       const modalAxe = await new AxeBuilder({ page }).analyze();
       auditResults.screens.createRoomModal = summarizeAxeResults(modalAxe);
-      console.log(`[A11Y] Screen 2 (Create Modal): Critical=${auditResults.screens.createRoomModal.critical}, Serious=${auditResults.screens.createRoomModal.serious}`);
+      console.log(
+        `[A11Y] Screen 2 (Create Modal): Critical=${auditResults.screens.createRoomModal.critical}, Serious=${auditResults.screens.createRoomModal.serious}`,
+      );
 
       const cancelBtn = page.getByRole('button', { name: /Cancelar|Cerrar/i }).first();
       if (await cancelBtn.isVisible()) await cancelBtn.click();
@@ -77,7 +81,9 @@ async function runA11yAudit() {
       await page.waitForTimeout(500);
       const joinModalAxe = await new AxeBuilder({ page }).analyze();
       auditResults.screens.joinRoomModal = summarizeAxeResults(joinModalAxe);
-      console.log(`[A11Y] Screen 3 (Join Modal): Critical=${auditResults.screens.joinRoomModal.critical}, Serious=${auditResults.screens.joinRoomModal.serious}`);
+      console.log(
+        `[A11Y] Screen 3 (Join Modal): Critical=${auditResults.screens.joinRoomModal.critical}, Serious=${auditResults.screens.joinRoomModal.serious}`,
+      );
 
       const cancelBtn = page.getByRole('button', { name: /Cancelar|Cerrar/i }).first();
       if (await cancelBtn.isVisible()) await cancelBtn.click();
@@ -92,7 +98,9 @@ async function runA11yAudit() {
       await page.waitForTimeout(500);
       const importerAxe = await new AxeBuilder({ page }).analyze();
       auditResults.screens.deckImporterModal = summarizeAxeResults(importerAxe);
-      console.log(`[A11Y] Screen 4 (Deck Importer): Critical=${auditResults.screens.deckImporterModal.critical}, Serious=${auditResults.screens.deckImporterModal.serious}`);
+      console.log(
+        `[A11Y] Screen 4 (Deck Importer): Critical=${auditResults.screens.deckImporterModal.critical}, Serious=${auditResults.screens.deckImporterModal.serious}`,
+      );
 
       const closeImporter = page.getByRole('button', { name: /Cerrar/i }).first();
       if (await closeImporter.isVisible()) await closeImporter.click();
@@ -101,15 +109,19 @@ async function runA11yAudit() {
 
     // 5. Preset Deck Details view
     console.log('[A11Y] Auditing Screen 5: Preset Deck Details...');
-    const presetCard = page.locator('button, div').filter({ hasText: /Krenko, Mob Boss/i }).first();
+    const presetCard = page
+      .locator('button, div')
+      .filter({ hasText: /Krenko, Mob Boss/i })
+      .first();
     if (await presetCard.isVisible()) {
       await presetCard.click();
       await page.waitForTimeout(500);
       const presetDetailsAxe = await new AxeBuilder({ page }).analyze();
       auditResults.screens.presetDetails = summarizeAxeResults(presetDetailsAxe);
-      console.log(`[A11Y] Screen 5 (Preset Details): Critical=${auditResults.screens.presetDetails.critical}, Serious=${auditResults.screens.presetDetails.serious}`);
+      console.log(
+        `[A11Y] Screen 5 (Preset Details): Critical=${auditResults.screens.presetDetails.critical}, Serious=${auditResults.screens.presetDetails.serious}`,
+      );
     }
-
   } catch (err) {
     console.error('[A11Y] Error during audit flow:', err);
     auditResults.error = err.message;
@@ -124,7 +136,7 @@ async function runA11yAudit() {
     moderate: 0,
     minor: 0,
     totalViolations: 0,
-    violationDetails: []
+    violationDetails: [],
   };
 
   for (const [screen, res] of Object.entries(auditResults.screens)) {
@@ -145,8 +157,8 @@ async function runA11yAudit() {
         nodes: v.nodes.map(n => ({
           html: n.html,
           target: n.target,
-          failureSummary: n.failureSummary
-        }))
+          failureSummary: n.failureSummary,
+        })),
       });
     }
   }

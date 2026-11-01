@@ -686,7 +686,7 @@ Relaciones: User 1–N Deck, Deck N–M Card (vía DeckCard), Table 1–N GameRe
     - Se reutiliza la acción autoritativa de WebSocket `COMMANDER_DAMAGE` (`{ targetPlayerId, sourceCommanderInstanceId, delta }`), actualizando el contador autoritativo del servidor y la bitácora pública con soporte para deshacer (`UNDO_LAST`).
     - **Condición de riesgo a 21 de daño:** Al alcanzar 21 puntos acumulados, la fila individual y la pastilla de vida principal (`data-player-life`) se iluminan en rojo de alerta pulsante (`animate-pulse border-rose-500 shadow-rose-900/60`) con distintivo `21+ CMDR`, señalando la condición crítica de Commander sin provocar eliminación prematura o forzada en el cliente.
 
-11. **Pilas interactivas y modales con menú contextual (Punto 7):**
+14. **Pilas interactivas y modales con menú contextual (Punto 7):**
 
 - **Ilustración y conteo de la carta superior:** El cementerio y el exilio renderizan `DraggablePileCard`, mostrando la imagen real de la última carta llegada como carátula de la pila y un contador nítido sobre ella.
 - **Arrastre directo desde la pila:** La carta superior posee `useDraggable` con `fromZone: 'graveyard' | 'exile'`, permitiendo arrastrarla de forma natural hacia la mesa o hacia la mano propia.
@@ -1244,20 +1244,20 @@ TABLE_IDLE_TIMEOUT_MIN=120
 2. **Imágenes de cartas:** Servidas y resueltas directamente desde la CDN global de Scryfall (`cards.scryfall.io`) con precarga por prioridades y almacenamiento persistente en el navegador vía Cache API (`caches.open('mtgc-card-images-v1')`). Sin almacenamiento ni mirroring en disco del servidor para respetar la cuota efímera de Heroku.
 3. **Invitados:** Permitidos sin registro previo mediante sesiones anónimas efímeras.
 4. **Español pospuesto por memoria en Heroku Dyno (512 MB):**
-   - *Justificación*: El volcado masivo multilingüe `all-cards.json` (>2.2 GB) generó picos de memoria RSS de hasta 1.352 MB durante el parseo, excediendo la cuota de 512 MB del Basic Dyno.
-   - *Impacto*: Se procesa y almacena en PostgreSQL únicamente el volcado `default-cards.json` en inglés (~32.000 cartas de Commander), manteniendo la memoria RSS bajo 300 MB. La localización en español queda aprobada como funcionalidad pospuesta; en una fase posterior se resolverá bajo demanda desde el frontend mediante consultas directas a la API de Scryfall sin sobrecargar la RAM del backend.
+   - _Justificación_: El volcado masivo multilingüe `all-cards.json` (>2.2 GB) generó picos de memoria RSS de hasta 1.352 MB durante el parseo, excediendo la cuota de 512 MB del Basic Dyno.
+   - _Impacto_: Se procesa y almacena en PostgreSQL únicamente el volcado `default-cards.json` en inglés (~32.000 cartas de Commander), manteniendo la memoria RSS bajo 300 MB. La localización en español queda aprobada como funcionalidad pospuesta; en una fase posterior se resolverá bajo demanda desde el frontend mediante consultas directas a la API de Scryfall sin sobrecargar la RAM del backend.
 5. **Hash criptográfico con `scrypt` asíncrono y control de concurrencia:**
-   - *Justificación*: Argon2id requería bindings nativos en C++ y consumía hasta 64 MB de RAM por hash. Con múltiples logins simultáneos, el servidor arriesgaba OOM. `crypto.scrypt` de la biblioteca estándar de Node.js es una función de derivación de claves recomendada por OWASP y NIST, y permite parametrizar con exactitud el costo de memoria ($N=16384, r=8, p=1$, ~16 MB de memoria por operación).
-   - *Impacto*: Implementación asíncrona no bloqueante de `crypto.scrypt` con un semáforo de concurrencia máxima (máx. 3 ejecuciones paralelas) para proteger el event loop y la memoria del dyno. Formato de hash autodescriptivo `$scrypt$N=16384,r=8,p=1$salt$hash` con soporte retrocompatible.
+   - _Justificación_: Argon2id requería bindings nativos en C++ y consumía hasta 64 MB de RAM por hash. Con múltiples logins simultáneos, el servidor arriesgaba OOM. `crypto.scrypt` de la biblioteca estándar de Node.js es una función de derivación de claves recomendada por OWASP y NIST, y permite parametrizar con exactitud el costo de memoria ($N=16384, r=8, p=1$, ~16 MB de memoria por operación).
+   - _Impacto_: Implementación asíncrona no bloqueante de `crypto.scrypt` con un semáforo de concurrencia máxima (máx. 3 ejecuciones paralelas) para proteger el event loop y la memoria del dyno. Formato de hash autodescriptivo `$scrypt$N=16384,r=8,p=1$salt$hash` con soporte retrocompatible.
 6. **Desacoplamiento de repositorios y despliegues (Netlify + Heroku — B3):**
-   - *Justificación*: Netlify aloja la SPA React con compresión edge y distribución CDN global sin costo de servidor, mientras que Heroku ejecuta el proceso Node.js/Fastify con WebSockets 24/7 y Postgres gestionado.
-   - *Impacto*: `packages/shared` funge como Single Source of Truth para tipos, esquemas Zod y validaciones. La sincronización se documenta formalmente en [`docs/SHARED_PACKAGE_SYNC.md`](docs/SHARED_PACKAGE_SYNC.md) utilizando tres vías: git subtree (`git subtree split`), script automatizado de sincronización espejo (`scripts/sync-shared.js`) y pipeline de GitHub Actions para evitar cualquier divergencia de contratos entre frontend y backend.
+   - _Justificación_: Netlify aloja la SPA React con compresión edge y distribución CDN global sin costo de servidor, mientras que Heroku ejecuta el proceso Node.js/Fastify con WebSockets 24/7 y Postgres gestionado.
+   - _Impacto_: `packages/shared` funge como Single Source of Truth para tipos, esquemas Zod y validaciones. La sincronización se documenta formalmente en [`docs/SHARED_PACKAGE_SYNC.md`](docs/SHARED_PACKAGE_SYNC.md) utilizando tres vías: git subtree (`git subtree split`), script automatizado de sincronización espejo (`scripts/sync-shared.js`) y pipeline de GitHub Actions para evitar cualquier divergencia de contratos entre frontend y backend.
 7. **Fixture ligero de cartas para CI/CD:**
-   - *Justificación*: Las pruebas de integración en CI no deben descargar volcados de Scryfall ni sincronizar 32.000 cartas en cada commit.
-   - *Impacto*: Creación de `cards-sample.json` (~100 cartas) que permite levantar y verificar la suite completa de pruebas unitarias y de integración en menos de 5 segundos.
+   - _Justificación_: Las pruebas de integración en CI no deben descargar volcados de Scryfall ni sincronizar 32.000 cartas en cada commit.
+   - _Impacto_: Creación de `cards-sample.json` (~100 cartas) que permite levantar y verificar la suite completa de pruebas unitarias y de integración en menos de 5 segundos.
 8. **Manejo de Cookies Cross-Origin (`SameSite=None; Secure`):**
-   - *Justificación*: El frontend (`proyect-mtgc.netlify.app`) y la API (`mtgc-backend-caf950eaa8b4.herokuapp.com`) residen en distintos dominios públicos.
-   - *Impacto*: Las cookies de refresh token y sesión se configuran con `SameSite=None; Secure; HttpOnly; Partitioned`, y Fastify CORS responde con `credentials: true` y origen verificado, asegurando persistencia de sesión sin ser bloqueadas por políticas de privacidad de los navegadores.
+   - _Justificación_: El frontend (`proyect-mtgc.netlify.app`) y la API (`mtgc-backend-caf950eaa8b4.herokuapp.com`) residen en distintos dominios públicos.
+   - _Impacto_: Las cookies de refresh token y sesión se configuran con `SameSite=None; Secure; HttpOnly; Partitioned`, y Fastify CORS responde con `credentials: true` y origen verificado, asegurando persistencia de sesión sin ser bloqueadas por políticas de privacidad de los navegadores.
 9. **Sincronización en streaming con contrapresión:**
-   - *Justificación*: La lectura de arrays masivos en memoria satura el heap de V8.
-   - *Impacto*: `BulkSyncService` procesa el streaming JSON mediante `StreamArray` en lotes de 1.000 cartas con pausas de contrapresión, reduciendo el RSS máximo en producción a <300 MB.
+   - _Justificación_: La lectura de arrays masivos en memoria satura el heap de V8.
+   - _Impacto_: `BulkSyncService` procesa el streaming JSON mediante `StreamArray` en lotes de 1.000 cartas con pausas de contrapresión, reduciendo el RSS máximo en producción a <300 MB.

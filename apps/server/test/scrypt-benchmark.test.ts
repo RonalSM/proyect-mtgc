@@ -4,7 +4,7 @@ import { PasswordService } from '../src/services/password.service.js';
 
 test('B2 Benchmark: 10 concurrent logins with scrypt and concurrency limiting', async () => {
   console.log('\n--- B2 Benchmark: 10 Concurrent Logins with scrypt ---');
-  
+
   // 1. Prepare 10 test passwords and pre-hashed credentials
   const passwords = Array.from({ length: 10 }, (_, i) => `SecurePassword_Commander_${i}_!@#$`);
   const hashes = await Promise.all(passwords.map(p => PasswordService.hash(p)));
@@ -30,7 +30,7 @@ test('B2 Benchmark: 10 concurrent logins with scrypt and concurrency limiting', 
 
   // 2. Launch 10 simultaneous login verifications
   const verificationResults = await Promise.all(
-    passwords.map((p, i) => PasswordService.verify(p, hashes[i]!))
+    passwords.map((p, i) => PasswordService.verify(p, hashes[i]!)),
   );
 
   const endTime = performance.now();
@@ -44,15 +44,22 @@ test('B2 Benchmark: 10 concurrent logins with scrypt and concurrency limiting', 
 
   // Assert all 10 verified successfully
   assert.strictEqual(verificationResults.length, 10);
-  assert.ok(verificationResults.every(r => r === true), 'All 10 passwords must verify successfully');
+  assert.ok(
+    verificationResults.every(r => r === true),
+    'All 10 passwords must verify successfully',
+  );
 
   console.log(`[B2 Benchmark Results]:`);
   console.log(`  Total time for 10 concurrent logins: ${totalDurationMs.toFixed(2)} ms`);
   console.log(`  Average time per login:              ${avgDurationPerLogin.toFixed(2)} ms`);
-  console.log(`  Initial RSS:                         ${(initialMemory.rss / (1024 * 1024)).toFixed(2)} MB`);
+  console.log(
+    `  Initial RSS:                         ${(initialMemory.rss / (1024 * 1024)).toFixed(2)} MB`,
+  );
   console.log(`  Peak RSS during 10 concurrent ops:   ${(peakRss / (1024 * 1024)).toFixed(2)} MB`);
   console.log(`  RSS Delta (Memory Peak Overhead):    ${memoryRssDeltaMb.toFixed(2)} MB`);
-  console.log(`  Initial Heap Used:                   ${(initialMemory.heapUsed / (1024 * 1024)).toFixed(2)} MB`);
+  console.log(
+    `  Initial Heap Used:                   ${(initialMemory.heapUsed / (1024 * 1024)).toFixed(2)} MB`,
+  );
   console.log(`  Peak Heap Used:                      ${(peakHeap / (1024 * 1024)).toFixed(2)} MB`);
   console.log(`  Heap Delta:                          ${memoryHeapDeltaMb.toFixed(2)} MB`);
   console.log(`------------------------------------------------------\n`);

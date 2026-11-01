@@ -427,133 +427,133 @@ export const BattlefieldCanvas: React.FC<BattlefieldCanvasProps> = ({
       >
         {/* Capa Única de Cartas en MesaTotal con Coordenadas Globales Normalizadas (Tarea 1: sin filtro ni umbrales arbitrarios) */}
         {cards.map(card => {
-        const remoteItem = remoteDraggingCards && remoteDraggingCards[card.instanceId];
-        const isRemoteDragging = !!(
-          remoteItem &&
-          (remoteItem.isDragging || (remoteItem as any).pendingSync)
-        );
-        return (
-          <BattlefieldCardItem
-            key={card.instanceId}
-            card={card}
-            localPlayerId={localPlayerId}
-            isSelected={
-              selectedCardIds
-                ? selectedCardIds.includes(card.instanceId)
-                : internalSelectedCardId === card.instanceId
-            }
-            optimisticPosition={optimisticPositions?.[card.instanceId]}
-            isRemoteDragging={isRemoteDragging}
-            viewFraming={viewFraming}
-            roomState={roomState}
-            allBattlefieldCards={cards}
-            cardPixelWidth={cardPixelWidth}
-            cardPixelHeight={cardPixelHeight}
-            onAction={onAction}
-            onUnauthorizedAttempt={onUnauthorizedAttempt}
-            onCardClick={e => handleCardClick(card, e)}
-            onTap={() => handleTap(card)}
-            onFlip={() => handleFlip(card)}
-            onAddCounter={counterType => handleAddCounter(card, counterType)}
-            onClone={() => handleClone(card)}
-            onSendToCommand={() => handleSendToCommand(card)}
-            onStartTargeting={onStartTargeting}
-            selectedCardIds={selectedCardIds}
-            showPreview={showPreview}
-            hidePreview={hidePreview}
-          />
-        );
-      })}
-
-      {/* Movimiento en vivo para rivales (Punto 5, REQ-9) y sostenimiento en destino (Punto 1) */}
-      {remoteDraggingCards &&
-        Object.values(remoteDraggingCards).map(item => {
-          if ((!item.isDragging && !(item as any).pendingSync) || !item.position) return null;
-          let screenNormX = item.position.x;
-          let screenNormY = item.position.y;
-          if (viewFraming?.isExpanded && viewFraming.width > 0 && viewFraming.height > 0) {
-            screenNormX = (screenNormX - viewFraming.xMin) / viewFraming.width;
-            screenNormY = (screenNormY - viewFraming.yMin) / viewFraming.height;
-          }
-          const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
-          const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
-          const cardWNum = cardPixelWidth || 96;
-          const cardHNum = cardPixelHeight || 134;
-
-          // Convención única (Punto 2 & Punto 3): la posición es el centro con dimensiones orientadas
-          const rawGhostCenterX = screenNormX * winW;
-          const rawGhostCenterY = screenNormY * winH;
-
-          // Optimización de rendimiento por viewport con holgura de +200px (Tarea 1.3)
-          const VIEWPORT_MARGIN = 200;
-          if (
-            !Number.isFinite(rawGhostCenterX) ||
-            !Number.isFinite(rawGhostCenterY) ||
-            rawGhostCenterX < -VIEWPORT_MARGIN ||
-            rawGhostCenterX > winW + VIEWPORT_MARGIN ||
-            rawGhostCenterY < -VIEWPORT_MARGIN ||
-            rawGhostCenterY > winH + VIEWPORT_MARGIN
-          ) {
-            return null;
-          }
-
-          const ghostCenterX = Math.round(rawGhostCenterX);
-          const ghostCenterY = Math.round(rawGhostCenterY);
-          const remotePlayer = roomState?.players[item.playerId];
-          const ghostColor = getPlayerColor(remotePlayer);
-
+          const remoteItem = remoteDraggingCards && remoteDraggingCards[card.instanceId];
+          const isRemoteDragging = !!(
+            remoteItem &&
+            (remoteItem.isDragging || (remoteItem as any).pendingSync)
+          );
           return (
-            <div
-              key={`remote-drag-${item.cardInstanceId}`}
-              data-remote-drag="true"
-              data-remote-card-ghost="true"
-              data-card-instance-id={item.cardInstanceId}
-              data-player-id={item.playerId}
-              className={`card-slot-container absolute pointer-events-none select-none z-40 flex items-center justify-center ${
-                item.isFirstMessage || (item as any).pendingSync
-                  ? 'transition-none'
-                  : 'transition-[left,top] duration-75 ease-linear'
-              }`}
-              style={{
-                left: `${ghostCenterX}px`,
-                top: `${ghostCenterY}px`,
-                transform: 'translate(-50%, -50%)',
-                width: item.isTapped ? `${cardHNum}px` : `${cardWNum}px`,
-                height: item.isTapped ? `${cardWNum}px` : `${cardHNum}px`,
-              }}
-            >
+            <BattlefieldCardItem
+              key={card.instanceId}
+              card={card}
+              localPlayerId={localPlayerId}
+              isSelected={
+                selectedCardIds
+                  ? selectedCardIds.includes(card.instanceId)
+                  : internalSelectedCardId === card.instanceId
+              }
+              optimisticPosition={optimisticPositions?.[card.instanceId]}
+              isRemoteDragging={isRemoteDragging}
+              viewFraming={viewFraming}
+              roomState={roomState}
+              allBattlefieldCards={cards}
+              cardPixelWidth={cardPixelWidth}
+              cardPixelHeight={cardPixelHeight}
+              onAction={onAction}
+              onUnauthorizedAttempt={onUnauthorizedAttempt}
+              onCardClick={e => handleCardClick(card, e)}
+              onTap={() => handleTap(card)}
+              onFlip={() => handleFlip(card)}
+              onAddCounter={counterType => handleAddCounter(card, counterType)}
+              onClone={() => handleClone(card)}
+              onSendToCommand={() => handleSendToCommand(card)}
+              onStartTargeting={onStartTargeting}
+              selectedCardIds={selectedCardIds}
+              showPreview={showPreview}
+              hidePreview={hidePreview}
+            />
+          );
+        })}
+
+        {/* Movimiento en vivo para rivales (Punto 5, REQ-9) y sostenimiento en destino (Punto 1) */}
+        {remoteDraggingCards &&
+          Object.values(remoteDraggingCards).map(item => {
+            if ((!item.isDragging && !(item as any).pendingSync) || !item.position) return null;
+            let screenNormX = item.position.x;
+            let screenNormY = item.position.y;
+            if (viewFraming?.isExpanded && viewFraming.width > 0 && viewFraming.height > 0) {
+              screenNormX = (screenNormX - viewFraming.xMin) / viewFraming.width;
+              screenNormY = (screenNormY - viewFraming.yMin) / viewFraming.height;
+            }
+            const winW = typeof window !== 'undefined' ? window.innerWidth : 1920;
+            const winH = typeof window !== 'undefined' ? window.innerHeight : 1080;
+            const cardWNum = cardPixelWidth || 96;
+            const cardHNum = cardPixelHeight || 134;
+
+            // Convención única (Punto 2 & Punto 3): la posición es el centro con dimensiones orientadas
+            const rawGhostCenterX = screenNormX * winW;
+            const rawGhostCenterY = screenNormY * winH;
+
+            // Optimización de rendimiento por viewport con holgura de +200px (Tarea 1.3)
+            const VIEWPORT_MARGIN = 200;
+            if (
+              !Number.isFinite(rawGhostCenterX) ||
+              !Number.isFinite(rawGhostCenterY) ||
+              rawGhostCenterX < -VIEWPORT_MARGIN ||
+              rawGhostCenterX > winW + VIEWPORT_MARGIN ||
+              rawGhostCenterY < -VIEWPORT_MARGIN ||
+              rawGhostCenterY > winH + VIEWPORT_MARGIN
+            ) {
+              return null;
+            }
+
+            const ghostCenterX = Math.round(rawGhostCenterX);
+            const ghostCenterY = Math.round(rawGhostCenterY);
+            const remotePlayer = roomState?.players[item.playerId];
+            const ghostColor = getPlayerColor(remotePlayer);
+
+            return (
               <div
-                data-card-rotator="true"
+                key={`remote-drag-${item.cardInstanceId}`}
+                data-remote-drag="true"
+                data-remote-card-ghost="true"
+                data-card-instance-id={item.cardInstanceId}
+                data-player-id={item.playerId}
+                className={`card-slot-container absolute pointer-events-none select-none z-40 flex items-center justify-center ${
+                  item.isFirstMessage || (item as any).pendingSync
+                    ? 'transition-none'
+                    : 'transition-[left,top] duration-75 ease-linear'
+                }`}
                 style={{
-                  width: `${cardWNum}px`,
-                  height: `${cardHNum}px`,
-                  transform: item.isTapped ? 'rotate(90deg)' : 'rotate(0deg)',
-                  transformOrigin: 'center center',
-                  borderColor: ghostColor,
-                  boxShadow: `0 0 14px ${ghostColor}66`,
+                  left: `${ghostCenterX}px`,
+                  top: `${ghostCenterY}px`,
+                  transform: 'translate(-50%, -50%)',
+                  width: item.isTapped ? `${cardHNum}px` : `${cardWNum}px`,
+                  height: item.isTapped ? `${cardWNum}px` : `${cardHNum}px`,
                 }}
-                className="card-rotator flex-shrink-0 rounded-md overflow-hidden border-2 shadow-lg bg-[#092328] relative"
               >
-                {item.cardDefinition ? (
-                  <CardDisplay card={item.cardDefinition} isTapped={item.isTapped} />
-                ) : (
+                <div
+                  data-card-rotator="true"
+                  style={{
+                    width: `${cardWNum}px`,
+                    height: `${cardHNum}px`,
+                    transform: item.isTapped ? 'rotate(90deg)' : 'rotate(0deg)',
+                    transformOrigin: 'center center',
+                    borderColor: ghostColor,
+                    boxShadow: `0 0 14px ${ghostColor}66`,
+                  }}
+                  className="card-rotator flex-shrink-0 rounded-md overflow-hidden border-2 shadow-lg bg-[#092328] relative"
+                >
+                  {item.cardDefinition ? (
+                    <CardDisplay card={item.cardDefinition} isTapped={item.isTapped} />
+                  ) : (
+                    <div
+                      className="w-full h-full bg-[#040d0f] flex items-center justify-center text-xs font-bold"
+                      style={{ color: ghostColor }}
+                    >
+                      {item.playerName}
+                    </div>
+                  )}
                   <div
-                    className="w-full h-full bg-[#040d0f] flex items-center justify-center text-xs font-bold"
+                    className="absolute bottom-0 inset-x-0 bg-black/85 backdrop-blur-xs text-[9px] font-bold text-center py-0.5 truncate px-1 border-t border-[#12544F]"
                     style={{ color: ghostColor }}
                   >
                     {item.playerName}
                   </div>
-                )}
-                <div
-                  className="absolute bottom-0 inset-x-0 bg-black/85 backdrop-blur-xs text-[9px] font-bold text-center py-0.5 truncate px-1 border-t border-[#12544F]"
-                  style={{ color: ghostColor }}
-                >
-                  {item.playerName}
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
     </ErrorBoundary>
   );

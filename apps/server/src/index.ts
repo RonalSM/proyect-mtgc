@@ -39,10 +39,9 @@ if (!isDev) {
 }
 
 // Orígenes autorizados para CORS y WebSockets
-const ALLOWED_ORIGINS = [
-  'https://proyect-mtgc.netlify.app',
-  process.env.FRONTEND_URL,
-].filter(Boolean) as string[];
+const ALLOWED_ORIGINS = ['https://proyect-mtgc.netlify.app', process.env.FRONTEND_URL].filter(
+  Boolean,
+) as string[];
 
 /**
  * Valida la cabecera x-admin-key contra ADMIN_SECRET
@@ -163,11 +162,18 @@ server.addHook('onRequest', async (req: any, reply: any) => {
   }
 
   if (ipEntry.count > MAX_GLOBAL_REQ_PER_IP_MINUTE) {
-    const entry = rateLimit429Log.get(ip) || { ip, url: req.url, count: 0, lastTimestamp: Date.now() };
+    const entry = rateLimit429Log.get(ip) || {
+      ip,
+      url: req.url,
+      count: 0,
+      lastTimestamp: Date.now(),
+    };
     entry.count++;
     entry.lastTimestamp = Date.now();
     rateLimit429Log.set(ip, entry);
-    server.log.warn(`[RATE_LIMIT_IP_CEILING_429] IP ${ip} superó el tope global absoluto de ${MAX_GLOBAL_REQ_PER_IP_MINUTE} req/min`);
+    server.log.warn(
+      `[RATE_LIMIT_IP_CEILING_429] IP ${ip} superó el tope global absoluto de ${MAX_GLOBAL_REQ_PER_IP_MINUTE} req/min`,
+    );
     return reply.status(429).send({
       error: 'Límite global de peticiones por dirección IP excedido',
       reason: 'ip_ceiling_exceeded',
@@ -211,11 +217,18 @@ await server.register(rateLimit, {
   },
   onExceeded: (req: any) => {
     const key = req.ip || 'unknown';
-    const entry = rateLimit429Log.get(key) || { ip: key, url: req.url, count: 0, lastTimestamp: Date.now() };
+    const entry = rateLimit429Log.get(key) || {
+      ip: key,
+      url: req.url,
+      count: 0,
+      lastTimestamp: Date.now(),
+    };
     entry.count++;
     entry.lastTimestamp = Date.now();
     rateLimit429Log.set(key, entry);
-    server.log.warn(`[RATE_LIMIT_429] Clave: ${key} excedió el límite de tasa en ${req.url} (Total 429: ${entry.count})`);
+    server.log.warn(
+      `[RATE_LIMIT_429] Clave: ${key} excedió el límite de tasa en ${req.url} (Total 429: ${entry.count})`,
+    );
   },
 });
 
@@ -1016,7 +1029,10 @@ server.post(
       id: `err_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       cardName: String(body.cardName || 'Desconocida').slice(0, 100),
       url: String(body.url || '').slice(0, 500),
-      status: typeof body.status === 'number' || typeof body.status === 'string' ? String(body.status).slice(0, 20) : 'ERROR',
+      status:
+        typeof body.status === 'number' || typeof body.status === 'string'
+          ? String(body.status).slice(0, 20)
+          : 'ERROR',
       reason: String(body.reason || 'Fallo de carga desconocido').slice(0, 300),
       lang: String(body.lang || 'es').slice(0, 10),
       timestamp: typeof body.timestamp === 'number' ? body.timestamp : Date.now(),
@@ -1108,7 +1124,9 @@ server.post(
     roomManager.pruneInactiveRooms();
 
     if (roomManager.getActiveRoomsCount() >= MAX_TOTAL_ROOMS) {
-      server.log.warn(`[ROOM_CREATION_REJECTED] Servidor alcanzó el tope de ${MAX_TOTAL_ROOMS} mesas activas`);
+      server.log.warn(
+        `[ROOM_CREATION_REJECTED] Servidor alcanzó el tope de ${MAX_TOTAL_ROOMS} mesas activas`,
+      );
       return reply.status(503).send({
         error: `Capacidad máxima de mesas activas alcanzada en el servidor (máximo ${MAX_TOTAL_ROOMS} mesas).`,
         reason: 'server_capacity_exceeded',
@@ -1194,7 +1212,7 @@ server.post(
 
     const playerList = Object.values(session.state.players || {});
     const existingPlayer = playerList.find(
-      (p) =>
+      p =>
         p.name.toLowerCase() === playerName.toLowerCase() ||
         (parseResult.data.playerId && p.id === parseResult.data.playerId),
     );
@@ -1242,7 +1260,9 @@ server.get('/api/rooms/:code', async (request, reply) => {
   }
 
   if (tracker.count >= 15) {
-    server.log.warn(`[ROOM_JOIN_BLOCKED] IP ${ip} bloqueada temporalmente por exceso de códigos erróneos`);
+    server.log.warn(
+      `[ROOM_JOIN_BLOCKED] IP ${ip} bloqueada temporalmente por exceso de códigos erróneos`,
+    );
     return reply.status(429).send({
       error: 'Demasiados intentos fallidos con códigos de mesa. Por favor espera 5 minutos.',
       reason: 'too_many_failed_attempts',
@@ -1255,7 +1275,9 @@ server.get('/api/rooms/:code', async (request, reply) => {
     tracker.count++;
     tracker.lastAttempt = Date.now();
     failedCodeAttempts.set(ip, tracker);
-    server.log.warn(`[ROOM_NOT_FOUND] Código "${code}" no encontrado desde IP ${ip} (Fallo ${tracker.count}/15)`);
+    server.log.warn(
+      `[ROOM_NOT_FOUND] Código "${code}" no encontrado desde IP ${ip} (Fallo ${tracker.count}/15)`,
+    );
     return reply.status(404).send({ error: 'Mesa no encontrada', reason: 'room_not_found' });
   }
 
@@ -1274,7 +1296,9 @@ server.register(async function (fastifyInstance) {
         origin === 'https://proyect-mtgc.netlify.app';
 
       if (!isAllowed) {
-        server.log.warn(`[WS_REJECTED] Conexión rechazada por origen no autorizado: ${origin} [reason: origin_rejected]`);
+        server.log.warn(
+          `[WS_REJECTED] Conexión rechazada por origen no autorizado: ${origin} [reason: origin_rejected]`,
+        );
         try {
           socket.send(
             JSON.stringify({
@@ -1290,7 +1314,12 @@ server.register(async function (fastifyInstance) {
     }
 
     const params = req.params as { roomCode?: string };
-    const query = req.query as { playerId?: string; playerName?: string; spectator?: string; token?: string };
+    const query = req.query as {
+      playerId?: string;
+      playerName?: string;
+      spectator?: string;
+      token?: string;
+    };
 
     const roomCode = params.roomCode?.toUpperCase() || '';
     let playerId = query.playerId || `p_${Date.now()}`;
@@ -1359,10 +1388,13 @@ try {
   // Limpieza previa de instantáneas expiradas (> 2h) en PostgreSQL antes de restaurar
   await redisSnapshotService.cleanExpiredSnapshots(2);
   await roomManager.restoreFromSnapshots();
-  const snapshotCleanupInterval = setInterval(() => {
-    redisSnapshotService.cleanExpiredSnapshots(2).catch(() => {});
-    roomManager.pruneInactiveRooms();
-  }, 5 * 60 * 1000);
+  const snapshotCleanupInterval = setInterval(
+    () => {
+      redisSnapshotService.cleanExpiredSnapshots(2).catch(() => {});
+      roomManager.pruneInactiveRooms();
+    },
+    5 * 60 * 1000,
+  );
   if (snapshotCleanupInterval.unref) snapshotCleanupInterval.unref();
 
   // Escuchar en el puerto de inmediato para evitar el timeout de 60s en plataformas como Heroku

@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const TARGET_URL = process.env.TARGET_URL || 'https://proyect-mtgc.netlify.app';
 const ARTIFACT_DIR = path.resolve(
-  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa'
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
 );
 
 async function run() {
@@ -95,7 +95,8 @@ async function run() {
       // Choose preset button at index
       const chooseBtns = page.getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i });
       await chooseBtns.first().waitFor({ state: 'visible', timeout: 10000 });
-      const targetBtn = (await chooseBtns.count()) > presetIndex ? chooseBtns.nth(presetIndex) : chooseBtns.first();
+      const targetBtn =
+        (await chooseBtns.count()) > presetIndex ? chooseBtns.nth(presetIndex) : chooseBtns.first();
       await targetBtn.click();
       await page.waitForTimeout(600);
 
@@ -156,18 +157,25 @@ async function run() {
     // Wait for Mulligan modal on all 4 pages
     await Promise.all(
       pages.map(async (page, idx) => {
-        await page.locator('[data-testid="opening-hand-modal"]').waitFor({ state: 'visible', timeout: 30000 });
+        await page
+          .locator('[data-testid="opening-hand-modal"]')
+          .waitFor({ state: 'visible', timeout: 30000 });
         console.log(`Mano inicial visible para ${playerNames[idx]}. Aceptando mano...`);
         const keepBtn = page.getByTestId('keep-btn');
         await keepBtn.waitFor({ state: 'visible', timeout: 10000 });
         await keepBtn.click();
         console.log(`✅ ${playerNames[idx]} aceptó la mano inicial.`);
-      })
+      }),
     );
 
     // Wait for all 4 pages to have tableboard loaded
     await Promise.all(
-      pages.map(p => p.locator('[data-table-board], [data-player-header]').first().waitFor({ state: 'visible', timeout: 20000 }))
+      pages.map(p =>
+        p
+          .locator('[data-table-board], [data-player-header]')
+          .first()
+          .waitFor({ state: 'visible', timeout: 20000 }),
+      ),
     );
     console.log('✅ Mesa activa para los 4 jugadores en disposición circular horaria.');
 
@@ -246,7 +254,9 @@ async function run() {
     console.log('\n[TURNO 3] Acción: Añadir contador +1/+1 a permanente');
     active = await getActivePage();
     console.log(`Turno activo en jugador: ${active.name}`);
-    const cardForCounter = active.page.locator('.card-slot-container, [data-card-item="true"]').first();
+    const cardForCounter = active.page
+      .locator('.card-slot-container, [data-card-item="true"]')
+      .first();
     if (await cardForCounter.isVisible({ timeout: 5000 }).catch(() => false)) {
       await cardForCounter.click({ button: 'right', force: true });
       await active.page.waitForTimeout(500);
@@ -339,7 +349,9 @@ async function run() {
     console.log('\n[TURNO 6] Acción: Clonar permanente en mesa');
     active = await getActivePage();
     console.log(`Turno activo en jugador: ${active.name}`);
-    const cloneTarget = active.page.locator('.card-slot-container, [data-card-item="true"]').first();
+    const cloneTarget = active.page
+      .locator('.card-slot-container, [data-card-item="true"]')
+      .first();
     if (await cloneTarget.isVisible({ timeout: 4000 }).catch(() => false)) {
       await cloneTarget.click({ button: 'right', force: true });
       await active.page.waitForTimeout(500);
@@ -447,7 +459,9 @@ async function run() {
     // Verificar errores de consola en los 4 navegadores
     console.log('\n--- Registro de Errores de Consola (4 Jugadores) ---');
     playerNames.forEach((name, idx) => {
-      console.log(`${name}: ${consoleErrors[idx].length} errores [${consoleErrors[idx].join(', ')}]`);
+      console.log(
+        `${name}: ${consoleErrors[idx].length} errores [${consoleErrors[idx].join(', ')}]`,
+      );
     });
 
     const totalErrors = consoleErrors.reduce((sum, arr) => sum + arr.length, 0);

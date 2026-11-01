@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { bulkSyncService } from '../src/services/bulk-sync.service.js';
+import { prisma } from '../src/db/prisma.js';
 
 test('BulkSyncService - manages nightly cron job scheduling and status (Paso 2A.5 / REQ-18)', () => {
   assert.strictEqual(bulkSyncService.isCronActive(), false);
@@ -81,6 +82,11 @@ test('BulkSyncService - date check skips redownload ONLY if local data exists (P
       return { ok: true, json: async () => [] } as any;
     };
 
+    (prisma as any).ruling = {
+      count: async () => 10,
+    };
+    (bulkSyncService as any).lastRulingsUpdatedAt = mockUpdatedAt;
+
     const res = await bulkSyncService.syncRulings();
     assert.strictEqual(res.skipped, true);
     assert.strictEqual(res.reason, 'not_modified');
@@ -104,6 +110,13 @@ test('BulkSyncService - does NOT skip if local data is empty even if date matche
   const originalFetch = globalThis.fetch;
   try {
     let downloadUriFetched = false;
+    (prisma as any).ruling = {
+      count: async () => 0,
+      createMany: async () => ({ count: 1 }),
+      findMany: async () => [],
+    };
+    (freshService as any).lastRulingsUpdatedAt = null;
+
     globalThis.fetch = async (url: any, _init?: any) => {
       const urlStr = String(url);
       if (urlStr.includes('/bulk-data')) {
@@ -122,19 +135,20 @@ test('BulkSyncService - does NOT skip if local data is empty even if date matche
       }
       if (urlStr.includes('rulings-test.json')) {
         downloadUriFetched = true;
+        const { Readable } = await import('node:stream');
+        const rulingsData = JSON.stringify([
+          {
+            oracle_id: 'test-card-1',
+            published_at: '2024-01-01',
+            comment: 'Sample ruling',
+            source: 'wotc',
+          },
+        ]);
         return {
           ok: true,
-          arrayBuffer: async () =>
-            Buffer.from(
-              JSON.stringify([
-                {
-                  oracle_id: 'test-card-1',
-                  published_at: '2024-01-01',
-                  comment: 'Sample ruling',
-                  source: 'wotc',
-                },
-              ]),
-            ),
+          statusText: 'OK',
+          headers: new Headers(),
+          body: Readable.toWeb(Readable.from(Buffer.from(rulingsData))),
         } as any;
       }
       return { ok: true, json: async () => [] } as any;

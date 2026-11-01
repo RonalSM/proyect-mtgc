@@ -43,13 +43,34 @@ async function runSmokeProd() {
   // 2. Medir resolución de mazo de 100 cartas
   console.log('\n🃏 2. Benchmark de resolución de mazo (POST /api/cards/resolve):');
   const sampleDeckNames = [
-    'Sol Ring', 'Arcane Signet', 'Command Tower', 'Krenko, Tin Street Kingpin',
-    'Goblin Chieftain', 'Goblin Warchief', 'Skullclamp', 'Lightning Greaves',
-    'Chaos Warp', 'Blasphemous Act', 'Mountain', 'Swiftfoot Boots',
-    'Goblin Matron', 'Goblin Recruiter', 'Krenko, Mob Boss', 'Ponder',
-    'Preordain', 'Brainstorm', 'Counterspell', 'Cyclonic Rift',
-    'Rhystic Study', 'Mystic Remora', 'Demonic Tutor', 'Vampiric Tutor',
-    'Dark Ritual', 'Cultivate', 'Kodama\'s Reach', 'Heroic Intervention'
+    'Sol Ring',
+    'Arcane Signet',
+    'Command Tower',
+    'Krenko, Tin Street Kingpin',
+    'Goblin Chieftain',
+    'Goblin Warchief',
+    'Skullclamp',
+    'Lightning Greaves',
+    'Chaos Warp',
+    'Blasphemous Act',
+    'Mountain',
+    'Swiftfoot Boots',
+    'Goblin Matron',
+    'Goblin Recruiter',
+    'Krenko, Mob Boss',
+    'Ponder',
+    'Preordain',
+    'Brainstorm',
+    'Counterspell',
+    'Cyclonic Rift',
+    'Rhystic Study',
+    'Mystic Remora',
+    'Demonic Tutor',
+    'Vampiric Tutor',
+    'Dark Ritual',
+    'Cultivate',
+    "Kodama's Reach",
+    'Heroic Intervention',
   ];
   // Rellenar a 100 cartas
   const full100Cards: string[] = [];
@@ -72,7 +93,9 @@ async function runSmokeProd() {
     const resolveDurationMs = Date.now() - resolveStart;
     const resolveData = (await resolveRes.json()) as any;
     console.log(`   Cartas resueltas: ${resolveData.count || resolveData.cards?.length || 0}/100`);
-    console.log(`   ⏱️ Tiempo de resolución: ${resolveDurationMs} ms (Objetivo < 500 ms tras optimización batch SQL)`);
+    console.log(
+      `   ⏱️ Tiempo de resolución: ${resolveDurationMs} ms (Objetivo < 500 ms tras optimización batch SQL)`,
+    );
   } catch (err: any) {
     console.warn(`   ⚠️ Advertencia en resolución de cartas: ${err.message}`);
   }
@@ -137,11 +160,15 @@ async function runSmokeProd() {
     });
 
     sockets.push(ws);
-    console.log(`   🟢 ${player.name} conectado en ${connectionTimes[connectionTimes.length - 1]} ms`);
+    console.log(
+      `   🟢 ${player.name} conectado en ${connectionTimes[connectionTimes.length - 1]} ms`,
+    );
   }
 
   // 5. Medir latencia de acciones (secuencia fija de 20 acciones sincronizadas)
-  console.log('\n⚡ 5. Ejecutando secuencia fija de 20 acciones sincronizadas entre los 4 clientes:');
+  console.log(
+    '\n⚡ 5. Ejecutando secuencia fija de 20 acciones sincronizadas entre los 4 clientes:',
+  );
   const latencies: LatencyMeasurement[] = [];
 
   for (let i = 1; i <= 20; i++) {
@@ -206,7 +233,9 @@ async function runSmokeProd() {
   const max = sorted[sorted.length - 1];
   const min = sorted[0];
 
-  console.log('\n📊 6. Resultados estadísticos de latencia (Acción → Recepción en otros 3 clientes):');
+  console.log(
+    '\n📊 6. Resultados estadísticos de latencia (Acción → Recepción en otros 3 clientes):',
+  );
   console.log(`   - Acciones ejecutadas: ${latencies.length}`);
   console.log(`   - Mínimo: ${min} ms`);
   console.log(`   - p50 (Mediana): ${p50} ms`);
@@ -217,9 +246,17 @@ async function runSmokeProd() {
   const is15m = process.argv.includes('--idle-15m');
   const is30m = process.argv.includes('--idle-30m');
   const customSecArg = process.argv.find(a => a.startsWith('--idle-duration='));
-  const idleDurationSec = is15m ? 900 : is30m ? 1800 : customSecArg ? parseInt(customSecArg.split('=')[1], 10) : 65;
+  const idleDurationSec = is15m
+    ? 900
+    : is30m
+      ? 1800
+      : customSecArg
+        ? parseInt(customSecArg.split('=')[1], 10)
+        : 65;
 
-  console.log(`\n💓 7. Verificando prevención de H15 con Keepalive (${idleDurationSec}s de inactividad, timeout de Heroku es 55s):`);
+  console.log(
+    `\n💓 7. Verificando prevención de H15 con Keepalive (${idleDurationSec}s de inactividad, timeout de Heroku es 55s):`,
+  );
   let pongsReceived = 0;
   sockets.forEach((s, idx) => {
     s.on('message', (data: WebSocket.RawData) => {
@@ -245,14 +282,18 @@ async function runSmokeProd() {
     await new Promise(r => setTimeout(r, sleepChunk * 1000));
     elapsed = Math.floor((Date.now() - startTime) / 1000);
     const allAlive = sockets.every(s => s.readyState === WebSocket.OPEN);
-    console.log(`   ⏱️ Inactividad transcurrida: ${elapsed}s / ${idleDurationSec}s | Sockets activos: ${sockets.filter(s => s.readyState === WebSocket.OPEN).length}/4 | PONGs recibidos: ${pongsReceived}`);
+    console.log(
+      `   ⏱️ Inactividad transcurrida: ${elapsed}s / ${idleDurationSec}s | Sockets activos: ${sockets.filter(s => s.readyState === WebSocket.OPEN).length}/4 | PONGs recibidos: ${pongsReceived}`,
+    );
     if (!allAlive) {
       clearInterval(heartbeatTimer);
       throw new Error(`¡Un socket se cerró por inactividad a los ${elapsed}s! Posible error H15.`);
     }
   }
   clearInterval(heartbeatTimer);
-  console.log(`   ✅ Sockets sobrevivieron ${idleDurationSec}s de inactividad superando los 55s del router de Heroku sin error H15.`);
+  console.log(
+    `   ✅ Sockets sobrevivieron ${idleDurationSec}s de inactividad superando los 55s del router de Heroku sin error H15.`,
+  );
 
   // 8. Cerrar conexiones limpiamente
   for (const ws of sockets) {

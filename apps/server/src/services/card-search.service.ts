@@ -307,7 +307,8 @@ export class CardSearchService {
         publishedAt:
           typeof r.publishedAt === 'string'
             ? r.publishedAt
-            : r.publishedAt?.toISOString?.()?.split('T')[0] || new Date().toISOString().split('T')[0],
+            : r.publishedAt?.toISOString?.()?.split('T')[0] ||
+              new Date().toISOString().split('T')[0],
         comment: r.comment,
       })),
     };

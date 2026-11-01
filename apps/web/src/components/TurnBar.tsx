@@ -139,9 +139,7 @@ export const TurnBar: React.FC<TurnBarProps> = ({
                       : `0 0 8px ${pColor}22`,
                   }}
                 >
-                  <span className="font-mono text-[10px] text-zinc-300 font-bold">
-                    {idx + 1}.º
-                  </span>
+                  <span className="font-mono text-[10px] text-zinc-300 font-bold">{idx + 1}.º</span>
                   <span className="truncate max-w-[85px] text-white font-extrabold drop-shadow-sm">
                     {p?.name || pid}
                   </span>

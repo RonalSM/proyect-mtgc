@@ -9,7 +9,7 @@ async function main() {
       'Content-Type': 'application/json',
       'x-admin-key': 'MtgcAdminSecret2026!',
     },
-    body: JSON.stringify({ force: true, limit: 15000 })
+    body: JSON.stringify({ force: true, limit: 15000 }),
   });
 
   const duration = (Date.now() - startTime) / 1000;

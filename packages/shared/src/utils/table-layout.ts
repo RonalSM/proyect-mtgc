@@ -50,10 +50,7 @@ export function getGridColumns(totalPlayers: number): number {
  *     Fila 1: [Asiento 5 (izq), Asiento 4 (centro), Asiento 3 (der)]
  *     Orden horario: 0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 0
  */
-export function getGridSlotForSeat(
-  seatNumber: number,
-  totalPlayers: number,
-): GridSlotCoordinate {
+export function getGridSlotForSeat(seatNumber: number, totalPlayers: number): GridSlotCoordinate {
   const count = Math.max(2, totalPlayers);
   if (count === 2) {
     return { row: 0, col: seatNumber === 0 ? 0 : 1 };

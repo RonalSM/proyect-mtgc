@@ -1532,10 +1532,17 @@ export class GameStateSession {
       playerId,
       description: `Revertir P/T de ${card.definition.name}`,
       revert: () => {
-        if (prevBaseP !== undefined) card.basePower = prevBaseP; else delete card.basePower;
-        if (prevBaseT !== undefined) card.baseToughness = prevBaseT; else delete card.baseToughness;
-        if (prevPlus !== undefined) card.counters['+1/+1'] = prevPlus; else delete card.counters['+1/+1'];
-        if (prevMinus !== undefined) card.counters['−1/−1'] = prevMinus; else { delete card.counters['−1/−1']; delete card.counters['-1/-1']; }
+        if (prevBaseP !== undefined) card.basePower = prevBaseP;
+        else delete card.basePower;
+        if (prevBaseT !== undefined) card.baseToughness = prevBaseT;
+        else delete card.baseToughness;
+        if (prevPlus !== undefined) card.counters['+1/+1'] = prevPlus;
+        else delete card.counters['+1/+1'];
+        if (prevMinus !== undefined) card.counters['−1/−1'] = prevMinus;
+        else {
+          delete card.counters['−1/−1'];
+          delete card.counters['-1/-1'];
+        }
       },
     });
 

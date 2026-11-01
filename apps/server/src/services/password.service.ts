@@ -8,7 +8,7 @@ function scryptAsync(
   password: string,
   salt: string,
   keyLen: number,
-  options: { cost: number; blockSize: number; parallelization: number; maxmem: number }
+  options: { cost: number; blockSize: number; parallelization: number; maxmem: number },
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     scrypt(password, salt, keyLen, options, (err, derivedKey) => {

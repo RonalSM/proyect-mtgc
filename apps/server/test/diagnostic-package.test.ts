@@ -19,7 +19,7 @@ test('Punto D1: Generación de paquete de diagnóstico técnico anonimizado', ()
         isHost: true,
         color: '#38BDF8',
         authToken: 'secret-token-123', // Dato sensible que debe ser filtrado
-        email: 'alice@example.com',     // Dato sensible que debe ser filtrado
+        email: 'alice@example.com', // Dato sensible que debe ser filtrado
       },
       p2: {
         id: 'p2',
@@ -84,8 +84,12 @@ test('Punto D1: Generación de paquete de diagnóstico técnico anonimizado', ()
         players: sanitizedPlayers,
       },
       recentActions: recentLogs,
-      consoleErrors: [{ timestamp: new Date().toISOString(), type: 'error', message: 'Test console error' }],
-      failedCardLoads: [{ url: 'https://cards.scryfall.io/small/test.jpg', status: 404, reason: 'Not Found' }],
+      consoleErrors: [
+        { timestamp: new Date().toISOString(), type: 'error', message: 'Test console error' },
+      ],
+      failedCardLoads: [
+        { url: 'https://cards.scryfall.io/small/test.jpg', status: 404, reason: 'Not Found' },
+      ],
     };
   }
 
@@ -106,8 +110,20 @@ test('Punto D1: Generación de paquete de diagnóstico técnico anonimizado', ()
   assert.ok(pkg.failedCardLoads.length > 0);
 
   // 4. Privacidad: NO contiene tokens, contraseñas, emails ni cartas ocultas
-  assert.strictEqual(jsonStr.includes('secret-token-123'), false, 'No debe filtrar tokens de sesión');
+  assert.strictEqual(
+    jsonStr.includes('secret-token-123'),
+    false,
+    'No debe filtrar tokens de sesión',
+  );
   assert.strictEqual(jsonStr.includes('alice@example.com'), false, 'No debe filtrar correos');
-  assert.strictEqual(jsonStr.includes('Black Lotus'), false, 'No debe filtrar cartas de manos ocultas');
-  assert.strictEqual(jsonStr.includes('Mox Sapphire'), false, 'No debe filtrar cartas de bibliotecas ajenas');
+  assert.strictEqual(
+    jsonStr.includes('Black Lotus'),
+    false,
+    'No debe filtrar cartas de manos ocultas',
+  );
+  assert.strictEqual(
+    jsonStr.includes('Mox Sapphire'),
+    false,
+    'No debe filtrar cartas de bibliotecas ajenas',
+  );
 });

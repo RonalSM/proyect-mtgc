@@ -32,13 +32,16 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
     }));
 
     // Cargas fallidas registradas en el servicio de diagnóstico
-    const failedCards = diagnosticsService.getFailures().slice(0, 50).map(f => ({
-      url: f.url,
-      cardName: f.cardName || 'Desconocida',
-      status: f.status,
-      reason: f.reason,
-      timestamp: f.timestamp,
-    }));
+    const failedCards = diagnosticsService
+      .getFailures()
+      .slice(0, 50)
+      .map(f => ({
+        url: f.url,
+        cardName: f.cardName || 'Desconocida',
+        status: f.status,
+        reason: f.reason,
+        timestamp: f.timestamp,
+      }));
 
     // Errores de consola interceptados
     const consoleErrors = getCollectedErrors().slice(-50);
@@ -161,9 +164,7 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
           </div>
           <div className="p-2 rounded-lg bg-[#040d0f]/80 border border-[#12544F]/60">
             <div className="text-[10px] uppercase text-zinc-500 font-bold">Versión Estado</div>
-            <div className="font-mono font-bold text-zinc-200">
-              v{roomState?.version ?? 0}
-            </div>
+            <div className="font-mono font-bold text-zinc-200">v{roomState?.version ?? 0}</div>
           </div>
           <div className="p-2 rounded-lg bg-[#040d0f]/80 border border-[#12544F]/60">
             <div className="text-[10px] uppercase text-zinc-500 font-bold">Acciones</div>
@@ -174,7 +175,8 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
           <div className="p-2 rounded-lg bg-[#040d0f]/80 border border-[#12544F]/60">
             <div className="text-[10px] uppercase text-zinc-500 font-bold">Errores / Carga</div>
             <div className="font-mono font-bold text-amber-400">
-              {(diagnosticData?.consoleErrors.length ?? 0) + (diagnosticData?.failedCardLoads.length ?? 0)}
+              {(diagnosticData?.consoleErrors.length ?? 0) +
+                (diagnosticData?.failedCardLoads.length ?? 0)}
             </div>
           </div>
         </div>
@@ -183,7 +185,8 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
         <div className="px-6 py-2.5 bg-[#040d0f] flex items-center space-x-2 text-[11px] text-zinc-400 border-b border-[#12544F]/40">
           <ShieldCheck className="w-4 h-4 text-[#8BBB92] flex-shrink-0" />
           <span>
-            <strong>Privacidad garantizada:</strong> No se incluyen cartas de manos ocultas, contenido de bibliotecas ajenas ni datos personales.
+            <strong>Privacidad garantizada:</strong> No se incluyen cartas de manos ocultas,
+            contenido de bibliotecas ajenas ni datos personales.
           </span>
         </div>
 
@@ -194,9 +197,7 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
               <Terminal className="w-3.5 h-3.5 text-[#8BBB92]" />
               <span>Contenido del Diagnóstico (JSON)</span>
             </span>
-            <span className="text-[10px] font-mono text-zinc-500">
-              {jsonString.length} bytes
-            </span>
+            <span className="text-[10px] font-mono text-zinc-500">{jsonString.length} bytes</span>
           </div>
 
           <pre

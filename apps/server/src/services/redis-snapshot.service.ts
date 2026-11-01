@@ -129,13 +129,14 @@ export class RedisSnapshotService implements SnapshotStorage {
 
     // Consultar PostgreSQL si Redis no tiene la sala
     try {
-      const res = await pool.query(
-        'SELECT "state" FROM "room_snapshots" WHERE "roomCode" = $1',
-        [code],
-      );
+      const res = await pool.query('SELECT "state" FROM "room_snapshots" WHERE "roomCode" = $1', [
+        code,
+      ]);
       if (res.rows.length > 0) {
         const rowState = res.rows[0].state;
-        const parsed = (typeof rowState === 'string' ? JSON.parse(rowState) : rowState) as RoomState;
+        const parsed = (
+          typeof rowState === 'string' ? JSON.parse(rowState) : rowState
+        ) as RoomState;
         this.fallbackMemory.set(code, JSON.stringify(parsed));
         return migrateState(parsed);
       }
@@ -193,7 +194,9 @@ export class RedisSnapshotService implements SnapshotStorage {
       );
       deletedCount = res.rowCount || 0;
       if (deletedCount > 0) {
-        console.log(`🧹 [Snapshots] ${deletedCount} instantáneas expiradas (> ${maxAgeHours}h) eliminadas de PostgreSQL.`);
+        console.log(
+          `🧹 [Snapshots] ${deletedCount} instantáneas expiradas (> ${maxAgeHours}h) eliminadas de PostgreSQL.`,
+        );
       }
     } catch (err) {
       console.error('[Snapshots] Error al limpiar instantáneas expiradas:', err);

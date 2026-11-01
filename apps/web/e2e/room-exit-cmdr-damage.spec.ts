@@ -22,7 +22,10 @@ test.describe('Tareas 1, 2 y 3: Bugs de Sala, Estado y Daño de Comandante Resta
     if (await hostInput.isVisible()) {
       await hostInput.fill('Alice_Host');
     }
-    await page.getByRole('button', { name: /Crear Sala|Crear Mesa/i }).last().click();
+    await page
+      .getByRole('button', { name: /Crear Sala|Crear Mesa/i })
+      .last()
+      .click();
 
     // Esperar a entrar a la sala 1
     const roomCodeButton = page.locator('button:has-text("Código:")').first();
@@ -37,7 +40,9 @@ test.describe('Tareas 1, 2 y 3: Bugs de Sala, Estado y Daño de Comandante Resta
     await leaveBtn.click();
 
     // 3. Verificar que regresó al lobby principal y que el storage está limpio
-    await expect(page.getByRole('button', { name: /Crear Nueva Mesa/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('button', { name: /Crear Nueva Mesa/i })).toBeVisible({
+      timeout: 10000,
+    });
     const storedSession = await page.evaluate(() => sessionStorage.getItem('mtgc_room_code'));
     const storedLocal = await page.evaluate(() => localStorage.getItem('mtgc_room_code'));
     expect(storedSession).toBeNull();
@@ -48,7 +53,10 @@ test.describe('Tareas 1, 2 y 3: Bugs de Sala, Estado y Daño de Comandante Resta
     if (await nameInput.isVisible()) {
       await nameInput.fill('Sala Beta');
     }
-    await page.getByRole('button', { name: /Crear Sala|Crear Mesa/i }).last().click();
+    await page
+      .getByRole('button', { name: /Crear Sala|Crear Mesa/i })
+      .last()
+      .click();
 
     // 5. Verificar que la Sala 2 se crea limpiamente con un código nuevo
     await expect(roomCodeButton).toBeVisible({ timeout: 15000 });
@@ -73,10 +81,15 @@ test.describe('Tareas 1, 2 y 3: Bugs de Sala, Estado y Daño de Comandante Resta
     if (await hostInput.isVisible()) {
       await hostInput.fill('Jugador_Sin_Mazo');
     }
-    await page.getByRole('button', { name: /Crear Sala|Crear Mesa/i }).last().click();
+    await page
+      .getByRole('button', { name: /Crear Sala|Crear Mesa/i })
+      .last()
+      .click();
 
     // Esperar al lobby
-    await expect(page.locator('button:has-text("Código:")').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('button:has-text("Código:")').first()).toBeVisible({
+      timeout: 15000,
+    });
 
     // Verificar que el slot del jugador muestra "Sin mazo seleccionado" y botón "Seleccionar / Importar Mazo"
     const deckPlaceholder = page.locator('text=Sin mazo seleccionado').first();
@@ -84,7 +97,9 @@ test.describe('Tareas 1, 2 y 3: Bugs de Sala, Estado y Daño de Comandante Resta
 
     // Salir de la sala
     await page.getByRole('button', { name: /Salir/i }).first().click();
-    await expect(page.getByRole('button', { name: /Crear Nueva Mesa/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('button', { name: /Crear Nueva Mesa/i })).toBeVisible({
+      timeout: 10000,
+    });
 
     // Flujo explícito: Clic en "Jugar con este Mazo" desde el launcher
     const playWithDeckBtn = page.locator('button:has-text("Jugar con este Mazo")').first();
@@ -92,10 +107,15 @@ test.describe('Tareas 1, 2 y 3: Bugs de Sala, Estado y Daño de Comandante Resta
     await playWithDeckBtn.click();
 
     // Enviar el modal de creación
-    await page.getByRole('button', { name: /Crear Sala|Crear Mesa/i }).last().click();
+    await page
+      .getByRole('button', { name: /Crear Sala|Crear Mesa/i })
+      .last()
+      .click();
 
     // Esperar al lobby: ahora SÍ debe tener mazo seleccionado
-    await expect(page.locator('button:has-text("Código:")').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('button:has-text("Código:")').first()).toBeVisible({
+      timeout: 15000,
+    });
     await expect(page.locator('text=Sin mazo seleccionado')).not.toBeVisible();
     await expect(page.locator('button:has-text("Cambiar")')).toBeVisible();
   });
@@ -115,7 +135,10 @@ test.describe('Tareas 1, 2 y 3: Bugs de Sala, Estado y Daño de Comandante Resta
     if (await seatsSelect.isVisible()) {
       await seatsSelect.selectOption('2');
     }
-    await pageA.getByRole('button', { name: /Crear Sala|Crear Mesa/i }).last().click();
+    await pageA
+      .getByRole('button', { name: /Crear Sala|Crear Mesa/i })
+      .last()
+      .click();
 
     const roomCodeButton = pageA.locator('button:has-text("Código:")').first();
     await expect(roomCodeButton).toBeVisible({ timeout: 15000 });
@@ -130,7 +153,9 @@ test.describe('Tareas 1, 2 y 3: Bugs de Sala, Estado y Daño de Comandante Resta
     await pageB.getByRole('button', { name: 'Entrar a la Sala' }).click();
 
     // B selecciona mazo
-    await expect(pageB.locator('button:has-text("Código:")').first()).toBeVisible({ timeout: 15000 });
+    await expect(pageB.locator('button:has-text("Código:")').first()).toBeVisible({
+      timeout: 15000,
+    });
     await pageB.locator('button:has-text("Seleccionar / Importar Mazo")').click();
     await pageB.locator('[data-testid^="select-preset-deck-"]').first().click();
 

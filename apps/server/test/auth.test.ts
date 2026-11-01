@@ -10,7 +10,7 @@ test('PasswordService - hashes passwords with asynchronous scrypt and verifies c
 
   assert.ok(
     scryptHash.startsWith('$scrypt$N=16384,r=8,p=1$'),
-    `Expected scrypt hash format, got: ${scryptHash}`
+    `Expected scrypt hash format, got: ${scryptHash}`,
   );
   assert.strictEqual(await PasswordService.verify(password, scryptHash), true);
   assert.strictEqual(await PasswordService.verify('WrongPassword', scryptHash), false);

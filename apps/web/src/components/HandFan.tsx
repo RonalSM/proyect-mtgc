@@ -288,9 +288,7 @@ export const HandFan: React.FC<HandFanProps> = ({
             const transY = Math.abs(offset) * 2;
             const isKnown = !!card?.isKnownToAll;
             const isRevealed =
-              card &&
-              (card.revealedTo || isKnown) &&
-              card.definition?.scryfallId !== 'hidden_card';
+              card && (card.revealedTo || isKnown) && card.definition?.scryfallId !== 'hidden_card';
 
             if (isRevealed && card) {
               return (
@@ -333,9 +331,7 @@ export const HandFan: React.FC<HandFanProps> = ({
                         : getRevealedTooltipForRecipient(card.ownerId, roomState)
                     }
                     className={`absolute top-1 right-1 z-30 bg-[#040d0f]/90 border rounded-full p-1 shadow-lg flex items-center justify-center pointer-events-auto ${
-                      isKnown
-                        ? 'border-amber-400 text-amber-400'
-                        : 'border-red-500/80 text-red-500'
+                      isKnown ? 'border-amber-400 text-amber-400' : 'border-red-500/80 text-red-500'
                     }`}
                   >
                     <Eye className="w-3.5 h-3.5 fill-current/20" />

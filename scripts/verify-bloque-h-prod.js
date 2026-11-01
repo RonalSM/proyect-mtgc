@@ -3,7 +3,9 @@ const path = require('path');
 const fs = require('fs');
 
 const PROD_URL = 'https://proyect-mtgc.netlify.app';
-const ARTIFACT_DIR = path.resolve('C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa');
+const ARTIFACT_DIR = path.resolve(
+  'C:/Users/Nero.PC-Neroz/.gemini/antigravity/brain/dec05a18-4c5a-4614-86d9-f6343dc854aa',
+);
 
 async function run() {
   console.log('🚀 Starting live production verification for BLOQUE H (H1, H2, H3)...');
@@ -45,29 +47,40 @@ async function run() {
     // ----------------------------------------------------
     console.log('--- Step 1: Alice creates room in production ---');
     await pageA.goto(PROD_URL, { waitUntil: 'networkidle' });
-    
+
     const createBtn = pageA.getByRole('button', { name: /Crear Nueva Mesa/i });
     await createBtn.waitFor({ state: 'visible', timeout: 15000 });
     await createBtn.click();
 
-    const roomNameInput = pageA.getByPlaceholder(/Pod de Viernes|Nombre de la mesa/i).or(pageA.locator('input[type="text"]').first());
+    const roomNameInput = pageA
+      .getByPlaceholder(/Pod de Viernes|Nombre de la mesa/i)
+      .or(pageA.locator('input[type="text"]').first());
     await roomNameInput.fill('Bloque H Verification Pod');
 
-    const hostNameInput = pageA.getByPlaceholder(/Planeswalker 1|Tu nombre/i).or(pageA.locator('input[type="text"]').nth(1));
+    const hostNameInput = pageA
+      .getByPlaceholder(/Planeswalker 1|Tu nombre/i)
+      .or(pageA.locator('input[type="text"]').nth(1));
     await hostNameInput.fill('Alice');
 
     const submitCreateBtn = pageA.getByRole('button', { name: /Crear y Abrir Sala|Crear Mesa/i });
     await submitCreateBtn.click();
 
-    await pageA.waitForSelector('[data-testid="room-code-badge"], :has-text("Código:")', { timeout: 20000 });
-    const roomCodeEl = await pageA.locator('[data-testid="room-code-display"]').or(pageA.locator('text=/Código:/i')).first();
+    await pageA.waitForSelector('[data-testid="room-code-badge"], :has-text("Código:")', {
+      timeout: 20000,
+    });
+    const roomCodeEl = await pageA
+      .locator('[data-testid="room-code-display"]')
+      .or(pageA.locator('text=/Código:/i'))
+      .first();
     const fullCodeText = await roomCodeEl.innerText();
     const roomCode = fullCodeText.replace(/Código:\s*/i, '').trim();
     console.log(`✅ Room created with code: "${roomCode}"`);
 
     // Alice selects preset deck
     console.log('--- Step 2: Alice selects preset deck and marks ready ---');
-    const selectDeckBtnA = pageA.getByRole('button', { name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i });
+    const selectDeckBtnA = pageA.getByRole('button', {
+      name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i,
+    });
     await selectDeckBtnA.waitFor({ state: 'visible', timeout: 15000 });
     await selectDeckBtnA.click();
     await pageA.waitForTimeout(1000);
@@ -77,7 +90,9 @@ async function run() {
       await presetTabA.click();
     }
 
-    const chooseDeckBtnA = pageA.getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i }).first();
+    const chooseDeckBtnA = pageA
+      .getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i })
+      .first();
     await chooseDeckBtnA.waitFor({ state: 'visible', timeout: 10000 });
     await chooseDeckBtnA.click();
     await pageA.waitForTimeout(1000);
@@ -106,11 +121,15 @@ async function run() {
     const submitJoinBtn = pageB.getByRole('button', { name: /Entrar a la Sala/i });
     await submitJoinBtn.click();
 
-    await pageB.waitForSelector('[data-testid="room-code-badge"], :has-text("Código:")', { timeout: 20000 });
+    await pageB.waitForSelector('[data-testid="room-code-badge"], :has-text("Código:")', {
+      timeout: 20000,
+    });
     console.log('✅ Bob joined successfully');
 
     // Bob selects preset deck
-    const selectDeckBtnB = pageB.getByRole('button', { name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i });
+    const selectDeckBtnB = pageB.getByRole('button', {
+      name: /Seleccionar \/ Importar Mazo|Cambiar Mazo/i,
+    });
     await selectDeckBtnB.waitFor({ state: 'visible', timeout: 15000 });
     await selectDeckBtnB.click();
     await pageB.waitForTimeout(1000);
@@ -120,7 +139,9 @@ async function run() {
       await presetTabB.click();
     }
 
-    const chooseDeckBtnB = pageB.getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i }).first();
+    const chooseDeckBtnB = pageB
+      .getByRole('button', { name: /Elegir este mazo|Usar este Mazo/i })
+      .first();
     await chooseDeckBtnB.waitFor({ state: 'visible', timeout: 10000 });
     await chooseDeckBtnB.click();
     await pageB.waitForTimeout(1000);
@@ -139,7 +160,9 @@ async function run() {
     console.log('✅ Start game clicked. Waiting for initiative & mulligan resolution...');
 
     // Wait for opening-hand-modal or tableboard
-    await pageA.locator('[data-testid="opening-hand-modal"]').waitFor({ state: 'visible', timeout: 25000 });
+    await pageA
+      .locator('[data-testid="opening-hand-modal"]')
+      .waitFor({ state: 'visible', timeout: 25000 });
     console.log('✅ Initiative phase resolved successfully. Mulligan modal active.');
 
     const startTime = Date.now();
@@ -191,7 +214,9 @@ async function run() {
       const text = await container.innerText();
       const style = await container.getAttribute('style');
       const title = await container.getAttribute('title');
-      console.log(`Player container #${i + 1}: text="${text.replace(/\n/g, ' ')}" | title="${title}" | style="${style}"`);
+      console.log(
+        `Player container #${i + 1}: text="${text.replace(/\n/g, ' ')}" | title="${title}" | style="${style}"`,
+      );
       if (text.includes('◆') || text.includes('▲')) {
         throw new Error(`Symbol still present in player name container: ${text}`);
       }
@@ -216,7 +241,9 @@ async function run() {
     // Verify commander damage section exists in popover
     const cmdDmgSection = pageA.locator('[data-testid="commander-damage-section"]');
     const sectionVisible = await cmdDmgSection.isVisible({ timeout: 5000 }).catch(() => false);
-    console.log(`Commander damage section visible in popover: ${sectionVisible ? 'YES ✅' : 'NO ❌'}`);
+    console.log(
+      `Commander damage section visible in popover: ${sectionVisible ? 'YES ✅' : 'NO ❌'}`,
+    );
 
     // Verify row for opponent
     const cmdDmgRow = pageA.locator('[data-testid^="commander-damage-row-"]').first();
@@ -234,7 +261,10 @@ async function run() {
       await pageA.waitForTimeout(1500);
 
       // Verify row pulses or shows warning icon
-      const hasWarningIcon = await cmdDmgRow.locator('text=⚠️').isVisible().catch(() => false);
+      const hasWarningIcon = await cmdDmgRow
+        .locator('text=⚠️')
+        .isVisible()
+        .catch(() => false);
       console.log(`21+ Warning icon in row visible: ${hasWarningIcon ? 'YES ✅' : 'NO ❌'}`);
 
       // Close popover to inspect life pill alert badge
@@ -251,7 +281,9 @@ async function run() {
 
       // Verify Player was NOT automatically eliminated (still active and life button present)
       const lifeStillPresent = await pageA.locator('[data-life-button]').first().isVisible();
-      console.log(`Player remains active without automatic elimination: ${lifeStillPresent ? 'YES ✅' : 'NO ❌'}`);
+      console.log(
+        `Player remains active without automatic elimination: ${lifeStillPresent ? 'YES ✅' : 'NO ❌'}`,
+      );
     }
 
     // ----------------------------------------------------
@@ -269,7 +301,10 @@ async function run() {
     // Reopen popover on Alice to capture open commander damage drawer in screenshot
     await lifeBtnAlice.click();
     await pageA.waitForTimeout(1000);
-    const screenshotPopoverPath = path.join(ARTIFACT_DIR, 'prod-bloque-h-commander-damage-popover.png');
+    const screenshotPopoverPath = path.join(
+      ARTIFACT_DIR,
+      'prod-bloque-h-commander-damage-popover.png',
+    );
     await pageA.screenshot({ path: screenshotPopoverPath, fullPage: true });
     console.log(`Saved screenshot Commander Damage Popover: ${screenshotPopoverPath}`);
 
@@ -283,11 +318,17 @@ async function run() {
     } else {
       console.log('⚠️ Passed with some console warnings/errors.');
     }
-
   } catch (err) {
     console.error('❌ Verification failed:', err);
-    await pageA.screenshot({ path: path.join(ARTIFACT_DIR, 'prod-bloque-h-error-alice.png'), fullPage: true }).catch(() => {});
-    await pageB.screenshot({ path: path.join(ARTIFACT_DIR, 'prod-bloque-h-error-bob.png'), fullPage: true }).catch(() => {});
+    await pageA
+      .screenshot({
+        path: path.join(ARTIFACT_DIR, 'prod-bloque-h-error-alice.png'),
+        fullPage: true,
+      })
+      .catch(() => {});
+    await pageB
+      .screenshot({ path: path.join(ARTIFACT_DIR, 'prod-bloque-h-error-bob.png'), fullPage: true })
+      .catch(() => {});
   } finally {
     await browser.close();
   }

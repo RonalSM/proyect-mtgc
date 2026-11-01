@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { type RoomState, type GameActionType, type PlayerState, getGridSlotForSeat } from '@mtgc/shared';
+import {
+  type RoomState,
+  type GameActionType,
+  type PlayerState,
+  getGridSlotForSeat,
+} from '@mtgc/shared';
 import { FloatingToolbar } from './FloatingToolbar';
 import { GameLogAndChat } from './GameLogAndChat';
 
@@ -86,7 +91,8 @@ export const TableGrid: React.FC<TableGridProps> = ({
     for (let r: 0 | 1 = 0; r <= 1; r = (r + 1) as 0 | 1) {
       for (let c = 0; c < cols; c++) {
         if (!matrix[r][c]) {
-          const isFreeCellForChat = r === 1 && c === 0 && (totalPlayers === 3 || totalPlayers === 5);
+          const isFreeCellForChat =
+            r === 1 && c === 0 && (totalPlayers === 3 || totalPlayers === 5);
           matrix[r][c] = {
             row: r,
             col: c,
@@ -174,7 +180,11 @@ export const TableGrid: React.FC<TableGridProps> = ({
                     </span>
                   </div>
                   <div className="flex-1 overflow-hidden p-2">
-                    <GameLogAndChat logs={roomState.logs} players={roomState.players} onAction={onAction} />
+                    <GameLogAndChat
+                      logs={roomState.logs}
+                      players={roomState.players}
+                      onAction={onAction}
+                    />
                   </div>
                 </div>
               );

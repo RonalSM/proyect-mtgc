@@ -1,5 +1,11 @@
 import React, { useEffect } from 'react';
-import type { PlayerState, PlayerZones, GameActionType, RoomState, CardInstance } from '@mtgc/shared';
+import type {
+  PlayerState,
+  PlayerZones,
+  GameActionType,
+  RoomState,
+  CardInstance,
+} from '@mtgc/shared';
 import { X, Maximize2 } from 'lucide-react';
 import { PlayerCell } from './PlayerCell';
 import { BattlefieldCanvas } from './BattlefieldCanvas';

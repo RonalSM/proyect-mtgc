@@ -33,7 +33,9 @@ test('Punto H2: Paleta de 6 colores distinguibles con contraste WCAG AA sobre fo
     );
 
     // 4. Ninguno se confunde con el ámbar del turno activo #F59E0B
-    const distFromAmber = Math.abs(calculateRelativeLuminance(color.hex) - calculateRelativeLuminance(ACTIVE_TURN_AMBER));
+    const distFromAmber = Math.abs(
+      calculateRelativeLuminance(color.hex) - calculateRelativeLuminance(ACTIVE_TURN_AMBER),
+    );
     assert.notStrictEqual(color.hex.toUpperCase(), ACTIVE_TURN_AMBER.toUpperCase());
     assert.notStrictEqual(color.hex.toUpperCase(), '#FBBF24');
   });

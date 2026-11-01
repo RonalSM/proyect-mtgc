@@ -16,7 +16,7 @@ async function main() {
       hostName: 'Jugador 1',
       maxPlayers: 6,
       startingLife: 40,
-    })
+    }),
   });
 
   if (!res.ok) {
@@ -44,10 +44,10 @@ async function main() {
     const p = players[i];
     const ws = new WebSocket(
       `${PROD_WS_BASE}/${code}?playerId=${p.id}&playerName=${encodeURIComponent(p.name)}`,
-      wsOptions
+      wsOptions,
     );
 
-    ws.on('message', (raw) => {
+    ws.on('message', raw => {
       try {
         const msg = JSON.parse(raw.toString());
         if (msg.type === 'ERROR' || msg.type === 'RATE_LIMIT_EXCEEDED') {
@@ -62,7 +62,7 @@ async function main() {
         clearTimeout(timer);
         resolve();
       });
-      ws.on('error', (err) => {
+      ws.on('error', err => {
         clearTimeout(timer);
         reject(err);
       });
@@ -76,10 +76,12 @@ async function main() {
   console.log('3. Ejecutando acciones concurrentes desde los 6 clientes...');
   for (let i = 0; i < sockets.length; i++) {
     const s = sockets[i];
-    s.send(JSON.stringify({
-      type: 'ADJUST_LIFE',
-      payload: { playerId: players[i].id, delta: -i }
-    }));
+    s.send(
+      JSON.stringify({
+        type: 'ADJUST_LIFE',
+        payload: { playerId: players[i].id, delta: -i },
+      }),
+    );
   }
 
   await new Promise(r => setTimeout(r, 2000));

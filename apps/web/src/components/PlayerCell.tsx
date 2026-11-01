@@ -995,7 +995,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                           value={damageInput}
                           aria-label="Daño recibido"
                           data-testid="damage-received-input"
-                          onChange={e => setDamageInput(e.target.value.replace(/[^0-9]/g, '').slice(0, 5))}
+                          onChange={e =>
+                            setDamageInput(e.target.value.replace(/[^0-9]/g, '').slice(0, 5))
+                          }
                           onKeyDown={e => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
@@ -1029,7 +1031,9 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                           value={healInput}
                           aria-label="Vida ganada"
                           data-testid="life-gained-input"
-                          onChange={e => setHealInput(e.target.value.replace(/[^0-9]/g, '').slice(0, 5))}
+                          onChange={e =>
+                            setHealInput(e.target.value.replace(/[^0-9]/g, '').slice(0, 5))
+                          }
                           onKeyDown={e => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
@@ -1073,7 +1077,10 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
 
                   {/* Sección de Daño de Comandante (H3) */}
                   {opponentCommanders.length > 0 && (
-                    <div className="pt-2 border-t border-[#12544F] flex flex-col space-y-1.5" data-testid="commander-damage-section">
+                    <div
+                      className="pt-2 border-t border-[#12544F] flex flex-col space-y-1.5"
+                      data-testid="commander-damage-section"
+                    >
                       <div className="flex items-center justify-between text-[10px] font-bold text-rose-300">
                         <span className="flex items-center space-x-1">
                           <Swords className="w-3.5 h-3.5 text-rose-400" />
@@ -1146,8 +1153,14 @@ export const PlayerCell: React.FC<PlayerCellProps> = ({
                                   data-testid={`cmd-dmg-input-${item.opponentId}`}
                                   aria-label={`Daño de comandante de ${item.opponentName}`}
                                   onChange={e => {
-                                    const raw = parseInt(e.target.value.replace(/[^0-9]/g, '').slice(0, 3) || '0', 10);
-                                    const clamped = Math.max(0, Math.min(999, isNaN(raw) ? 0 : raw));
+                                    const raw = parseInt(
+                                      e.target.value.replace(/[^0-9]/g, '').slice(0, 3) || '0',
+                                      10,
+                                    );
+                                    const clamped = Math.max(
+                                      0,
+                                      Math.min(999, isNaN(raw) ? 0 : raw),
+                                    );
                                     const delta = clamped - item.damage;
                                     if (delta !== 0) {
                                       onAction('COMMANDER_DAMAGE', {
