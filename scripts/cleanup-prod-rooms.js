@@ -1,8 +1,14 @@
 const { Pool } = require('pg');
 
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error('ERROR: La variable de entorno DATABASE_URL no está configurada.');
+  process.exit(1);
+}
+
 const pool = new Pool({
-  connectionString:
-    'postgres://u1ni67esfceuvv:p71611d103c5a63fb9ddb7e6940a2a47ed6e11a213b4609d5731a7354b7bf81e9@c4k9krag3hna2u.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d6gcud23qcj5od',
+  connectionString,
   ssl: { rejectUnauthorized: false },
 });
 
